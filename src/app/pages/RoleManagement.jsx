@@ -131,7 +131,7 @@ export default function RoleManagement() {
             searchKeys={['name', 'code', 'description']}
             searchPlaceholder="Search roles…"
             emptyIcon="badge"
-            emptyTitle="No roles match."
+            emptyTitle="No roles found"
           />
         )}
       </Card>

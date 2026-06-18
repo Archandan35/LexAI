@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Field, Input, Textarea, Select } from './Field.jsx';
 import Button from './Button.jsx';
-import { ROLE_TEMPLATES, TEMPLATE_KEYS } from '@/constants/permissions.js';
 
 // RoleForm — create/edit a role's metadata. Permission editing happens in the
 // matrix (RoleDetails); this captures name/code/description/status/template.
@@ -11,10 +10,9 @@ export default function RoleForm({ initial, onSubmit, onCancel, busy }) {
   const [code, setCode] = useState(initial?.code || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [status, setStatus] = useState(initial?.status || 'Active');
-  const [template, setTemplate] = useState('custom');
 
   const submit = (andContinue) => {
-    onSubmit?.({ name, code, description, status, template }, andContinue);
+    onSubmit?.({ name, code, description, status }, andContinue);
   };
 
   return (
@@ -36,14 +34,6 @@ export default function RoleForm({ initial, onSubmit, onCancel, busy }) {
       <Field label="Description">
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} style={{ minHeight: 80 }} placeholder="What this role is for…" />
       </Field>
-      {!isEdit && (
-        <Field label="Permission template" hint="Pre-fills permissions; you can fine-tune them in the matrix afterwards.">
-          <Select value={template} onChange={(e) => setTemplate(e.target.value)}>
-            {TEMPLATE_KEYS.map((k) => <option key={k} value={k}>{ROLE_TEMPLATES[k].name}</option>)}
-          </Select>
-        </Field>
-      )}
-
       <div className="modal__foot" style={{ padding: '8px 0 0', borderTop: 'none' }}>
         <Button variant="ghost" onClick={onCancel} disabled={busy}>Cancel</Button>
         {!isEdit && <Button variant="ghost" icon="plus" onClick={() => submit(true)} loading={busy}>Save &amp; Continue</Button>}

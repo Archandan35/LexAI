@@ -1,11 +1,9 @@
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { databaseHealthService } from '@/services/databaseHealthService.js';
-import { roleService } from '@/services/roleService.js';
 import { BackupManager } from './BackupManager.js';
 import { auditService } from '@/services/auditService.js';
 import { downloadFile } from '@/utils/exportData.js';
-import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
 // databaseManagerLogic — orchestration behind the Database Manager UI + Setup
@@ -23,25 +21,6 @@ function approxBytes(obj) {
 
 async function audit(action, user, details) {
   try { await auditService.record({ action, module: 'database', user, details }); } catch { /* never block */ }
-}
-
-async function seedSuperAdminRole() {
-  const roles = await roleService.list();
-  if (roles.length === 0) {
-    console.log('[LexAI install] creating super_admin role');
-    await roleService.create({
-      id: 'role_super_admin',
-      code: 'super_admin',
-      name: 'Super Admin',
-      description: 'System super administrator',
-      permissions: [],
-      all: true,
-      inheritsHierarchy: false,
-      system: true,
-      status: 'Active',
-      createdAt: nowISO(),
-    });
-  }
 }
 
 export const databaseManagerLogic = {
@@ -108,9 +87,7 @@ export const databaseManagerLogic = {
       }
 
       console.log('[LexAI install] INSTALL STEP 2/5 — INSERT SCHEMA_META (via stamp in seed)');
-      console.log('[LexAI install] INSTALL STEP 3/5 — INSERT ROLES');
-      await seedSuperAdminRole();
-      console.log('[LexAI install] INSTALL STEP 4/5 — INSERT PERMISSIONS');
+      console.log('[LexAI install] INSTALL STEP 3/5 — INSERT PERMISSIONS');
       await databaseAdminService.seedPermissions();
       console.log('[LexAI install] INSTALL STEP 5/5 — INSERT SETTINGS (stamp)');
       await databaseAdminService.stampInstalled();
@@ -119,11 +96,10 @@ export const databaseManagerLogic = {
       try {
         const version = await databaseAdminService.getVersion();
         const db = getDatabaseProvider();
-        const roleCount = await db.count('roles').catch(() => -1);
         const permCount = await db.count('permissions').catch(() => -1);
+        const roleCount = await db.count('roles').catch(() => -1);
         console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount, 'permissions:', permCount);
         if (version === 0) throw new Error('Schema stamp failed — schema_meta version is 0');
-        if (roleCount === 0) throw new Error('Role seed failed — 0 roles');
         if (permCount === 0) throw new Error('Permission seed failed — 0 permissions');
       } catch (verifyErr) {
         console.error('[LexAI install] Verification failed:', verifyErr.message);
@@ -178,7 +154,6 @@ export const databaseManagerLogic = {
   async seedDemo(user) {
     try {
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      await seedSuperAdminRole();
       const permissions = await databaseAdminService.seedPermissions();
       const demo = await databaseAdminService.seedDemo();
       await audit('db.seed', user, 'Seeded demo data');
@@ -193,7 +168,6 @@ export const databaseManagerLogic = {
     try {
       await databaseAdminService.clearAll();
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      await seedSuperAdminRole();
       await databaseAdminService.seedPermissions();
       await databaseAdminService.seedDemo();
       await databaseAdminService.stampInstalled();

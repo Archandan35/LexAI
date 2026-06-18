@@ -49,12 +49,12 @@ export const authLogic = {
       // 2.5. Create super_admin role if none exist (required for bootstrap)
       const existingRoles = await roleService.list();
       if (existingRoles.length === 0) {
-        console.log('[Bootstrap] no roles found — creating super_admin role');
+        console.log('[Bootstrap] no roles found — creating initial role');
         await roleService.create({
           id: 'role_super_admin',
           code: 'super_admin',
-          name: 'Super Admin',
-          description: 'System super administrator',
+          name: `${name.split('@')[0]}'s Role`,
+          description: 'Initial administrator role',
           permissions: [],
           all: true,
           inheritsHierarchy: false,
