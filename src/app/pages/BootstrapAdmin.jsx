@@ -22,6 +22,7 @@ export default function BootstrapAdmin() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
   const mountedRef = useRef(true);
   const timedOutRef = useRef(false);
 
@@ -119,6 +120,12 @@ export default function BootstrapAdmin() {
     setBusy(false);
 
     if (res.ok) {
+      if (res.data?.emailConfirmationRequired) {
+        console.log('[Bootstrap] email confirmation required');
+        setSetupComplete(true);
+        setError('');
+        return;
+      }
       console.log('[Bootstrap] redirect login');
       nav('/login', { replace: true });
     } else {
@@ -154,6 +161,38 @@ export default function BootstrapAdmin() {
               </Button>
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Email confirmation required screen
+  if (setupComplete) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-card fade-in">
+          <div className="auth-brand">
+            <div className="sidebar__logo">&#x2696;</div>
+            <div>
+              <div className="auth-brand-title">Lex<span>AI</span></div>
+              <div className="sidebar__sub">Indian Litigation Assistant</div>
+            </div>
+          </div>
+          <div className="auth-confirm">
+            <div className="auth-confirm__icon">&#x2709;</div>
+            <h1 className="auth-title">Account Created</h1>
+            <p className="auth-sub">
+              Account created successfully. Please confirm your email before logging in.
+            </p>
+            <p className="auth-sub" style={{ marginTop: 8 }}>
+              Check <strong>{email}</strong> for a confirmation link from Supabase.
+            </p>
+            <div className="dm-toolbar-mt">
+              <Button variant="primary" className="btn--block" onClick={() => nav('/login', { replace: true })}>
+                Go to Login
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );

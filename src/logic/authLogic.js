@@ -55,20 +55,34 @@ export const authLogic = {
 
       // 1. Create Supabase Auth user (required for remote providers)
       console.log('[Bootstrap] create auth user start');
+      console.log('[Bootstrap] signup email:', email);
+      console.log('[Bootstrap] signup password length:', password.length);
       let userId = 'user_superadmin';
+      let emailConfirmed = false;
       try {
         const authUser = await authService.signUp(email.toLowerCase(), password);
-        console.log('[Bootstrap] create auth user result:', !!authUser);
+        console.log('[Bootstrap] signup success, authUser:', JSON.stringify(authUser));
         if (authUser && authUser.id) {
           userId = authUser.id;
-          console.log('[Bootstrap] auth user id:', userId);
+          emailConfirmed = !!authUser.email_confirmed_at;
+          console.log('[Bootstrap] auth user id:', userId, 'email_confirmed_at:', authUser.email_confirmed_at);
         }
       } catch (authErr) {
         console.warn('[Bootstrap] create auth user failed:', authErr.message);
         return fail(`Failed to create auth account: ${authErr.message}. Ensure Supabase Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
-      // 2. Create application user record
+      // 2. If email confirmation is required, don't attempt auto-login
+      if (!emailConfirmed) {
+        console.log('[Bootstrap] email confirmation required — skipping auto-login');
+        return ok({
+          user: { id: userId, email, name },
+          emailConfirmationRequired: true,
+          message: 'Account created successfully. Please confirm your email before logging in.',
+        });
+      }
+
+      // 3. Create application user record
       console.log('[Bootstrap] create application user start');
       const { salt, hash } = await hashPassword(password);
       const user = await userService.create({
@@ -87,9 +101,12 @@ export const authLogic = {
       });
       console.log('[Bootstrap] application user created:', user?.id);
 
-      // 3. Auto-login to verify credentials
+      // 4. Auto-login to verify credentials
       console.log('[Bootstrap] auto login start');
+      console.log('[Bootstrap] signin email:', email);
+      console.log('[Bootstrap] signin password length:', password.length);
       const signInResult = await this.login(email.toLowerCase(), password);
+      console.log('[Bootstrap] signin result ok:', signInResult?.ok);
       if (!signInResult.ok) {
         console.warn('[Bootstrap] auto login failed:', signInResult.error);
         return fail(`Bootstrap succeeded, but sign in failed: ${signInResult.error}`);
