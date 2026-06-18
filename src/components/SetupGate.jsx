@@ -10,9 +10,14 @@ import { userService } from '@/services/userService.js';
 export default function SetupGate({ children }) {
   const [state, setState] = useState('checking'); // checking | setup | bootstrap | ready
 
+  const [detectError, setDetectError] = useState('');
+
   const check = async () => {
     try {
       const res = await databaseManagerLogic.detect();
+      if (res.data?.authError) {
+        setDetectError(`Auth error: ${res.data.authError}. Check that VITE_SUPABASE_ANON_KEY is correct and has access to the project.`);
+      }
       if (!res.ok || res.data.needsSetup) {
         // Detection failed OR schema not fully installed — show setup wizard.
         // DO NOT fall through to userService.list() — it will 404 on an empty
@@ -27,9 +32,9 @@ export default function SetupGate({ children }) {
         return;
       }
       setState('ready');
-    } catch {
-      // Any error during detection — show setup wizard rather than rendering
-      // the auth-guarded app on an empty database (which causes 404 cascades).
+    } catch (e) {
+      console.warn('[LexAI SetupGate] detect threw:', e);
+      setDetectError(`Detection error: ${e.message}. Check browser console for details.`);
       setState('setup');
     }
   };
@@ -37,7 +42,7 @@ export default function SetupGate({ children }) {
   useEffect(() => { check(); }, []);
 
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
-  if (state === 'setup') return <DatabaseSetup />;
+  if (state === 'setup') return <DatabaseSetup detectError={detectError} />;
   if (state === 'bootstrap') {
     window.location.href = '/bootstrap-admin';
     return null;

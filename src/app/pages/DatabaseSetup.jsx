@@ -17,7 +17,7 @@ const STEPS = [
   'Seed data',
 ];
 
-export default function DatabaseSetup() {
+export default function DatabaseSetup({ detectError: propDetectError }) {
   const [detect, setDetect] = useState(null);
   const [busy, setBusy] = useState(false);
   const [sql, setSql] = useState('');
@@ -28,9 +28,17 @@ export default function DatabaseSetup() {
   const fileRef = useRef(null);
 
   const refresh = useCallback(async () => {
+    setError('');
     const res = await databaseManagerLogic.detect();
-    if (res.ok) setDetect(res.data);
-    else setError(res.error || 'Detection failed.');
+    if (res.ok) {
+      const d = res.data;
+      setDetect(d);
+      if (d.authError) {
+        setError(`Auth error: ${d.authError}. Verify VITE_SUPABASE_ANON_KEY in your Railway environment variables.`);
+      }
+    } else {
+      setError(res.error || 'Detection failed.');
+    }
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -181,6 +189,14 @@ export default function DatabaseSetup() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* --- Auth / detect error banner (from SetupGate) --- */}
+        {propDetectError && (
+          <div className="alert alert--warn dm-mt">
+            <Icon name="alert" size={16} />
+            <span>{propDetectError}</span>
           </div>
         )}
 

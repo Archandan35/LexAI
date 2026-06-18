@@ -87,14 +87,18 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   }
 
   // Probe whether a table exists & is reachable under the current key/RLS.
+  // Throws on auth errors (401/403) so callers can distinguish "no table" from
+  // "can't check."
   async collectionExists(name) {
-    try {
-      const res = await fetch(`${this.#endpoint(name)}?limit=1`, { headers: this.#headers() });
-      return res.ok;
-    } catch { return false; }
+    const res = await fetch(`${this.#endpoint(name)}?limit=1`, { headers: this.#headers() });
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`Supabase auth denied (${res.status}) for ${name}`);
+    }
+    return res.ok;
   }
 
   // Efficient Postgres count via PostgREST range header.
+  // Throws on auth errors (401/403).
   async count(collection, query = {}) {
     const params = new URLSearchParams();
     Object.entries(query).forEach(([k, v]) => {
@@ -103,6 +107,9 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     const res = await fetch(`${this.#endpoint(collection)}?${params.toString()}`, {
       headers: { ...this.#headers(), Prefer: 'count=exact', 'Range-Unit': 'items', Range: '0-0' },
     });
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`Supabase auth denied (${res.status}) for ${collection}`);
+    }
     if (!res.ok) return 0;
     const range = res.headers.get('content-range') || '';
     const m = range.match(/\/(\d+)/);

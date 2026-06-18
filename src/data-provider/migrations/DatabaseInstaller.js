@@ -9,17 +9,48 @@ export const databaseInstaller = {
 
   async detect() {
     const provider = getDatabaseProvider();
+    const providerName = this.provider();
+
     const version = await schemaVersionManager.getVersion();
+    console.log('[LexAI detect] schema version:', version, 'provider:', providerName);
+
     const present = [];
     const missing = [];
     let coreMissing = false;
+    let authError = null;
+
     for (const s of listSchemas()) {
-      const exists = await provider.collectionExists(s.collection).catch(() => false);
+      let exists = false;
+      try {
+        exists = await provider.collectionExists(s.collection);
+      } catch (e) {
+        if (e.message && e.message.includes('auth denied')) {
+          authError = authError || e.message;
+        }
+        exists = false;
+      }
       (exists ? present : missing).push(s.collection);
       if (!exists && s.core) coreMissing = true;
     }
+
+    console.log('[LexAI detect] present:', present, 'missing:', missing, 'coreMissing:', coreMissing, 'authError:', authError);
+
+    if (authError) {
+      console.warn('[LexAI detect] Supabase auth denied — check VITE_SUPABASE_ANON_KEY');
+      return {
+        provider: providerName,
+        installed: false,
+        version,
+        targetVersion: schemaVersionManager.targetVersion(),
+        present,
+        missing,
+        needsSetup: true,
+        authError,
+      };
+    }
+
     return {
-      provider: this.provider(),
+      provider: providerName,
       installed: version > 0 && !coreMissing,
       version,
       targetVersion: schemaVersionManager.targetVersion(),
@@ -31,13 +62,11 @@ export const databaseInstaller = {
 
   artifact() { return SchemaCompiler.installArtifact(this.provider()); },
 
-  // Install with per-step progress reporting.
-  // onProgress({ step, total, label, status })  status = 'working' | 'done' | 'error'
   async installSchema(onProgress) {
     const name = this.provider();
     const provider = getDatabaseProvider();
     const coreSchemas = listSchemas().filter((s) => s.core);
-    const totalSteps = coreSchemas.length + 2; // detect + seed = +2, no seed stamp
+    const totalSteps = coreSchemas.length + 2;
     let step = 0;
 
     const report = (label, status = 'working') => {
@@ -48,8 +77,6 @@ export const databaseInstaller = {
       report('Detect Provider');
 
       if (name === 'supabase') {
-        // Supabase browser clients CANNOT run DDL (no exec_sql RPC by default).
-        // Surface the SQL immediately instead of attempting a doomed RPC call.
         const artifact = SchemaCompiler.installArtifact('supabase');
         return {
           ok: false,
@@ -62,7 +89,6 @@ export const databaseInstaller = {
         };
       }
 
-      // local / firebase / mongodb — install each core collection
       for (const s of coreSchemas) {
         report(`Create ${s.collection}`);
         const r = await provider.ensureCollection(s.collection, s);
@@ -79,7 +105,6 @@ export const databaseInstaller = {
         report(`Create ${s.collection}`, 'done');
       }
 
-      // Stamp version after successful structural install
       await schemaVersionManager.stamp(schemaVersionManager.targetVersion(), 'install');
 
       return {
