@@ -13,7 +13,7 @@ export default function SetupGate({ children }) {
   const check = async () => {
     try {
       const res = await databaseManagerLogic.detect();
-      if (!res.ok || res.value.needsSetup) {
+      if (!res.ok || res.data.needsSetup) {
         // Detection failed OR schema not fully installed — show setup wizard.
         // DO NOT fall through to userService.list() — it will 404 on an empty
         // database (fresh Supabase has no tables, so /rest/v1/users returns 404).

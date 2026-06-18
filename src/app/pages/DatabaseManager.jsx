@@ -31,7 +31,7 @@ export default function DatabaseManager() {
   const load = useCallback(async () => {
     const res = await databaseManagerLogic.overview();
     if (res.ok) {
-      setData(res.value);
+      setData(res.data);
       setSql(databaseManagerLogic.installSql() || '');
     } else {
       toast.push(`Could not load database status: ${res.error}`, 'error');
@@ -46,7 +46,7 @@ export default function DatabaseManager() {
     const res = await fn();
     setBusy('');
     if (res?.ok) {
-      toast.push(typeof successMsg === 'function' ? successMsg(res.value) : successMsg, 'success');
+      toast.push(typeof successMsg === 'function' ? successMsg(res.data) : successMsg, 'success');
       load();
     } else {
       toast.push(res?.error || 'Action failed.', 'error');
@@ -57,7 +57,7 @@ export default function DatabaseManager() {
     setBusy('diff');
     const res = await databaseManagerLogic.diffSchema();
     setBusy('');
-    if (res.ok) setDiffReport(res.value);
+    if (res.ok) setDiffReport(res.data);
     else toast.push(res.error || 'Schema diff failed.', 'error');
   };
 

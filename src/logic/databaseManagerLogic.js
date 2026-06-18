@@ -71,11 +71,14 @@ export const databaseManagerLogic = {
   },
 
   // ---- install (Setup Wizard "Install Database") ----
-  async install(user) {
+  async install(user, onProgress) {
     try {
-      const struct = await databaseAdminService.installSchemaStructures();
-      if (struct.needsManual) {
-        return ok({ installed: false, needsManual: true, sql: struct.sql, reason: struct.reason });
+      const struct = await databaseAdminService.installSchemaStructures(onProgress);
+      if (!struct || struct.needsManual) {
+        return ok({ installed: false, needsManual: true, sql: struct?.sql, reason: struct?.reason });
+      }
+      if (!struct.success) {
+        return ok({ installed: false, needsManual: false, error: struct.error || 'Install failed', failedStep: struct.failedStep, completedSteps: struct.completedSteps });
       }
       // Seed system data: roles + super-admin (authLogic = single source) +
       // the permission catalog. Demo data is offered separately.
