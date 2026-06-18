@@ -3,13 +3,13 @@ import { Field, Input, Textarea, Select } from './Field.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
+import CaseTypeManager from './CaseTypeManager.jsx';
 import { CASE_TAGS } from '@/constants/caseFolders.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCourts } from '@/hooks/useCourts.js';
 
 const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: currentYear - 1949 + 1 }, (_, i) => String(1949 + i));
 
 function blank() {
   return {
@@ -24,9 +24,10 @@ function blank() {
 
 export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Save' }) {
   const { stages, names, refresh } = useCaseStages();
-  const { caseTypes } = useCaseTypes();
+  const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { courtNames } = useCourts();
   const [stageMgr, setStageMgr] = useState(false);
+  const [caseTypeMgr, setCaseTypeMgr] = useState(false);
   const [form, setForm] = useState(() => {
     const base = { ...blank(), ...(initial || {}) };
     if (initial?.parties) {
@@ -78,19 +79,20 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   return (
     <div>
       <div className="input-row">
-        <Field label="Case Type">
-          <Select value={form.case_type} onChange={(e) => set('case_type', e.target.value)}>
-            <option value="">Select case type…</option>
-            {caseTypeNames.map((s) => <option key={s} value={s}>{s}</option>)}
-          </Select>
+        <Field label={<span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>Case Type</span>}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Select value={form.case_type} onChange={(e) => set('case_type', e.target.value)}>
+              <option value="">Select case type…</option>
+              {caseTypeNames.map((s) => <option key={s} value={s}>{s}</option>)}
+            </Select>
+            <button type="button" className="btn btn--ghost btn--sm" title="Manage case types" onClick={() => setCaseTypeMgr(true)}><Icon name="gear" size={15} /></button>
+          </div>
         </Field>
         <Field label="Case Number">
           <Input type="number" min="1" value={form.case_number} onChange={(e) => set('case_number', e.target.value)} placeholder="42" />
         </Field>
         <Field label="Year">
-          <Select value={form.case_year} onChange={(e) => set('case_year', e.target.value)}>
-            {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}</option>)}
-          </Select>
+          <Input type="text" value={form.case_year} onChange={(e) => set('case_year', e.target.value)} placeholder="2026" />
         </Field>
       </div>
 
@@ -103,7 +105,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       )}
 
       <Field label="Title / Cause Title">
-        <Input value={autoTitle || form.title} onChange={(e) => set('title', e.target.value)} placeholder="Auto-generated from parties" readOnly={!!autoTitle} />
+        <Input value={autoTitle || form.title} placeholder="Auto-generated from parties" readOnly />
       </Field>
 
       <div className="input-row">
@@ -123,7 +125,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             {courtNames.map((c) => <option key={c}>{c}</option>)}
           </Select>
         </Field>
-        <Field label="Court Name" hint="e.g. Athgarh — shown as “Court Type, Court Name”.">
+        <Field label="Court Name">
           <Input value={form.courtName} onChange={(e) => set('courtName', e.target.value)} placeholder="Athgarh" />
         </Field>
       </div>
@@ -163,6 +165,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       </div>
 
       <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refresh} />
+      <CaseTypeManager open={caseTypeMgr} caseTypes={caseTypes} onClose={() => setCaseTypeMgr(false)} onChanged={refreshCaseTypes} />
     </div>
   );
 }
