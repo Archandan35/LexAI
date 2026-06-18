@@ -22,6 +22,7 @@ export default function BootstrapAdmin() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const mountedRef = useRef(true);
+  const timedOutRef = useRef(false);
 
   useEffect(() => {
     return () => { mountedRef.current = false; };
@@ -34,61 +35,40 @@ export default function BootstrapAdmin() {
     setLoading(true);
 
     const timer = setTimeout(() => {
-      if (mountedRef.current) {
-        console.warn('[Bootstrap] TIMEOUT — 10s elapsed');
-        setTimedOut(true);
-        setLoading(false);
-        setError('Request timed out after 10 seconds. Check that the database provider is reachable and VITE_SUPABASE_ANON_KEY is correct.');
-      }
+      if (!mountedRef.current) return;
+      timedOutRef.current = true;
+      console.warn('[Bootstrap] TIMEOUT — 10s elapsed');
+      setTimedOut(true);
+      setError('Request timed out. Check that the database provider is reachable and VITE_SUPABASE_ANON_KEY is correct.');
     }, TIMEOUT_MS);
+
+    let shouldNavigate = false;
+    let navTarget = '';
 
     try {
       console.log('[Bootstrap] initialize start');
 
-      // 1. Check users
       console.log('[Bootstrap] loading users');
-      let users = [];
-      try {
-        users = await userService.list();
-      } catch (e) {
-        console.warn('[Bootstrap] users list error:', e.message);
-        setError(`Failed to load users: ${e.message}`);
-        setLoading(false);
-        clearTimeout(timer);
-        return;
-      }
+      const users = await userService.list();
       console.log('[Bootstrap] users count:', users.length);
 
       if (users.length > 0) {
         console.log('[Bootstrap] users exist — redirecting to login');
-        nav('/login', { replace: true });
-        clearTimeout(timer);
+        shouldNavigate = true;
+        navTarget = '/login';
         return;
       }
 
-      // 2. Check roles
       console.log('[Bootstrap] loading roles');
-      let roles = [];
-      try {
-        roles = await roleService.list();
-      } catch (e) {
-        console.warn('[Bootstrap] roles list error:', e.message);
-        setError(`Failed to load roles: ${e.message}`);
-        setLoading(false);
-        clearTimeout(timer);
-        return;
-      }
+      const roles = await roleService.list();
       console.log('[Bootstrap] roles count:', roles.length);
 
       if (!roles || roles.length === 0) {
         console.warn('[Bootstrap] NO ROLES FOUND');
         setError('No roles found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
-        setLoading(false);
-        clearTimeout(timer);
         return;
       }
 
-      // 3. Check super_admin role exists
       console.log('[Bootstrap] checking super_admin role');
       const hasSuperAdmin = roles.some((r) => r.code === 'super_admin');
       console.log('[Bootstrap] super_admin role found:', hasSuperAdmin);
@@ -96,23 +76,19 @@ export default function BootstrapAdmin() {
       if (!hasSuperAdmin) {
         console.warn('[Bootstrap] super_admin role missing');
         setError('super_admin role not found. Installation incomplete. Run "Complete Installation" in the Setup Wizard.');
-        setLoading(false);
-        clearTimeout(timer);
         return;
       }
 
-      // Everything ready — show form
       console.log('[Bootstrap] rendering form');
-      setLoading(false);
-      clearTimeout(timer);
     } catch (e) {
       console.error('[Bootstrap] initialize error:', e);
-      if (mountedRef.current) {
-        setError(e.message || 'Failed to initialize.');
-        setLoading(false);
-      }
+      if (!timedOutRef.current) setError(e.message || 'Failed to initialize.');
+    } finally {
       clearTimeout(timer);
+      if (mountedRef.current) setLoading(false);
     }
+
+    if (shouldNavigate) nav(navTarget, { replace: true });
   }, [nav]);
 
   useEffect(() => { initialize(); }, [initialize]);
@@ -170,7 +146,7 @@ export default function BootstrapAdmin() {
               <span>{error}</span>
             </div>
           )}
-          {timeout && (
+          {timedOut && (
             <div className="dm-toolbar-mt">
               <Button variant="primary" className="btn--block" icon="refresh" onClick={() => window.location.reload()}>
                 Retry
