@@ -8,9 +8,14 @@ export function useCourts() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const list = await courtLogic.list();
-    setCourts(list);
-    setCourtNames(list.map((c) => c.name));
+    try {
+      const list = await courtLogic.list();
+      setCourts(list);
+      setCourtNames(list.map((c) => c.name));
+    } catch {
+      setCourts([]);
+      setCourtNames([]);
+    }
     setLoading(false);
   }, []);
 

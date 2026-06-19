@@ -7,10 +7,12 @@
 // defaults/validation). Services import repositories; repositories never import
 // services. This keeps the dependency arrow pointing down and honours R4/R5.
 //
-// Auto‑provisioning: on write failure the repository checks whether the missing
-// table exists — if not it calls ensureCollection then retries. It also detects
-// unknown fields in the record payload and calls ensureColumn so the schema
-// stays in sync without manual migration steps.
+// Auto‑provisioning: on ANY failure (read or write) the repository checks
+// whether the missing table exists — if not it calls ensureCollection then
+// retries. This means unused collections never hit the database at all; the
+// first access auto-creates the table. It also detects unknown fields in write
+// payloads and calls ensureColumn so the schema stays in sync without manual
+// migration steps.
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
 import { nowISO } from '@/utils/id.js';
@@ -44,60 +46,70 @@ async function ensureRecordColumns(db, collection, record) {
   }
 }
 
+// Retry a provider operation once after provisioning the collection if it fails.
+async function withProvisioning(provider, collection, fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    await ensureCollectionExists(provider, collection);
+    return fn();
+  }
+}
+
 export function createRepository(collection) {
-  const db = () => getDatabaseProvider();
+  const provider = () => getDatabaseProvider();
 
   return {
     collection,
 
-    // ---- reads ----
-    getAll: (query = {}) => db().list(collection, query),
-    getById: (id) => db().get(collection, id),
-    query: (query = {}) => db().list(collection, query),
-    count: (query = {}) => db().count(collection, query),
+    // ---- reads with auto‑provisioning ----
+    getAll: (query = {}) => withProvisioning(provider(), collection, () => provider().list(collection, query)),
+    getById: (id) => withProvisioning(provider(), collection, () => provider().get(collection, id)),
+    query: (query = {}) => withProvisioning(provider(), collection, () => provider().list(collection, query)),
+    count: (query = {}) => withProvisioning(provider(), collection, () => provider().count(collection, query)),
 
     // ---- writes with auto‑provisioning ----
     async create(record = {}) {
-      const provider = db();
+      const p = provider();
       const enriched = applyDefaults(collection, record);
       try {
-        return await provider.create(collection, enriched);
+        return await p.create(collection, enriched);
       } catch (err) {
-        await ensureCollectionExists(provider, collection);
-        await ensureRecordColumns(provider, collection, enriched);
-        return provider.create(collection, enriched);
+        await ensureCollectionExists(p, collection);
+        await ensureRecordColumns(p, collection, enriched);
+        return p.create(collection, enriched);
       }
     },
 
     async update(id, patch = {}) {
-      const provider = db();
+      const p = provider();
       const stamped = { ...patch, updatedAt: nowISO() };
       try {
-        return await provider.update(collection, id, stamped);
+        return await p.update(collection, id, stamped);
       } catch (err) {
-        await ensureCollectionExists(provider, collection);
-        await ensureRecordColumns(provider, collection, stamped);
-        return provider.update(collection, id, stamped);
+        await ensureCollectionExists(p, collection);
+        await ensureRecordColumns(p, collection, stamped);
+        return p.update(collection, id, stamped);
       }
     },
 
-    delete: (id) => db().remove(collection, id),
+    delete: (id) => provider().remove(collection, id),
 
     // ---- bulk ----
     async bulkCreate(records = []) {
-      const provider = db();
+      const p = provider();
       const enriched = records.map((r) => applyDefaults(collection, r));
       try {
-        return await provider.bulkCreate(collection, enriched);
+        return await p.bulkCreate(collection, enriched);
       } catch (err) {
-        await ensureCollectionExists(provider, collection);
-        await ensureRecordColumns(provider, collection, enriched[0] || {});
-        return provider.bulkCreate(collection, enriched);
+        await ensureCollectionExists(p, collection);
+        await ensureRecordColumns(p, collection, enriched[0] || {});
+        return p.bulkCreate(collection, enriched);
       }
     },
 
-    bulkDelete: (ids = []) => db().bulkRemove(collection, ids),
-    clear: () => db().clear(collection),
+    bulkDelete: (ids = []) => provider().bulkRemove(collection, ids),
+    clear: () => provider().clear(collection),
 
     // ---- helpers ----
     validate: (record = {}) => validateRecord(collection, record),

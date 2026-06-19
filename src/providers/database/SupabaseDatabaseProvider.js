@@ -150,13 +150,32 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     } catch { return null; }
   }
 
-  // Postgres tables require DDL, which the anon REST key cannot run. We probe
-  // and report honestly: existing → ok; missing → needs the SQL in
-  // SupabaseMigration.sqlFor() executed once in the SQL editor (or via an
-  // `exec_sql` RPC if you add one). We never silently claim success.
-  async ensureCollection(name) {
+  // Try to create the table via exec_sql RPC if a schema is provided. Falls
+  // back to needsManual when the RPC doesn't exist or DDL is denied.
+  async ensureCollection(name, schema) {
     const exists = await this.collectionExists(name);
-    return { created: false, ok: exists, needsManual: !exists };
+    if (exists) return { created: false, ok: true };
+
+    if (schema && schema.fields) {
+      const PG_TYPE_MAP = { string: 'text', number: 'numeric', boolean: 'boolean', datetime: 'timestamptz', array: 'jsonb', object: 'jsonb' };
+      const columns = Object.entries(schema.fields)
+        .map(([field, type]) => `"${field}" ${PG_TYPE_MAP[type] || 'text'}`)
+        .join(', ');
+      const sql = `CREATE TABLE IF NOT EXISTS "${name}" (${columns});`;
+      try {
+        const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+          method: 'POST',
+          headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: sql }),
+        });
+        if (res.ok) return { created: true, ok: true };
+        return { created: false, ok: false, needsManual: true, sql };
+      } catch {
+        return { created: false, ok: false, needsManual: true, sql };
+      }
+    }
+
+    return { created: false, ok: false, needsManual: true };
   }
 
   // Best-effort column creation via exec_sql RPC. If the RPC function does not

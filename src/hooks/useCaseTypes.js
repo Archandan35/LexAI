@@ -7,7 +7,11 @@ export function useCaseTypes() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setCaseTypes(await caseTypeLogic.list());
+    try {
+      setCaseTypes(await caseTypeLogic.list());
+    } catch {
+      setCaseTypes([]);
+    }
     setLoading(false);
   }, []);
 

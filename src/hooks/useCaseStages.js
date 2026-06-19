@@ -7,7 +7,12 @@ export function useCaseStages() {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    setStages(await caseStageLogic.list());
+    setLoading(true);
+    try {
+      setStages(await caseStageLogic.list());
+    } catch {
+      setStages([]);
+    }
     setLoading(false);
   }, []);
 
