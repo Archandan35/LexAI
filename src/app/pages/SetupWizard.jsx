@@ -153,7 +153,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
     if (detectRes.ok) {
       setDetect(detectRes.data);
       goToStep(3);
-      const p = InstallationPlanner.plan(detectRes.data);
+      const p = await InstallationPlanner.plan(detectRes.data);
       setPlan(p);
       goToStep(4);
       if (p.needsManual && p.sql) {
@@ -197,7 +197,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
     if (!res.ok) { setError(res.error || 'Connection failed. Backend API may be unavailable.'); return; }
     goToStep(3);
     setBusy(true);
-    const p = InstallationPlanner.plan({ needsSetup: true });
+    const p = await InstallationPlanner.plan({ needsSetup: true });
     setPlan(p);
     setBusy(false);
     goToStep(4);
@@ -210,7 +210,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
     try {
       const res = await databaseManagerLogic.detect();
       if (!res.ok) { setError(res.error || 'Detection failed.'); setBusy(false); return; }
-      const p = InstallationPlanner.plan(res.data);
+      const p = await InstallationPlanner.plan(res.data);
       setPlan(p);
       const sqlText = p.sql || '-- No SQL generated for this provider.\n-- Your provider creates collections automatically.';
       setCopySql(sqlText);
@@ -462,9 +462,9 @@ export default function SetupWizard({ detectError: propDetectError }) {
                   <Button variant="ghost" icon="download" size="sm" onClick={handleDownloadSql}>
                     Download schema.sql
                   </Button>
-                  {detect?.provider === 'supabase' && (
+                  {backendConfig.sqlEditorUrl(detect?.provider) && (
                     <Button variant="ghost" icon="link" size="sm"
-                      onClick={() => window.open('https://console.supabase.com/project/_/sql/new', '_blank', 'noopener')}>
+                      onClick={() => window.open(backendConfig.sqlEditorUrl(detect?.provider), '_blank', 'noopener')}>
                       Open SQL Editor
                     </Button>
                   )}

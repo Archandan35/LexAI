@@ -15,6 +15,7 @@ export default function SystemSettings() {
   const links = [
     { label: 'Database Manager', icon: 'database', to: '/admin/database', desc: 'Provider, schema, seed & .udb import/export' },
     { label: 'Schema Manager', icon: 'database', to: '/admin/schema', desc: 'Compare, sync, repair, export & import schemas' },
+    { label: 'Schema Mapping', icon: 'database', to: '/admin/schema-mapping', desc: 'Map LexAI entities to provider table names' },
     { label: 'Backup & Recovery', icon: 'database', to: '/admin/backup', desc: 'Snapshots, retention, restore' },
     { label: 'Storage & Sync', icon: 'database', to: '/admin/storage', desc: 'Cloud storage for case & draft files' },
     { label: 'Environment & API', icon: 'gear', to: '/admin/env-api', desc: 'Env variables, secrets & API config' },

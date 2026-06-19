@@ -1,12 +1,18 @@
 import { listSchemas, SCHEMA_VERSION, coreCollections } from '@/data-provider/schema/index.js';
 import { SchemaCompiler } from '@/data-provider/schema/SchemaCompiler.js';
 import { config } from '@/config/config.js';
+import { InstallerStateService } from '@/services/installerStateService.js';
+import { ProviderCapabilitiesService } from '@/services/providerCapabilitiesService.js';
+import { SchemaMappingService } from '@/services/schemaMappingService.js';
 
 export const InstallationPlanner = {
-  plan(detect) {
+  async plan(detect) {
     const provider = config.providers.database || 'local';
     const allSchemas = listSchemas();
     const steps = [];
+
+    // Check installer state for quick status
+    const state = await InstallerStateService.getState();
 
     if (!detect || detect.needsSetup) {
       steps.push({ id: 'detect', label: 'Detect Provider', type: 'detect' });
@@ -38,6 +44,33 @@ export const InstallationPlanner = {
       });
     }
 
+    // Registry verification step
+    if (detect?.installed) {
+      steps.push({
+        id: 'registries',
+        label: 'Verify registries',
+        type: 'registries',
+      });
+    }
+
+    // Schema mapping verification
+    if (detect?.installed) {
+      steps.push({
+        id: 'mappings',
+        label: 'Verify schema mappings',
+        type: 'mappings',
+      });
+    }
+
+    // Security verification
+    if (detect?.installed) {
+      steps.push({
+        id: 'security',
+        label: 'Verify security',
+        type: 'security',
+      });
+    }
+
     if (detect?.partialInstall || detect?.installed === false) {
       steps.push({ id: 'seed', label: 'Seed default data', type: 'seed' });
     }
@@ -52,17 +85,20 @@ export const InstallationPlanner = {
 
     steps.push({ id: 'verify', label: 'Verify installation', type: 'verify' });
 
-    const sql = provider === 'supabase' ? SchemaCompiler.installArtifact('supabase') : null;
+    const artifact = SchemaCompiler.installArtifact(provider);
+    const hasSql = artifact?.text?.length > 0;
 
     return {
       provider,
-      currentVersion: detect?.version || 0,
+      currentVersion: state.schema_version || detect?.version || 0,
       targetVersion: SCHEMA_VERSION,
       steps,
       totalSteps: steps.length,
-      needsManual: provider === 'supabase' && (detect?.needsSetup || !detect?.installed),
+      needsManual: hasSql && (detect?.needsSetup || !detect?.installed),
       partialInstall: detect?.partialInstall || false,
-      sql: sql?.text || null,
+      sql: hasSql ? artifact.text : null,
+      state,
+      capabilities,
     };
   },
 

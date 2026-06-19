@@ -32,6 +32,10 @@ import { SchemaMetaSchema } from './schemaMeta.schema.js';
 import { CaseTypesSchema } from './caseTypes.schema.js';
 import { CourtsSchema } from './courts.schema.js';
 
+// Infrastructure schemas — registers system tables in EntityRegistry for
+// schema diff/repair compatibility without making them visible to the installer.
+import './infrastructure.schema.js';
+
 // Order matters for installation: parents (referenced collections) first so that
 // relations are satisfiable on backends that enforce them.
 export const schemas = {
@@ -61,7 +65,7 @@ export const schemas = {
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 18;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

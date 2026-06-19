@@ -2,8 +2,10 @@ import AuthProvider from './AuthProvider.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { hashPassword, verifyPassword, randomHex } from '@/utils/crypto.js';
 import { nowISO } from '@/utils/id.js';
+import { EntityRegistry } from '@/core/EntityRegistry.js';
 
 const SESSION_KEY = 'lexai.session.v1';
+const USERS_TABLE = () => EntityRegistry.providerTable('users');
 
 // LocalAuthProvider — credential auth against the `users` collection in the
 // active DatabaseProvider, with the session persisted in localStorage. DEMO-grade
@@ -13,7 +15,7 @@ export default class LocalAuthProvider extends AuthProvider {
 
   async #findUser(identifier) {
     const id = String(identifier || '').trim().toLowerCase();
-    const users = await this.#db().list('users');
+    const users = await this.#db().list(USERS_TABLE());
     return users.find(
       (u) => (u.email || '').toLowerCase() === id || (u.username || '').toLowerCase() === id
     ) || null;
@@ -26,7 +28,7 @@ export default class LocalAuthProvider extends AuthProvider {
     const valid = await verifyPassword(password, user.salt, user.passwordHash);
     if (!valid) throw new Error('Incorrect password.');
 
-    await this.#db().update('users', user.id, { lastLoginAt: nowISO() });
+    await this.#db().update(USERS_TABLE(), user.id, { lastLoginAt: nowISO() });
     const token = randomHex(24);
     const session = { token, userId: user.id, issuedAt: nowISO() };
     this.#persistSession(session);
@@ -41,7 +43,7 @@ export default class LocalAuthProvider extends AuthProvider {
   async getSession() {
     const session = this.#readSession();
     if (!session) return null;
-    const user = await this.#db().get('users', session.userId);
+    const user = await this.#db().get(USERS_TABLE(), session.userId);
     if (!user || (user.status && user.status !== 'Active')) {
       await this.signOut();
       return null;
@@ -59,7 +61,7 @@ export default class LocalAuthProvider extends AuthProvider {
 
   async changePassword(userId, newPassword) {
     const { salt, hash } = await hashPassword(newPassword);
-    await this.#db().update('users', userId, { salt, passwordHash: hash, passwordUpdatedAt: nowISO() });
+    await this.#db().update(USERS_TABLE(), userId, { salt, passwordHash: hash, passwordUpdatedAt: nowISO() });
     return true;
   }
 

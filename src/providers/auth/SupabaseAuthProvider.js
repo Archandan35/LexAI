@@ -1,8 +1,10 @@
 import AuthProvider from './AuthProvider.js';
 import { config } from '@/config/config.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
+import { EntityRegistry } from '@/core/EntityRegistry.js';
 
-const SESSION_KEY = 'lexai.supabase.session.v1';
+const SESSION_KEY = 'lexai.auth.session.v1';
+const USERS_TABLE = () => EntityRegistry.providerTable('users');
 
 // SupabaseAuthProvider — talks directly to the GoTrue REST API on Supabase.
 // Handles session persistence, token refreshing, database user record linking.
@@ -12,7 +14,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
     this.url = config.credentials.supabaseUrl;
     this.key = config.credentials.supabaseAnonKey;
     if (!this.url || !this.key) {
-      console.warn('[LexAI] Supabase auth not configured; provider will fail on use.');
+      console.warn('[LexAI] Auth provider not configured; will fail on use.');
     }
   }
 
@@ -69,11 +71,10 @@ export default class SupabaseAuthProvider extends AuthProvider {
 
     // Verify / load database user record
     const db = getDatabaseProvider();
-    let dbUser = await db.get('users', userId);
+    let dbUser = await db.get(USERS_TABLE(), userId);
 
     if (!dbUser) {
-      // First login / missing DB record: create a synchronized user record in database.
-      const usersList = await db.list('users');
+      const usersList = await db.list(USERS_TABLE());
       const isFirst = usersList.length === 0;
 
       dbUser = {
@@ -88,13 +89,13 @@ export default class SupabaseAuthProvider extends AuthProvider {
         denies: [],
         createdAt: new Date().toISOString(),
       };
-      await db.create('users', dbUser);
+      await db.create(USERS_TABLE(), dbUser);
     } else {
       if (dbUser.status && dbUser.status !== 'Active') {
         throw new Error('This account is disabled. Contact an administrator.');
       }
       // Update last login
-      await db.update('users', userId, { lastLoginAt: new Date().toISOString() });
+      await db.update(USERS_TABLE(), userId, { lastLoginAt: new Date().toISOString() });
     }
 
     const session = { token: data.access_token, refreshToken: data.refresh_token, userId };
@@ -133,7 +134,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
 
       if (res.ok) {
         const db = getDatabaseProvider();
-        const dbUser = await db.get('users', session.userId);
+        const dbUser = await db.get(USERS_TABLE(), session.userId);
         if (!dbUser || (dbUser.status && dbUser.status !== 'Active')) {
           this.#clearSession();
           return null;
@@ -170,7 +171,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
         }
       }
     } catch (e) {
-      console.warn('[LexAI] Supabase restore session failed:', e);
+      console.warn('[LexAI] Auth restore session failed:', e);
     }
 
     this.#clearSession();

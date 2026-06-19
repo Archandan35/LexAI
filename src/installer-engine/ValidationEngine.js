@@ -2,17 +2,33 @@ import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { databaseHealthService } from '@/services/databaseHealthService.js';
 import { udbEngine } from '@/data-provider/udb/udbEngine.js';
 import { InstallationPlanner } from './InstallationPlanner.js';
+import { InstallerStateService } from '@/services/installerStateService.js';
+import { SchemaMappingService } from '@/services/schemaMappingService.js';
+import { ProviderCapabilitiesService } from '@/services/providerCapabilitiesService.js';
 
 export const ValidationEngine = {
   async validateInstallation() {
-    const [version, health, diff] = await Promise.all([
+    const [version, health, diff, state, mappings, caps] = await Promise.all([
       databaseAdminService.getVersion().catch(() => 0),
       databaseHealthService.scan().catch(() => null),
       databaseAdminService.diffSchema().catch(() => null),
+      InstallerStateService.getState().catch(() => null),
+      SchemaMappingService.listMappings().catch(() => []),
+      ProviderCapabilitiesService.getCapabilities().catch(() => ({})),
     ]);
 
     const issues = [];
     if (version === 0) issues.push({ type: 'error', message: 'Schema version is 0 — installation incomplete.' });
+
+    // Check installer state
+    if (state && state.install_status !== 'completed') {
+      issues.push({ type: 'error', message: `Installer state is "${state.install_status}" — installation not completed.` });
+    }
+
+    // Check registries
+    if (state && state.installer_version === 0) {
+      issues.push({ type: 'warning', message: 'Installer version is 0 — registries may not be populated.' });
+    }
 
     if (health && !health.healthy) {
       for (const issue of (health.issues || [])) {
@@ -29,12 +45,30 @@ export const ValidationEngine = {
       }
     }
 
+    // Check schema mappings
+    const conflicts = await SchemaMappingService.detectConflicts();
+    if (conflicts.length > 0) {
+      issues.push({ type: 'error', message: `Mapping conflicts: ${conflicts.map((c) => `${c.table} (${c.entities.join(', ')})`).join('; ')}` });
+    }
+
+    // Check capabilities
+    const providerName = databaseAdminService.providerName();
+    const providerCaps = caps[providerName];
+    if (providerCaps) {
+      const missing = Object.entries(providerCaps).filter(([, v]) => !v).map(([k]) => k);
+      if (missing.length > 0) {
+        issues.push({ type: 'info', message: `Unsupported features: ${missing.join(', ')}` });
+      }
+    }
+
     return {
       valid: issues.filter((i) => i.type === 'error').length === 0,
       version,
       targetVersion: databaseAdminService.targetVersion(),
       health: health ? { score: health.score, healthy: health.healthy, summary: health.summary } : null,
       diff,
+      state,
+      mappings: { count: mappings.length, conflicts: conflicts.length },
       issues,
       issueCount: issues.length,
     };

@@ -39,6 +39,20 @@ export const backendConfig = {
   resolve(path) {
     return this.configured ? `${this.base}${path}` : '';
   },
+
+  // SQL editor URL for the currently connected provider.
+  sqlEditorUrl(provider) {
+    const editors = {
+      supabase: 'https://console.supabase.com/project/_/sql/new',
+      postgresql: '',
+      mysql: '',
+      sqlite: '',
+      mongodb: '',
+      firebase: 'https://console.firebase.google.com/project/_/firestore',
+      local: '',
+    };
+    return editors[provider] || '';
+  },
 };
 
 export default backendConfig;

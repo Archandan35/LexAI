@@ -103,9 +103,4 @@ export default class DatabaseProvider {
     return counts;
   }
 
-  // ---- Case-centric convenience (kept for backward compatibility) ---------
-  getCase(id) { return this.get('cases', id); }
-  saveCase(record) { return this.create('cases', record); }
-  updateCase(id, patch) { return this.update('cases', id, patch); }
-  deleteCase(id) { return this.remove('cases', id); }
 }
