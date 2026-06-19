@@ -490,7 +490,7 @@ function systemSqlUserRoleRegistry() {
     'alter table user_role_registry enable row level security;',
     '',
     '-- Admin-only policy on user_role_registry (lookup is via security-definer function)',
-    "create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin');",
+    "do $$ begin create policy user_role_registry_admin_all on user_role_registry for all to authenticated using (current_user_role() = 'admin') with check (current_user_role() = 'admin'); exception when duplicate_object then null; end; $$;",
   ].join('\n');
 }
 
@@ -554,7 +554,7 @@ function systemSqlForeignKeys() {
     "select safe_create_fk('case_folders', 'case_id', 'cases', 'id', 'fk_case_folders_case_id', 'CASCADE');",
     "select safe_create_fk('case_activity', 'case_id', 'cases', 'id', 'fk_case_activity_case_id', 'CASCADE');",
     "select safe_create_fk('audit_logs', 'user_id', 'users', 'id', 'fk_audit_logs_user_id', 'SET NULL');",
-    "alter table roles add constraint if not exists uq_roles_code unique (code);",
+    "do $$ begin alter table roles add constraint uq_roles_code unique (code); exception when duplicate_table then null; end; $$;",
     "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');",
     "select safe_create_fk('case_folders', 'parent_id', 'case_folders', 'id', 'fk_case_folders_parent_id', 'CASCADE');",
   ].join('\n');
@@ -815,7 +815,7 @@ function systemSqlRls() {
 // P3: All policy names follow {table}_{role}_{operation} convention — NO collisions
 // Each policy on each table has a UNIQUE name by including the operation (select/insert/update/delete)
 function systemSqlPolicies() {
-  return [
+  const raw = [
     '-- ============================================================',
     '-- 12. RLS POLICIES (P2 — TO authenticated + current_user_role(); P3 — unique names)',
     '-- ============================================================',
@@ -978,7 +978,12 @@ function systemSqlPolicies() {
     'create policy cause_list_templates_admin_all on cause_list_templates for all to authenticated using (current_user_role() = \'admin\') with check (current_user_role() = \'admin\');',
     'create policy cause_list_templates_manager_all on cause_list_templates for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
     'create policy cause_list_templates_user_select on cause_list_templates for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
-  ].join('\n');
+  ];
+  return raw.map(line =>
+    line.startsWith('create policy ')
+      ? `do $$ begin ${line} exception when duplicate_object then null; end; $$;`
+      : line
+  ).join('\n');
 }
 
 function systemSqlGrants() {
