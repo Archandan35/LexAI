@@ -11,6 +11,7 @@ import { ValidationEngine } from '@/installer-engine/ValidationEngine.js';
 import { UploadAnalyzer } from '@/installer-engine/UploadAnalyzer.js';
 import BackendStatusPanel from '@/components/BackendStatusPanel.jsx';
 import { backendConfig } from '@/config/backend.js';
+import { getDatabaseProvider } from '@/providers/database/index.js';
 
 const METHODS = [
   { id: 'simple', icon: 'bolt', label: 'Simple Setup', desc: 'Project URL + API key — ideal for Supabase' },
@@ -74,6 +75,10 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [plan, setPlan] = useState(null);
   const [installResult, setInstallResult] = useState(null);
   const [validateResult, setValidateResult] = useState(null);
+  const [execSqlSupported, setExecSqlSupported] = useState(false);
+  const [execSqlBusy, setExecSqlBusy] = useState(false);
+  const [execSqlError, setExecSqlError] = useState('');
+  const [execSqlDone, setExecSqlDone] = useState(false);
   const fileRef = useRef(null);
 
   // Simple Setup
@@ -199,18 +204,42 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
   // --- COPY-PASTE SETUP ---
   const handleGenerateSql = async () => {
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setExecSqlSupported(false); setExecSqlDone(false); setExecSqlError('');
     try {
       const res = await databaseManagerLogic.detect();
       if (!res.ok) { setError(res.error || 'Detection failed.'); setBusy(false); return; }
       const p = InstallationPlanner.plan(res.data);
       setPlan(p);
-      setCopySql(p.sql || '-- No SQL generated for this provider.\n-- Your provider creates collections automatically.');
+      const sqlText = p.sql || '-- No SQL generated for this provider.\n-- Your provider creates collections automatically.';
+      setCopySql(sqlText);
+      const provider = getDatabaseProvider();
+      setExecSqlSupported(typeof provider.execSql === 'function' && sqlText.length > 0);
       goToStep(3);
     } catch (e) {
       setError(e?.message || 'Generation failed.');
     }
     setBusy(false);
+  };
+
+  const handleExecuteSql = async () => {
+    setExecSqlBusy(true); setExecSqlError(''); setError('');
+    try {
+      const text = copySql || sql;
+      if (!text) { setExecSqlError('No SQL to execute.'); setExecSqlBusy(false); return; }
+      const res = await InstallationExecutor.executeSql(text);
+      if (!res.ok) {
+        setExecSqlError(res.error || 'SQL execution failed.');
+        setExecSqlBusy(false);
+        return;
+      }
+      setExecSqlDone(true);
+      setExecSqlBusy(false);
+      goToStep(5);
+      handleVerifySql();
+    } catch (e) {
+      setExecSqlError(e?.message || 'Execution failed unexpectedly.');
+      setExecSqlBusy(false);
+    }
   };
 
   const handleCopySql = async () => {
@@ -438,7 +467,29 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     </Button>
                   )}
                 </div>
-                {step >= 4 && (
+
+                {execSqlSupported && step < 5 && (
+                  <div className="dm-toolbar-mt">
+                    {execSqlError && (
+                      <div className="alert alert--warn" style={{ marginBottom: 10 }}>
+                        <Icon name="alert" size={16} />
+                        <span>{execSqlError}. You can still run the SQL manually.</span>
+                      </div>
+                    )}
+                    {execSqlDone ? (
+                      <div className="alert alert--success" style={{ marginBottom: 10 }}>
+                        <Icon name="check" size={16} />
+                        <span>SQL executed successfully via exec_sql RPC.</span>
+                      </div>
+                    ) : (
+                      <Button variant="primary" className="btn--block" icon="bolt" loading={execSqlBusy} onClick={handleExecuteSql}>
+                        Execute SQL Directly
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {step >= 4 && !execSqlBusy && (
                   <div className="dm-toolbar-mt">
                     <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handleVerifySql}>
                       I've run it — Verify
