@@ -77,7 +77,16 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
         headers: { ...this.#headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ sql }),
       });
-      return res.ok ? { ok: true } : { ok: false, error: await res.text().catch(() => 'Unknown error') };
+      if (!res.ok) return { ok: false, error: await res.text().catch(() => 'Unknown error') };
+      const body = await res.text().catch(() => '');
+      if (!body) return { ok: true };
+      try {
+        const data = JSON.parse(body);
+        // setof jsonb — PostgREST returns an array
+        return { ok: true, data: Array.isArray(data) ? data : [data] };
+      } catch {
+        return { ok: true };
+      }
     } catch (e) {
       return { ok: false, error: e.message };
     }

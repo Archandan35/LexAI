@@ -135,9 +135,10 @@ export const VerificationEngine = {
     for (const fn of REQUIRED_FUNCTIONS) {
       try {
         const res = await provider.execSql(
-          `select exists(select 1 from pg_proc where proname = '${fn.replace(/'/g, "''")}') as exists_flag;`
+          `select row_to_json(t) from (select exists(select 1 from pg_proc where proname = '${fn.replace(/'/g, "''")}') as exists_flag) t;`
         );
         if (!res || !res.ok) { missing.push(fn); }
+        else if (res.data && res.data[0]?.exists_flag === false) { missing.push(fn); }
       } catch { missing.push(fn); }
     }
     const ok = missing.length === 0;
@@ -157,9 +158,10 @@ export const VerificationEngine = {
     for (const fk of REQUIRED_FKS) {
       try {
         const res = await provider.execSql(
-          `select exists(select 1 from pg_constraint where conname = '${fk.replace(/'/g, "''")}') as exists_flag;`
+          `select row_to_json(t) from (select exists(select 1 from pg_constraint where conname = '${fk.replace(/'/g, "''")}') as exists_flag) t;`
         );
         if (!res || !res.ok) { missing.push(fk); }
+        else if (res.data && res.data[0]?.exists_flag === false) { missing.push(fk); }
       } catch { missing.push(fk); }
     }
     const ok = missing.length === 0;
@@ -179,9 +181,10 @@ export const VerificationEngine = {
     for (const idx of REQUIRED_INDEXES) {
       try {
         const res = await provider.execSql(
-          `select exists(select 1 from pg_indexes where indexname = '${idx.replace(/'/g, "''")}') as exists_flag;`
+          `select row_to_json(t) from (select exists(select 1 from pg_indexes where indexname = '${idx.replace(/'/g, "''")}') as exists_flag) t;`
         );
         if (!res || !res.ok) { missing.push(idx); }
+        else if (res.data && res.data[0]?.exists_flag === false) { missing.push(idx); }
       } catch { missing.push(idx); }
     }
     const ok = missing.length === 0;
@@ -205,9 +208,10 @@ export const VerificationEngine = {
     for (const pol of expected) {
       try {
         const res = await provider.execSql(
-          `select exists(select 1 from pg_policies where policyname = '${pol.replace(/'/g, "''")}') as exists_flag;`
+          `select row_to_json(t) from (select exists(select 1 from pg_policies where policyname = '${pol.replace(/'/g, "''")}') as exists_flag) t;`
         );
         if (!res || !res.ok) { missing.push(pol); }
+        else if (res.data && res.data[0]?.exists_flag === false) { missing.push(pol); }
       } catch { missing.push(pol); }
     }
     const ok = missing.length === 0;
