@@ -10,13 +10,13 @@ export const config = {
     version: '1.0.0',
   },
   providers: {
-    ai: env.VITE_AI_PROVIDER || 'mock',
+    ai: env.VITE_AI_PROVIDER || '',
     auth: env.VITE_AUTH_PROVIDER || 'local',
     database: env.VITE_DATABASE_PROVIDER || 'local',
     storage: env.VITE_STORAGE_PROVIDER || 'local',
     search: env.VITE_SEARCH_PROVIDER || 'local',
     citation: env.VITE_CITATION_PROVIDER || 'local',
-    ocr: env.VITE_OCR_PROVIDER || 'mock',
+    ocr: env.VITE_OCR_PROVIDER || '',
     preferences: env.VITE_PREFERENCES_PROVIDER || 'local',
   },
   credentials: {

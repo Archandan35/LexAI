@@ -1,15 +1,13 @@
 import CitationProvider from './CitationProvider.js';
-import { seedJudgments } from '@/database/seed.js';
 import { VERIFICATION_STATUS } from '@/constants/messages.js';
 
-// LocalCitationProvider — retrieves from a local index of REAL reported
-// judgments (see seed.js). It only ever returns authorities that exist in the
-// index; it cannot fabricate. Production swaps this for Indian Kanoon / CaseMine
-// / Verdictum / court portals behind the identical contract.
+// LocalCitationProvider — local index. No hardcoded judgments; the index is
+// empty by default. Production swaps this for Indian Kanoon / CaseMine /
+// Verdictum / court portals behind the identical contract.
 export default class LocalCitationProvider extends CitationProvider {
   constructor() {
     super();
-    this.index = seedJudgments;
+    this.index = [];
   }
 
   #score(j, query) {

@@ -159,6 +159,39 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return { created: false, ok: exists, needsManual: !exists };
   }
 
+  // Best-effort column creation via exec_sql RPC. If the RPC function does not
+  // exist on the Supabase project the call silently fails (DDL from the browser
+  // requires a custom pgrpc function). Returns { created, ok, sql } so callers
+  // can surface the SQL for manual execution.
+  async ensureColumn(collection, column, type) {
+    const sql = `ALTER TABLE "${collection}" ADD COLUMN IF NOT EXISTS "${column}" ${type};`;
+    try {
+      const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: sql }),
+      });
+      if (res.ok) return { created: true, ok: true, sql };
+      return { created: false, ok: false, sql, needsManual: true };
+    } catch {
+      return { created: false, ok: false, sql, needsManual: true };
+    }
+  }
+
+  // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).
+  async execSql(query) {
+    try {
+      const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      return res.ok ? { ok: true } : { ok: false, error: await res.text().catch(() => 'Unknown error') };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
   async remove(collection, id) {
     const res = await fetch(`${this.#endpoint(collection)}?id=eq.${id}`, {
       method: 'DELETE', headers: this.#headers(),

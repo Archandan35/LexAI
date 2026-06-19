@@ -351,20 +351,6 @@ export default function DatabaseManager() {
         </div>
         <div className="toolbar-row dm-toolbar-mt">
           <PermissionGate perm="settings.manageSettings">
-            <Button icon="bolt" loading={busy === 'seed'}
-              onClick={() => run('seed', () => databaseManagerLogic.seedDemo(user), 'Demo data seeded.')}>
-              Seed Demo Data
-            </Button>
-          </PermissionGate>
-          <PermissionGate perm="settings.manageSettings">
-            <Button variant="ghost" icon="refresh" loading={busy === 'reset'}
-              onClick={() => run('reset', () => databaseManagerLogic.factoryReset(user),
-                'Factory reset complete.',
-                { confirm: 'Factory Reset wipes ALL data and restores seed roles, admin and demo data. Continue?' })}>
-              Factory Reset
-            </Button>
-          </PermissionGate>
-          <PermissionGate perm="settings.manageSettings">
             <Button variant="danger" icon="trash" loading={busy === 'clear'}
               onClick={() => run('clear', () => databaseManagerLogic.clearDatabase(user),
                 'Database cleared.',

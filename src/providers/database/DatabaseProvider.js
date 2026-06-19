@@ -72,6 +72,11 @@ export default class DatabaseProvider {
   // eslint-disable-next-line no-unused-vars
   async ensureCollection(name, schema) { return { created: false, ok: true }; }
 
+  // Ensure a column exists on a table. Default no-op; providers with DDL access
+  // (e.g. Supabase) override to execute ALTER TABLE ADD COLUMN IF NOT EXISTS.
+  // eslint-disable-next-line no-unused-vars
+  async ensureColumn(collection, column, type) { return { created: false, ok: true }; }
+
   // ---- Snapshot / restore (for backup + .udb, provider-agnostic) ----------
   // Read every given collection into a plain object { name: rows[] }.
   async snapshot(collections = []) {

@@ -6,8 +6,42 @@
 // only the provider FACTORY (never an SDK) and the universal schema (for
 // defaults/validation). Services import repositories; repositories never import
 // services. This keeps the dependency arrow pointing down and honours R4/R5.
+//
+// Auto‑provisioning: on write failure the repository checks whether the missing
+// table exists — if not it calls ensureCollection then retries. It also detects
+// unknown fields in the record payload and calls ensureColumn so the schema
+// stays in sync without manual migration steps.
 import { getDatabaseProvider } from '@/providers/database/index.js';
-import { applyDefaults, validateRecord } from '@/data-provider/schema/index.js';
+import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
+
+async function ensureCollectionExists(db, collection) {
+  const exists = await db.collectionExists(collection).catch(() => false);
+  if (!exists) {
+    const schema = getSchema(collection);
+    await db.ensureCollection(collection, schema || {}).catch(() => {});
+  }
+  return exists;
+}
+
+async function ensureRecordColumns(db, collection, record) {
+  const schema = getSchema(collection);
+  if (!schema || typeof db.listColumns !== 'function') return;
+  const liveColumns = await db.listColumns(collection).catch(() => null);
+  if (!liveColumns) return;
+  const liveNames = new Set(liveColumns.map((c) => c.name.toLowerCase()));
+  const PG_TYPE_MAP = { string: 'text', number: 'numeric', boolean: 'boolean', datetime: 'timestamptz', array: 'jsonb', object: 'jsonb', json: 'jsonb' };
+
+  for (const [field, val] of Object.entries(record)) {
+    if (field === 'id') continue;
+    if (!liveNames.has(field.toLowerCase())) {
+      const fieldType = schema.fields?.[field] || (typeof val === 'number' ? 'numeric' : 'text');
+      const canonicalType = PG_TYPE_MAP[fieldType] || fieldType;
+      // eslint-disable-next-line no-await-in-loop
+      await db.ensureColumn(collection, field, canonicalType).catch(() => {});
+      liveNames.add(field.toLowerCase());
+    }
+  }
+}
 
 export function createRepository(collection) {
   const db = () => getDatabaseProvider();
@@ -21,14 +55,45 @@ export function createRepository(collection) {
     query: (query = {}) => db().list(collection, query),
     count: (query = {}) => db().count(collection, query),
 
-    // ---- writes ----
-    // Schema defaults fill only fields the caller omitted; explicit values win.
-    create: (record = {}) => db().create(collection, applyDefaults(collection, record)),
-    update: (id, patch = {}) => db().update(collection, id, patch),
+    // ---- writes with auto‑provisioning ----
+    async create(record = {}) {
+      const provider = db();
+      const enriched = applyDefaults(collection, record);
+      try {
+        return await provider.create(collection, enriched);
+      } catch (err) {
+        await ensureCollectionExists(provider, collection);
+        await ensureRecordColumns(provider, collection, enriched);
+        return provider.create(collection, enriched);
+      }
+    },
+
+    async update(id, patch = {}) {
+      const provider = db();
+      try {
+        return await provider.update(collection, id, patch);
+      } catch (err) {
+        await ensureCollectionExists(provider, collection);
+        await ensureRecordColumns(provider, collection, patch);
+        return provider.update(collection, id, patch);
+      }
+    },
+
     delete: (id) => db().remove(collection, id),
 
     // ---- bulk ----
-    bulkCreate: (records = []) => db().bulkCreate(collection, records.map((r) => applyDefaults(collection, r))),
+    async bulkCreate(records = []) {
+      const provider = db();
+      const enriched = records.map((r) => applyDefaults(collection, r));
+      try {
+        return await provider.bulkCreate(collection, enriched);
+      } catch (err) {
+        await ensureCollectionExists(provider, collection);
+        await ensureRecordColumns(provider, collection, enriched[0] || {});
+        return provider.bulkCreate(collection, enriched);
+      }
+    },
+
     bulkDelete: (ids = []) => db().bulkRemove(collection, ids),
     clear: () => db().clear(collection),
 

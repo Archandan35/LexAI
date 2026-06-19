@@ -87,20 +87,16 @@ export const databaseManagerLogic = {
       }
 
       console.log('[LexAI install] INSTALL STEP 2/5 — INSERT SCHEMA_META (via stamp in seed)');
-      console.log('[LexAI install] INSTALL STEP 3/5 — INSERT PERMISSIONS');
-      await databaseAdminService.seedPermissions();
-      console.log('[LexAI install] INSTALL STEP 5/5 — INSERT SETTINGS (stamp)');
+      console.log('[LexAI install] INSTALL STEP 4/5 — INSERT SETTINGS (stamp)');
       await databaseAdminService.stampInstalled();
 
       // Final verification
       try {
         const version = await databaseAdminService.getVersion();
         const db = getDatabaseProvider();
-        const permCount = await db.count('permissions').catch(() => -1);
         const roleCount = await db.count('roles').catch(() => -1);
-        console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount, 'permissions:', permCount);
+        console.log('[LexAI install] VERIFY — schema_meta version:', version, 'roles:', roleCount);
         if (version === 0) throw new Error('Schema stamp failed — schema_meta version is 0');
-        if (permCount === 0) throw new Error('Permission seed failed — 0 permissions');
       } catch (verifyErr) {
         console.error('[LexAI install] Verification failed:', verifyErr.message);
         return ok({ installed: false, needsManual: false, error: verifyErr.message, failedStep: 'verify', completedSteps: 5 });
@@ -154,10 +150,9 @@ export const databaseManagerLogic = {
   async seedDemo(user) {
     try {
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      const permissions = await databaseAdminService.seedPermissions();
       const demo = await databaseAdminService.seedDemo();
       await audit('db.seed', user, 'Seeded demo data');
-      return ok({ permissions, demo });
+      return ok({ demo });
     } catch (e) { return fail(e); }
   },
   async clearDatabase(user) {
@@ -168,10 +163,8 @@ export const databaseManagerLogic = {
     try {
       await databaseAdminService.clearAll();
       await databaseAdminService.ensureSchema({ coreOnly: false });
-      await databaseAdminService.seedPermissions();
-      await databaseAdminService.seedDemo();
       await databaseAdminService.stampInstalled();
-      await audit('db.factoryReset', user, 'Factory reset to seed state');
+      await audit('db.factoryReset', user, 'Factory reset');
       return ok(true);
     } catch (e) { return fail(e); }
   },

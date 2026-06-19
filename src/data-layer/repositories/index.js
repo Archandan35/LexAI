@@ -21,6 +21,8 @@ import { remindersRepository } from './remindersRepository.js';
 import { envVarsRepository } from './envVarsRepository.js';
 import { configHistoryRepository } from './configHistoryRepository.js';
 import { schemaMetaRepository } from './schemaMetaRepository.js';
+import { caseTypesRepository } from './caseTypesRepository.js';
+import { courtsRepository } from './courtsRepository.js';
 
 export const repositories = {
   schema_meta: schemaMetaRepository,
@@ -43,6 +45,8 @@ export const repositories = {
   reminders: remindersRepository,
   envVars: envVarsRepository,
   configHistory: configHistoryRepository,
+  caseTypes: caseTypesRepository,
+  courts: courtsRepository,
 };
 
 // Fallback for any collection without a dedicated module.
@@ -56,7 +60,7 @@ export {
   documentsRepository, settingsRepository, auditLogsRepository, draftsRepository,
   hearingsRepository, notesRepository, judgmentsRepository, causeListTemplatesRepository,
   caseFoldersRepository, caseHistoryRepository, caseActivityRepository, caseStagesRepository,
-  remindersRepository, envVarsRepository, configHistoryRepository, schemaMetaRepository,
+  remindersRepository, envVarsRepository, configHistoryRepository, schemaMetaRepository, caseTypesRepository, courtsRepository,
 };
 
 export default repositories;

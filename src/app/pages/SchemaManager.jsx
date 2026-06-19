@@ -1,0 +1,348 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PageHeader from '@/components/PageHeader.jsx';
+import Card from '@/components/Card.jsx';
+import Button from '@/components/Button.jsx';
+import Badge from '@/components/Badge.jsx';
+import Icon from '@/components/Icon.jsx';
+import Spinner from '@/components/Spinner.jsx';
+import EmptyState from '@/components/EmptyState.jsx';
+import { SchemaDiffEngine } from '@/data-provider/schema/SchemaDiffEngine.js';
+import { listSchemas, SCHEMA_VERSION } from '@/data-provider/schema/index.js';
+import { getDatabaseProvider } from '@/providers/database/index.js';
+import { databaseHealthEngine } from '@/data-provider/health/DatabaseHealthEngine.js';
+import { useToast } from '@/data-layer/ToastContext.jsx';
+
+function statusIcon(action) {
+  if (action === 'createTable') return { icon: 'plus', tone: 'amber' };
+  if (action === 'addColumn') return { icon: 'plus', tone: 'navy' };
+  if (action === 'createIndex') return { icon: 'plus', tone: 'green' };
+  if (action === 'reviewType') return { icon: 'alert', tone: 'red' };
+  return { icon: 'gear', tone: 'grey' };
+}
+
+export default function SchemaManager() {
+  const toast = useToast();
+  const nav = useNavigate();
+  const [diff, setDiff] = useState(null);
+  const [health, setHealth] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
+  const [repairing, setRepairing] = useState(false);
+  const [showSql, setShowSql] = useState(false);
+  const [sql, setSql] = useState('');
+  const [tab, setTab] = useState('diff');
+  const [exportFormat, setExportFormat] = useState('sql');
+
+  const scan = useCallback(async () => {
+    setScanning(true);
+    try {
+      const [diffRes, healthRes] = await Promise.all([
+        SchemaDiffEngine.diff(),
+        databaseHealthEngine.scan(),
+      ]);
+      setDiff(diffRes);
+      setHealth(healthRes);
+    } catch (e) {
+      toast.push(`Scan failed: ${e.message}`, 'error');
+    }
+    setScanning(false);
+    setLoading(false);
+  }, [toast]);
+
+  useEffect(() => { scan(); }, [scan]);
+
+  const runRepair = async () => {
+    setRepairing(true);
+    try {
+      const result = await databaseHealthEngine.repair();
+      toast.push(`Repair completed: ${result.actions.length} action(s).`, 'success');
+      await scan();
+    } catch (e) {
+      toast.push(`Repair failed: ${e.message}`, 'error');
+    }
+    setRepairing(false);
+  };
+
+  const generateSql = () => {
+    if (!diff) return;
+    const sqlText = SchemaDiffEngine.toSQL(diff);
+    setSql(sqlText);
+    setShowSql(true);
+  };
+
+  const copySql = () => {
+    navigator.clipboard.writeText(sql).then(() => toast.push('SQL copied to clipboard.', 'success'));
+  };
+
+  const exportSchema = () => {
+    const schemas = listSchemas();
+    const payload = {
+      version: SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      schemas: schemas.map((s) => ({
+        collection: s.collection,
+        label: s.label,
+        fields: s.fields,
+        required: s.required,
+        defaults: s.defaults,
+        indexes: s.indexes,
+        relations: s.relations,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `lexai-schema-v${SCHEMA_VERSION}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast.push('Schema exported.', 'success');
+  };
+
+  const importSchema = async () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data.version || !data.schemas) { toast.push('Invalid schema file.', 'error'); return; }
+        toast.push(`Schema v${data.version} loaded (${data.schemas.length} collections).`, 'success');
+        setSql(JSON.stringify(data, null, 2));
+        setShowSql(true);
+      } catch (err) {
+        toast.push(`Import failed: ${err.message}`, 'error');
+      }
+    };
+    input.click();
+  };
+
+  if (loading) return <div className="page page--center"><Spinner label="Scanning schemas…" /></div>;
+
+  const totalTables = diff ? listSchemas().length : 0;
+  const missingTables = diff?.missingTables?.length || 0;
+  const missingCols = diff?.missingColumns?.length || 0;
+  const healthScore = health?.score ?? 0;
+
+  return (
+    <div className="page schema-mgr fade-in">
+      <PageHeader
+        icon="database"
+        title="Schema Manager"
+        subtitle={`Software v${SCHEMA_VERSION} · Provider: ${health?.provider || '—'} · Health score: ${healthScore}/100`}
+        actions={
+          <div className="row-actions">
+            <Button size="sm" variant="ghost" icon="search" loading={scanning} onClick={scan}>Rescan</Button>
+            <Button size="sm" variant="ghost" icon="download" onClick={exportSchema}>Export</Button>
+            <Button size="sm" variant="ghost" icon="upload" onClick={importSchema}>Import</Button>
+          </div>
+        }
+      />
+
+      {/* Health summary */}
+      <div className="grid-4" style={{ marginBottom: 20 }}>
+        <Card>
+          <div className="health-cell"><span className="health-cell__value">{totalTables}</span><span className="health-cell__label">Software Tables</span></div>
+        </Card>
+        <Card>
+          <div className="health-cell">
+            <span className="health-cell__value" style={{ color: missingTables ? 'var(--red)' : 'var(--green)' }}>{missingTables}</span>
+            <span className="health-cell__label">Missing Tables</span>
+          </div>
+        </Card>
+        <Card>
+          <div className="health-cell">
+            <span className="health-cell__value" style={{ color: missingCols ? 'var(--amber)' : 'var(--green)' }}>{missingCols}</span>
+            <span className="health-cell__label">Missing Columns</span>
+          </div>
+        </Card>
+        <Card>
+          <div className="health-cell">
+            <span className="health-cell__value" style={{ color: healthScore < 80 ? 'var(--red)' : 'var(--green)' }}>{healthScore}</span>
+            <span className="health-cell__label">Health Score</span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs" style={{ marginBottom: 16 }}>
+        <div className={`tab ${tab === 'diff' ? 'active' : ''}`} onClick={() => setTab('diff')}>Schema Diff</div>
+        <div className={`tab ${tab === 'tables' ? 'active' : ''}`} onClick={() => setTab('tables')}>Tables</div>
+        <div className={`tab ${tab === 'issues' ? 'active' : ''}`} onClick={() => setTab('issues')}>Health Issues {health?.summary?.total ? `(${health.summary.total})` : ''}</div>
+      </div>
+
+      {/* Tab: Schema Diff */}
+      {tab === 'diff' && (
+        <>
+          {/* Missing Tables */}
+          {diff?.missingTables?.length > 0 && (
+            <Card title={`Missing Tables (${diff.missingTables.length})`} tone="amber" style={{ marginBottom: 16 }}>
+              <table className="table">
+                <thead><tr><th>Table</th><th>Reason</th><th>Action</th></tr></thead>
+                <tbody>
+                  {diff.missingTables.map((t) => (
+                    <tr key={t.collection}>
+                      <td style={{ fontWeight: 600 }}>{t.collection}</td>
+                      <td style={{ color: 'var(--text-soft)', fontSize: 12.5 }}>{t.reason}</td>
+                      <td><Badge tone="amber">Missing</Badge></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+
+          {/* Missing Columns */}
+          {diff?.missingColumns?.length > 0 && (
+            <Card title={`Missing Columns (${diff.missingColumns.length})`} tone="navy" style={{ marginBottom: 16 }}>
+              <table className="table">
+                <thead><tr><th>Table</th><th>Column</th><th>Expected Type</th><th>Action</th></tr></thead>
+                <tbody>
+                  {diff.missingColumns.map((c) => (
+                    <tr key={`${c.collection}.${c.column}`}>
+                      <td style={{ fontWeight: 600 }}>{c.collection}</td>
+                      <td><code>{c.column}</code></td>
+                      <td><Badge tone="grey">{c.expectedType}</Badge></td>
+                      <td><Badge tone="navy">Add Column</Badge></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+
+          {/* Wrong Types */}
+          {diff?.wrongTypes?.length > 0 && (
+            <Card title={`Type Mismatches (${diff.wrongTypes.length})`} tone="red" style={{ marginBottom: 16 }}>
+              <table className="table">
+                <thead><tr><th>Table</th><th>Column</th><th>Expected</th><th>Actual</th><th>Action</th></tr></thead>
+                <tbody>
+                  {diff.wrongTypes.map((t) => (
+                    <tr key={`${t.collection}.${t.column}`}>
+                      <td style={{ fontWeight: 600 }}>{t.collection}</td>
+                      <td><code>{t.column}</code></td>
+                      <td><Badge tone="green">{t.expected}</Badge></td>
+                      <td><Badge tone="red">{t.actual}</Badge></td>
+                      <td><Badge tone="red">Manual Review</Badge></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+
+          {/* Missing Indexes */}
+          {diff?.missingIndexes?.length > 0 && (
+            <Card title={`Missing Indexes (${diff.missingIndexes.length})`} tone="green" style={{ marginBottom: 16 }}>
+              <table className="table">
+                <thead><tr><th>Table</th><th>Column</th><th>Action</th></tr></thead>
+                <tbody>
+                  {diff.missingIndexes.map((ix) => (
+                    <tr key={`${ix.collection}.${ix.column}`}>
+                      <td style={{ fontWeight: 600 }}>{ix.collection}</td>
+                      <td><code>{ix.column}</code></td>
+                      <td><Badge tone="green">Create Index</Badge></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+
+          {/* Healthy state */}
+          {diff?.healthy && (
+            <Card title="Schema Status">
+              <EmptyState icon="check" title="All schemas are in sync." hint={`${totalTables} tables match the software schema.`} />
+            </Card>
+          )}
+
+          {/* Repair actions */}
+          {diff?.repairPlan?.length > 0 && (
+            <div className="form__actions" style={{ marginTop: 16 }}>
+              <Button icon="check" variant="primary" loading={repairing} onClick={runRepair}>
+                Sync Missing Tables ({diff.repairPlan.filter((a) => a.action === 'createTable').length})
+              </Button>
+              {diff.repairPlan.filter((a) => a.action === 'addColumn' || a.action === 'createIndex').length > 0 && (
+                <Button icon="download" variant="ghost" onClick={generateSql}>Generate Migration SQL</Button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Tab: Tables */}
+      {tab === 'tables' && (
+        <Card title={`All Tables (${listSchemas().length})`}>
+          <div className="table-scroll">
+            <table className="table">
+              <thead><tr><th>Collection</th><th>Label</th><th>Fields</th><th>Required</th><th>Core</th><th>Status</th></tr></thead>
+              <tbody>
+                {listSchemas().map((s) => {
+                  const missing = diff?.missingTables?.find((t) => t.collection === s.collection);
+                  const fieldCount = Object.keys(s.fields || {}).length;
+                  return (
+                    <tr key={s.collection}>
+                      <td style={{ fontWeight: 600 }}>{s.collection}</td>
+                      <td>{s.label || '—'}</td>
+                      <td>{fieldCount}</td>
+                      <td>{(s.required || []).length}</td>
+                      <td><Badge tone={s.core ? 'navy' : 'grey'}>{s.core ? 'Yes' : 'No'}</Badge></td>
+                      <td>
+                        {missing ? <Badge tone="amber">Missing</Badge> : <Badge tone="green">✓ Existing</Badge>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Tab: Health Issues */}
+      {tab === 'issues' && (
+        <Card title={`Health Issues (${health?.issues?.length || 0})`}>
+          {!health?.issues?.length ? (
+            <EmptyState icon="check" title="No health issues." hint="All systems operational." />
+          ) : (
+            <table className="table">
+              <thead><tr><th>Severity</th><th>Type</th><th>Collection</th><th>Detail</th></tr></thead>
+              <tbody>
+                {health.issues.map((iss, i) => (
+                  <tr key={i}>
+                    <td><Badge tone={iss.severity === 'critical' ? 'red' : iss.severity === 'warn' ? 'amber' : 'grey'}>
+                      {iss.severity}
+                    </Badge></td>
+                    <td><code>{iss.type}</code></td>
+                    <td style={{ fontWeight: 600 }}>{iss.collection}</td>
+                    <td style={{ fontSize: 12.5, color: 'var(--text-soft)' }}>{iss.detail}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+
+      {/* SQL Modal */}
+      {showSql && (
+        <div className="modal-overlay" onClick={() => setShowSql(false)}>
+          <div className="modal modal--lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <h3>Migration SQL</h3>
+              <button className="iconbtn" onClick={() => setShowSql(false)}><Icon name="close" size={16} /></button>
+            </div>
+            <div className="modal__body">
+              <pre className="schema-mgr__sql">{sql || 'No SQL generated.'}</pre>
+            </div>
+            <div className="modal__foot">
+              <Button variant="ghost" onClick={() => setShowSql(false)}>Close</Button>
+              {sql && <Button icon="copy" onClick={copySql}>Copy SQL</Button>}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

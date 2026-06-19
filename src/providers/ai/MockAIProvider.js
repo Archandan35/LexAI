@@ -1,9 +1,8 @@
 import AIProvider from './AIProvider.js';
 import { DRAFT_TYPE_MAP } from '@/constants/draftTypes.js';
 
-// MockAIProvider — deterministic, offline AI used as the default so the app
-// runs with zero credentials. It produces structured, legally-shaped text but
-// NEVER produces citations (those only ever come from a CitationProvider).
+// MockAIProvider — deterministic, offline AI for development only.
+// NEVER enabled in production. Set VITE_AI_PROVIDER to connect a real model.
 export default class MockAIProvider extends AIProvider {
   async ask(prompt) {
     await wait();

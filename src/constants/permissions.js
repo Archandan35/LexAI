@@ -60,6 +60,7 @@ export const MODULES = [
   { key: 'api', label: 'API Manager', icon: 'bolt', route: '/admin/env-api', admin: true },
   { key: 'audit', label: 'Audit Logs', icon: 'history', route: '/admin/audit', admin: true },
   { key: 'settings', label: 'System Settings', icon: 'gear', route: '/admin/settings', admin: true },
+  { key: 'schema', label: 'Schema Manager', icon: 'database', route: '/admin/schema', admin: true },
 ];
 
 export const MODULE_KEYS = MODULES.map((m) => m.key);

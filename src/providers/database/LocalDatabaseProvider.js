@@ -1,12 +1,11 @@
 import DatabaseProvider from './DatabaseProvider.js';
-import seed from '@/database/seed.js';
 import { uid, nowISO } from '@/utils/id.js';
 
 const STORAGE_KEY = 'lexai.db.v1';
 
-// LocalDatabaseProvider — browser-persistent store (localStorage) seeded with
-// demo data. Implements the full DatabaseProvider contract so a real DB can be
-// dropped in later without touching services/logic/pages.
+// LocalDatabaseProvider — browser-persistent store (localStorage). Starts
+// with an empty database; collections are created on first write via the
+// repository layer's auto-table-creation logic.
 export default class LocalDatabaseProvider extends DatabaseProvider {
   constructor() {
     super();
@@ -18,10 +17,8 @@ export default class LocalDatabaseProvider extends DatabaseProvider {
       const raw = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch { /* ignore */ }
-    // Deep clone seed so mutations don't affect the module-level fixture.
-    const fresh = JSON.parse(JSON.stringify(seed));
-    this.#persist(fresh);
-    return fresh;
+    this.#persist({});
+    return {};
   }
 
   // Returns whether the write actually reached storage. Callers that mutate
@@ -157,9 +154,9 @@ export default class LocalDatabaseProvider extends DatabaseProvider {
     return counts;
   }
 
-  // Test/demo helper — wipe local state back to seed.
+  // Test helper — wipe local state back to empty.
   async __reset() {
-    this.db = JSON.parse(JSON.stringify(seed));
+    this.db = {};
     this.#persist();
   }
 }
