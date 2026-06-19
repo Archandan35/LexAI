@@ -554,6 +554,7 @@ function systemSqlForeignKeys() {
     "select safe_create_fk('case_folders', 'case_id', 'cases', 'id', 'fk_case_folders_case_id', 'CASCADE');",
     "select safe_create_fk('case_activity', 'case_id', 'cases', 'id', 'fk_case_activity_case_id', 'CASCADE');",
     "select safe_create_fk('audit_logs', 'user_id', 'users', 'id', 'fk_audit_logs_user_id', 'SET NULL');",
+    "alter table roles add constraint if not exists uq_roles_code unique (code);",
     "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');",
     "select safe_create_fk('case_folders', 'parent_id', 'case_folders', 'id', 'fk_case_folders_parent_id', 'CASCADE');",
   ].join('\n');
