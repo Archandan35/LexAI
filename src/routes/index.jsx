@@ -46,6 +46,8 @@ import CaseTypes from '@/app/pages/CaseTypes.jsx';
 import CourtTypes from '@/app/pages/CourtTypes.jsx';
 import SchemaManager from '@/app/pages/SchemaManager.jsx';
 import SchemaMappingManager from '@/app/pages/SchemaMappingManager.jsx';
+import DatabaseStudio from '@/app/pages/DatabaseStudio.jsx';
+import SqlConsole from '@/app/pages/SqlConsole.jsx';
 
 // Guarded route helper.
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
@@ -91,6 +93,8 @@ export default function AppRoutes() {
         <Route path="/admin/backup/settings" element={G('backup', <BackupSettings />)} />
         <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
         <Route path="/admin/database" element={G('settings', <DatabaseManager />)} />
+        <Route path="/admin/database/studio" element={G('settings', <DatabaseStudio />)} />
+        <Route path="/admin/database/sql" element={G('settings', <SqlConsole />)} />
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
         <Route path="/admin/audit" element={G('audit', <AuditLogs />)} />
         <Route path="/admin/settings" element={G('settings', <SystemSettings />)} />

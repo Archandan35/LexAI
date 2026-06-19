@@ -52,6 +52,8 @@ export const NAV_GROUPS = [
       { to: '/admin/case-types', label: 'Case Types', icon: 'folder', module: 'caseTypes' },
       { to: '/admin/court-types', label: 'Court Types', icon: 'folder', module: 'courtTypes' },
       { to: '/admin/schema', label: 'Schema Manager', icon: 'database', module: 'schema' },
+      { to: '/admin/database/studio', label: 'Database Studio', icon: 'layers', module: 'settings' },
+      { to: '/admin/database/sql', label: 'SQL Console', icon: 'code', module: 'settings' },
       { to: '/admin/security', label: 'Security Settings', icon: 'lock', module: 'settings' },
       { to: '/admin/settings', label: 'System Settings', icon: 'gear', module: 'settings' },
     ],

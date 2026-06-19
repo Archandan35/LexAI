@@ -77,6 +77,16 @@ export default class DatabaseProvider {
   // eslint-disable-next-line no-unused-vars
   async ensureColumn(collection, column, type) { return { created: false, ok: true }; }
 
+  // ---- DDL / safe execution (overridable) ---------------------------------
+  // Execute a DDL statement through the provider's safe_ddl path. Default:
+  // delegates to execSql() when the provider implements it; otherwise returns
+  // a needsManual response so the caller can surface the SQL for the user.
+  // eslint-disable-next-line no-unused-vars
+  async safeDdl(sql) {
+    if (typeof this.execSql === 'function') return this.execSql(sql);
+    return { ok: false, error: 'DDL not supported by this provider', needsManual: true, sql };
+  }
+
   // ---- Snapshot / restore (for backup + .udb, provider-agnostic) ----------
   // Read every given collection into a plain object { name: rows[] }.
   async snapshot(collections = []) {
