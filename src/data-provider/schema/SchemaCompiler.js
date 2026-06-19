@@ -1058,6 +1058,24 @@ function systemSqlSeedAdapters() {
   ].join('\n');
 }
 
+function systemSqlSeedData() {
+  const version = SCHEMA_VERSION;
+  return [
+    '-- ============================================================',
+    '-- 17. SEED INSTALLER STATE + SCHEMA META (wizard expects these rows)',
+    '-- ============================================================',
+    "-- Seed installer_state so the wizard sees installation as completed",
+    `insert into installer_state (id, install_status, schema_version, installer_version, installed_at)`,
+    `values ('default', 'completed', ${version}, 1, now())`,
+    "on conflict (id) do update set install_status = excluded.install_status, schema_version = excluded.schema_version, installed_at = now();",
+    '',
+    "-- Seed schema_meta so the wizard sees a configured schema",
+    `insert into schema_meta (id, version, provider, app_version, installed_at, updated_at, history)`,
+    `values ('default', ${version}, 'supabase', '1.0.0', now(), now(), '[{\"version\": ${version}, \"action\": \"install\"}]'::jsonb)`,
+    "on conflict (id) do update set version = excluded.version, updated_at = now();",
+  ].join('\n');
+}
+
 const COMPILERS = { supabase: toSupabase, firebase: toFirebase, mongodb: toMongo, local: toLocal };
 
 export const SchemaCompiler = {
@@ -1131,6 +1149,7 @@ export const SchemaCompiler = {
       systemSqlIndexes(),
       systemSqlSchemaVersion(),
       systemSqlSeedAdapters(),
+      systemSqlSeedData(),
     ].join('\n\n');
   },
 };
