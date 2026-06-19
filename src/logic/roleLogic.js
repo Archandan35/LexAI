@@ -66,7 +66,6 @@ export const roleLogic = {
     try {
       const role = await roleService.get(id);
       if (!role) return fail('Role not found.');
-      if (role.system) return fail('System roles cannot be deleted.');
       const users = await userService.list();
       const inUse = users.filter((u) => u.roleCode === role.code || (u.extraRoles || []).includes(role.code)).length;
       if (inUse) return fail(`Cannot delete: ${inUse} user(s) still assigned to this role.`);
@@ -130,7 +129,6 @@ export const roleLogic = {
   async bulkRemove(ids, actor) {
     try {
       let deleted = 0;
-      let skippedSystem = 0;
       let skippedInUse = 0;
       let failed = 0;
 
@@ -138,7 +136,6 @@ export const roleLogic = {
       for (const id of ids) {
         const role = await roleService.get(id);
         if (!role) { failed += 1; continue; }
-        if (role.system) { skippedSystem += 1; continue; }
 
         const inUse = users.filter((u) => u.roleCode === role.code || (u.extraRoles || []).includes(role.code)).length;
         if (inUse) { skippedInUse += 1; continue; }
@@ -147,8 +144,8 @@ export const roleLogic = {
         if (okRem) deleted += 1; else failed += 1;
       }
 
-      await auditService.record({ action: 'role.bulkDelete', module: 'roles', user: actor, details: `Deleted ${deleted} role(s); skipped System: ${skippedSystem}, In-Use: ${skippedInUse}; failed ${failed}` });
-      return ok({ deleted, skippedSystem, skippedInUse, failed });
+      await auditService.record({ action: 'role.bulkDelete', module: 'roles', user: actor, details: `Deleted ${deleted} role(s); In-Use: ${skippedInUse}; failed ${failed}` });
+      return ok({ deleted, skippedInUse, failed });
     } catch (e) {
       return fail(e);
     }

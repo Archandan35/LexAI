@@ -107,7 +107,7 @@ export default function RoleDetails() {
           <>
             <Button variant="ghost" icon="arrow" onClick={() => nav('/admin/roles')}>Back</Button>
             {can('roles.export') && <Button variant="ghost" icon="download" onClick={() => exportJson(`role_${role.code}`, { ...role, permissions: [...perms] })}>Export</Button>}
-            {can('roles.edit') && !role.system && <Button variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button>}
+            {can('roles.edit') && <Button variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button>}
             {can('roles.edit') && !readOnly && <Button variant="primary" icon="save" loading={saving} disabled={!dirty} onClick={save}>Save permissions</Button>}
           </>
         )}

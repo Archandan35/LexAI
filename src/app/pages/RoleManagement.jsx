@@ -77,11 +77,9 @@ export default function RoleManagement() {
             <Icon name={(r.status || 'Active') === 'Active' ? 'close' : 'check'} size={15} />
           </button>
         </PermissionGate>
-        {!r.system && (
           <PermissionGate perm="roles.delete">
             <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => { if (confirm(`Delete role "${r.name}"?`)) act(() => roleLogic.remove(r.id, user), 'Role deleted.'); }}><Icon name="trash" size={15} /></button>
           </PermissionGate>
-        )}
       </div>
     ) },
   ];
@@ -116,7 +114,7 @@ export default function RoleManagement() {
           <PermissionGate perm="roles.edit"><Button variant="ghost" size="sm" icon="check" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Active', user), 'Enabled.')}>Enable</Button></PermissionGate>
           <PermissionGate perm="roles.edit"><Button variant="ghost" size="sm" icon="close" onClick={() => act(() => roleLogic.bulkSetStatus(selected, 'Disabled', user), 'Disabled.')}>Disable</Button></PermissionGate>
           <PermissionGate perm="roles.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('roles_export', roles.filter((r) => selected.includes(r.id)))}>Export</Button></PermissionGate>
-          <PermissionGate perm="roles.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={() => { if (confirm(`Delete ${selected.length} role(s)? System roles are skipped.`)) { act(() => roleLogic.bulkRemove(selected, user), 'Deleted.'); setSelected([]); } }}>Delete</Button></PermissionGate>
+          <PermissionGate perm="roles.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={() => { if (confirm(`Delete ${selected.length} role(s)? Roles with users assigned will be skipped.`)) { act(() => roleLogic.bulkRemove(selected, user), 'Deleted.'); setSelected([]); } }}>Delete</Button></PermissionGate>
         </div>
       )}
 

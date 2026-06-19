@@ -13,6 +13,7 @@
 // stays in sync without manual migration steps.
 import { getDatabaseProvider } from '@/providers/database/index.js';
 import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
+import { nowISO } from '@/utils/id.js';
 
 async function ensureCollectionExists(db, collection) {
   const exists = await db.collectionExists(collection).catch(() => false);
@@ -70,12 +71,13 @@ export function createRepository(collection) {
 
     async update(id, patch = {}) {
       const provider = db();
+      const stamped = { ...patch, updatedAt: nowISO() };
       try {
-        return await provider.update(collection, id, patch);
+        return await provider.update(collection, id, stamped);
       } catch (err) {
         await ensureCollectionExists(provider, collection);
-        await ensureRecordColumns(provider, collection, patch);
-        return provider.update(collection, id, patch);
+        await ensureRecordColumns(provider, collection, stamped);
+        return provider.update(collection, id, stamped);
       }
     },
 
