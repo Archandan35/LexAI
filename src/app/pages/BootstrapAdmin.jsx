@@ -8,10 +8,12 @@ import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const TIMEOUT_MS = 10000;
 
 export default function BootstrapAdmin() {
+  const { logs, clearLogs, copyLogs } = useLogCapture();
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -268,6 +270,7 @@ export default function BootstrapAdmin() {
         <div className="auth-note">
           Once created, this account will have full access. Keep these credentials secure.
         </div>
+        <DebugPanel logs={logs} error={error} onClear={clearLogs} onCopy={copyLogs} />
       </div>
     </div>
   );
