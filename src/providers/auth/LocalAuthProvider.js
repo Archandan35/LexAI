@@ -22,8 +22,9 @@ export default class LocalAuthProvider extends AuthProvider {
   }
 
   async signIn(identifier, password) {
-    const user = await this.#findUser(identifier);
-    if (!user) throw new Error('No account found for those credentials.');
+    const raw = await this.#findUser(identifier);
+    if (!raw) throw new Error('No account found for those credentials.');
+    const user = FieldMapper.toLexAI('users', raw);
     if (user.status && user.status !== 'Active') throw new Error('This account is disabled. Contact an administrator.');
     const valid = await verifyPassword(password, user.salt, user.passwordHash);
     if (!valid) throw new Error('Incorrect password.');
@@ -46,11 +47,12 @@ export default class LocalAuthProvider extends AuthProvider {
   async getSession() {
     const session = this.#readSession();
     if (!session) return null;
-    const user = await this.#db().get(USERS_TABLE(), session.userId);
-    if (!user || (user.status && user.status !== 'Active')) {
+    const raw = await this.#db().get(USERS_TABLE(), session.userId);
+    if (!raw || (raw.status && raw.status !== 'Active')) {
       await this.signOut();
       return null;
     }
+    const user = FieldMapper.toLexAI('users', raw);
     return { session, user: stripSecrets(user) };
   }
 

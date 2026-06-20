@@ -1,0 +1,139 @@
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import Icon from '@/components/Icon.jsx';
+import Button from '@/components/Button.jsx';
+
+const LOG_STORAGE_KEY = 'lexai.wizard.debug.logs';
+
+export function useLogCapture() {
+  const [logs, setLogs] = useState([]);
+  const logsRef = useRef([]);
+
+  useEffect(() => {
+    const origLog = console.log.bind(console);
+    const origWarn = console.warn.bind(console);
+    const origError = console.error.bind(console);
+
+    const capture = (level, args) => {
+      const entry = {
+        t: new Date().toISOString(),
+        level,
+        msg: args.map((a) => {
+          if (a instanceof Error) return `${a.name}: ${a.message}\n${a.stack}`;
+          try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); } catch { return String(a); }
+        }).join(' '),
+      };
+      logsRef.current = logsRef.current.concat(entry).slice(-500);
+      setLogs(logsRef.current);
+    };
+
+    console.log = (...args) => { capture('log', args); origLog(...args); };
+    console.warn = (...args) => { capture('warn', args); origWarn(...args); };
+    console.error = (...args) => { capture('error', args); origError(...args); };
+
+    return () => {
+      console.log = origLog;
+      console.warn = origWarn;
+      console.error = origError;
+    };
+  }, []);
+
+  const clearLogs = useCallback(() => {
+    logsRef.current = [];
+    setLogs([]);
+  }, []);
+
+  const copyLogs = useCallback(() => {
+    const text = logsRef.current.map((l) => `[${l.t}] ${l.level.toUpperCase()} ${l.msg}`).join('\n');
+    navigator.clipboard.writeText(text).catch(() => {});
+  }, []);
+
+  return { logs, clearLogs, copyLogs };
+}
+
+export default function DebugPanel({ logs, error, result, onClear, onCopy, collapsed: initCollapsed }) {
+  const hasError = logs.some((l) => l.level === 'error') || !!error;
+  const [collapsed, setCollapsed] = useState(initCollapsed !== false && !hasError);
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
+
+  if (collapsed) {
+    const hasError = logs.some((l) => l.level === 'error') || !!error;
+    return (
+      <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+        <button
+          onClick={() => setCollapsed(false)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}
+        >
+          <Icon name={hasError ? 'alert' : 'info'} size={12} />
+          <span>Debug {hasError ? '(errors)' : ''} — {logs.length} log{logs.length !== 1 ? 's' : ''}</span>
+          <span style={{ marginLeft: 'auto' }}>{'\u25BC'}</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <button
+          onClick={() => setCollapsed(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <Icon name="info" size={12} />
+          <span>Debug Log ({logs.length})</span>
+          <span>{'\u25B2'}</span>
+        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          {onCopy && <Button variant="ghost" size="sm" icon="copy" onClick={onCopy}>Copy</Button>}
+          {onClear && <Button variant="ghost" size="sm" icon="close" onClick={onClear}>Clear</Button>}
+        </div>
+      </div>
+
+      {error && (
+        <div className="alert alert--danger" style={{ marginBottom: 8, fontSize: 13, wordBreak: 'break-all' }}>
+          <Icon name="alert" size={14} />
+          <span>{typeof error === 'string' ? error : error?.message || JSON.stringify(error)}</span>
+        </div>
+      )}
+
+      {result && (
+        <div className="alert alert--success" style={{ marginBottom: 8, fontSize: 13, wordBreak: 'break-all' }}>
+          <Icon name="check" size={14} />
+          <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 12 }}>{JSON.stringify(result, null, 2)}</span>
+        </div>
+      )}
+
+      <pre
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 6,
+          padding: 8,
+          fontSize: 11,
+          lineHeight: 1.5,
+          maxHeight: 300,
+          overflowY: 'auto',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-all',
+          color: 'var(--text)',
+        }}
+      >
+        {logs.length === 0 && <span style={{ color: 'var(--text-muted)' }}>No logs captured yet.</span>}
+        {logs.map((l, i) => (
+          <div key={i} style={{
+            color: l.level === 'error' ? 'var(--error)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text)',
+            marginBottom: 2,
+          }}>
+            <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>{new Date(l.t).toLocaleTimeString()}</span>
+            <span style={{ fontWeight: l.level === 'error' ? 600 : 400 }}>{l.level.toUpperCase()}</span>
+            <span>{' '}{l.msg}</span>
+          </div>
+        ))}
+        <div ref={endRef} />
+      </pre>
+    </div>
+  );
+}

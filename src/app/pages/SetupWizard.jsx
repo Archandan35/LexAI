@@ -12,6 +12,7 @@ import { UploadAnalyzer } from '@/installer-engine/UploadAnalyzer.js';
 import BackendStatusPanel from '@/components/BackendStatusPanel.jsx';
 import { backendConfig } from '@/config/backend.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const METHODS = [
   { id: 'simple', icon: 'bolt', label: 'Simple Setup', desc: 'Project URL + API key — ideal for Supabase' },
@@ -63,6 +64,7 @@ function MethodCard({ method, selected, onSelect }) {
 }
 
 export default function SetupWizard({ detectError: propDetectError }) {
+  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [method, setMethod] = useState(null);
   const [step, setStep] = useState(1);
   const [detect, setDetect] = useState(null);
@@ -725,7 +727,9 @@ export default function SetupWizard({ detectError: propDetectError }) {
                 <div className="kv"><span>Status</span><span>{detect.installed ? `Installed (v${detect.version})` : 'Not installed'}</span></div>
               </div>
             )}
-          </>
+
+            <DebugPanel logs={logs} error={error || execSqlError} result={validateResult || installResult} onClear={clearLogs} onCopy={copyLogs} />
+          </>  
         )}
 
         {!method && (

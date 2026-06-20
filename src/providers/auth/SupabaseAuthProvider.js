@@ -103,7 +103,8 @@ export default class SupabaseAuthProvider extends AuthProvider {
     const session = { token: data.access_token, refreshToken: data.refresh_token, userId };
     this.#persistSession(session);
 
-    const { passwordHash, salt, ...safeUser } = dbUser;
+    const mapped = FieldMapper.toLexAI('users', dbUser);
+    const { passwordHash, salt, ...safeUser } = mapped;
     return { session, user: safeUser };
   }
 
@@ -141,7 +142,8 @@ export default class SupabaseAuthProvider extends AuthProvider {
           this.#clearSession();
           return null;
         }
-        const { passwordHash, salt, ...safeUser } = dbUser;
+        const mapped = FieldMapper.toLexAI('users', dbUser);
+        const { passwordHash, salt, ...safeUser } = mapped;
         return { session, user: safeUser };
       }
 
@@ -168,8 +170,9 @@ export default class SupabaseAuthProvider extends AuthProvider {
             this.#clearSession();
             return null;
           }
-          const { passwordHash, salt, ...safeUser } = dbUser;
-          return { session: newSession, user: safeUser };
+          const mapped2 = FieldMapper.toLexAI('users', dbUser);
+          const { passwordHash: pw2, salt: s2, ...safeUser2 } = mapped2;
+          return { session: newSession, user: safeUser2 };
         }
       }
     } catch (e) {
