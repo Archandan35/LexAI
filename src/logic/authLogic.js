@@ -2,6 +2,7 @@ import { authService } from '@/services/authService.js';
 import { userService } from '@/services/userService.js';
 import { roleService } from '@/services/roleService.js';
 import { auditService } from '@/services/auditService.js';
+import { getDatabaseProvider } from '@/providers/database/index.js';
 import { hashPassword } from '@/utils/crypto.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
@@ -67,7 +68,7 @@ export const authLogic = {
       // 3. Create application user record
       console.log('[Bootstrap] create application user start');
       const { salt, hash } = await hashPassword(password);
-      const user = await userService.create({
+      const userRecord = {
         id: userId,
         name,
         email: email.toLowerCase(),
@@ -80,7 +81,30 @@ export const authLogic = {
         salt,
         passwordHash: hash,
         createdAt: DateEngine.now(),
-      });
+      };
+      let user;
+      try {
+        user = await userService.create(userRecord);
+      } catch (createErr) {
+        console.warn('[Bootstrap] userService.create failed, trying exec_sql fallback:', createErr.message);
+        const db = getDatabaseProvider();
+        if (typeof db.execSql === 'function') {
+          const columns = Object.keys(userRecord).map((k) => `"${k}"`).join(', ');
+          const values = Object.values(userRecord).map((v) => {
+            if (v === null) return 'null';
+            if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'::jsonb`;
+            if (typeof v === 'boolean') return v ? 'true' : 'false';
+            return `'${String(v).replace(/'/g, "''")}'`;
+          }).join(', ');
+          const sql = `insert into users (${columns}) values (${values}) returning *;`;
+          const result = await db.execSql(sql);
+          if (result.ok && result.data && result.data[0]) {
+            user = result.data[0];
+            console.log('[Bootstrap] application user created via exec_sql fallback:', user?.id);
+          }
+        }
+        if (!user) throw createErr;
+      }
       console.log('[Bootstrap] application user created:', user?.id);
 
       // 4. Auto-login to verify credentials

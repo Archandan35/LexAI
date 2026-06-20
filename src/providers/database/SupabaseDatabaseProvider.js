@@ -147,38 +147,15 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return m ? parseInt(m[1], 10) : 0;
   }
 
-  // Introspect column metadata via Postgres information_schema — exposes
-  // column names and data_type so SchemaDiffEngine can detect missing/wrong columns.
-  // Requires the anon key to have SELECT on information_schema.columns, which is
-  // the Supabase default. Returns null when not accessible.
-  async listColumns(tableName) {
-    try {
-      const res = await fetch(
-        `${this.#endpoint('information_schema.columns')}?table_schema=eq.public&table_name=eq.${tableName}&select=column_name,data_type`,
-        { headers: this.#headers() }
-      );
-      if (!res.ok) return null;
-      const rows = await res.json();
-      return rows.map((r) => ({ name: r.column_name, type: r.data_type }));
-    } catch { return null; }
+  // Supabase PostgREST does not expose information_schema (always returns 404).
+  // Skip the request entirely to avoid console noise.
+  async listColumns(_tableName) {
+    return null;
   }
 
-  // Introspect index metadata via pg_indexes. Returns null when not accessible.
-  async listIndexes(tableName) {
-    try {
-      const res = await fetch(
-        `${this.#endpoint('pg_indexes')}?schemaname=eq.public&tablename=eq.${tableName}&select=indexname,indexdef`,
-        { headers: this.#headers() }
-      );
-      if (!res.ok) return null;
-      const rows = await res.json();
-      // Extract the first column referenced in each index definition.
-      return rows.map((r) => {
-        const m = (r.indexdef || '').match(/\(([^)]+)\)/);
-        const field = m ? m[1].replace(/"/g, '').split(',')[0].trim() : '';
-        return { name: r.indexname, column: field };
-      });
-    } catch { return null; }
+  // Supabase PostgREST does not expose pg_indexes (always returns 404).
+  async listIndexes(_tableName) {
+    return null;
   }
 
   // Try to create the table via exec_sql RPC if a schema is provided. Falls
