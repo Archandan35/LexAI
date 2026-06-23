@@ -11,12 +11,6 @@ const STATS = [
   { label: 'Replied', value: '5', icon: 'share' },
 ];
 
-const NOTICES = [
-  { no: 'LN-2026-001', recipient: 'ABC Corp.', date: '15 Jun 2026', status: 'Sent' },
-  { no: 'LN-2026-002', recipient: 'XYZ Ltd.', date: '18 Jun 2026', status: 'Acknowledged' },
-  { no: 'LN-2026-003', recipient: 'Municipal Corp.', date: '20 Jun 2026', status: 'Draft' },
-];
-
 const STATUS_TONE = { Sent: 'amber', Acknowledged: 'green', Draft: 'amber', Replied: 'green' };
 
 export default function LegalNotices() {
@@ -60,15 +54,14 @@ export default function LegalNotices() {
               </tr>
             </thead>
             <tbody>
-              {NOTICES.map((n, i) => (
-                <tr key={i}>
-                  <td>{n.no}</td>
-                  <td>{n.recipient}</td>
-                  <td>{n.date}</td>
-                  <td><Badge tone={STATUS_TONE[n.status]}>{n.status}</Badge></td>
-                  <td><button className="iconbtn"><Icon name="eye" size={15} /></button></td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={5}>
+                  <div className="empty">
+                    <div className="empty__icon"><Icon name="doc" size={24} /></div>
+                    <p className="muted">No legal notices generated yet.</p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

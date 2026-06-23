@@ -11,13 +11,6 @@ const STATS = [
   { label: 'Tribunals', value: '2,040', icon: 'grid' },
 ];
 
-const ROWS = [
-  { name: 'Kesavananda Bharati v. State of Kerala', court: 'Supreme Court', date: '24 Apr 1973', citation: 'AIR 1973 SC 1461', bench: '13-Judge Bench' },
-  { name: 'Maneka Gandhi v. Union of India', court: 'Supreme Court', date: '25 Jan 1978', citation: 'AIR 1978 SC 597', bench: '7-Judge Bench' },
-  { name: 'S. R. Bommai v. Union of India', court: 'Supreme Court', date: '11 Mar 1994', citation: 'AIR 1994 SC 1918', bench: '9-Judge Bench' },
-  { name: 'Naz Foundation v. Govt. of NCT of Delhi', court: 'Delhi High Court', date: '2 Jul 2009', citation: '160 (2009) DLT 277', bench: 'Division Bench' },
-];
-
 export default function JudgmentLibrary() {
   return (
     <div className="fade-in">
@@ -55,15 +48,14 @@ export default function JudgmentLibrary() {
               </tr>
             </thead>
             <tbody>
-              {ROWS.map((r, i) => (
-                <tr key={i}>
-                  <td>{r.name}</td>
-                  <td><Badge tone="navy">{r.court}</Badge></td>
-                  <td>{r.date}</td>
-                  <td>{r.citation}</td>
-                  <td>{r.bench}</td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={5}>
+                  <div className="empty">
+                    <div className="empty__icon"><Icon name="database" size={24} /></div>
+                    <p className="muted">No judgments indexed yet.</p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

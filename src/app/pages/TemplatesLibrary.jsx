@@ -10,13 +10,6 @@ const STATS = [
   { label: 'Last Updated', value: 'Today', icon: 'clock' },
 ];
 
-const TEMPLATES = [
-  { name: 'Plaint (Civil Suit)', category: 'Pleadings', updated: '2 days ago' },
-  { name: 'Written Statement', category: 'Pleadings', updated: '1 week ago' },
-  { name: 'Criminal Bail Application', category: 'Criminal', updated: '3 days ago' },
-  { name: 'Sale Deed', category: 'Conveyance', updated: '1 month ago' },
-];
-
 export default function TemplatesLibrary() {
   return (
     <div className="fade-in">
@@ -42,13 +35,10 @@ export default function TemplatesLibrary() {
       </div>
 
       <Card title="Templates">
-        {TEMPLATES.map((t, i) => (
-          <button className="docmgr__folder" key={i}>
-            <Icon name="doc" size={15} />
-            <span>{t.name}</span>
-            <span className="docmgr__count">{t.category} · {t.updated}</span>
-          </button>
-        ))}
+        <div className="empty">
+          <div className="empty__icon"><Icon name="copy" size={24} /></div>
+          <p className="muted">No templates created yet.</p>
+        </div>
       </Card>
     </div>
   );

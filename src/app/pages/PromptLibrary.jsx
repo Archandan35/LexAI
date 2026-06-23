@@ -12,13 +12,6 @@ const STATS = [
   { value: 5, label: 'Custom' },
 ];
 
-const PROMPTS = [
-  { name: 'Draft Plaint for Recovery', category: 'Drafting', lastUsed: '2 days ago' },
-  { name: 'Summarise Case Law', category: 'Research', lastUsed: '5 days ago' },
-  { name: 'Review Contract Clause', category: 'Review', lastUsed: '1 week ago' },
-  { name: 'Cross Examination Questions', category: 'Custom', lastUsed: '3 days ago' },
-];
-
 export default function PromptLibrary() {
   return (
     <div className="fade-in">
@@ -49,17 +42,14 @@ export default function PromptLibrary() {
               </tr>
             </thead>
             <tbody>
-              {PROMPTS.map((p) => (
-                <tr key={p.name}>
-                  <td className="fw-600">{p.name}</td>
-                  <td><Badge tone="navy">{p.category}</Badge></td>
-                  <td className="muted">{p.lastUsed}</td>
-                  <td>
-                    <button className="btn btn--ghost btn--sm"><Icon name="edit" size={14} /></button>
-                    <button className="btn btn--ghost btn--sm"><Icon name="trash" size={14} /></button>
-                  </td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={4}>
+                  <div className="empty">
+                    <div className="empty__icon"><Icon name="book" size={24} /></div>
+                    <p className="muted">No prompts created yet.</p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

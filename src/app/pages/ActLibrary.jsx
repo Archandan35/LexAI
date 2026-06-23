@@ -10,14 +10,6 @@ const STATS = [
   { label: 'Last Updated', value: 'Today', icon: 'clock' },
 ];
 
-const ACTS = [
-  { title: 'Indian Penal Code, 1860', short: 'IPC', sections: '511 Sections' },
-  { title: 'Code of Civil Procedure, 1908', short: 'CPC', sections: '158 Sections' },
-  { title: 'Code of Criminal Procedure, 1973', short: 'CrPC', sections: '484 Sections' },
-  { title: 'Indian Evidence Act, 1872', short: 'IEA', sections: '167 Sections' },
-  { title: 'Constitution of India, 1950', short: 'COI', sections: '395 Articles' },
-];
-
 export default function ActLibrary() {
   return (
     <div className="fade-in">
@@ -43,15 +35,10 @@ export default function ActLibrary() {
       </div>
 
       <Card title="Acts">
-        {ACTS.map((a, i) => (
-          <div className="list-row" key={i}>
-            <div className="list-row__icon"><Icon name="book" size={16} /></div>
-            <div>
-              <div className="list-row__title">{a.title}</div>
-              <div className="list-row__meta">{a.short} &middot; {a.sections}</div>
-            </div>
-          </div>
-        ))}
+        <div className="empty">
+          <div className="empty__icon"><Icon name="book" size={24} /></div>
+          <p className="muted">No acts loaded yet.</p>
+        </div>
       </Card>
     </div>
   );
