@@ -55,10 +55,15 @@ async function withProvisioning(provider, collection, fn) {
 }
 
 async function grantCollectionAccess(db, collection) {
-  if (typeof db.execSql !== 'function') return false;
+  if (typeof db.execSql !== 'function') { console.warn('[grantAccess] provider has no execSql'); return false; }
   const table = EntityRegistry.providerTable(collection);
-  const sql = `GRANT ALL ON "${table}" TO anon, authenticated;`;
+  const sql = `
+    alter table if exists "${table}" disable row level security;
+    grant all on table "${table}" to anon, authenticated;
+  `;
+  console.log('[grantAccess] running:', sql.trim());
   const res = await db.execSql(sql);
+  console.log('[grantAccess] result:', res);
   return res.ok;
 }
 
