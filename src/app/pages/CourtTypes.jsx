@@ -21,50 +21,60 @@ export default function CourtTypes() {
   const visible = courts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   const add = async () => {
-    if (!newName.trim()) { toast.push('Enter a court name.', 'error'); return; }
-    const res = await courtLogic.create({ name: newName });
-    if (res.ok) { setNewName(''); toast.push('Court added.', 'success'); await refresh(); }
-    else toast.push(res.error, 'error');
+    try {
+      if (!newName.trim()) { toast.push('Enter a court name.', 'error'); return; }
+      const res = await courtLogic.create({ name: newName });
+      if (res.ok) { setNewName(''); toast.push('Court added.', 'success'); await refresh(); }
+      else toast.push(res.error, 'error');
+    } catch (err) { toast.push(err?.message || 'Failed to create court.', 'error'); }
   };
 
   const addBulk = async () => {
-    const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
-    if (!lines.length) { toast.push('Paste at least one court name.', 'error'); return; }
-    let added = 0; let skipped = 0;
-    for (const name of lines) {
-      // eslint-disable-next-line no-await-in-loop
-      const res = await courtLogic.create({ name });
-      if (res.ok) added += 1; else skipped += 1;
-    }
-    setBulkText('');
-    toast.push(`${added} court(s) added.${skipped ? ` ${skipped} skipped (already exist).` : ''}`, added ? 'success' : 'info');
-    await refresh();
+    try {
+      const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (!lines.length) { toast.push('Paste at least one court name.', 'error'); return; }
+      let added = 0; let skipped = 0;
+      for (const name of lines) {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await courtLogic.create({ name });
+        if (res.ok) added += 1; else skipped += 1;
+      }
+      setBulkText('');
+      toast.push(`${added} court(s) added.${skipped ? ` ${skipped} skipped (already exist).` : ''}`, added ? 'success' : 'info');
+      await refresh();
+    } catch (err) { toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
   const saveEdit = async () => {
-    if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
-    const res = await courtLogic.update(editId, { name: editName });
-    if (res.ok) { setEditId(null); toast.push('Court renamed.', 'success'); await refresh(); }
-    else toast.push(res.error, 'error');
+    try {
+      if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+      const res = await courtLogic.update(editId, { name: editName });
+      if (res.ok) { setEditId(null); toast.push('Court renamed.', 'success'); await refresh(); }
+      else toast.push(res.error, 'error');
+    } catch (err) { toast.push(err?.message || 'Failed to rename court.', 'error'); }
   };
 
   const remove = async (court) => {
-    if (!confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
-    await courtLogic.remove(court.id);
-    toast.push('Court deleted.', 'success');
-    await refresh();
+    try {
+      if (!confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
+      await courtLogic.remove(court.id);
+      toast.push('Court deleted.', 'success');
+      await refresh();
+    } catch (err) { toast.push(err?.message || 'Failed to delete court.', 'error'); }
   };
 
   const removeBulk = async () => {
-    if (!selected.size) return;
-    if (!confirm(`Delete ${selected.size} court(s)?`)) return;
-    for (const id of selected) {
-      // eslint-disable-next-line no-await-in-loop
-      await courtLogic.remove(id);
-    }
-    setSelected(new Set());
-    toast.push(`${selected.size} court(s) deleted.`, 'success');
-    await refresh();
+    try {
+      if (!selected.size) return;
+      if (!confirm(`Delete ${selected.size} court(s)?`)) return;
+      for (const id of selected) {
+        // eslint-disable-next-line no-await-in-loop
+        await courtLogic.remove(id);
+      }
+      setSelected(new Set());
+      toast.push(`${selected.size} court(s) deleted.`, 'success');
+      await refresh();
+    } catch (err) { toast.push(err?.message || 'Bulk delete failed.', 'error'); }
   };
 
   const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
