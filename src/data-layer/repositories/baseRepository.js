@@ -58,8 +58,10 @@ async function grantCollectionAccess(db, collection) {
   if (typeof db.execSql !== 'function') { console.warn('[grantAccess] provider has no execSql'); return false; }
   const table = EntityRegistry.providerTable(collection);
   const sql = `
-    alter table if exists "${table}" disable row level security;
-    grant all on table "${table}" to anon, authenticated;
+    alter table if exists "${table}" enable row level security;
+    drop policy if exists "${table}_anon_all" on "${table}";
+    create policy "${table}_anon_all" on "${table}" for all to anon using (true) with check (true);
+    grant insert, select, update, delete on table "${table}" to anon;
   `;
   console.log('[grantAccess] running:', sql.trim());
   const res = await db.execSql(sql);

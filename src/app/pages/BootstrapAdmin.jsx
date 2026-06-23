@@ -133,7 +133,7 @@ export default function BootstrapAdmin() {
       }
       console.log('[Bootstrap] redirect login');
       await refreshUser();
-      nav('/', { replace: true });
+      window.location.href = '/';
     } else {
       setError(res.error || 'Failed to bootstrap super admin.');
     }
@@ -194,7 +194,7 @@ export default function BootstrapAdmin() {
               Check <strong>{email}</strong> for a confirmation link from your auth provider.
             </p>
             <div className="dm-toolbar-mt">
-              <Button variant="primary" className="btn--block" onClick={() => nav('/login', { replace: true })}>
+              <Button variant="primary" className="btn--block" onClick={() => { window.location.href = '/login'; }}>
                 Go to Login
               </Button>
             </div>

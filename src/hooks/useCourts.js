@@ -1,15 +1,18 @@
 import { useEffect, useState, useCallback } from 'react';
 import { courtLogic } from '@/logic/courtLogic.js';
 
+let cached = null;
+
 export function useCourts() {
-  const [courts, setCourts] = useState([]);
-  const [courtNames, setCourtNames] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [courts, setCourts] = useState(cached?.courts || []);
+  const [courtNames, setCourtNames] = useState(cached?.courtNames || []);
+  const [loading, setLoading] = useState(!cached);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const list = await courtLogic.list();
+      cached = { courts: list, courtNames: list.map((c) => c.name) };
       setCourts(list);
       setCourtNames(list.map((c) => c.name));
     } catch {
@@ -19,7 +22,7 @@ export function useCourts() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { if (!cached) refresh(); }, [refresh]);
 
   return { courts, courtNames, loading, refresh };
 }
