@@ -1,9 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import { useCourts } from '@/hooks/useCourts.js';
 import { courtLogic } from '@/logic/courtLogic.js';
+import { useToast } from '@/data-layer/ToastContext.jsx';
+import PageHeader from '@/components/PageHeader.jsx';
+import Card from '@/components/Card.jsx';
+import { Field } from '@/components/Field.jsx';
+import Icon from '@/components/Icon.jsx';
 
 export default function CourtTypes() {
   const { courts, courtNames, loading, refresh } = useCourts();
+  const toast = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '' });
@@ -24,9 +30,10 @@ export default function CourtTypes() {
       ? await courtLogic.update(editing.id, { name: form.name, display_order: editing.display_order, status: editing.status })
       : await courtLogic.create(form);
     if (!res.ok) { setError(res.error); return; }
+    toast.push(editing ? 'Court updated.' : 'Court created.', 'success');
     resetForm();
     await refresh();
-  }, [form, editing, refresh, resetForm]);
+  }, [form, editing, refresh, resetForm, toast]);
 
   const handleEdit = useCallback((court) => {
     setForm({ name: court.name });
@@ -38,42 +45,47 @@ export default function CourtTypes() {
   const handleDelete = useCallback(async (court) => {
     if (!window.confirm(`Delete court "${court.name}"?`)) return;
     await courtLogic.remove(court.id);
+    toast.push('Court deleted.', 'success');
     await refresh();
-  }, [refresh]);
+  }, [refresh, toast]);
 
-  if (loading) return <div className="page page--center"><div className="spinner" /></div>;
+  if (loading) return <div className="fade-in" style={{ display: 'grid', placeItems: 'center', padding: 60 }}><div className="spinner" /></div>;
 
   return (
-    <div className="page court-types">
-      <div className="page__header">
-        <h1 className="page__title">Court Types</h1>
-        <button className="btn btn--primary" onClick={() => { resetForm(); setShowForm(true); }}>
-          + Add Court
-        </button>
-      </div>
+    <div className="fade-in">
+      <PageHeader
+        icon="folder"
+        title="Court Types"
+        subtitle="Manage court types used in case forms and filters."
+        actions={(
+          <button className="btn btn--primary" onClick={() => { resetForm(); setShowForm(true); }}>
+            <Icon name="plus" size={15} /> Add Court
+          </button>
+        )}
+      />
 
       {showForm && (
-        <form className="card card--form court-types__form" onSubmit={handleSubmit}>
-          <h3 className="card__title">{editing ? 'Edit' : 'New'} Court</h3>
-          {error && <div className="form__error">{error}</div>}
-          <div className="form__group">
-            <label className="form__label">Name</label>
-            <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
-          </div>
-          <div className="form__actions">
-            <button className="btn btn--primary" type="submit">{editing ? 'Update' : 'Create'}</button>
-            <button className="btn btn--ghost" type="button" onClick={resetForm}>Cancel</button>
-          </div>
-        </form>
+        <Card title={editing ? 'Edit Court' : 'New Court'} className="case-types__form">
+          <form onSubmit={handleSubmit}>
+            {error && <div className="alert alert--danger" style={{ marginBottom: 14 }}>{error}</div>}
+            <Field label="Name">
+              <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
+            </Field>
+            <div className="toolbar-row" style={{ marginTop: 16 }}>
+              <button className="btn btn--primary" type="submit">{editing ? 'Update' : 'Create'}</button>
+              <button className="btn btn--ghost" type="button" onClick={resetForm}>Cancel</button>
+            </div>
+          </form>
+        </Card>
       )}
 
-      <div className="table-wrapper">
-        <table className="table court-types__table">
+      <Card bodyClass="card__body--flush">
+        <table className="table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Order</th>
-              <th>Actions</th>
+              <th style={{ width: 110 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -82,18 +94,24 @@ export default function CourtTypes() {
             ) : courts.map((court) => (
               <tr key={court.id}>
                 <td style={{ fontWeight: 600 }}>{court.name}</td>
-                <td>{court.display_order}</td>
+                <td style={{ color: 'var(--text-faint)' }}>{court.display_order}</td>
                 <td>
-                  <button className="btn btn--sm btn--ghost" onClick={() => handleEdit(court)} title="Edit">✎</button>
-                  <button className="btn btn--sm btn--ghost btn--danger" onClick={() => handleDelete(court)} title="Delete">✕</button>
+                  <div className="row-actions">
+                    <button className="iconbtn" title="Edit" onClick={() => handleEdit(court)}>
+                      <Icon name="edit" size={15} />
+                    </button>
+                    <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => handleDelete(court)}>
+                      <Icon name="trash" size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <p className="page__hint" style={{ marginTop: 16, color: 'var(--text-faint)', fontSize: 12.5 }}>
+      <p className="muted" style={{ marginTop: 16, fontSize: 12.5 }}>
         {courtNames.length} court type(s) loaded. Courts are used in case forms and filters.
       </p>
     </div>
