@@ -1,62 +1,126 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import Icon from '@/components/Icon.jsx';
+import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
 
 export default function AiUsageReports() {
-  return (
-    <div className="fade-in">
-      <PageHeader icon="bolt" title="AI Usage Reports" subtitle="Analyze AI assistant usage across the platform." />
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-      <div className="stat-grid">
+  useEffect(() => {
+    auditLogsRepository
+      .getAll()
+      .then((all) => {
+        setLogs((Array.isArray(all) ? all : []).filter((l) => l.module === 'ai'));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalTokens = logs.reduce((s, l) => s + (l.tokens || 0), 0);
+  const totalTime = logs.reduce((s, l) => s + (l.responseTime || 0), 0);
+  const totalCost = logs.reduce((s, l) => s + (l.cost || 0), 0);
+
+  const byModel = {};
+  logs.forEach((l) => {
+    const m = l.model || 'Unknown';
+    if (!byModel[m]) byModel[m] = { queries: 0, tokens: 0, time: 0, cost: 0 };
+    byModel[m].queries += 1;
+    byModel[m].tokens += l.tokens || 0;
+    byModel[m].time += l.responseTime || 0;
+    byModel[m].cost += l.cost || 0;
+  });
+
+  const byUser = {};
+  logs.forEach((l) => {
+    const u = l.userName || l.user || 'Unknown';
+    if (!byUser[u]) byUser[u] = { queries: 0, tokens: 0, lastActive: l.at || l.timestamp || '' };
+    byUser[u].queries += 1;
+    byUser[u].tokens += l.tokens || 0;
+    if (new Date(l.at || l.timestamp) > new Date(byUser[u].lastActive))
+      byUser[u].lastActive = l.at || l.timestamp;
+  });
+
+  return (
+    <div>
+      <PageHeader icon="bolt" title="AI Usage Reports" subtitle="Analyze AI assistant usage across the platform." />
+      <div className="stats-row">
         <div className="stat-card">
-          <div className="stat-card__icon"><Icon name="bolt" size={18} /></div>
-          <div className="stat-card__value">12,847</div>
-          <div className="stat-card__label">Total Queries</div>
+          <span className="stat-card__value">{logs.length.toLocaleString()}</span>
+          <span className="stat-card__label">Total Queries</span>
         </div>
         <div className="stat-card">
-          <div className="stat-card__icon"><Icon name="grid" size={18} /></div>
-          <div className="stat-card__value">3.2M</div>
-          <div className="stat-card__label">Tokens Used</div>
+          <span className="stat-card__value">{(totalTokens / 1000).toFixed(1)}K</span>
+          <span className="stat-card__label">Tokens</span>
         </div>
         <div className="stat-card">
-          <div className="stat-card__icon"><Icon name="clock" size={18} /></div>
-          <div className="stat-card__value">1.4s</div>
-          <div className="stat-card__label">Avg Response Time</div>
+          <span className="stat-card__value">{logs.length > 0 ? (totalTime / logs.length / 1000).toFixed(1) : '0'}s</span>
+          <span className="stat-card__label">Avg Response</span>
         </div>
         <div className="stat-card">
-          <div className="stat-card__icon"><Icon name="database" size={18} /></div>
-          <div className="stat-card__value">$234.50</div>
-          <div className="stat-card__label">Cost Incurred</div>
+          <span className="stat-card__value">${totalCost.toFixed(2)}</span>
+          <span className="stat-card__label">Cost</span>
         </div>
       </div>
-
-      <Card title="Usage by Model">
-        <table className="table">
-          <thead>
-            <tr><th>Model</th><th>Queries</th><th>Tokens</th><th>Avg Cost/Query</th><th>Total Cost</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>GPT-4o</td><td>5,230</td><td>1,850K</td><td>$0.028</td><td>$146.44</td></tr>
-            <tr><td>GPT-4o-mini</td><td>4,112</td><td>890K</td><td>$0.008</td><td>$32.90</td></tr>
-            <tr><td>Claude-3-Sonnet</td><td>2,890</td><td>420K</td><td>$0.015</td><td>$43.35</td></tr>
-            <tr><td>Gemini-Pro</td><td>615</td><td>40K</td><td>$0.010</td><td>$6.15</td></tr>
-          </tbody>
-        </table>
-      </Card>
-
-      <Card title="Usage by User" className="ai-usage__card-mt">
-        <table className="table">
-          <thead>
-            <tr><th>User</th><th>Queries</th><th>Tokens</th><th>Last Active</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>admin@lexai.com</td><td>3,421</td><td>1.1M</td><td>2026-06-24</td></tr>
-            <tr><td>advocate@example.com</td><td>2,890</td><td>890K</td><td>2026-06-23</td></tr>
-            <tr><td>associate@example.com</td><td>1,234</td><td>312K</td><td>2026-06-22</td></tr>
-          </tbody>
-        </table>
-      </Card>
+      <div className="grid-2">
+        <Card title="Usage by Model">
+          {loading ? (
+            <p className="loading-text">Loading...</p>
+          ) : Object.keys(byModel).length === 0 ? (
+            <p>No data.</p>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Queries</th>
+                  <th>Tokens</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(byModel).map(([model, data]) => (
+                  <tr key={model}>
+                    <td>{model}</td>
+                    <td>{data.queries.toLocaleString()}</td>
+                    <td>{data.tokens.toLocaleString()}</td>
+                    <td>${data.cost.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+        <Card title="Usage by User">
+          {Object.keys(byUser).length === 0 ? (
+            <p>No data.</p>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Queries</th>
+                  <th>Tokens</th>
+                  <th>Last Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(byUser)
+                  .sort((a, b) => b[1].queries - a[1].queries)
+                  .slice(0, 10)
+                  .map(([user, data]) => (
+                    <tr key={user}>
+                      <td>{user}</td>
+                      <td>{data.queries}</td>
+                      <td>{data.tokens.toLocaleString()}</td>
+                      <td>{data.lastActive}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

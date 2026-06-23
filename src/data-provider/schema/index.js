@@ -34,6 +34,14 @@ import { CourtsSchema } from './courts.schema.js';
 import { BenchTypesSchema } from './bench_types.schema.js';
 import { CourtHierarchySchema } from './court_hierarchy.schema.js';
 import { JurisdictionsSchema } from './jurisdictions.schema.js';
+import { ClientsSchema } from './clients.schema.js';
+import { ContactsSchema } from './contacts.schema.js';
+import { ActsSchema } from './acts.schema.js';
+import { PromptsSchema } from './prompts.schema.js';
+import { TemplatesSchema } from './templates.schema.js';
+import { LegalNoticesSchema } from './legal_notices.schema.js';
+import { PrecedentsSchema } from './precedents.schema.js';
+import { ReportsSchema } from './reports.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -67,11 +75,19 @@ export const schemas = {
   bench_types: BenchTypesSchema,
   court_hierarchy: CourtHierarchySchema,
   jurisdictions: JurisdictionsSchema,
+  clients: ClientsSchema,
+  contacts: ContactsSchema,
+  acts: ActsSchema,
+  prompts: PromptsSchema,
+  templates: TemplatesSchema,
+  legal_notices: LegalNoticesSchema,
+  precedents: PrecedentsSchema,
+  reports: ReportsSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 29;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

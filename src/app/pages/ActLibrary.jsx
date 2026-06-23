@@ -1,44 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
-
-const STATS = [
-  { label: 'Total Acts', value: '128', icon: 'book' },
-  { label: 'Sections', value: '4,256', icon: 'layers' },
-  { label: 'Amendments', value: '340', icon: 'edit' },
-  { label: 'Last Updated', value: 'Today', icon: 'clock' },
-];
+import { Input } from '@/components/Field.jsx';
+import { actLogic } from '@/logic/actLogic.js';
 
 export default function ActLibrary() {
+  const [acts, setActs] = useState([]);
+  const [stats, setStats] = useState({ totalActs: 0, totalSections: 0, totalAmendments: 0, lastUpdated: 'N/A' });
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([actLogic.list(), actLogic.stats()]).then(([a, s]) => {
+      setActs(Array.isArray(a) ? a : []);
+      if (s && !s.error) setStats(s);
+    }).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const filtered = acts.filter((a) => !search || (a.title || '').toLowerCase().includes(search.toLowerCase()));
+
   return (
-    <div className="fade-in">
-      <PageHeader
-        icon="book"
-        title="Act Library"
-        subtitle="Browse statutes and acts with sections."
-      />
-
-      <div className="stat-grid">
-        {STATS.map((s) => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-card__icon"><Icon name={s.icon} size={20} /></div>
-            <div className="stat-card__value">{s.value}</div>
-            <div className="stat-card__label">{s.label}</div>
-          </div>
-        ))}
+    <div>
+      <PageHeader title="Acts Library" icon="book" />
+      <div className="stats-row">
+        <div className="stat-card"><span className="stat-card__value">{stats.totalActs}</span><span className="stat-card__label">Acts</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.totalSections.toLocaleString()}</span><span className="stat-card__label">Sections</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.totalAmendments}</span><span className="stat-card__label">Amendments</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.lastUpdated}</span><span className="stat-card__label">Last Updated</span></div>
       </div>
-
-      <div className="datatable__search">
-        <Icon name="search" size={15} />
-        <input placeholder="Search acts…" />
-      </div>
-
       <Card title="Acts">
-        <div className="empty">
-          <div className="empty__icon"><Icon name="book" size={24} /></div>
-          <p className="muted">No acts loaded yet.</p>
-        </div>
+        <div className="search-row"><Input className="search-row__input" placeholder="Search acts..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
+          <div className="empty-state"><Icon icon="book" /><p>No acts found.</p></div>
+        ) : (
+          <table className="data-table"><thead><tr><th>Title</th><th>Type</th><th>Jurisdiction</th><th>Sections</th><th>Amendments</th></tr></thead>
+            <tbody>{filtered.map((a) => (
+              <tr key={a.id}><td>{a.title}</td><td><span className="badge badge--info">{a.act_type || '-'}</span></td><td>{a.jurisdiction || '-'}</td><td>{a.sections_count || 0}</td><td>{a.amendments_count || 0}</td></tr>
+            ))}</tbody>
+          </table>
+        )}
       </Card>
     </div>
   );

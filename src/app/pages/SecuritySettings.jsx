@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { userService } from '@/services/userService.js';
+import { settingsLogic } from '@/logic/settingsLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Field, Select } from '@/components/Field.jsx';
 
@@ -20,10 +20,10 @@ export default function SecuritySettings() {
   const [sessionTimeout, setSessionTimeout] = useState('60');
 
   useEffect(() => {
-    const checkSuperAdmin = async () => {
+    const init = async () => {
       try {
         const users = await userService.list();
-        const admin = users.find((u) => u.roleCode === 'Admin');
+        const admin = (Array.isArray(users) ? users : []).find((u) => u.roleCode === 'Admin');
         if (admin) {
           setHasSuperAdmin(true);
           setSuperAdminUser(admin);
@@ -33,15 +33,34 @@ export default function SecuritySettings() {
         }
       } catch (err) {
         console.error('Error verifying admin:', err);
-      } finally {
-        setLoading(false);
       }
+
+      try {
+        const res = await settingsLogic.loadSettings();
+        if (res.ok && res.data) {
+          setPasswordMinLength(res.data.passwordMinLength || '8');
+          setSessionTimeout(res.data.sessionTimeout || '60');
+        }
+      } catch (err) {
+        console.error('Error loading settings:', err);
+      }
+
+      setLoading(false);
     };
-    checkSuperAdmin();
+    init();
   }, []);
 
-  const saveSettings = () => {
-    toast.push('Security settings updated.', 'success');
+  const saveSettings = async () => {
+    try {
+      const res = await settingsLogic.saveSettings({ passwordMinLength, sessionTimeout });
+      if (res.ok) {
+        toast.push('Security settings updated.', 'success');
+      } else {
+        toast.push(res.error || 'Failed to save settings.', 'error');
+      }
+    } catch {
+      toast.push('Failed to save settings.', 'error');
+    }
   };
 
   return (

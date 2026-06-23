@@ -1,66 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import { Input, Select } from '@/components/Field.jsx';
+import { Select } from '@/components/Field.jsx';
+import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
+import { backupLogic } from '@/logic/backupLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
 export default function RestoreCenter() {
-  const toast = useToast();
+  const [backups, setBackups] = useState([]);
+  const [history, setHistory] = useState([]);
   const [selectedFile, setSelectedFile] = useState('');
   const [restoreType, setRestoreType] = useState('full');
+  const [restoring, setRestoring] = useState(false);
+  const toast = useToast();
 
-  const handleRestore = () => {
-    if (!selectedFile) { toast.push('Please select a backup file to restore.', 'error'); return; }
-    toast.push('Restore initiated. This may take a few minutes.', 'info');
+  useEffect(() => {
+    const all = backupLogic.list();
+    setBackups(Array.isArray(all) ? all : []);
+    const h = (Array.isArray(all) ? all : []).filter(
+      (b) => b.type === 'restore' || b.status === 'restored'
+    );
+    setHistory(h);
+  }, []);
+
+  const handleRestore = async () => {
+    if (!selectedFile) {
+      toast.push('Please select a backup file.', 'error');
+      return;
+    }
+    setRestoring(true);
+    const r = await backupLogic.restore(selectedFile, { name: 'system' });
+    if (r && r.ok) {
+      toast.push(`Restore completed: ${r.data?.name || ''}`, 'success');
+    } else {
+      toast.push(r?.error || 'Restore failed.', 'error');
+    }
+    setRestoring(false);
   };
 
   return (
-    <div className="fade-in">
+    <div>
       <PageHeader icon="refresh" title="Restore Center" subtitle="Restore the database from a backup file." />
-
-      <Card title="Restore from Backup" className="mb-16">
+      <Card title="Restore from Backup">
+        <p className="text-muted">Select a backup file to restore the database.</p>
         <div className="field">
           <label className="field__label">Backup File</label>
-          <Select value={selectedFile} onChange={(e) => setSelectedFile(e.target.value)}
-            options={[
-              { value: '', label: '— Select a backup —' },
-              { value: 'backup-2026-06-23.zip', label: 'backup-2026-06-23.zip (2.4 GB)' },
-              { value: 'backup-2026-06-22.zip', label: 'backup-2026-06-22.zip (2.3 GB)' },
-              { value: 'backup-2026-06-21.zip', label: 'backup-2026-06-21.zip (2.3 GB)' },
-            ]}
-          />
+          <Select value={selectedFile} onChange={(e) => setSelectedFile(e.target.value)}>
+            <option value="">Select a backup...</option>
+            {backups.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name} ({b.createdAt || ''})
+              </option>
+            ))}
+          </Select>
         </div>
         <div className="field">
           <label className="field__label">Restore Type</label>
-          <Select value={restoreType} onChange={(e) => setRestoreType(e.target.value)}
-            options={[
-              { value: 'full', label: 'Full Restore (all data)' },
-              { value: 'schema', label: 'Schema Only' },
-              { value: 'data', label: 'Data Only' },
-            ]}
-          />
+          <Select value={restoreType} onChange={(e) => setRestoreType(e.target.value)}>
+            <option value="full">Full Restore</option>
+            <option value="schema">Schema Only</option>
+            <option value="data">Data Only</option>
+          </Select>
         </div>
-        <div className="alert alert--warn restore-center__alert-mb">
-          <Icon name="alert" size={15} />
-          <span>Restoring will overwrite all current data. This action cannot be undone.</span>
+        <div className="alert alert--warning">
+          This action will overwrite current data. Ensure you have a recent backup.
         </div>
-        <button className="btn btn--danger" onClick={handleRestore}>
-          <Icon name="refresh" size={15} /> Start Restore
-        </button>
+        <Button onClick={handleRestore} disabled={restoring || !selectedFile}>
+          {restoring ? 'Restoring...' : 'Start Restore'}
+        </Button>
       </Card>
-
       <Card title="Restore History">
-        <table className="table">
-          <thead>
-            <tr><th>Date</th><th>Backup File</th><th>Type</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>2026-06-20</td><td>backup-2026-06-19.zip</td><td>Full</td><td><span className="badge badge--green">Completed</span></td></tr>
-            <tr><td>2026-06-15</td><td>backup-2026-06-14.zip</td><td>Data</td><td><span className="badge badge--green">Completed</span></td></tr>
-            <tr><td>2026-06-10</td><td>backup-2026-06-09.zip</td><td>Full</td><td><span className="badge badge--red">Failed</span></td></tr>
-          </tbody>
-        </table>
+        {history.length === 0 ? (
+          <div className="empty-state">
+            <Icon name="refresh" size={24} />
+            <p>No restore operations yet.</p>
+          </div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Backup File</th>
+                <th>Type</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((h) => (
+                <tr key={h.id}>
+                  <td>{h.createdAt || ''}</td>
+                  <td>{h.name}</td>
+                  <td>{h.type || 'full'}</td>
+                  <td>
+                    <span className={`badge badge--${h.status === 'Completed' ? 'success' : 'danger'}`}>
+                      {h.status || 'Unknown'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
     </div>
   );

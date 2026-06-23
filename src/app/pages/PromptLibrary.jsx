@@ -1,58 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
-
-const STATS = [
-  { value: 24, label: 'Total Prompts' },
-  { value: 8, label: 'Drafting' },
-  { value: 6, label: 'Research' },
-  { value: 5, label: 'Review' },
-  { value: 5, label: 'Custom' },
-];
+import { Input } from '@/components/Field.jsx';
+import { promptLogic } from '@/logic/promptLogic.js';
 
 export default function PromptLibrary() {
-  return (
-    <div className="fade-in">
-      <PageHeader icon="book" title="Prompt Library" subtitle="Manage reusable AI prompt templates." />
+  const [prompts, setPrompts] = useState([]);
+  const [stats, setStats] = useState({ total: 0, categories: {}, categoryCount: 0 });
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
-      <div className="stat-grid">
-        {STATS.map((s) => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-card__value">{s.value}</div>
-            <div className="stat-card__label">{s.label}</div>
-          </div>
+  const load = () => {
+    setLoading(true);
+    Promise.all([promptLogic.list(), promptLogic.stats()]).then(([p, s]) => {
+      setPrompts(Array.isArray(p) ? p : []);
+      if (s && !s.error) setStats(s);
+    }).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const filtered = prompts.filter((p) => !search || (p.name || '').toLowerCase().includes(search.toLowerCase()) || (p.category || '').toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div>
+      <PageHeader title="Prompt Library" icon="terminal" />
+      <div className="stats-row">
+        <div className="stat-card"><span className="stat-card__value">{stats.total}</span><span className="stat-card__label">Total Prompts</span></div>
+        {Object.entries(stats.categories).slice(0, 4).map(([cat, count]) => (
+          <div key={cat} className="stat-card"><span className="stat-card__value">{count}</span><span className="stat-card__label">{cat}</span></div>
         ))}
       </div>
-
-      <Card title="Prompt Templates">
-        <div className="datatable__search">
-          <Icon name="search" size={16} />
-          <input placeholder="Search prompts…" />
-        </div>
-        <div className="table-scroll">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Prompt Name</th>
-                <th>Category</th>
-                <th>Last Used</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={4}>
-                  <div className="empty">
-                    <div className="empty__icon"><Icon name="book" size={24} /></div>
-                    <p className="muted">No prompts created yet.</p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+      <Card title="Prompts">
+        <div className="search-row"><Input className="search-row__input" placeholder="Search prompts..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
+          <div className="empty-state"><Icon icon="terminal" /><p>No prompts yet.</p></div>
+        ) : (
+          <table className="data-table"><thead><tr><th>Prompt Name</th><th>Category</th><th>Last Used</th><th>Usage</th></tr></thead>
+            <tbody>{filtered.map((p) => (
+              <tr key={p.id}><td>{p.name}</td><td><span className="badge badge--info">{p.category}</span></td><td>{p.last_used || 'Never'}</td><td>{p.usage_count || 0}</td></tr>
+            ))}</tbody>
           </table>
-        </div>
+        )}
       </Card>
     </div>
   );

@@ -1,70 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
-import Badge from '@/components/Badge.jsx';
+import { Input } from '@/components/Field.jsx';
+import Button from '@/components/Button.jsx';
+import { legalNoticeLogic } from '@/logic/legalNoticeLogic.js';
+import { useToast } from '@/data-layer/ToastContext.jsx';
 
-const STATS = [
-  { label: 'Draft Notices', value: '7', icon: 'doc' },
-  { label: 'Sent', value: '12', icon: 'upload' },
-  { label: 'Acknowledged', value: '8', icon: 'check' },
-  { label: 'Replied', value: '5', icon: 'share' },
-];
-
-const STATUS_TONE = { Sent: 'amber', Acknowledged: 'green', Draft: 'amber', Replied: 'green' };
+const STATUS_TONE = { Draft: 'muted', Sent: 'info', Acknowledged: 'warning', Replied: 'success' };
 
 export default function LegalNotices() {
+  const [notices, setNotices] = useState([]);
+  const [stats, setStats] = useState({ draft: 0, sent: 0, acknowledged: 0, replied: 0 });
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ notice_number: '', recipient: '', date: '', content: '' });
+  const toast = useToast();
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([legalNoticeLogic.list(), legalNoticeLogic.stats()]).then(([n, s]) => {
+      setNotices(Array.isArray(n) ? n : []);
+      if (s && !s.error) setStats(s);
+    }).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const filtered = notices.filter((n) => !search || (n.notice_number || '').toLowerCase().includes(search.toLowerCase()) || (n.recipient || '').toLowerCase().includes(search.toLowerCase()));
+
+  const addNotice = async () => {
+    if (!form.notice_number?.trim()) { toast.error('Notice number is required.'); return; }
+    if (!form.recipient?.trim()) { toast.error('Recipient is required.'); return; }
+    const r = await legalNoticeLogic.create(form);
+    if (r && !r.error) { toast.success('Notice added.'); setShowForm(false); setForm({ notice_number: '', recipient: '', date: '', content: '' }); load(); }
+    else toast.error(r?.error || 'Failed to add notice.');
+  };
+
   return (
-    <div className="fade-in">
-      <PageHeader
-        icon="doc"
-        title="Legal Notices"
-        subtitle="Generate and track legal notices."
-      />
-
-      <div className="stat-grid">
-        {STATS.map((s) => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-card__icon"><Icon name={s.icon} size={20} /></div>
-            <div className="stat-card__value">{s.value}</div>
-            <div className="stat-card__label">{s.label}</div>
-          </div>
-        ))}
+    <div>
+      <PageHeader title="Legal Notices" icon="file-text" />
+      <div className="stats-row">
+        <div className="stat-card"><span className="stat-card__value">{stats.draft}</span><span className="stat-card__label">Draft</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.sent}</span><span className="stat-card__label">Sent</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.acknowledged}</span><span className="stat-card__label">Acknowledged</span></div>
+        <div className="stat-card"><span className="stat-card__value">{stats.replied}</span><span className="stat-card__label">Replied</span></div>
       </div>
-
-      <div className="toolbar-row">
-        <div className="datatable__search">
-          <Icon name="search" size={15} />
-          <input placeholder="Search notices…" />
-        </div>
-        <div className="card__spacer" />
-        <button className="btn btn--primary"><Icon name="plus" size={16} /> Add Notice</button>
-      </div>
-
       <Card title="Notice Log">
-        <div className="table-scroll">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Notice No.</th>
-                <th>Recipient</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={5}>
-                  <div className="empty">
-                    <div className="empty__icon"><Icon name="doc" size={24} /></div>
-                    <p className="muted">No legal notices generated yet.</p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+        <div className="toolbar-row"><Input className="search-row__input" placeholder="Search notices..." value={search} onChange={(e) => setSearch(e.target.value)} /><Button onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : 'Add Notice'}</Button></div>
+        {showForm && (
+          <div className="card card--inset">
+            <div className="field"><label>Notice No.</label><Input value={form.notice_number} onChange={(e) => setForm({ ...form, notice_number: e.target.value })} /></div>
+            <div className="field"><label>Recipient</label><Input value={form.recipient} onChange={(e) => setForm({ ...form, recipient: e.target.value })} /></div>
+            <div className="field"><label>Date</label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+            <Button onClick={addNotice}>Save Notice</Button>
+          </div>
+        )}
+        {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
+          <div className="empty-state"><Icon icon="file-text" /><p>No notices yet.</p></div>
+        ) : (
+          <table className="data-table"><thead><tr><th>Notice No.</th><th>Recipient</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>{filtered.map((n) => (
+              <tr key={n.id}><td>{n.notice_number}</td><td>{n.recipient}</td><td>{n.date}</td><td><span className={`badge badge--${STATUS_TONE[n.status] || 'muted'}`}>{n.status}</span></td>
+                <td><button className="btn-icon" onClick={() => legalNoticeLogic.remove(n.id).then(load)} title="Remove"><Icon icon="trash-2" /></button></td></tr>
+            ))}</tbody>
           </table>
-        </div>
+        )}
       </Card>
     </div>
   );
