@@ -48,7 +48,10 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     const res = await fetch(this.#endpoint(collection), {
       method: 'POST', headers: this.#headers(), body: JSON.stringify(record),
     });
-    if (!res.ok) throw new Error(`Supabase create ${collection} ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Supabase create ${collection} ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`);
+    }
     const rows = await res.json();
     // PostgREST can return 200/201 with an empty body if RLS silently filters
     // the insert back out — that is NOT a successful create.

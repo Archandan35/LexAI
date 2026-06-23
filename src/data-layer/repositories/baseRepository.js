@@ -62,6 +62,10 @@ async function grantCollectionAccess(db, collection) {
     drop policy if exists "${table}_anon_all" on "${table}";
     create policy "${table}_anon_all" on "${table}" for all to anon using (true) with check (true);
     grant insert, select, update, delete on table "${table}" to anon;
+    alter table if exists "_sequences" enable row level security;
+    drop policy if exists "_sequences_anon_all" on "_sequences";
+    create policy "_sequences_anon_all" on "_sequences" for all to anon using (true) with check (true);
+    grant insert, select, update, delete on table "_sequences" to anon;
   `;
   console.log('[grantAccess] running:', sql.trim());
   const res = await db.execSql(sql);
@@ -96,6 +100,7 @@ export function createRepository(collection) {
         enriched.id = await IDEngine.generate(entityName);
       }
       const providerRecord = FieldMapper.toProvider(entityName, enriched);
+      const wasAutoId = !record.id;
       try {
         const result = await provider.create(providerName(), providerRecord);
         return FieldMapper.toLexAI(entityName, result);
@@ -103,7 +108,11 @@ export function createRepository(collection) {
         await ensureCollectionExists(provider, entityName);
         await ensureRecordColumns(provider, entityName, providerRecord);
         await grantCollectionAccess(provider, entityName);
-        const result = await provider.create(providerName(), providerRecord);
+        if (wasAutoId) {
+          enriched.id = await IDEngine.generate(entityName);
+        }
+        const retryRecord = FieldMapper.toProvider(entityName, enriched);
+        const result = await provider.create(providerName(), retryRecord);
         return FieldMapper.toLexAI(entityName, result);
       }
     },
