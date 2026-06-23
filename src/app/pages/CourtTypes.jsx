@@ -6,10 +6,12 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 export default function CourtTypes() {
   const { courts, courtNames, loading, refresh } = useCourts();
   const toast = useToast();
+  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [search, setSearch] = useState('');
   const [mode, setMode] = useState('single');
   const [newName, setNewName] = useState('');
@@ -17,16 +19,20 @@ export default function CourtTypes() {
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState('');
   const [selected, setSelected] = useState(new Set());
+  const [lastError, setLastError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
 
   const visible = courts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   const add = async () => {
     try {
       if (!newName.trim()) { toast.push('Enter a court name.', 'error'); return; }
+      console.log('Creating court:', { name: newName });
       const res = await courtLogic.create({ name: newName });
+      console.log('Create result:', res);
       if (res.ok) { setNewName(''); toast.push('Court added.', 'success'); await refresh(); }
-      else toast.push(res.error, 'error');
-    } catch (err) { toast.push(err?.message || 'Failed to create court.', 'error'); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create court.', 'error'); }
   };
 
   const addBulk = async () => {
@@ -35,6 +41,7 @@ export default function CourtTypes() {
       if (!lines.length) { toast.push('Paste at least one court name.', 'error'); return; }
       let added = 0; let skipped = 0;
       for (const name of lines) {
+        console.log('Bulk creating court:', { name });
         // eslint-disable-next-line no-await-in-loop
         const res = await courtLogic.create({ name });
         if (res.ok) added += 1; else skipped += 1;
@@ -42,25 +49,28 @@ export default function CourtTypes() {
       setBulkText('');
       toast.push(`${added} court(s) added.${skipped ? ` ${skipped} skipped (already exist).` : ''}`, added ? 'success' : 'info');
       await refresh();
-    } catch (err) { toast.push(err?.message || 'Bulk add failed.', 'error'); }
+    } catch (err) { console.error('Bulk create exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
   const saveEdit = async () => {
     try {
       if (!editName.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
+      console.log('Updating court:', { id: editId, name: editName });
       const res = await courtLogic.update(editId, { name: editName });
+      console.log('Update result:', res);
       if (res.ok) { setEditId(null); toast.push('Court renamed.', 'success'); await refresh(); }
-      else toast.push(res.error, 'error');
-    } catch (err) { toast.push(err?.message || 'Failed to rename court.', 'error'); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { console.error('Update exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to rename court.', 'error'); }
   };
 
   const remove = async (court) => {
     try {
       if (!confirm(`Delete court "${court.name}"? Cases using this court keep their value.`)) return;
+      console.log('Removing court:', { id: court.id, name: court.name });
       await courtLogic.remove(court.id);
       toast.push('Court deleted.', 'success');
       await refresh();
-    } catch (err) { toast.push(err?.message || 'Failed to delete court.', 'error'); }
+    } catch (err) { console.error('Remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to delete court.', 'error'); }
   };
 
   const removeBulk = async () => {
@@ -68,13 +78,14 @@ export default function CourtTypes() {
       if (!selected.size) return;
       if (!confirm(`Delete ${selected.size} court(s)?`)) return;
       for (const id of selected) {
+        console.log('Bulk removing court:', { id });
         // eslint-disable-next-line no-await-in-loop
         await courtLogic.remove(id);
       }
       setSelected(new Set());
       toast.push(`${selected.size} court(s) deleted.`, 'success');
       await refresh();
-    } catch (err) { toast.push(err?.message || 'Bulk delete failed.', 'error'); }
+    } catch (err) { console.error('Bulk remove exception:', err); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk delete failed.', 'error'); }
   };
 
   const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
@@ -180,6 +191,8 @@ export default function CourtTypes() {
       <p className="muted" style={{ marginTop: 16, fontSize: 12.5 }}>
         {courtNames.length} court type(s) loaded. Courts are used in case forms and filters.
       </p>
+
+      <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }
