@@ -165,7 +165,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           <Field label="Court Hierarchy">
             <Select value={form.court_hierarchy} onChange={(e) => set('court_hierarchy', e.target.value)}>
               <option value="">Select hierarchy…</option>
-              {hierarchyOptions.map((h) => <option key={h} value={h}>{h}</option>)}
+              {hierarchyOptions.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
             </Select>
           </Field>
         </div>
@@ -173,7 +173,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           <Field label="Bench Type">
             <Select value={form.bench_type} onChange={(e) => set('bench_type', e.target.value)}>
               <option value="">Select bench type…</option>
-              {benchTypeOptions.map((b) => <option key={b} value={b}>{b}</option>)}
+              {benchTypeOptions.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
             </Select>
           </Field>
           <Field label="Court Name">
@@ -199,7 +199,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           <Field label="Priority">
             <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
               <option value="">Select priority…</option>
-              {priorityOptions.map((p) => <option key={p} value={p}>{p}</option>)}
+              {priorityOptions.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
             </Select>
           </Field>
         </div>
