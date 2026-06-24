@@ -398,12 +398,14 @@ export default function CaseDocuments() {
           </div>
         </div>
         <input ref={fileInputRef} type="file" hidden onChange={handleUpload} accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg,.txt" />
-        <Button variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
-          Add Folder
-        </Button>
-        <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-          {uploading ? 'Uploading…' : '+ Upload Document'}
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+            {uploading ? 'Uploading…' : '+ Upload Document'}
+          </Button>
+          <Button variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
+            Add Folder
+          </Button>
+        </div>
       </div>
 
       {/* Stats row */}
@@ -775,7 +777,10 @@ export default function CaseDocuments() {
             <div className="empty">
               <div className="empty__icon"><Icon name="folder" size={24} /></div>
               <p className="muted">This folder is empty.</p>
-              <Button size="sm" variant="ghost" onClick={() => fileInputRef.current?.click()}>Upload a document</Button>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <Button size="sm" variant="primary" onClick={() => fileInputRef.current?.click()}>Upload a document</Button>
+                <Button size="sm" variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>Add sub-folder</Button>
+              </div>
             </div>
           )}
         </div>

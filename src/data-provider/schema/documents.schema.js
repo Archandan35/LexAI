@@ -11,6 +11,7 @@ export const DocumentsSchema = {
     folder: 'string',
     mime: 'string',
     size: 'number',
+    ref: 'string',
     text: 'string',
     version: 'number',
     sync_status: 'string',
