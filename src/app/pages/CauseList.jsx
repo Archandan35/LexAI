@@ -59,6 +59,7 @@ export default function CauseList() {
     actions: true,
   });
   const [showColumnsMenu, setShowColumnsMenu] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState('');
 
   // Templates Tab
   const [tplList, setTplList] = useState([]);
@@ -549,6 +550,50 @@ export default function CauseList() {
             </div>
           </div>
 
+          {/* Selected Case Info Card */}
+          {selectedCaseId && (() => {
+            const selCase = cases.find(c => c.id === selectedCaseId);
+            if (!selCase) return null;
+            return (
+              <div className="cause-list__case-info-card" style={{ marginBottom: '14px' }}>
+                <div className="cause-list__case-info-header">
+                  <div className="cause-list__case-icon-box">
+                    <Icon name="balance" size={24} />
+                  </div>
+                  <div className="cause-list__case-title-area">
+                    <div className="cause-list__case-title-row">
+                      <h2 className="cause-list__case-title">{selCase.caseNumber}</h2>
+                      <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
+                    </div>
+                    <p className="cause-list__case-subtitle">{selCase.title}</p>
+                  </div>
+                </div>
+                <div className="cause-list__details-grid">
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Court</span>
+                    <span className="cause-list__details-value">{selCase.court || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Filing Date</span>
+                    <span className="cause-list__details-value">{formatDate(selCase.filing_date) || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Current Stage</span>
+                    <span className="cause-list__details-value">{selCase.stage || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Next Hearing</span>
+                    <span className="cause-list__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Judge</span>
+                    <span className="cause-list__details-value">{selCase.judge || '—'}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Hearings Table Card */}
           <Card bodyClass="card__body--flush">
             {paginatedRows.length === 0 ? (
@@ -573,8 +618,8 @@ export default function CauseList() {
                   {paginatedRows.map((h) => {
                     const statusClass = h.status?.toLowerCase() || 'default';
                     return (
-                      <tr key={h.id}>
-                        <td><input type="checkbox" /></td>
+                      <tr key={h.id} className={`cause-list__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
+                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
                         {visibleColumns.date && (
                           <td className="cause-list__cell-date">
                             <div className="flex align-center gap-8">
@@ -681,12 +726,12 @@ export default function CauseList() {
                     <Icon name="balance" size={24} />
                   </div>
                   <div className="cause-list__case-title-area">
-                    <h2 className="cause-list__case-title">
-                      {history.case?.caseNumber}
+                    <div className="cause-list__case-title-row">
+                      <h2 className="cause-list__case-title">{history.case?.caseNumber}</h2>
                       {history.case?.status && (
                         <span className="cause-list__case-badge-active">{history.case.status}</span>
                       )}
-                    </h2>
+                    </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
                   </div>
                 </div>
@@ -870,13 +915,13 @@ export default function CauseList() {
               <div className="cause-list__case-info-card">
                 <div className="cause-list__case-info-header">
                   <div className="cause-list__case-icon-box">
-                    <Icon name="vault" size={24} />
+                    <Icon name="balance" size={24} />
                   </div>
                   <div className="cause-list__case-title-area">
-                    <h2 className="cause-list__case-title">
-                      {history.case?.caseNumber}
+                    <div className="cause-list__case-title-row">
+                      <h2 className="cause-list__case-title">{history.case?.caseNumber}</h2>
                       <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
-                    </h2>
+                    </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
                   </div>
                 </div>
@@ -1015,7 +1060,10 @@ export default function CauseList() {
               return cd ? (
                 <div className="hearing-modal__case-preview">
                   <Icon name="balance" size={13} />
-                  <span><strong>{cd.caseNumber}</strong> — {cd.title}</span>
+                  <div className="hearing-modal__case-preview-text">
+                    <span className="hearing-modal__case-preview-number">{cd.caseNumber}</span>
+                    <span className="hearing-modal__case-preview-title">{cd.title}</span>
+                  </div>
                   <span className="hearing-modal__case-preview-badge">{cd.court || '—'}</span>
                 </div>
               ) : null;
@@ -1030,9 +1078,14 @@ export default function CauseList() {
             </div>
             <div className="input-row">
               <Field label="Status">
-                <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                  {HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}
-                </Select>
+                <div className="hearing-modal__status-row">
+                  <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                    {HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}
+                  </Select>
+                  <button className="hearing-modal__gear-btn" title="Manage hearing statuses">
+                    <Icon name="gear" size={15} />
+                  </button>
+                </div>
               </Field>
               <Field label="Purpose">
                 <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />

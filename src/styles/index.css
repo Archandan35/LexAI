@@ -10282,14 +10282,21 @@ kbd.cmd__kbd {
   flex: 1;
 }
 
+.cause-list__case-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .cause-list__case-title {
   font-size: 18px;
   font-weight: 700;
   color: var(--navy-900);
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+}
+
+.cause-list__case-title-row .cause-list__case-badge-active {
+  margin-left: auto;
 }
 
 .cause-list__case-subtitle {
@@ -11207,6 +11214,50 @@ kbd.cmd__kbd {
 
 .hearing-modal__editor-wrapper .doc-page:focus {
   box-shadow: 0 0 0 2px var(--brand-soft);
+}
+
+.hearing-modal__status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hearing-modal__status-row .select {
+  flex: 1;
+}
+
+.hearing-modal__gear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.hearing-modal__gear-btn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--navy-400);
+}
+
+.cause-list__hearing-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.cause-list__hearing-row:hover {
+  background: var(--brand-soft);
+}
+
+.cause-list__hearing-row.selected {
+  background: var(--brand-light);
 }
 
 @media (max-width: 768px) {
