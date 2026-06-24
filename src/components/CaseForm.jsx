@@ -1,233 +1,222 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Field, Input, Textarea, Select } from './Field.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
 import CaseTypeManager from './CaseTypeManager.jsx';
-import CourtTypeManager from './CourtTypeManager.jsx';
-import { CASE_TAGS } from '@/constants/caseFolders.js';
-import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
-import { useCourts } from '@/hooks/useCourts.js';
-import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
+import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 
 const currentYear = new Date().getFullYear();
-const PRIORITY_TONES = { Urgent: 'red', High: 'orange', Medium: 'amber', Low: 'green' };
 
+/* ---- Same INITIAL_FORM as CreateCase ---- */
 function blank() {
   return {
-    id: '', caseNumber: '', title: '', case_type: '', case_number: '', case_year: String(currentYear),
-    case_display_number: '', plaintiff: '', defendant: '',
-    court: '', court_hierarchy: '', courtName: '', bench_type: '', judge: '',
-    stage: '', status: 'Active', priority: '', advocate: '', client: '',
-    filingDate: '', wsFilingDate: '', nextHearing: '', registration_date: '', disposal_date: '',
+    case_number: '', case_year: String(currentYear), case_type: '',
+    plaintiff: '', defendant: '', client: '', advocate: '',
+    court_hierarchy: '', court_name: '', bench_type: '', judge: '',
+    stage: '', priority: '',
+    filing_date: '', next_hearing: '',
     filing_number: '', registration_number: '', cnr_number: '',
-    description: '', case_summary: '', internal_notes: '', tags: [], document_folder: '',
+    registration_date: '', disposal_date: '',
+    case_summary: '', internal_notes: '', document_folder: '',
   };
 }
 
+/* ---- Same SectionCard as CreateCase ---- */
 function SectionCard({ num, title, children }) {
   return (
-    <div style={{ marginBottom: 20, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ padding: '10px 14px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ background: 'var(--brand)', color: '#fff', borderRadius: '50%', width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{num}</span>
-        {title}
+    <div className="cc-section">
+      <div className="cc-section__head">
+        <span className="cc-section__num">{num}</span>
+        <span className="cc-section__title">{title}</span>
       </div>
-      <div style={{ padding: 14 }}>{children}</div>
+      <div className="cc-section__body">{children}</div>
     </div>
   );
 }
 
-export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Save' }) {
-  const { stages, names, refresh } = useCaseStages();
+export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabel = 'Update Case' }) {
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
-  const { courts, courtNames, refresh: refreshCourts } = useCourts();
-  const { statuses } = useCaseStatuses();
+  const { stages, names: stageNames, refresh: refreshStages } = useCaseStages();
   const { hierarchy } = useCourtHierarchy();
   const { benchTypes } = useBenchTypes();
   const { priorities } = usePriorities();
+
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
-  const [courtTypeMgr, setCourtTypeMgr] = useState(false);
+
   const [form, setForm] = useState(() => {
     const base = { ...blank(), ...(initial || {}) };
-    if (initial?.parties) {
-      if (!base.plaintiff) base.plaintiff = initial.parties.plaintiff || '';
-      if (!base.defendant) base.defendant = initial.parties.defendant || '';
-    }
-    if (Array.isArray(base.tags)) base.tags = base.tags.join(', ');
-    if (!base.case_year && base.caseNumber) {
-      const parts = base.caseNumber.match(/No\.\s*(\d+)\s*of\s*(\d{4})/i);
-      if (parts) {
-        base.case_number = Number(parts[1]);
-        base.case_year = parts[2];
-      }
-    }
+    if (initial?.filingDate && !base.filing_date) base.filing_date = initial.filingDate;
+    if (initial?.nextHearing && !base.next_hearing) base.next_hearing = initial.nextHearing;
+    if (initial?.wsFilingDate && !base.ws_filing_date) base.ws_filing_date = initial.wsFilingDate;
+    if (initial?.judge && !base.judge) base.judge = initial.judge;
+    if (initial?.presiding_officer && !base.judge) base.judge = initial.presiding_officer;
     return base;
   });
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  const caseTypeNames = useMemo(() => caseTypes.filter((t) => t.status !== 'Inactive').map((t) => t.short_code), [caseTypes]);
+  const caseTypeOptions = useMemo(() =>
+    caseTypes.filter((t) => t.status !== 'Inactive').map((t) => ({ value: t.short_code || t.name, label: t.name }))
+  , [caseTypes]);
+
   const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const priorityOptions = priorities.map((p) => ({ value: p, label: p }));
+  const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
 
-  const displayNumber = useMemo(() => {
-    const ct = form.case_type || '';
-    const cn = form.case_number || '';
-    const cy = form.case_year || '';
-    return ct && cn && cy ? `${ct} No. ${cn} of ${cy}` : '';
-  }, [form.case_type, form.case_number, form.case_year]);
+  const autoCourtName = useMemo(() => {
+    const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
+    return h ? h.label : form.court_name || '';
+  }, [form.court_hierarchy, form.court_name, hierarchyOptions]);
 
-  const autoTitle = useMemo(() => {
-    const p = form.plaintiff?.trim();
-    const d = form.defendant?.trim();
-    return p || d ? [p, d].filter(Boolean).join(' vs ') : '';
-  }, [form.plaintiff, form.defendant]);
+  useEffect(() => {
+    if (autoCourtName && !form.court_name) {
+      setField('court_name', autoCourtName);
+    }
+  }, [autoCourtName]);
 
   const submit = () => {
-    const tags = String(form.tags || '').split(',').map((t) => t.trim()).filter(Boolean);
-    const payload = {
-      ...form,
-      case_number: form.case_number ? Number(form.case_number) : undefined,
-      case_display_number: displayNumber,
-      caseNumber: displayNumber || form.caseNumber,
-      title: autoTitle || form.title,
-      tags,
-      parties: { plaintiff: form.plaintiff, defendant: form.defendant },
-    };
+    const payload = { ...form };
+    if (payload.case_number) payload.case_number = String(payload.case_number);
+    if (payload.case_year) payload.case_year = String(payload.case_year);
+    if (!payload.court_name && autoCourtName) payload.court_name = autoCourtName;
     onSubmit?.(payload);
   };
 
+  const sel = (label, value, options, onChange, placeholder) => (
+    <div className="select-with-add">
+      <select
+        className="field__input"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ flex: 1 }}
+      >
+        <option value="">{placeholder || `Select ${label.toLowerCase()}…`}</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+
   return (
     <div>
+      {/* ── 1. Case Header ── */}
       <SectionCard num="1" title="Case Header">
-        <div className="input-row">
+        <div className="grid-3">
+          <Field label="Case Number">
+            <Input value={form.case_number} onChange={(e) => setField('case_number', e.target.value)} placeholder="e.g., 123/2024" />
+          </Field>
+          <Field label="Case Year">
+            <Input value={form.case_year} onChange={(e) => setField('case_year', e.target.value)} placeholder="e.g., 2024" />
+          </Field>
           <Field label="Case Type">
             <div style={{ display: 'flex', gap: 8 }}>
-              <Select value={form.case_type} onChange={(e) => set('case_type', e.target.value)}>
-                <option value="">Select case type…</option>
-                {caseTypeNames.map((s) => <option key={s} value={s}>{s}</option>)}
-              </Select>
+              {sel('Case Type', form.case_type, caseTypeOptions, (v) => setField('case_type', v), 'Select case type')}
               <button type="button" className="btn btn--ghost btn--sm" title="Manage case types" onClick={() => setCaseTypeMgr(true)}><Icon name="gear" size={15} /></button>
             </div>
           </Field>
-          <Field label="Case Number">
-            <Input type="number" min="1" value={form.case_number} onChange={(e) => set('case_number', e.target.value)} placeholder="42" />
-          </Field>
-          <Field label="Year">
-            <Input type="text" value={form.case_year} onChange={(e) => set('case_year', e.target.value)} placeholder="2026" />
-          </Field>
-        </div>
-        {displayNumber && (
-          <div className="field">
-            <span className="field__hint" style={{ fontSize: 13, fontWeight: 600, paddingLeft: 2 }}>
-              Display: <code>{displayNumber}</code>
-            </span>
-          </div>
-        )}
-        <Field label="Status">
-          <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
-            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
-          </Select>
-        </Field>
-      </SectionCard>
-
-      <SectionCard num="2" title="Parties">
-        <div className="input-row">
-          <Field label="Plaintiff / Petitioner"><Input value={form.plaintiff} onChange={(e) => set('plaintiff', e.target.value)} placeholder="Plaintiff name(s)" /></Field>
-          <Field label="Defendant / Respondent"><Input value={form.defendant} onChange={(e) => set('defendant', e.target.value)} placeholder="Defendant name(s)" /></Field>
-        </div>
-        <Field label="Title / Cause Title">
-          <Input value={autoTitle || form.title} placeholder="Auto-generated from parties" readOnly />
-        </Field>
-        <div className="input-row">
-          <Field label="Client"><Input value={form.client} onChange={(e) => set('client', e.target.value)} placeholder="Client name" /></Field>
-          <Field label="Advocate"><Input value={form.advocate} onChange={(e) => set('advocate', e.target.value)} placeholder="Advocate name" /></Field>
-        </div>
-      </SectionCard>
-
-      <SectionCard num="3" title="Court Information">
-        <div className="input-row">
-          <Field label="Court Type">
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Select value={form.court} onChange={(e) => set('court', e.target.value)}>
-                <option value="">Select court…</option>
-                {courtNames.map((c) => <option key={c}>{c}</option>)}
-              </Select>
-              <button type="button" className="btn btn--ghost btn--sm" title="Manage court types" onClick={() => setCourtTypeMgr(true)}><Icon name="gear" size={15} /></button>
-            </div>
-          </Field>
-          <Field label="Court Hierarchy">
-            <Select value={form.court_hierarchy} onChange={(e) => set('court_hierarchy', e.target.value)}>
-              <option value="">Select hierarchy…</option>
-              {hierarchyOptions.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
-            </Select>
-          </Field>
-        </div>
-        <div className="input-row">
-          <Field label="Bench Type">
-            <Select value={form.bench_type} onChange={(e) => set('bench_type', e.target.value)}>
-              <option value="">Select bench type…</option>
-              {benchTypeOptions.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
-            </Select>
-          </Field>
-          <Field label="Court Name">
-            <Input value={form.courtName} onChange={(e) => set('courtName', e.target.value)} placeholder="e.g., Athgarh" />
-          </Field>
-          <Field label="Presiding Officer">
-            <Input value={form.judge} onChange={(e) => set('judge', e.target.value)} placeholder="Judge name" />
-          </Field>
-        </div>
-      </SectionCard>
-
-      <SectionCard num="4" title="Case Tracking">
-        <div className="input-row">
           <Field label="Case Stage">
             <div style={{ display: 'flex', gap: 8 }}>
-              <Select value={form.stage} onChange={(e) => set('stage', e.target.value)}>
-                <option value="">Select stage…</option>
-                {names.map((s) => <option key={s}>{s}</option>)}
-              </Select>
+              {sel('Stage', form.stage, stageOptions, (v) => setField('stage', v), 'Select stage')}
               <button type="button" className="btn btn--ghost btn--sm" title="Manage stages" onClick={() => setStageMgr(true)}><Icon name="gear" size={15} /></button>
             </div>
           </Field>
-          <Field label="Priority">
-            <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
-              <option value="">Select priority…</option>
-              {priorityOptions.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-            </Select>
+        </div>
+      </SectionCard>
+
+      {/* ── 2. Parties ── */}
+      <SectionCard num="2" title="Parties">
+        <div className="grid-2">
+          <Field label="Plaintiff / Petitioner">
+            <Input value={form.plaintiff} onChange={(e) => setField('plaintiff', e.target.value)} placeholder="Plaintiff name(s)" />
+          </Field>
+          <Field label="Defendant / Respondent">
+            <Input value={form.defendant} onChange={(e) => setField('defendant', e.target.value)} placeholder="Defendant name(s)" />
+          </Field>
+          <Field label="Client">
+            <Input value={form.client} onChange={(e) => setField('client', e.target.value)} placeholder="Client name" />
+          </Field>
+          <Field label="Advocate">
+            <Input value={form.advocate} onChange={(e) => setField('advocate', e.target.value)} placeholder="Advocate name" />
           </Field>
         </div>
-        <div className="input-row">
-          <Field label="Filing Date"><Input type="date" value={form.filingDate} onChange={(e) => set('filingDate', e.target.value)} /></Field>
-          <Field label="WS Filing Date"><Input type="date" value={form.wsFilingDate} onChange={(e) => set('wsFilingDate', e.target.value)} /></Field>
-          <Field label="Next Hearing"><Input type="date" value={form.nextHearing} onChange={(e) => set('nextHearing', e.target.value)} /></Field>
+      </SectionCard>
+
+      {/* ── 3. Court Information ── */}
+      <SectionCard num="3" title="Court Information">
+        <div className="grid-3">
+          <Field label="Court Hierarchy">
+            {sel('Court Hierarchy', form.court_hierarchy, hierarchyOptions, (v) => setField('court_hierarchy', v), 'Select hierarchy')}
+          </Field>
+          <Field label="Bench Type">
+            {sel('Bench Type', form.bench_type, benchTypeOptions, (v) => setField('bench_type', v), 'Select bench type')}
+          </Field>
+          <Field label="Presiding Officer">
+            <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
+          </Field>
         </div>
-        <div className="input-row">
-          <Field label="Registration Date"><Input type="date" value={form.registration_date} onChange={(e) => set('registration_date', e.target.value)} /></Field>
-          <Field label="Disposal Date"><Input type="date" value={form.disposal_date} onChange={(e) => set('disposal_date', e.target.value)} /></Field>
+        <Field label="Court Name">
+          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Auto-computed from hierarchy" readOnly={!form.court_hierarchy} />
+        </Field>
+      </SectionCard>
+
+      {/* ── 4. Case Tracking ── */}
+      <SectionCard num="4" title="Case Tracking">
+        <div className="grid-3">
+          <Field label="Priority">
+            {sel('Priority', form.priority, priorityOptions, (v) => setField('priority', v), 'Select priority')}
+          </Field>
+          <Field label="Filing Date">
+            <Input type="date" value={form.filing_date} onChange={(e) => setField('filing_date', e.target.value)} />
+          </Field>
+          <Field label="Next Hearing Date">
+            <Input type="date" value={form.next_hearing} onChange={(e) => setField('next_hearing', e.target.value)} />
+          </Field>
         </div>
       </SectionCard>
 
+      {/* ── 5. Identifiers ── */}
       <SectionCard num="5" title="Identifiers">
-        <div className="input-row">
-          <Field label="Filing Number"><Input value={form.filing_number} onChange={(e) => set('filing_number', e.target.value)} placeholder="e.g., F-42/2024" /></Field>
-          <Field label="Registration Number"><Input value={form.registration_number} onChange={(e) => set('registration_number', e.target.value)} placeholder="e.g., R-10/2024" /></Field>
-          <Field label="CNR Number"><Input value={form.cnr_number} onChange={(e) => set('cnr_number', e.target.value)} placeholder="e.g., CNR-1234" /></Field>
+        <div className="grid-3">
+          <Field label="Filing Number">
+            <Input value={form.filing_number} onChange={(e) => setField('filing_number', e.target.value)} placeholder="e.g., 8555515" />
+          </Field>
+          <Field label="Registration Number">
+            <Input value={form.registration_number} onChange={(e) => setField('registration_number', e.target.value)} placeholder="e.g., 6606265602" />
+          </Field>
+          <Field label="CNR Number">
+            <Input value={form.cnr_number} onChange={(e) => setField('cnr_number', e.target.value)} placeholder="e.g., 656026262662" />
+          </Field>
+          <Field label="Registration Date">
+            <Input type="date" value={form.registration_date} onChange={(e) => setField('registration_date', e.target.value)} />
+          </Field>
+          <Field label="Disposal Date">
+            <Input type="date" value={form.disposal_date} onChange={(e) => setField('disposal_date', e.target.value)} />
+          </Field>
         </div>
-        <Field label="Document Folder"><Input value={form.document_folder} onChange={(e) => set('document_folder', e.target.value)} placeholder="e.g., Suit Copy" /></Field>
       </SectionCard>
 
-      <SectionCard num="6" title="Notes &amp; Summary">
-        <Field label="Case Summary"><Textarea value={form.case_summary || form.description} onChange={(e) => set('case_summary', e.target.value)} placeholder="Brief description of the matter…" rows={3} /></Field>
-        <Field label="Internal Notes"><Textarea value={form.internal_notes} onChange={(e) => set('internal_notes', e.target.value)} placeholder="Internal notes (not visible to client)…" rows={3} /></Field>
-        <Field label="Tags" hint={`Comma-separated. Suggestions: ${CASE_TAGS.join(', ')}`}>
-          <Input value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="Urgent, Appeal" />
+      {/* ── 6. Description ── */}
+      <SectionCard num="6" title="Description">
+        <Field label="Case Summary">
+          <Textarea value={form.case_summary} onChange={(e) => setField('case_summary', e.target.value)} placeholder="Brief description of the matter..." rows={3} />
+        </Field>
+        <Field label="Internal Notes">
+          <Textarea value={form.internal_notes} onChange={(e) => setField('internal_notes', e.target.value)} placeholder="Internal notes..." rows={3} />
+        </Field>
+      </SectionCard>
+
+      {/* ── 7. Documents ── */}
+      <SectionCard num="7" title="Documents">
+        <Field label="Document Folder">
+          <Input value={form.document_folder} onChange={(e) => setField('document_folder', e.target.value)} placeholder="e.g., Suit Copy" />
         </Field>
       </SectionCard>
 
@@ -236,9 +225,8 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
         <Button variant="primary" icon="save" loading={busy} onClick={submit}>{submitLabel}</Button>
       </div>
 
-      <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refresh} />
+      <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refreshStages} />
       <CaseTypeManager open={caseTypeMgr} caseTypes={caseTypes} onClose={() => setCaseTypeMgr(false)} onChanged={refreshCaseTypes} />
-      <CourtTypeManager open={courtTypeMgr} courts={courts} onClose={() => setCourtTypeMgr(false)} onChanged={refreshCourts} />
     </div>
   );
 }

@@ -160,9 +160,9 @@ export default function CaseVault() {
                     </td>
                     <td className="case-vault__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
                     <td className="case-vault__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
-                    <td>{combinedCourt(c)}</td>
+                    <td>{c.court_name || combinedCourt(c)}</td>
                     <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
-                    <td>{formatDate(c.nextHearing)}</td>
+                    <td>{formatDate(c.next_hearing)}</td>
                     <td><Badge>{c.status}</Badge></td>
                     <td>
                       <div className="row-actions">

@@ -90,9 +90,9 @@ export default function CaseDetail() {
           <h1>{c.case_display_number || c.caseNumber}</h1>
           <p>{c.title}</p>
           <div className="case-detail__meta-row">
-            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{combinedCourt(c)}</span>
+            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{c.court_name || combinedCourt(c)}</span>
             <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="users" size={14} /></span>{c.judge || '—'}</span>
-            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filingDate)}</span>
+            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filing_date)}</span>
             {c.case_type && <Badge tone="grey">{c.case_type}</Badge>}
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function CaseDetail() {
 
       <div className="case-detail__metrics">
         <Metric icon="target" label="Current Stage" value={c.stage || '—'} />
-        <Metric icon="calendar" label="Next Hearing" value={formatDate(c.nextHearing)} />
+        <Metric icon="calendar" label="Next Hearing" value={formatDate(c.next_hearing)} />
         <Metric icon="alert" label="Priority" value={<Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
         <Metric icon="file" label="Documents" value={vault.documents.length} />
         <Metric icon="list" label="Hearings" value={vault.hearings.length} />
@@ -136,11 +136,11 @@ export default function CaseDetail() {
               <Row label="Case Year" value={c.case_year} />
               <Row label="Case Type" value={c.case_type} />
               <Row label="Case Stage" value={c.stage} />
-              <Row label="Filing Date" value={formatDate(c.filingDate)} />
-              <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
+              <Row label="Filing Date" value={formatDate(c.filing_date)} />
+              <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
               <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
               <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
-              <Row label="Court Name" value={c.courtName} />
+              <Row label="Court Name" value={c.court_name} />
               <Row label="Court Hierarchy" value={c.court_hierarchy} />
               <Row label="Bench Type" value={c.bench_type} />
               <Row label="Presiding Officer" value={c.judge} />
@@ -160,6 +160,9 @@ export default function CaseDetail() {
                 <div className="card__sub" style={{ marginTop: 10, marginBottom: 4 }}>Internal Notes</div>
                 <p className="case-detail__description" style={{ color: 'var(--text-muted)' }}>{c.internal_notes || '—'}</p>
                 <div className="case-detail__tags">
+                  {c.stage && <span className="tag tag--navy">{c.stage}</span>}
+                  {c.status && <span className="tag tag--green">{c.status}</span>}
+                  {c.priority && <span className="tag tag--amber">{c.priority}</span>}
                   {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
                   <PermissionGate perm="casevault.edit">
                     <button className="case-detail__add-tag-btn" onClick={() => setEditing(true)}><Icon name="plus" size={12} /> Add Tag</button>
@@ -174,11 +177,11 @@ export default function CaseDetail() {
                 <div className="case-detail__dates-grid">
                   <div className="case-detail__date-cell">
                     <div className="case-detail__date-cell-label">Filing Date</div>
-                    <div className="case-detail__date-cell-value">{formatDate(c.filingDate)}</div>
+                    <div className="case-detail__date-cell-value">{formatDate(c.filing_date)}</div>
                   </div>
                   <div className="case-detail__date-cell">
                     <div className="case-detail__date-cell-label">Next Hearing Date</div>
-                    <div className="case-detail__date-cell-value">{formatDate(c.nextHearing)}</div>
+                    <div className="case-detail__date-cell-value">{formatDate(c.next_hearing)}</div>
                   </div>
                   <div className="case-detail__date-cell">
                     <div className="case-detail__date-cell-label">Last Hearing Date</div>
@@ -260,7 +263,7 @@ export default function CaseDetail() {
       {tab === 'Court Info' && (
         <Card title="Court Info">
           <Row label="Court" value={c.court} />
-          <Row label="Court Name" value={c.courtName} />
+          <Row label="Court Name" value={c.court_name} />
           <Row label="Court Hierarchy" value={c.court_hierarchy} />
           <Row label="Bench Type" value={c.bench_type} />
           <Row label="Presiding Officer / Judge" value={c.judge} />
@@ -274,10 +277,10 @@ export default function CaseDetail() {
             <Row label="Current Stage" value={c.stage} />
             <Row label="Status" value={c.status} />
             <Row label="Priority" value={c.priority ? <Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
-            <Row label="Filing Date" value={formatDate(c.filingDate)} />
+            <Row label="Filing Date" value={formatDate(c.filing_date)} />
             <Row label="Registration Date" value={formatDate(c.registration_date)} />
-            <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
-            <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />
+            <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
+            <Row label="Next Hearing Date" value={formatDate(c.next_hearing)} />
             <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
             <Row label="Disposal / Judgment Date" value={formatDate(c.disposal_date)} />
           </Card>
