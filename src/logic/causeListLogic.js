@@ -27,7 +27,7 @@ export const causeListLogic = {
         .filter((h) => inRange(h.date, from, to))
         .sort((a, b) => DateEngine.compare(a.date, b.date))
         .map((h) => {
-          const c = caseMap[h.caseId] || null;
+          const c = caseMap[h.caseId] || caseMap[h.case_id] || null;
           return {
             ...h,
             case: c,
