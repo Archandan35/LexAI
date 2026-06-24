@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import { BackupManager } from '@/logic/BackupManager.js';
-import { useDebugMode } from '@/hooks/useDebugMode.js';
+import { useDebug } from '@/data-layer/DebugContext.jsx';
 import DebugOverlay from '@/components/DebugOverlay.jsx';
 
 // AppLayout — the shell. Holds sidebar collapse/mobile state and renders the
@@ -11,7 +11,7 @@ import DebugOverlay from '@/components/DebugOverlay.jsx';
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const debugMode = useDebugMode();
+  const { debugMode } = useDebug();
 
   // Best-effort scheduled-backup catch-up once per authenticated session load.
   useEffect(() => { BackupManager.runDue(null).catch(() => {}); }, []);

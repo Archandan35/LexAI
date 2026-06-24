@@ -26,6 +26,7 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { DEFAULT_DOC_FOLDERS } from '@/constants/caseFolders.js';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
+import ApiDebugLog, { useApiLog } from '@/components/ApiDebugLog.jsx';
 
 const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
@@ -138,6 +139,7 @@ export default function CreateCase() {
   const toast = useToast();
   const nav = useNavigate();
   const { logs, clearLogs, copyLogs } = useLogCapture();
+  const { entries: apiLogs, add: addApiLog, clear: clearApiLogs } = useApiLog();
 
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
@@ -150,8 +152,16 @@ export default function CreateCase() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    clientLogic.list().then((r) => setClients(Array.isArray(r) ? r : [])).catch(() => setClients([]));
-    userLogic.list().then((r) => setUsers(Array.isArray(r) ? r : [])).catch(() => setUsers([]));
+    clientLogic.list().then((r) => {
+      const ok = Array.isArray(r);
+      setClients(ok ? r : []);
+      addApiLog(ok ? 'success' : 'error', `loadClients: ${ok ? r.length : 'failed'}`);
+    }).catch((e) => { setClients([]); addApiLog('error', 'loadClients exception', e?.message); });
+    userLogic.list().then((r) => {
+      const ok = Array.isArray(r);
+      setUsers(ok ? r : []);
+      addApiLog(ok ? 'success' : 'error', `loadUsers: ${ok ? r.length : 'failed'}`);
+    }).catch((e) => { setUsers([]); addApiLog('error', 'loadUsers exception', e?.message); });
   }, []);
 
   const [form, setForm] = useState({ ...INITIAL_FORM });
@@ -234,22 +244,28 @@ export default function CreateCase() {
     setSaving(true);
     try {
       const payload = buildPayload(draft);
+      addApiLog('info', 'Creating case...', payload);
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
+        addApiLog('success', `Case created: ${result.case_number || result.id}`, result);
         if (form.document_folder) {
           const parts = form.document_folder.split('/').map((p) => p.trim()).filter(Boolean);
           let parentId = null;
           for (const name of parts) {
+            addApiLog('info', `Creating folder: ${name}`);
             const fr = await caseFolderLogic.create(result.id, name, 'document', user, parentId);
-            if (fr.ok && fr.data?.id) parentId = fr.data.id;
-            else if (!fr.ok) { toast.warning(`Folder "${name}" failed: ${fr.error}`); break; }
+            if (fr.ok && fr.data?.id) { parentId = fr.data.id; addApiLog('success', `Folder created: ${name}`); }
+            else if (!fr.ok) { addApiLog('warn', `Folder "${name}" failed`, fr.error); toast.warning(`Folder "${name}" failed: ${fr.error}`); break; }
           }
         }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
         resetForm();
-      } else toast.error('Failed to create case.');
-    } catch (e) { toast.error(e?.message || 'An error occurred.'); } finally { setSaving(false); }
-  }, [validate, buildPayload, form.document_folder, user, toast, resetForm]);
+      } else { addApiLog('error', 'createCase: result has no id', result); toast.error('Failed to create case.'); }
+    } catch (e) {
+      addApiLog('error', 'createCase exception', { message: e?.message, stack: e?.stack });
+      toast.error(e?.message || 'An error occurred.');
+    } finally { setSaving(false); }
+  }, [validate, buildPayload, form.document_folder, user, toast, resetForm, addApiLog]);
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
@@ -598,6 +614,7 @@ export default function CreateCase() {
           <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Case'}
         </button>
       </div>
+      <ApiDebugLog entries={apiLogs} onClear={clearApiLogs} />
       <DebugPanel logs={logs} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );

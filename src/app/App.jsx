@@ -6,6 +6,7 @@ import { AppDataProvider } from '@/data-layer/AppDataContext.jsx';
 import SetupGate from '@/components/SetupGate.jsx';
 import ErrorBoundary from '@/components/ErrorBoundary.jsx';
 import { configureFieldMappings } from '@/core/fieldMappingConfig.js';
+import { DebugProvider } from '@/data-layer/DebugContext.jsx';
 
 configureFieldMappings();
 
@@ -16,7 +17,9 @@ export default function App() {
         <SetupGate>
           <AuthProviderCtx>
             <AppDataProvider>
-              <AppRoutes />
+              <DebugProvider>
+                <AppRoutes />
+              </DebugProvider>
             </AppDataProvider>
           </AuthProviderCtx>
         </SetupGate>
