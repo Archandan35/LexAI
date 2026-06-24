@@ -118,8 +118,8 @@ const ENTITY_CONFIGS = {
   Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
   Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
-  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual' }], defaults: {} },
-  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password' }], defaults: {} },
+  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual', required: false }], defaults: {} },
+  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: false }, { key: 'email', label: 'Email', placeholder: 'email@example.com', required: false }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210', required: false }, { key: 'address', label: 'Address', placeholder: 'Enter address', required: false }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: false }], defaults: {} },
 };
 
 const PRIORITY_OPTIONS = [
@@ -214,7 +214,7 @@ export default function CreateCase() {
     court_hierarchy: form.court_hierarchy, court_name: autoCourtName,
     bench_type: form.bench_type, judge: form.presiding_officer,
     stage: form.stage, priority: form.priority,
-    filing_date: form.filing_date, next_hearing_date: form.next_hearing_date,
+    filing_date: form.filing_date, next_hearing: form.next_hearing_date,
     filing_number: form.filing_number, registration_number: form.registration_number,
     cnr_number: form.cnr_number, registration_date: form.registration_date,
     disposal_date: form.disposal_date,
