@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Badge from '@/components/Badge.jsx';
@@ -21,9 +20,10 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime } from '@/utils/format.js';
-import { DRAFT_TYPE_MAP } from '@/constants/draftTypes.js';
 
-const TABS = ['Overview', 'Documents', 'Drafts', 'Hearings', 'Case History', 'Notes', 'Timeline'];
+const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
+
+const PRIORITY_TONE = { Urgent: 'red', High: 'red', Medium: 'amber', Low: 'green' };
 
 export default function CaseDetail() {
   const { id } = useParams();
@@ -72,37 +72,54 @@ export default function CaseDetail() {
 
   const c = vault.case;
   const lastHearing = vault.lastHearing;
-  const pendingReminders = (vault.reminders || []).filter((r) => !r.done).length;
+  const upcomingHearing = [...(vault.hearings || [])]
+    .filter((h) => new Date(h.date) >= startOfToday())
+    .sort((a, b) => new Date(a.date) - new Date(b.date))[0] || null;
 
   return (
     <div className="fade-in">
       <Button variant="ghost" size="sm" icon="arrow" onClick={() => nav('/cases')} className="case-detail__back-btn" />
-      <PageHeader
-        icon="vault"
-        title={c.case_display_number || c.caseNumber}
-        subtitle={`${c.title} · ${combinedCourt(c)}`}
-        actions={(
-          <div className="row-actions row-actions--wide">
+
+      <div className="page-header">
+        <div className="case-detail__head-icon"><Icon name="vault" size={24} /></div>
+        <div className="page-header__text" style={{ flex: 1, minWidth: 0 }}>
+          <div className="case-detail__head-top">
             {c.archived && <Badge tone="amber">Archived</Badge>}
-            <Badge tone="navy">{c.stage || '—'}</Badge>
-            <Badge>{c.status}</Badge>
-            <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button></PermissionGate>
-            <PermissionGate perm="casevault.create"><Button size="sm" variant="ghost" icon="layers" onClick={duplicate}>Duplicate</Button></PermissionGate>
-            <PermissionGate perm="casevault.export"><Button size="sm" variant="ghost" icon="download" onClick={exportCase}>Export</Button></PermissionGate>
-            <PermissionGate perm="casevault.archive"><Button size="sm" variant="ghost" icon={c.archived ? 'history' : 'vault'} onClick={archive}>{c.archived ? 'Restore' : 'Archive'}</Button></PermissionGate>
-            <PermissionGate perm="casevault.delete"><Button size="sm" variant="danger" icon="trash" onClick={remove}>Delete</Button></PermissionGate>
+            <Badge tone="green">{c.status}</Badge>
           </div>
-        )}
-      />
+          <h1>{c.case_display_number || c.caseNumber}</h1>
+          <p>{c.title}</p>
+          <div className="case-detail__meta-row">
+            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{combinedCourt(c)}</span>
+            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="users" size={14} /></span>{c.judge || '—'}</span>
+            <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filingDate)}</span>
+            {c.case_type && <Badge tone="grey">{c.case_type}</Badge>}
+          </div>
+        </div>
+        <div className="page-header__actions row-actions row-actions--wide">
+          <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button></PermissionGate>
+          <PermissionGate perm="casevault.create"><Button size="sm" variant="ghost" icon="layers" onClick={duplicate}>Duplicate</Button></PermissionGate>
+          <PermissionGate perm="casevault.export"><Button size="sm" variant="ghost" icon="download" onClick={exportCase}>Export</Button></PermissionGate>
+          <PermissionGate perm="casevault.archive"><Button size="sm" variant="ghost" icon={c.archived ? 'history' : 'vault'} onClick={archive}>{c.archived ? 'Restore' : 'Archive'}</Button></PermissionGate>
+          <PermissionGate perm="casevault.delete"><Button size="sm" variant="danger" icon="trash" onClick={remove}>Delete</Button></PermissionGate>
+        </div>
+      </div>
+
+      <div className="case-detail__metrics">
+        <Metric icon="target" label="Current Stage" value={c.stage || '—'} />
+        <Metric icon="calendar" label="Next Hearing" value={formatDate(c.nextHearing)} />
+        <Metric icon="alert" label="Priority" value={<Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
+        <Metric icon="file" label="Documents" value={vault.documents.length} />
+        <Metric icon="list" label="Hearings" value={vault.hearings.length} />
+        <Metric icon="notes" label="Notes" value={vault.notes.length} />
+      </div>
 
       <div className="tabs">
         {TABS.map((t) => (
           <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
             {t}
             {t === 'Documents' && ` (${vault.documents.length})`}
-            {t === 'Drafts' && ` (${vault.drafts.length})`}
             {t === 'Hearings' && ` (${vault.hearings.length})`}
-            {t === 'Case History' && ` (${vault.history.length})`}
             {t === 'Notes' && ` (${vault.notes.length})`}
           </div>
         ))}
@@ -111,77 +128,186 @@ export default function CaseDetail() {
       {tab === 'Overview' && (
         <>
           <div className="grid-2">
-            <Card title="Case Particulars">
+            <Card
+              title="Case Particulars"
+              actions={<button className="linkbtn" onClick={() => setEditing(true)}>View All</button>}
+            >
               <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
-              <Row label="Case Type" value={c.case_type || (c.parties ? '—' : '—')} />
-              <Row label="Court" value={c.court} />
-              <Row label="Court Name" value={c.courtName} />
-              <Row label="Combined Court" value={combinedCourt(c)} />
-              <Row label="Judge" value={c.judge} />
-              <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
-              <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
+              <Row label="Case Year" value={c.case_year} />
+              <Row label="Case Type" value={c.case_type} />
+              <Row label="Case Stage" value={c.stage} />
               <Row label="Filing Date" value={formatDate(c.filingDate)} />
               <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
-              <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />
-              <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
-              <Row label="Current Stage" value={c.stage} />
+              <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
+              <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
+              <Row label="Court Name" value={c.courtName} />
+              <Row label="Presiding Officer" value={c.judge} />
               <Row label="Status" value={c.status} />
-              <Row label="Advocate" value={c.advocate} />
               <Row label="Client" value={c.client} />
+              <Row label="Advocate" value={c.advocate} />
             </Card>
 
             <div className="case-detail__right-column">
-              <Card title="Case Health" sub="At-a-glance status">
-                <div className="health-grid">
-                  <Health label="Total Documents" value={vault.documents.length} icon="file" />
-                  <Health label="Pending Reminders" value={pendingReminders} icon="clock" />
-                  <Health label="Current Stage" value={c.stage || '—'} icon="target" />
-                  <Health label="Last Hearing" value={lastHearing ? formatDate(lastHearing.date) : '—'} icon="history" />
-                  <Health label="Next Hearing" value={formatDate(c.nextHearing)} icon="calendar" />
-                  <Health label="Recent Activity" value={`${vault.activity.length} events`} icon="bolt" />
+              <Card
+                title="Description & Summary"
+                actions={<PermissionGate perm="casevault.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
+              >
+                <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
+                <p className="case-detail__description">{c.description || c.case_summary || '—'}</p>
+                <div className="case-detail__tags">
+                  {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
+                  <PermissionGate perm="casevault.edit">
+                    <button className="case-detail__add-tag-btn" onClick={() => setEditing(true)}><Icon name="plus" size={12} /> Add Tag</button>
+                  </PermissionGate>
                 </div>
               </Card>
 
-              <Card title="Description & Tags">
-                <p className="case-detail__description">{c.description || '—'}</p>
-                {(c.tags || []).length > 0 && <div className="case-detail__tags">{c.tags.map((t) => <span key={t} className="tag tag--key">{t}</span>)}</div>}
+              <Card
+                title="Important Dates"
+                actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
+              >
+                <div className="case-detail__dates-grid">
+                  <div className="case-detail__date-cell">
+                    <div className="case-detail__date-cell-label">Filing Date</div>
+                    <div className="case-detail__date-cell-value">{formatDate(c.filingDate)}</div>
+                  </div>
+                  <div className="case-detail__date-cell">
+                    <div className="case-detail__date-cell-label">Next Hearing Date</div>
+                    <div className="case-detail__date-cell-value">{formatDate(c.nextHearing)}</div>
+                  </div>
+                  <div className="case-detail__date-cell">
+                    <div className="case-detail__date-cell-label">Last Hearing Date</div>
+                    <div className="case-detail__date-cell-value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
+                  </div>
+                  <div className="case-detail__date-cell">
+                    <div className="case-detail__date-cell-label">Judgment Date</div>
+                    <div className="case-detail__date-cell-value">{formatDate(c.disposal_date)}</div>
+                  </div>
+                </div>
               </Card>
             </div>
           </div>
 
-          <div className="grid-2 case-detail__grid-mt">
-            <RemindersPanel caseId={id} onChanged={load} />
-            <Card title="Stage History" sub="Every stage change is tracked permanently">
-              {(c.stageHistory || []).length === 0 ? <EmptyState icon="target" title="No stage changes yet." /> : (
-                <div className="timeline">
-                  {c.stageHistory.map((s) => (
-                    <div className="timeline-item" key={s.id}>
-                      <div className="timeline-item__date">{formatDateTime(s.at)}</div>
-                      <div className="timeline-item__event"><Badge tone="grey">{s.from}</Badge> <Icon name="arrow" size={12} /> <Badge tone="navy">{s.to}</Badge></div>
-                      <div className="timeline-item__source">Changed by {s.by}{s.remarks ? ` · ${s.remarks}` : ''}</div>
-                    </div>
-                  ))}
+          <div className="case-detail__grid-mt" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+            <Card
+              title="Upcoming Hearing"
+              actions={<button className="linkbtn" onClick={() => setTab('Hearings')}>View All</button>}
+            >
+              {!upcomingHearing ? (
+                <MiniEmpty icon="calendar" title="No upcoming hearing." />
+              ) : (
+                <div className="case-detail__hearing-card">
+                  <div className="case-detail__hearing-datebox">
+                    <div className="case-detail__hearing-datebox-day">{datePart(upcomingHearing.date, 'day')}</div>
+                    <div className="case-detail__hearing-datebox-mon">{datePart(upcomingHearing.date, 'mon')}</div>
+                    <div className="case-detail__hearing-datebox-year">{datePart(upcomingHearing.date, 'year')}</div>
+                  </div>
+                  <div className="case-detail__hearing-info">
+                    <div className="case-detail__hearing-title">{upcomingHearing.purpose || 'Hearing'}</div>
+                    <div className="case-detail__hearing-time">{datePart(upcomingHearing.date, 'time')}</div>
+                    <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
+                    <div style={{ marginTop: 8 }}><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
+                  </div>
                 </div>
+              )}
+            </Card>
+
+            <RemindersPanel caseId={id} onChanged={load} />
+
+            <Card
+              title="Documents"
+              actions={<button className="linkbtn" onClick={() => setTab('Documents')}>View All</button>}
+            >
+              {vault.documents.length === 0 ? (
+                <MiniEmpty
+                  icon="folder"
+                  title="No documents uploaded."
+                  hint="Upload or add documents related to this case."
+                  action={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                />
+              ) : (
+                vault.documents.slice(0, 4).map((d) => (
+                  <div className="list-row" key={d.id} onClick={() => setTab('Documents')}>
+                    <div className="list-row__icon"><Icon name="file" size={15} /></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="list-row__title">{d.name}</div>
+                      <div className="list-row__meta">{formatDate(d.uploadedAt)}</div>
+                    </div>
+                    <Icon name="arrow" size={14} />
+                  </div>
+                ))
               )}
             </Card>
           </div>
         </>
       )}
 
-      {tab === 'Documents' && (
-        <DocumentManager caseId={id} documents={vault.documents} folders={vault.folders} onChanged={load} />
+      {tab === 'Parties' && (
+        <Card title="Parties">
+          <Row label="Plaintiff / Petitioner" value={c.plaintiff || c.parties?.plaintiff} />
+          <Row label="Defendant / Respondent" value={c.defendant || c.parties?.defendant} />
+          <Row label="Cause Title" value={c.title} />
+          <Row label="Advocate" value={c.advocate} />
+          <Row label="Client" value={c.client} />
+        </Card>
       )}
 
-      {tab === 'Drafts' && (
-        <Card title="Drafts" actions={<Button size="sm" variant="ghost" icon="plus" onClick={() => nav('/drafting')}>New</Button>}>
-          {vault.drafts.length === 0 ? <EmptyState icon="pen" title="No drafts for this case." /> : vault.drafts.map((d) => (
-            <div className="list-row" key={d.id} onClick={() => nav('/drafting')}>
-              <div className="list-row__icon"><Icon name="doc" size={15} /></div>
-              <div className="case-detail__draft-info"><div className="list-row__title">{d.title}</div><div className="list-row__meta">{DRAFT_TYPE_MAP[d.type]?.label || d.type}{d.folder ? ` · ${d.folder}` : ''}</div></div>
-              <Icon name="arrow" size={15} />
-            </div>
-          ))}
+      {tab === 'Court Info' && (
+        <Card title="Court Info">
+          <Row label="Court" value={c.court} />
+          <Row label="Court Name" value={c.courtName} />
+          <Row label="Court Hierarchy" value={c.court_hierarchy} />
+          <Row label="Bench Type" value={c.bench_type} />
+          <Row label="Presiding Officer / Judge" value={c.judge} />
+          <Row label="Combined Court" value={combinedCourt(c)} />
         </Card>
+      )}
+
+      {tab === 'Case Tracking' && (
+        <div className="grid-2">
+          <Card title="Case Tracking">
+            <Row label="Current Stage" value={c.stage} />
+            <Row label="Status" value={c.status} />
+            <Row label="Priority" value={c.priority ? <Badge tone={PRIORITY_TONE[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
+            <Row label="Filing Date" value={formatDate(c.filingDate)} />
+            <Row label="Registration Date" value={formatDate(c.registration_date)} />
+            <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
+            <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />
+            <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
+            <Row label="Disposal / Judgment Date" value={formatDate(c.disposal_date)} />
+          </Card>
+          <Card title="Stage History" sub="Every stage change is tracked permanently">
+            {(c.stageHistory || []).length === 0 ? <EmptyState icon="target" title="No stage changes yet." /> : (
+              <div className="timeline">
+                {c.stageHistory.map((s) => (
+                  <div className="timeline-item" key={s.id}>
+                    <div className="timeline-item__date">{formatDateTime(s.at)}</div>
+                    <div className="timeline-item__event"><Badge tone="grey">{s.from}</Badge> <Icon name="arrow" size={12} /> <Badge tone="navy">{s.to}</Badge></div>
+                    <div className="timeline-item__source">Changed by {s.by}{s.remarks ? ` · ${s.remarks}` : ''}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {tab === 'Identifiers' && (
+        <Card title="Identifiers">
+          <Row label="Case Display Number" value={c.case_display_number} />
+          <Row label="Case Number" value={c.caseNumber} />
+          <Row label="Case Number (Numeric)" value={c.case_number} />
+          <Row label="Case Year" value={c.case_year} />
+          <Row label="Case Type" value={c.case_type} />
+          <Row label="CNR Number" value={c.cnr_number} />
+          <Row label="Filing Number" value={c.filing_number} />
+          <Row label="Registration Number" value={c.registration_number} />
+          <Row label="Document Folder" value={c.document_folder} />
+        </Card>
+      )}
+
+      {tab === 'Documents' && (
+        <DocumentManager caseId={id} documents={vault.documents} folders={vault.folders} onChanged={load} />
       )}
 
       {tab === 'Hearings' && (
@@ -200,11 +326,11 @@ export default function CaseDetail() {
         </Card>
       )}
 
-      {tab === 'Case History' && <CaseHistory caseId={id} onChanged={load} />}
+      {tab === 'Timeline' && <CaseTimeline caseId={id} refreshKey={activityKey} />}
 
       {tab === 'Notes' && <NotesPanel caseId={id} notes={vault.notes} onChanged={load} />}
 
-      {tab === 'Timeline' && <CaseTimeline caseId={id} refreshKey={activityKey} />}
+      {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
 
       <Modal open={editing} title="Edit Case" size="lg" onClose={() => setEditing(false)}>
         <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" />
@@ -222,14 +348,42 @@ function Row({ label, value }) {
   );
 }
 
-function Health({ label, value, icon }) {
+function Metric({ icon, label, value, flag }) {
   return (
-    <div className="health-cell">
-      <span className="health-cell__icon"><Icon name={icon} size={16} /></span>
+    <div className="case-detail__metric">
+      <span className={`case-detail__metric-icon ${flag ? 'case-detail__metric-icon--flag' : ''}`}><Icon name={icon} size={17} /></span>
       <div>
-        <div className="health-cell__value">{value}</div>
-        <div className="health-cell__label">{label}</div>
+        <div className="case-detail__metric-label">{label}</div>
+        <div className="case-detail__metric-value">{value ?? '—'}</div>
       </div>
     </div>
   );
+}
+
+function MiniEmpty({ icon, title, hint, action }) {
+  return (
+    <div className="case-detail__mini-empty">
+      <div className="case-detail__mini-empty-icon"><Icon name={icon} size={20} /></div>
+      <div className="case-detail__mini-empty-title">{title}</div>
+      {hint && <div className="case-detail__mini-empty-hint">{hint}</div>}
+      {action && <div className="case-detail__mini-empty-action">{action}</div>}
+    </div>
+  );
+}
+
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function datePart(value, part) {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  if (part === 'day') return d.toLocaleDateString('en-IN', { day: '2-digit' });
+  if (part === 'mon') return d.toLocaleDateString('en-IN', { month: 'short' }).toUpperCase();
+  if (part === 'year') return d.toLocaleDateString('en-IN', { year: 'numeric' });
+  if (part === 'time') return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  return '—';
 }
