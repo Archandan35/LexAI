@@ -240,6 +240,9 @@ export default function SetupWizard({ detectError: propDetectError }) {
       setPlan(p);
       const sqlText = p.sql || '-- No SQL generated for this provider.\n-- Your provider creates collections automatically.';
       setCopySql(sqlText);
+      if (p.present?.length > 0 && p.missing?.length === 0) {
+        setError('All tables already exist. Only system SQL will run.');
+      }
       const provider = getDatabaseProvider();
       setExecSqlSupported(typeof provider.execSql === 'function' && sqlText.length > 0);
       goToStep(3);
@@ -480,6 +483,18 @@ export default function SetupWizard({ detectError: propDetectError }) {
                 <p className="auth-sub--sm">
                   {step === 5 ? 'After running the SQL, click Verify' : 'Copy this SQL and run it in your database SQL editor'}
                 </p>
+                {plan?.present?.length > 0 && (
+                  <div className="alert alert--info" style={{ marginBottom: 12 }}>
+                    <Icon name="info" size={16} />
+                    <span><b>{plan.present.length}</b> table{plan.present.length !== 1 ? 's' : ''} already exist{plan.present.length === 1 ? 's' : ''} ({plan.present.join(', ')}). Generating SQL for <b>{plan.missing.length}</b> missing table{plan.missing.length !== 1 ? 's' : ''} only.</span>
+                  </div>
+                )}
+                {plan?.allPresent && (
+                  <div className="alert alert--success" style={{ marginBottom: 12 }}>
+                    <Icon name="check" size={16} />
+                    <span>All required tables already exist. System SQL (registry, functions, policies) will still run to ensure everything is up to date.</span>
+                  </div>
+                )}
                 <pre className="code-block wizard-sql">{copySql}</pre>
                 <div className="toolbar-row dm-mt">
                   <Button variant="ghost" icon="copy" size="sm" onClick={handleCopySql}>
@@ -669,6 +684,18 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {method === 'simple' && sql && step === 5 && (
               <div className="dm-mt">
                 <p className="auth-sub--sm">Run this SQL in your provider's SQL editor</p>
+                {plan?.present?.length > 0 && (
+                  <div className="alert alert--info" style={{ marginBottom: 12 }}>
+                    <Icon name="info" size={16} />
+                    <span><b>{plan.present.length}</b> table{plan.present.length !== 1 ? 's' : ''} already exist{plan.present.length === 1 ? 's' : ''} ({plan.present.join(', ')}). Generating SQL for <b>{plan.missing.length}</b> missing table{plan.missing.length !== 1 ? 's' : ''} only.</span>
+                  </div>
+                )}
+                {plan?.allPresent && (
+                  <div className="alert alert--success" style={{ marginBottom: 12 }}>
+                    <Icon name="check" size={16} />
+                    <span>All required tables already exist. Only system SQL will run.</span>
+                  </div>
+                )}
                 <pre className="code-block wizard-sql">{sql}</pre>
                 <div className="toolbar-row dm-mt">
                   <Button variant="ghost" icon="copy" size="sm" onClick={handleCopySql}>

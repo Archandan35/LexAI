@@ -97,7 +97,12 @@ export const InstallationPlanner = {
 
     steps.push({ id: 'verify', label: 'Verify installation', type: 'verify' });
 
-    const artifact = SchemaCompiler.installArtifact(provider);
+    const onlyCollections = detect?.missing?.length > 0 ? detect.missing : undefined;
+    const artifact = SchemaCompiler.installArtifact(provider, {
+      onlyCollections,
+      present: detect?.present,
+      missing: detect?.missing,
+    });
     const hasSql = artifact?.text?.length > 0;
 
     return {
@@ -112,6 +117,9 @@ export const InstallationPlanner = {
       state,
       capabilities,
       mappings,
+      present: detect?.present || [],
+      missing: detect?.missing || [],
+      allPresent: detect?.present?.length === listSchemas().length,
     };
   },
 

@@ -539,25 +539,43 @@ function systemSqlUserRoleTrigger() {
 }
 
 // P4: FK creation calls extracted — emitted AFTER all application tables exist
-function systemSqlForeignKeys() {
+function systemSqlForeignKeys({ onlyCollections } = {}) {
+  const ALL_FKS = [
+    { from: 'reminders', to: 'cases', fk: 'fk_reminders_case_id' },
+    { from: 'notes', to: 'cases', fk: 'fk_notes_case_id' },
+    { from: 'hearings', to: 'cases', fk: 'fk_hearings_case_id' },
+    { from: 'drafts', to: 'cases', fk: 'fk_drafts_case_id' },
+    { from: 'documents', to: 'cases', fk: 'fk_documents_case_id' },
+    { from: 'case_history', to: 'cases', fk: 'fk_case_history_case_id' },
+    { from: 'case_folders', to: 'cases', fk: 'fk_case_folders_case_id' },
+    { from: 'case_activity', to: 'cases', fk: 'fk_case_activity_case_id' },
+    { from: 'audit_logs', to: 'users', fk: 'fk_audit_logs_user_id' },
+    { from: 'users', to: 'roles', fk: 'fk_users_role_code' },
+    { from: 'case_folders', to: 'case_folders', fk: 'fk_case_folders_parent_id' },
+  ];
+  const fkLines = ALL_FKS.map(({ from, to, fk }) => {
+    const cascade = fk === 'fk_audit_logs_user_id' ? ', \'SET NULL\'' : ', \'CASCADE\'';
+    if (fk === 'fk_users_role_code') {
+      return "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');";
+    }
+    return `select safe_create_fk('${from}', 'case_id', '${to}', 'id', '${fk}'${cascade});`;
+  });
+  const filtered = onlyCollections ? ALL_FKS.filter(({ from, to }) => onlyCollections.includes(from) || onlyCollections.includes(to)) : ALL_FKS;
+  const lines = filtered.map(({ from, to, fk }) => {
+    if (fk === 'fk_users_role_code') {
+      return "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');";
+    }
+    const cascade = fk === 'fk_audit_logs_user_id' ? ', \'SET NULL\'' : ', \'CASCADE\'';
+    return `select safe_create_fk('${from}', 'case_id', '${to}', 'id', '${fk}'${cascade});`;
+  });
   return [
     '-- ============================================================',
     '-- 6. FOREIGN KEY INSTALLATION (P4 — after all tables exist)',
     '-- ============================================================',
     '-- All safe_create_fk calls run after registry tables AND application',
     '-- tables are created, so referenced tables/columns are guaranteed to exist.',
-    "select safe_create_fk('reminders', 'case_id', 'cases', 'id', 'fk_reminders_case_id', 'CASCADE');",
-    "select safe_create_fk('notes', 'case_id', 'cases', 'id', 'fk_notes_case_id', 'CASCADE');",
-    "select safe_create_fk('hearings', 'case_id', 'cases', 'id', 'fk_hearings_case_id', 'CASCADE');",
-    "select safe_create_fk('drafts', 'case_id', 'cases', 'id', 'fk_drafts_case_id', 'CASCADE');",
-    "select safe_create_fk('documents', 'case_id', 'cases', 'id', 'fk_documents_case_id', 'CASCADE');",
-    "select safe_create_fk('case_history', 'case_id', 'cases', 'id', 'fk_case_history_case_id', 'CASCADE');",
-    "select safe_create_fk('case_folders', 'case_id', 'cases', 'id', 'fk_case_folders_case_id', 'CASCADE');",
-    "select safe_create_fk('case_activity', 'case_id', 'cases', 'id', 'fk_case_activity_case_id', 'CASCADE');",
-    "select safe_create_fk('audit_logs', 'user_id', 'users', 'id', 'fk_audit_logs_user_id', 'SET NULL');",
+    ...lines,
     "do $$ begin alter table roles add constraint uq_roles_code unique (code); exception when duplicate_table then null; end; $$;",
-    "select safe_create_fk('users', 'role_code', 'roles', 'code', 'fk_users_role_code', 'RESTRICT');",
-    "select safe_create_fk('case_folders', 'parent_id', 'case_folders', 'id', 'fk_case_folders_parent_id', 'CASCADE');",
   ].join('\n');
 }
 
@@ -767,55 +785,60 @@ function systemSqlIdEngine() {
   ].join('\n');
 }
 
-function systemSqlRls() {
+const APP_TABLES = [
+  'users', 'roles', 'permissions', 'cases', 'courts', 'case_types', 'case_stages',
+  'reminders', 'notes', 'hearings', 'drafts', 'documents', 'case_history', 'case_folders',
+  'case_activity', 'audit_logs', 'config_history', 'settings', 'env_vars', 'schema_meta',
+  'judgments', 'cause_list_templates', 'bench_types', 'court_hierarchy', 'jurisdictions',
+  'clients', 'contacts', 'acts', 'prompts', 'templates', 'legal_notices', 'precedents', 'reports',
+];
+
+function systemSqlRls({ onlyCollections } = {}) {
+  const SYSTEM_TABLES = [
+    'schema_registry', 'entity_registry', 'field_registry', 'provider_registry',
+    'migration_registry', 'installer_state', 'provider_adapter_registry',
+    'schema_mapping', 'mapping_history', 'mapping_versions', 'provider_capabilities',
+    'entity_prefix_registry', 'id_registry', 'foreign_key_registry',
+  ];
+  const appTables = onlyCollections
+    ? APP_TABLES.filter((t) => onlyCollections.includes(t))
+    : APP_TABLES;
+  const allTables = [...SYSTEM_TABLES, ...appTables];
   return [
     '-- ============================================================',
     '-- 11. ROW LEVEL SECURITY',
     '-- ============================================================',
-    '-- Enable RLS on ALL tables (registry + application)',
-    'alter table if exists schema_registry enable row level security;',
-    'alter table if exists entity_registry enable row level security;',
-    'alter table if exists field_registry enable row level security;',
-    'alter table if exists provider_registry enable row level security;',
-    'alter table if exists migration_registry enable row level security;',
-    'alter table if exists installer_state enable row level security;',
-    'alter table if exists provider_adapter_registry enable row level security;',
-    'alter table if exists schema_mapping enable row level security;',
-    'alter table if exists mapping_history enable row level security;',
-    'alter table if exists mapping_versions enable row level security;',
-    'alter table if exists provider_capabilities enable row level security;',
-    'alter table if exists entity_prefix_registry enable row level security;',
-    'alter table if exists id_registry enable row level security;',
-    'alter table if exists foreign_key_registry enable row level security;',
-    'alter table if exists users enable row level security;',
-    'alter table if exists roles enable row level security;',
-    'alter table if exists permissions enable row level security;',
-    'alter table if exists cases enable row level security;',
-    'alter table if exists courts enable row level security;',
-    'alter table if exists case_types enable row level security;',
-    'alter table if exists case_stages enable row level security;',
-    'alter table if exists reminders enable row level security;',
-    'alter table if exists notes enable row level security;',
-    'alter table if exists hearings enable row level security;',
-    'alter table if exists drafts enable row level security;',
-    'alter table if exists documents enable row level security;',
-    'alter table if exists case_history enable row level security;',
-    'alter table if exists case_folders enable row level security;',
-    'alter table if exists case_activity enable row level security;',
-    'alter table if exists audit_logs enable row level security;',
-    'alter table if exists config_history enable row level security;',
-    'alter table if exists settings enable row level security;',
-    'alter table if exists env_vars enable row level security;',
-    'alter table if exists schema_meta enable row level security;',
-    'alter table if exists judgments enable row level security;',
-    'alter table if exists cause_list_templates enable row level security;',
+    '-- Enable RLS on tables (registry + application)',
+    ...allTables.map((t) => `alter table if exists ${t} enable row level security;`),
   ].join('\n');
 }
 
 // P2: Policies target TO authenticated (Supabase-compatible) and use current_user_role()
 // P3: All policy names follow {table}_{role}_{operation} convention — NO collisions
 // Each policy on each table has a UNIQUE name by including the operation (select/insert/update/delete)
-function systemSqlPolicies() {
+const SYSTEM_POLICY_TABLES = [
+  'schema_registry', 'entity_registry', 'field_registry', 'provider_registry',
+  'migration_registry', 'installer_state', 'provider_adapter_registry',
+  'schema_mapping', 'mapping_history', 'mapping_versions', 'provider_capabilities',
+  'entity_prefix_registry', 'id_registry', 'foreign_key_registry',
+];
+
+const APP_POLICY_TABLES = [
+  'users', 'roles', 'permissions', 'cases', 'documents', 'hearings', 'notes',
+  'reminders', 'drafts', 'case_history', 'case_activity', 'case_folders',
+  'settings', 'env_vars', 'audit_logs', 'config_history', 'schema_meta',
+  'courts', 'case_types', 'case_stages', 'judgments', 'cause_list_templates',
+  'bench_types', 'court_hierarchy', 'jurisdictions',
+  'clients', 'contacts', 'acts', 'prompts', 'templates', 'legal_notices', 'precedents', 'reports',
+];
+
+function systemSqlPolicies({ onlyCollections } = {}) {
+  const keepTable = (table) => {
+    if (SYSTEM_POLICY_TABLES.includes(table)) return true;
+    if (onlyCollections) return onlyCollections.includes(table);
+    return APP_POLICY_TABLES.includes(table);
+  };
+
   const raw = [
     '-- ============================================================',
     '-- 12. RLS POLICIES (P2 — TO authenticated + current_user_role(); P3 — unique names)',
@@ -1010,7 +1033,14 @@ function systemSqlPolicies() {
     'create policy cause_list_templates_manager_all on cause_list_templates for all to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\'])) with check (current_user_role() = ANY(ARRAY[\'admin\',\'manager\']));',
     'create policy cause_list_templates_user_select on cause_list_templates for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
   ];
-  return raw.map(line =>
+  const tableFromPolicy = (line) => {
+    const m = line.match(/^create policy \w+ on (\w+) for /);
+    return m ? m[1] : null;
+  };
+  return raw.filter((line) => {
+    const table = tableFromPolicy(line);
+    return !table || keepTable(table);
+  }).map(line =>
     line.startsWith('create policy ')
       ? `do $$ begin ${line} exception when duplicate_object then null; end; $$;`
       : line
@@ -1155,17 +1185,34 @@ export const SchemaCompiler = {
     return fn(schema);
   },
 
-  compileAll(provider) {
-    return listSchemas().map((s) => this.compile(provider, s));
+  compileAll(provider, onlyCollections) {
+    const schemas = onlyCollections
+      ? listSchemas().filter((s) => onlyCollections.includes(s.collection))
+      : listSchemas();
+    return schemas.map((s) => this.compile(provider, s));
   },
 
-  installArtifact(provider) {
-    const parts = this.compileAll(provider);
+  installArtifact(provider, { onlyCollections, present, missing } = {}) {
+    const parts = this.compileAll(provider, onlyCollections);
     if (provider === 'supabase') {
       const preDdl = this.systemSqlSections();
+      const header = present || missing ? [
+        '-- ============================================================',
+        '-- LEXAI SCHEMA INSTALLATION SQL',
+        '-- ============================================================',
+        present?.length > 0 ? `-- Existing tables: ${present.join(', ')}` : '-- No existing tables found — generating full schema.',
+        missing?.length > 0 ? `-- New tables to create: ${missing.join(', ')}` : '-- All tables will be created.',
+        missing?.length === 0 && present?.length > 0 ? '-- All required tables already exist. Only system SQL will run.' : '',
+        '--',
+        '-- NOTE: System infrastructure (registry tables, functions, policies)',
+        '-- uses IF NOT EXISTS / CREATE OR REPLACE and runs unconditionally.',
+        '-- ============================================================',
+        '',
+      ].filter(Boolean).join('\n') : '';
       const ddl = parts.map((p) => p.sql).join('\n\n');
-      const postDdl = this.systemSqlPostDdl();
-      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text: [preDdl, ddl, postDdl].join('\n\n') };
+      const postDdl = this.systemSqlPostDdl({ onlyCollections, present, missing });
+      const text = [preDdl, header, ddl, postDdl].filter(Boolean).join('\n\n');
+      return { kind: 'sql', schemaVersion: SCHEMA_VERSION, text };
     }
     if (provider === 'firebase') {
       return {
@@ -1208,14 +1255,14 @@ export const SchemaCompiler = {
   },
 
   // P4: FK + RLS + Policies + Grants + Indexes + triggers (emitted after application DDL)
-  systemSqlPostDdl() {
+  systemSqlPostDdl({ onlyCollections, present, missing } = {}) {
     return [
-      systemSqlForeignKeys(),
-      systemSqlRls(),
-      systemSqlPolicies(),
+      systemSqlForeignKeys({ onlyCollections }),
+      systemSqlRls({ onlyCollections }),
+      systemSqlPolicies({ onlyCollections }),
       systemSqlUserRoleTrigger(),
-      systemSqlGrants(),
-      systemSqlIndexes(),
+      systemSqlGrants({ onlyCollections }),
+      systemSqlIndexes({ onlyCollections }),
       systemSqlSchemaVersion(),
       systemSqlSeedAdapters(),
       systemSqlSeedData(),
