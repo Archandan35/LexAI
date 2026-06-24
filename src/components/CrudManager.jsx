@@ -4,127 +4,201 @@ import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import { Input, Textarea, Select } from './Field.jsx';
 
+/* ------------------------------------------------------------------ */
+/* Tab definitions                                                      */
+/* ------------------------------------------------------------------ */
 const TABS = [
-  { id: 'single-add', label: 'Single Add', icon: 'plus' },
-  { id: 'single-edit', label: 'Single Edit', icon: 'edit' },
-  { id: 'single-delete', label: 'Single Delete', icon: 'trash' },
-  { id: 'bulk-add', label: 'Bulk Add', icon: 'plus' },
-  { id: 'bulk-edit', label: 'Bulk Edit', icon: 'edit' },
-  { id: 'bulk-delete', label: 'Bulk Delete', icon: 'trash' },
-  { id: 'import', label: 'Import', icon: 'upload' },
+  { id: 'single-add', label: 'Single Add', icon: 'plus', group: 'single' },
+  { id: 'single-edit', label: 'Single Edit', icon: 'edit', group: 'single' },
+  { id: 'single-delete', label: 'Single Delete', icon: 'trash', group: 'single', danger: true },
+  { id: 'bulk-add', label: 'Bulk Add', icon: 'users', group: 'bulk' },
+  { id: 'bulk-edit', label: 'Bulk Edit', icon: 'edit', group: 'bulk' },
+  { id: 'bulk-delete', label: 'Bulk Delete', icon: 'trash', group: 'bulk', danger: true },
+  { id: 'import', label: 'Import', icon: 'upload', group: 'import', special: 'import' },
 ];
 
-export default function CrudManager({ open, onClose, entity, config }) {
-  const [tab, setTab] = useState('single-add');
-
-  useEffect(() => { if (open) setTab('single-add'); }, [open]);
-
-  return (
-    <Modal open={open} title={`Manage ${entity}`} onClose={onClose} size="lg" className="crud-modal"
-      footer={<Button variant="ghost" onClick={onClose}>Close</Button>}>
-      <div className="crud-tabs">
-        {TABS.map((t) => (
-          <button key={t.id} type="button" className={`crud-tab${tab === t.id ? ' crud-tab--active' : ''}`} onClick={() => setTab(t.id)}>
-            <Icon name={t.icon} size={15} />
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="crud-body" key={`${entity}-${tab}`}>
-        <TabContent tab={tab} entity={entity} config={config} />
-      </div>
-    </Modal>
-  );
+/* ------------------------------------------------------------------ */
+/* Helpers                                                              */
+/* ------------------------------------------------------------------ */
+function tryOk(r) {
+  if (!r) return false;
+  return r.ok === true || r.ok === undefined || !!r.id;
 }
-
-function TabContent({ tab, entity, config }) {
-  switch (tab) {
-    case 'single-add': return <SingleAdd config={config} entity={entity} />;
-    case 'single-edit': return <SingleEdit config={config} entity={entity} />;
-    case 'single-delete': return <SingleDelete config={config} entity={entity} />;
-    case 'bulk-add': return <BulkAdd config={config} entity={entity} />;
-    case 'bulk-edit': return <BulkEdit config={config} entity={entity} />;
-    case 'bulk-delete': return <BulkDelete config={config} entity={entity} />;
-    case 'import': return <BulkImport config={config} entity={entity} />;
-    default: return null;
-  }
+function tryErr(r) {
+  if (!r) return 'Unknown error';
+  return r.error || r.message || 'Operation failed';
 }
 
 function useItems(logic) {
   const [items, setItems] = useState([]);
-  const refresh = () => logic.list().then((r) => setItems(Array.isArray(r) ? r : [])).catch(() => setItems([]));
-  useEffect(() => { refresh(); }, [logic]);
+  const refresh = () =>
+    logic.list().then((r) => setItems(Array.isArray(r) ? r : [])).catch(() => setItems([]));
+  useEffect(() => { refresh(); }, []);
   return { items, refresh };
 }
 
-function ActionToast({ msg }) {
+/* ------------------------------------------------------------------ */
+/* Inline feedback                                                      */
+/* ------------------------------------------------------------------ */
+function Feedback({ msg }) {
   if (!msg) return null;
   return (
-    <div className={`crud-toast crud-toast--${msg.type}`}>
-      <Icon name={msg.type === 'success' ? 'check' : 'alert'} size={16} />
+    <div className={`crud-toast${msg.type === 'error' ? ' crud-toast--error' : ''}`}>
+      <Icon name={msg.type === 'error' ? 'alert' : 'check'} size={15} />
       {msg.text}
     </div>
   );
 }
 
-function renderFields(fields, values, setValues) {
-  return fields.map((f) => (
-    <div key={f.key} className="field">
-      <label className="field__label">{f.label}</label>
-      {f.type === 'color' ? (
-        <input type="color" className="input" value={values[f.key] || f.default || '#6b7280'} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} />
-      ) : (
-        <Input value={values[f.key] || ''} placeholder={f.placeholder || f.label} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} />
-      )}
-    </div>
-  ));
-}
-
-function tryGet(result) {
-  if (!result) return false;
-  if (result.ok === true || result.ok === undefined) return true;
-  if (result.id) return true;
-  return false;
-}
-
-function tryError(result) {
-  if (!result) return 'Unknown error';
-  if (result.error) return result.error;
-  if (result.message) return result.message;
-  return 'Operation failed';
-}
-
-/* ============ Single Add ============ */
-function SingleAdd({ config, entity }) {
-  const [values, setValues] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState(null);
-
-  const handleSubmit = async () => {
-    setSaving(true); setMsg(null);
-    try {
-      const result = await config.logic.create(values);
-      if (tryGet(result)) {
-        setMsg({ type: 'success', text: `${entity} created!` });
-        setValues({});
-        if (config.refresh) config.refresh();
-      } else setMsg({ type: 'error', text: tryError(result) });
-    } catch (e) { setMsg({ type: 'error', text: e.message }); }
-    setSaving(false);
-  };
-
+/* ------------------------------------------------------------------ */
+/* Tip box                                                              */
+/* ------------------------------------------------------------------ */
+function TipBox({ text }) {
   return (
-    <div>
-      <ActionToast msg={msg} />
-      {renderFields(config.fields, values, setValues)}
-      <div className="form-actions" style={{ marginTop: 16 }}>
-        <Button variant="primary" icon="plus" onClick={handleSubmit} disabled={saving}>{saving ? 'Adding...' : `Add ${entity}`}</Button>
+    <div className="crud-tip">
+      <div className="crud-tip__icon"><Icon name="bolt" size={17} /></div>
+      <div>
+        <div className="crud-tip__title">Tip</div>
+        <div className="crud-tip__text">{text}</div>
       </div>
     </div>
   );
 }
 
-/* ============ Single Edit ============ */
+/* ------------------------------------------------------------------ */
+/* Generic field renderer                                               */
+/* ------------------------------------------------------------------ */
+function renderField(f, values, setValues) {
+  const val = values[f.key] ?? '';
+  const set = (v) => setValues({ ...values, [f.key]: v });
+
+  if (f.type === 'color') {
+    return (
+      <div key={f.key} style={{ marginBottom: 16 }}>
+        <div className="crud-field-label">
+          <span>{f.label}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input type="color" className="input" style={{ width: 56, height: 40, padding: 4, cursor: 'pointer' }}
+            value={val || f.default || '#6b7280'} onChange={(e) => set(e.target.value)} />
+          <span style={{ fontSize: 13, color: 'var(--text-soft)' }}>{val || f.default || '#6b7280'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (f.key === 'status') {
+    const active = val === 'Active' || val === '';
+    return (
+      <div key={f.key} style={{ marginBottom: 16 }}>
+        <div className="crud-field-label">
+          <span>{f.label}</span><span className="req">*</span>
+        </div>
+        <div className="crud-status-select">
+          <span className="crud-status-dot" style={{ background: active ? 'var(--green)' : 'var(--text-faint)' }} />
+          <Select value={val} onChange={(e) => set(e.target.value)}>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </Select>
+        </div>
+        <div className="crud-field-hint">Select status for this {f.entityLabel || 'item'}</div>
+      </div>
+    );
+  }
+
+  const isDesc = f.key === 'description';
+  const charMax = isDesc ? 250 : null;
+
+  return (
+    <div key={f.key} style={{ marginBottom: 16 }}>
+      <div className="crud-field-label">
+        <span>{f.label}</span>
+        {f.required !== false && <span className="req">*</span>}
+        {f.optional && <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>&nbsp;(Optional)</span>}
+      </div>
+      {isDesc ? (
+        <div className={`crud-input-icon crud-input-icon--top`}>
+          <span className="crud-input-icon__ico"><Icon name="file" size={15} /></span>
+          <textarea
+            className="textarea"
+            style={{ paddingLeft: 38, minHeight: 90, resize: 'vertical' }}
+            value={val}
+            placeholder={f.placeholder || f.label}
+            maxLength={charMax}
+            onChange={(e) => set(e.target.value)}
+          />
+        </div>
+      ) : (
+        <div className="crud-input-icon">
+          <span className="crud-input-icon__ico">
+            {f.key === 'short_code'
+              ? <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--navy-600)' }}>Aa</span>
+              : <Icon name="notes" size={15} />}
+          </span>
+          <Input
+            value={val}
+            placeholder={f.placeholder || f.label}
+            onChange={(e) => set(e.target.value)}
+            maxLength={f.maxLength}
+          />
+        </div>
+      )}
+      {f.hint && <div className="crud-field-hint">{f.hint}</div>}
+      {isDesc && (
+        <div className="crud-field-hint" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Maximum {charMax} characters</span>
+          <span>{val.length} / {charMax}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Single Add                                                           */
+/* ------------------------------------------------------------------ */
+function SingleAdd({ config, entity }) {
+  const [values, setValues] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const submit = async () => {
+    setSaving(true); setMsg(null);
+    try {
+      const r = entity === 'Stage'
+        ? await config.logic.add(values.name)
+        : await config.logic.create(values);
+      if (tryOk(r)) {
+        setMsg({ type: 'success', text: `${entity} added successfully.` });
+        setValues({});
+        config.refresh?.();
+      } else setMsg({ type: 'error', text: tryErr(r) });
+    } catch (e) { setMsg({ type: 'error', text: e.message }); }
+    setSaving(false);
+  };
+
+  return (
+    <>
+      <Feedback msg={msg} />
+      <div className="crud-form-grid">
+        {config.fields.map((f) => (
+          <div key={f.key} className={f.full ? 'crud-form-full' : ''}>
+            {renderField(f, values, setValues)}
+          </div>
+        ))}
+      </div>
+      <div className="crud-form-actions">
+        <Button icon="plus" onClick={submit} disabled={saving}>
+          {saving ? 'Adding...' : `Add ${entity}`}
+        </Button>
+      </div>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Single Edit                                                          */
+/* ------------------------------------------------------------------ */
 function SingleEdit({ config, entity }) {
   const { items, refresh } = useItems(config.logic);
   const [selected, setSelected] = useState('');
@@ -132,152 +206,174 @@ function SingleEdit({ config, entity }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const handleSelect = (id) => {
+  const pick = (id) => {
     setSelected(id);
     const item = items.find((i) => i.id === id);
     if (item) {
-      const vals = {};
-      config.fields.forEach((f) => { vals[f.key] = item[f.key] ?? ''; });
-      setValues(vals);
+      const v = {};
+      config.fields.forEach((f) => { v[f.key] = item[f.key] ?? ''; });
+      setValues(v);
     }
   };
 
-  const handleSubmit = async () => {
+  const submit = async () => {
     if (!selected) { setMsg({ type: 'error', text: 'Select an item to edit.' }); return; }
     setSaving(true); setMsg(null);
     try {
-      const result = await config.logic.update(selected, values);
-      if (tryGet(result)) {
-        setMsg({ type: 'success', text: `${entity} updated!` });
-        if (config.refresh) config.refresh();
-        refresh();
-        const item = items.find((i) => i.id === selected);
-        if (item) { const vals = {}; config.fields.forEach((f) => { vals[f.key] = item[f.key] ?? ''; }); setValues(vals); }
-      } else setMsg({ type: 'error', text: tryError(result) });
+      const r = await config.logic.update(selected, values);
+      if (tryOk(r)) { setMsg({ type: 'success', text: `${entity} updated.` }); config.refresh?.(); refresh(); }
+      else setMsg({ type: 'error', text: tryErr(r) });
     } catch (e) { setMsg({ type: 'error', text: e.message }); }
     setSaving(false);
   };
 
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Select {entity}</label>
-        <Select value={selected} onChange={(e) => handleSelect(e.target.value)}>
-          <option value="">Select...</option>
+    <>
+      <Feedback msg={msg} />
+      <div style={{ marginBottom: 18 }}>
+        <div className="crud-field-label"><span>Select {entity} to Edit</span><span className="req">*</span></div>
+        <Select value={selected} onChange={(e) => pick(e.target.value)}>
+          <option value="">— choose one —</option>
           {items.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
         </Select>
       </div>
-      {selected && renderFields(config.fields, values, setValues)}
       {selected && (
-        <div className="form-actions" style={{ marginTop: 16 }}>
-          <Button variant="primary" icon="save" onClick={handleSubmit} disabled={saving}>{saving ? 'Saving...' : `Update ${entity}`}</Button>
-        </div>
+        <>
+          <div className="crud-form-grid">
+            {config.fields.map((f) => (
+              <div key={f.key} className={f.full ? 'crud-form-full' : ''}>
+                {renderField(f, values, setValues)}
+              </div>
+            ))}
+          </div>
+          <div className="crud-form-actions">
+            <Button icon="check" onClick={submit} disabled={saving}>
+              {saving ? 'Saving...' : `Save Changes`}
+            </Button>
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
-/* ============ Single Delete ============ */
+/* ------------------------------------------------------------------ */
+/* Single Delete                                                        */
+/* ------------------------------------------------------------------ */
 function SingleDelete({ config, entity }) {
   const { items } = useItems(config.logic);
   const [selected, setSelected] = useState('');
-  const [confirm, setConfirm] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const handleDelete = async () => {
-    if (!selected) return;
+  const submit = async () => {
     setSaving(true); setMsg(null);
     try {
-      const result = await config.logic.remove(selected);
-      if (tryGet(result)) {
-        setMsg({ type: 'success', text: `${entity} deleted!` });
-        setSelected(''); setConfirm(false);
-        if (config.refresh) config.refresh();
-      } else setMsg({ type: 'error', text: tryError(result) });
+      const r = await config.logic.remove(selected);
+      if (tryOk(r)) {
+        setMsg({ type: 'success', text: `${entity} deleted.` });
+        setSelected(''); setConfirming(false);
+        config.refresh?.();
+      } else setMsg({ type: 'error', text: tryErr(r) });
     } catch (e) { setMsg({ type: 'error', text: e.message }); }
     setSaving(false);
   };
 
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Select {entity} to delete</label>
-        <Select value={selected} onChange={(e) => { setSelected(e.target.value); setConfirm(false); }}>
-          <option value="">Select...</option>
+    <>
+      <Feedback msg={msg} />
+      <div style={{ marginBottom: 16 }}>
+        <div className="crud-field-label"><span>Select {entity} to Delete</span><span className="req">*</span></div>
+        <Select value={selected} onChange={(e) => { setSelected(e.target.value); setConfirming(false); }}>
+          <option value="">— choose one —</option>
           {items.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
         </Select>
       </div>
-      {selected && !confirm && (
-        <Button variant="danger" icon="trash" onClick={() => setConfirm(true)}>Delete Selected</Button>
+      {selected && !confirming && (
+        <div className="crud-form-actions">
+          <Button variant="danger" icon="trash" onClick={() => setConfirming(true)}>Delete {entity}</Button>
+        </div>
       )}
-      {confirm && (
+      {confirming && (
         <div className="crud-confirm">
-          <p>Delete this {entity}? This cannot be undone.</p>
+          <p>This action cannot be undone. Are you sure you want to delete this {entity}?</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="danger" onClick={handleDelete} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete'}</Button>
-            <Button variant="ghost" onClick={() => setConfirm(false)}>Cancel</Button>
+            <Button variant="danger" onClick={submit} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete'}</Button>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-/* ============ Bulk Add ============ */
-const SIMPLE_ENTITIES = ['Status', 'Stage', 'Priority', 'Court Hierarchy', 'Client'];
+/* ------------------------------------------------------------------ */
+/* Bulk Add                                                             */
+/* ------------------------------------------------------------------ */
+const HAS_CODE = ['Case Type', 'Bench Type', 'Jurisdiction'];
 
 function BulkAdd({ config, entity }) {
+  const hasCode = HAS_CODE.includes(entity);
   const [lines, setLines] = useState('');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const isSimple = SIMPLE_ENTITIES.includes(entity);
-
-  const handleSubmit = async () => {
-    const names = lines.split('\n').map((s) => s.trim()).filter(Boolean);
-    if (!names.length) { setMsg({ type: 'error', text: 'Enter at least one item.' }); return; }
+  const submit = async () => {
+    const entries = lines.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!entries.length) { setMsg({ type: 'error', text: 'Enter at least one item.' }); return; }
     setSaving(true); setMsg(null);
     let created = 0;
-    for (const name of names) {
+    for (const line of entries) {
       try {
-        let result;
+        let r;
         if (entity === 'Stage') {
-          result = await config.logic.add(name);
-        } else if (entity === 'Case Type') {
-          const shortCode = name.substring(0, 4).toUpperCase();
-          result = await config.logic.create({ name, short_code: shortCode });
+          r = await config.logic.add(line);
+        } else if (hasCode) {
+          const [name, code] = line.split(':').map((s) => s.trim());
+          r = await config.logic.create({ name: name || line, short_code: (code || name?.substring(0, 4) || '').toUpperCase(), ...config.defaults });
         } else {
-          result = await config.logic.create({ name, ...config.defaults });
+          r = await config.logic.create({ name: line, ...config.defaults });
         }
-        if (tryGet(result)) created++;
+        if (tryOk(r)) created++;
       } catch { /* skip */ }
     }
-    setMsg({ type: 'success', text: `${created} of ${names.length} ${entity}(s) created.` });
+    setMsg({ type: 'success', text: `${created} of ${entries.length} ${entity}(s) created.` });
     setLines('');
-    if (config.refresh) config.refresh();
+    config.refresh?.();
     setSaving(false);
   };
 
+  const count = lines.split('\n').filter((l) => l.trim()).length;
+
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Enter {entity} names (one per line){!isSimple ? ' — short codes auto-generated' : ''}</label>
-        <Textarea value={lines} onChange={(e) => setLines(e.target.value)} rows={8} placeholder={`Item 1\nItem 2\nItem 3`} />
+    <>
+      <Feedback msg={msg} />
+      <div style={{ marginBottom: 4 }}>
+        <div className="crud-field-label">
+          {hasCode ? `Paste entries — Name:CODE per line` : `Paste names — one per line`}
+        </div>
+        <Textarea
+          value={lines}
+          onChange={(e) => setLines(e.target.value)}
+          rows={8}
+          placeholder={hasCode
+            ? `Civil Suit:CIV\nCriminal Case:CRL\nWrit Petition:WP`
+            : `Item 1\nItem 2\nItem 3`}
+        />
       </div>
-      <div className="form-actions" style={{ marginTop: 16 }}>
-        <Button variant="primary" icon="plus" onClick={handleSubmit} disabled={saving || !lines.trim()}>
-          {saving ? 'Creating...' : `Create All (${lines.split('\n').filter(Boolean).length})`}
+      <div className="crud-form-actions">
+        <Button icon="plus" onClick={submit} disabled={saving || !lines.trim()}>
+          {saving ? 'Creating...' : `Add All (${count})`}
         </Button>
       </div>
-    </div>
+    </>
   );
 }
 
-/* ============ Bulk Edit ============ */
+/* ------------------------------------------------------------------ */
+/* Bulk Edit                                                            */
+/* ------------------------------------------------------------------ */
 function BulkEdit({ config, entity }) {
   const { items } = useItems(config.logic);
   const [selected, setSelected] = useState([]);
@@ -285,106 +381,115 @@ function BulkEdit({ config, entity }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const toggleItem = (id) => setSelected((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+  const toggle = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
-  const handleSubmit = async () => {
+  const submit = async () => {
     if (!selected.length) { setMsg({ type: 'error', text: 'Select items to edit.' }); return; }
     setSaving(true); setMsg(null);
     let updated = 0;
     for (const id of selected) {
-      try {
-        const result = await config.logic.update(id, values);
-        if (tryGet(result)) updated++;
-      } catch { /* skip */ }
+      try { if (tryOk(await config.logic.update(id, values))) updated++; } catch { /* skip */ }
     }
     setMsg({ type: 'success', text: `${updated} of ${selected.length} updated.` });
-    if (config.refresh) config.refresh();
+    config.refresh?.();
     setSaving(false);
   };
 
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Select {entity}s to edit ({selected.length} selected)</label>
+    <>
+      <Feedback msg={msg} />
+      <div style={{ marginBottom: 16 }}>
+        <div className="crud-field-label">Select {entity}s to edit <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
-              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggleItem(i.id)} />
+              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} />
               {i.name}
             </label>
           ))}
         </div>
       </div>
-      {selected.length > 0 && renderFields(config.fields, values, setValues)}
       {selected.length > 0 && (
-        <div className="form-actions" style={{ marginTop: 16 }}>
-          <Button variant="primary" icon="save" onClick={handleSubmit} disabled={saving}>
-            {saving ? 'Updating...' : `Update Selected (${selected.length})`}
-          </Button>
-        </div>
+        <>
+          <div className="crud-form-grid">
+            {config.fields.map((f) => (
+              <div key={f.key} className={f.full ? 'crud-form-full' : ''}>
+                {renderField(f, values, setValues)}
+              </div>
+            ))}
+          </div>
+          <div className="crud-form-actions">
+            <Button icon="check" onClick={submit} disabled={saving}>
+              {saving ? 'Updating...' : `Update Selected (${selected.length})`}
+            </Button>
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
-/* ============ Bulk Delete ============ */
+/* ------------------------------------------------------------------ */
+/* Bulk Delete                                                          */
+/* ------------------------------------------------------------------ */
 function BulkDelete({ config, entity }) {
   const { items, refresh } = useItems(config.logic);
   const [selected, setSelected] = useState([]);
-  const [confirm, setConfirm] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const toggleItem = (id) => setSelected((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+  const toggle = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
-  const handleDelete = async () => {
+  const submit = async () => {
     setSaving(true); setMsg(null);
     let deleted = 0;
     for (const id of selected) {
-      try {
-        const result = await config.logic.remove(id);
-        if (tryGet(result)) deleted++;
-      } catch { /* skip */ }
+      try { if (tryOk(await config.logic.remove(id))) deleted++; } catch { /* skip */ }
     }
     setMsg({ type: 'success', text: `${deleted} of ${selected.length} deleted.` });
-    setSelected([]); setConfirm(false);
-    if (config.refresh) config.refresh();
-    refresh();
+    setSelected([]); setConfirming(false);
+    config.refresh?.(); refresh();
     setSaving(false);
   };
 
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Select {entity}s to delete ({selected.length} selected)</label>
+    <>
+      <Feedback msg={msg} />
+      <div style={{ marginBottom: 16 }}>
+        <div className="crud-field-label">Select {entity}s to delete <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
-              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggleItem(i.id)} />
+              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} />
               {i.name}
             </label>
           ))}
         </div>
       </div>
-      {selected.length > 0 && !confirm && (
-        <Button variant="danger" icon="trash" onClick={() => setConfirm(true)}>Delete Selected ({selected.length})</Button>
+      {selected.length > 0 && !confirming && (
+        <div className="crud-form-actions">
+          <Button variant="danger" icon="trash" onClick={() => setConfirming(true)}>
+            Delete Selected ({selected.length})
+          </Button>
+        </div>
       )}
-      {confirm && (
+      {confirming && (
         <div className="crud-confirm">
           <p>Delete {selected.length} {entity}(s)? This cannot be undone.</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="danger" onClick={handleDelete} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete All'}</Button>
-            <Button variant="ghost" onClick={() => setConfirm(false)}>Cancel</Button>
+            <Button variant="danger" onClick={submit} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete All'}</Button>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-/* ============ Bulk Import ============ */
+/* ------------------------------------------------------------------ */
+/* Import                                                               */
+/* ------------------------------------------------------------------ */
 function BulkImport({ config, entity }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState([]);
@@ -392,8 +497,7 @@ function BulkImport({ config, entity }) {
   const [msg, setMsg] = useState(null);
 
   const handleFile = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+    const f = e.target.files?.[0]; if (!f) return;
     setFile(f);
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -411,8 +515,8 @@ function BulkImport({ config, entity }) {
     reader.readAsText(f);
   };
 
-  const handleImport = async () => {
-    if (!file) { setMsg({ type: 'error', text: 'Select a file.' }); return; }
+  const submit = async () => {
+    if (!file) { setMsg({ type: 'error', text: 'Select a CSV file first.' }); return; }
     setSaving(true); setMsg(null);
     const reader = new FileReader();
     reader.onload = async (ev) => {
@@ -425,45 +529,134 @@ function BulkImport({ config, entity }) {
         const obj = {};
         headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
         try {
-          let result;
-          if (entity === 'Stage') result = await config.logic.add(obj.name);
-          else result = await config.logic.create(obj);
-          if (tryGet(result)) imported++;
+          const r = entity === 'Stage' ? await config.logic.add(obj.name) : await config.logic.create(obj);
+          if (tryOk(r)) imported++;
         } catch { /* skip */ }
       }
-      setMsg({ type: 'success', text: `${imported} of ${lines.length - 1} imported.` });
+      setMsg({ type: 'success', text: `${imported} of ${lines.length - 1} rows imported.` });
       setFile(null); setPreview([]);
-      if (config.refresh) config.refresh();
+      config.refresh?.();
       setSaving(false);
     };
     reader.readAsText(file);
   };
 
+  const colNames = config.fields.map((f) => f.key).join(', ');
+
   return (
-    <div>
-      <ActionToast msg={msg} />
-      <div className="field">
-        <label className="field__label">Upload CSV file</label>
-        <input type="file" accept=".csv,.txt" onChange={handleFile} className="input" />
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 4 }}>
-          CSV format: first row = headers (e.g. name{config.fields.length > 1 ? ', short_code' : ''}). Additional columns ignored.
-        </div>
+    <>
+      <Feedback msg={msg} />
+      <div className="crud-import-zone">
+        <div className="crud-import-zone__icon"><Icon name="upload" size={24} /></div>
+        <div className="crud-import-zone__title">Import from CSV</div>
+        <div className="crud-import-zone__sub">CSV columns: <code style={{ fontSize: 12 }}>{colNames}</code></div>
+        <label style={{ cursor: 'pointer' }}>
+          <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={handleFile} />
+          <span className="btn btn--ghost">{file ? file.name : 'Choose CSV file'}</span>
+        </label>
       </div>
       {preview.length > 0 && (
-        <div className="field">
-          <label className="field__label">Preview (first {preview.length})</label>
+        <div style={{ marginBottom: 16 }}>
+          <div className="crud-field-label">Preview (first {preview.length} rows)</div>
           <div className="crud-preview">
             {preview.map((row, i) => <div key={i}>{JSON.stringify(row)}</div>)}
           </div>
         </div>
       )}
       {file && (
-        <div className="form-actions" style={{ marginTop: 16 }}>
-          <Button variant="primary" icon="upload" onClick={handleImport} disabled={saving}>
-            {saving ? 'Importing...' : `Import from ${file.name}`}
+        <div className="crud-form-actions">
+          <Button icon="upload" onClick={submit} disabled={saving}>
+            {saving ? 'Importing...' : `Import ${file.name}`}
           </Button>
         </div>
       )}
-    </div>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Tip text per tab                                                     */
+/* ------------------------------------------------------------------ */
+const TIPS = {
+  'single-add': (e) => `Use meaningful names${HAS_CODE.includes(e) ? ' and short codes' : ''} for better organization and quick identification.`,
+  'single-edit': (e) => `Editing a ${e} name updates it across all associated records.`,
+  'single-delete': (e) => `Ensure no active cases are using this ${e} before deleting.`,
+  'bulk-add': (e) => HAS_CODE.includes(e) ? `Format: Name:CODE per line — e.g. "Civil Suit:CIV". Short codes should be uppercase.` : `Enter one ${e} name per line. Blank lines are ignored.`,
+  'bulk-edit': (e) => `Select items then fill in the new values. Only filled fields will be updated.`,
+  'bulk-delete': (e) => `Double-check your selection before confirming — deleted ${e}s cannot be recovered.`,
+  'import': (e) => `CSV must have a header row. Supported columns match the ${e} fields shown above.`,
+};
+
+const SUBTITLES = {
+  'single-add': (e) => `Add a new ${e} to your practice.`,
+  'single-edit': (e) => `Edit an existing ${e}.`,
+  'single-delete': (e) => `Remove a ${e} from your practice.`,
+  'bulk-add': (e) => `Add multiple ${e}s at once.`,
+  'bulk-edit': (e) => `Update multiple ${e}s in one operation.`,
+  'bulk-delete': (e) => `Remove multiple ${e}s in one operation.`,
+  'import': (e) => `Import ${e}s from a CSV file.`,
+};
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                       */
+/* ------------------------------------------------------------------ */
+export default function CrudManager({ open, onClose, entity, config }) {
+  const [tab, setTab] = useState('single-add');
+
+  useEffect(() => { if (open) setTab('single-add'); }, [open]);
+
+  const subtitle = SUBTITLES[tab]?.(entity) ?? '';
+  const tip = TIPS[tab]?.(entity) ?? '';
+
+  return (
+    <Modal
+      open={open}
+      title={`Manage ${entity}`}
+      subtitle={subtitle}
+      onClose={onClose}
+      size="lg"
+      className="crud-modal"
+      footer={<Button variant="ghost" onClick={onClose}>Close</Button>}
+    >
+      {/* Tab bar */}
+      <div className="crud-tabs">
+        {TABS.map((t, i) => {
+          const prev = TABS[i - 1];
+          const showDivider = prev && t.group !== prev.group;
+          return (
+            <React.Fragment key={t.id}>
+              {showDivider && <div className="crud-tab-divider" />}
+              <button
+                type="button"
+                className={[
+                  'crud-tab',
+                  t.danger ? 'crud-tab--danger' : '',
+                  t.special === 'import' ? 'crud-tab--import' : '',
+                  tab === t.id ? 'crud-tab--active' : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => setTab(t.id)}
+              >
+                <Icon name={t.icon} size={14} />
+                {t.label}
+              </button>
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      {/* Tab content */}
+      <div key={`${entity}-${tab}`}>
+        {tab === 'single-add' && <SingleAdd config={config} entity={entity} />}
+        {tab === 'single-edit' && <SingleEdit config={config} entity={entity} />}
+        {tab === 'single-delete' && <SingleDelete config={config} entity={entity} />}
+        {tab === 'bulk-add' && <BulkAdd config={config} entity={entity} />}
+        {tab === 'bulk-edit' && <BulkEdit config={config} entity={entity} />}
+        {tab === 'bulk-delete' && <BulkDelete config={config} entity={entity} />}
+        {tab === 'import' && <BulkImport config={config} entity={entity} />}
+      </div>
+
+      {/* Tip */}
+      <TipBox text={tip} />
+    </Modal>
   );
 }

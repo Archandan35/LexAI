@@ -8351,19 +8351,23 @@ kbd.cmd__kbd {
   flex: 1;
 }
 
-/* ---- Crud Manager Modal (60% width) ---- */
+/* ---- Crud Manager Modal ---- */
 .crud-modal .modal {
-  max-width: min(820px, 88vw);
+  max-width: min(820px, 92vw);
 }
 
-/* ---- Crud Tabs ---- */
+/* ---- Crud Tab Bar (pill container matching screenshot) ---- */
 .crud-tabs {
   display: flex;
-  gap: 4px;
-  padding: 0 0 16px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 18px;
+  align-items: center;
+  gap: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 22px;
   flex-wrap: wrap;
+  gap: 2px;
 }
 
 .crud-tab {
@@ -8371,47 +8375,255 @@ kbd.cmd__kbd {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border: 1px solid transparent;
   border-radius: 8px;
-  background: none;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--text-faint);
-  transition: all 0.12s;
+  color: var(--text-soft);
+  transition: all 0.16s var(--ease);
+  white-space: nowrap;
 }
 
 .crud-tab:hover {
-  background: var(--surface-2);
-  color: var(--text);
+  color: var(--navy-700);
+  background: var(--surface);
 }
 
 .crud-tab--active {
-  background: var(--navy-soft);
+  background: var(--surface);
   color: var(--navy-700);
-  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
-/* ---- Crud Confirm Box ---- */
+.crud-tab--danger {
+  color: var(--red);
+}
+
+.crud-tab--danger:hover,
+.crud-tab--danger.crud-tab--active {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.crud-tab--import {
+  color: var(--navy-600);
+}
+
+.crud-tab--import:hover,
+.crud-tab--import.crud-tab--active {
+  color: var(--navy-700);
+  background: var(--brand-soft);
+}
+
+.crud-tab-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 4px 2px;
+  flex-shrink: 0;
+}
+
+/* ---- Crud form grid layout ---- */
+.crud-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 4px;
+}
+
+.crud-form-full {
+  grid-column: 1 / -1;
+}
+
+/* ---- Field label with required star ---- */
+.crud-field-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+.crud-field-label .req {
+  color: var(--red);
+}
+
+.crud-field-hint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin-top: 5px;
+}
+
+/* ---- Input with left icon ---- */
+.crud-input-icon {
+  position: relative;
+}
+
+.crud-input-icon .input {
+  padding-left: 38px;
+}
+
+.crud-input-icon__ico {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.crud-input-icon--top .crud-input-icon__ico {
+  top: 12px;
+  transform: none;
+}
+
+/* ---- Status select with dot ---- */
+.crud-status-select {
+  position: relative;
+}
+
+.crud-status-select .select {
+  padding-left: 30px;
+}
+
+.crud-status-dot {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ---- Form actions row ---- */
+.crud-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+/* ---- Tip box ---- */
+.crud-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--brand-soft);
+  border: 1px solid #cdd9f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 20px;
+}
+
+.crud-tip__icon {
+  width: 34px;
+  height: 34px;
+  background: var(--surface);
+  border: 1px solid #cdd9f7;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--navy-600);
+}
+
+.crud-tip__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-800);
+  margin-bottom: 3px;
+}
+
+.crud-tip__text {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+/* ---- Action toast (inline feedback) ---- */
+.crud-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  background: var(--green-soft);
+  color: var(--green);
+  border: 1px solid #a8e6cc;
+}
+
+.crud-toast--error {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: #f5c6c4;
+}
+
+/* ---- Confirm box ---- */
 .crud-confirm {
   margin-top: 12px;
-  padding: 14px;
-  background: var(--bg-subtle);
-  border-radius: 10px;
+  padding: 16px;
+  background: var(--red-soft);
+  border: 1px solid #f5c6c4;
+  border-radius: 12px;
 }
 
 .crud-confirm p {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--red);
+  font-size: 13.5px;
 }
 
-/* ---- Crud Preview (import) ---- */
+/* ---- Checkbox list ---- */
+.crud-checkbox-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.crud-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.crud-checkbox-row:hover {
+  background: var(--surface-2);
+}
+
+.crud-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* ---- Import preview ---- */
 .crud-preview {
-  background: var(--bg-subtle);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: monospace;
   max-height: 200px;
   overflow-y: auto;
@@ -8424,6 +8636,41 @@ kbd.cmd__kbd {
 
 .crud-preview div:last-child {
   border-bottom: none;
+}
+
+/* ---- Import drop zone ---- */
+.crud-import-zone {
+  text-align: center;
+  padding: 36px 20px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 14px;
+  background: var(--bg);
+  margin-bottom: 16px;
+}
+
+.crud-import-zone__icon {
+  width: 52px;
+  height: 52px;
+  background: var(--brand-soft);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--navy-600);
+}
+
+.crud-import-zone__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-800);
+  margin-bottom: 6px;
+}
+
+.crud-import-zone__sub {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin-bottom: 16px;
 }
 
 /* ================================================================
