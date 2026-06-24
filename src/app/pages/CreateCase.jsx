@@ -4,7 +4,6 @@ import Card from '@/components/Card.jsx';
 import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import CrudContextMenu from '@/components/CrudContextMenu.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
@@ -86,8 +85,6 @@ function MultiValueField({ items, inputValue, onInputChange, onAdd, onRemove, pl
 }
 
 function GearSelect({ value, onChange, options, placeholder, entity, onGearClick }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
     <div className="select-with-add">
       <Select value={value} onChange={onChange}>
@@ -96,15 +93,9 @@ function GearSelect({ value, onChange, options, placeholder, entity, onGearClick
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </Select>
-      <button type="button" className="icon-btn" title={`Manage ${entity}`} onClick={() => setMenuOpen((p) => !p)}>
+      <button type="button" className="icon-btn" title={`Manage ${entity}`} onClick={() => onGearClick(entity)}>
         <Icon name="gear" size={16} />
       </button>
-      <CrudContextMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        entityLabel={entity}
-        onAction={(action) => onGearClick(entity, action)}
-      />
     </div>
   );
 }
@@ -150,7 +141,7 @@ export default function CreateCase() {
 
   const [crudEntity, setCrudEntity] = useState(null);
 
-  const openCrudManager = useCallback((entity, action) => {
+  const openCrudManager = useCallback((entity) => {
     setCrudEntity(entity);
   }, []);
 

@@ -2206,29 +2206,6 @@ input, textarea, select { font-family: inherit; }
 .search-row__input { flex: 1; }
 .spacer { flex: 1; }
 
-/* ---- Crud Context Menu (gear dropdown) ---- */
-.crud-menu { position: absolute; top: 100%; right: 0; z-index: 50; min-width: 200px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); padding: 6px; animation: pop 0.18s var(--ease); }
-.crud-menu__head { padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-.crud-menu__item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: none; background: none; border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--text); transition: all 0.12s; }
-.crud-menu__item:hover { background: var(--surface-2); }
-.crud-menu__icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-size: 13px; font-weight: 700; }
-.crud-menu__icon--single { background: var(--navy-soft); color: var(--navy-700); }
-.crud-menu__icon--bulk { background: var(--gold-soft); color: var(--gold); }
-
-/* ---- Crud Manager Dashboard ---- */
-.crud-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 4px 0; }
-.crud-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 14px; border: 2px dashed var(--border); border-radius: 14px; background: var(--surface); cursor: pointer; transition: all 0.15s; }
-.crud-card:hover { border-color: var(--accent); border-style: solid; background: var(--surface-2); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.crud-card__icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; color: #fff; }
-.crud-card__label { font-weight: 700; font-size: 14px; color: var(--text); }
-.crud-card__desc { font-size: 12px; color: var(--text-faint); text-align: center; }
-@media (max-width: 600px) { .crud-dashboard { grid-template-columns: 1fr; } }
-
-/* ---- Crud Manager Toast ---- */
-.crud-toast { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
-.crud-toast--success { background: var(--green-soft); color: var(--green); }
-.crud-toast--error { background: var(--red-soft); color: var(--red); }
-
 /* ---- Crud Checkbox List ---- */
 .crud-checkbox-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
 .crud-checkbox-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13.5px; font-weight: 500; }
@@ -2238,3 +2215,20 @@ input, textarea, select { font-family: inherit; }
 /* ---- SelectWithAdd container ---- */
 .select-with-add { position: relative; display: flex; gap: 8px; align-items: center; }
 .select-with-add select { flex: 1; }
+/* ---- Crud Manager Modal (60% width) ---- */
+.crud-modal .modal { max-width: min(820px, 88vw); }
+
+/* ---- Crud Tabs ---- */
+.crud-tabs { display: flex; gap: 4px; padding: 0 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+.crud-tab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-faint); transition: all 0.12s; }
+.crud-tab:hover { background: var(--surface-2); color: var(--text); }
+.crud-tab--active { background: var(--navy-soft); color: var(--navy-700); border-color: var(--accent); }
+
+/* ---- Crud Confirm Box ---- */
+.crud-confirm { margin-top: 12px; padding: 14px; background: var(--bg-subtle); border-radius: 10px; }
+.crud-confirm p { margin: 0 0 10px; font-weight: 600; color: var(--danger); }
+
+/* ---- Crud Preview (import) ---- */
+.crud-preview { background: var(--bg-subtle); border-radius: 8px; padding: 12px; font-size: 13px; font-family: monospace; max-height: 200px; overflow-y: auto; }
+.crud-preview div { padding: 4px 0; border-bottom: 1px solid var(--border); }
+.crud-preview div:last-child { border-bottom: none; }
