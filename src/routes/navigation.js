@@ -13,8 +13,7 @@ export const NAV_GROUPS = [
         label: 'Cases', icon: 'folder',
         children: [
           { to: '/cases/create', label: 'Create Case', icon: 'plus', module: 'casevault' },
-          { to: '/cases/manage', label: 'Manage Cases', icon: 'list', module: 'caseManage' },
-          { to: '/cases', label: 'Case Details', icon: 'file', end: true, module: 'casevault' },
+          { to: '/cases', label: 'Manage Case', icon: 'file', end: true, module: 'casevault' },
           { to: '/cases/cause-list', label: 'Cause List', icon: 'calendar', module: 'causeList' },
           { to: '/cases/hearings', label: 'Hearings', icon: 'mic', module: 'hearingNotes' },
           { to: '/cases/timeline', label: 'Timeline Builder', icon: 'clock', module: 'timeline' },

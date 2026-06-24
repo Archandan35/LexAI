@@ -16,6 +16,7 @@ import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
+import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
@@ -248,6 +249,7 @@ export default function CreateCase() {
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
         addApiLog('success', `Case created: ${result.case_number || result.id}`, result);
+        const targetFolder = form.document_folder || 'Other Documents';
         if (form.document_folder) {
           const parts = form.document_folder.split('/').map((p) => p.trim()).filter(Boolean);
           let parentId = null;
@@ -258,6 +260,12 @@ export default function CreateCase() {
             else if (!fr.ok) { addApiLog('warn', `Folder "${name}" failed`, fr.error); toast.warning(`Folder "${name}" failed: ${fr.error}`); break; }
           }
         }
+        for (const file of selectedFiles) {
+          addApiLog('info', `Uploading: ${file.name}`);
+          const ur = await fileLogic.uploadDocument(file, { caseId: result.id, folder: targetFolder }, user);
+          if (ur.ok) addApiLog('success', `Uploaded: ${file.name}`, ur.data);
+          else addApiLog('error', `Upload failed: ${file.name}`, ur.error);
+        }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
         resetForm();
       } else { addApiLog('error', 'createCase: result has no id', result); toast.error('Failed to create case.'); }
@@ -265,7 +273,7 @@ export default function CreateCase() {
       addApiLog('error', 'createCase exception', { message: e?.message, stack: e?.stack });
       toast.error(e?.message || 'An error occurred.');
     } finally { setSaving(false); }
-  }, [validate, buildPayload, form.document_folder, user, toast, resetForm, addApiLog]);
+  }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, addApiLog]);
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));

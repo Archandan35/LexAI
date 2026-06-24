@@ -34,7 +34,7 @@ import HearingNotes from '@/app/pages/HearingNotes.jsx';
 import CaseVault from '@/app/pages/CaseVault.jsx';
 import CaseDetail from '@/app/pages/CaseDetail.jsx';
 import CauseList from '@/app/pages/CauseList.jsx';
-import CaseManage from '@/app/pages/CaseManage.jsx';
+
 import NotFound from '@/app/pages/NotFound.jsx';
 
 import UserManagement from '@/app/pages/UserManagement.jsx';
@@ -94,7 +94,6 @@ export default function AppRoutes() {
 
         {/* ── Case Management ── */}
         <Route path="/cases/create" element={G('casevault', <CreateCase />)} />
-        <Route path="/cases/manage" element={G('caseManage', <CaseManage />)} />
         <Route path="/cases/cause-list" element={G('causeList', <CauseList />)} />
         <Route path="/cases/hearings" element={G('hearingNotes', <HearingNotes />)} />
         <Route path="/cases/timeline" element={G('timeline', <TimelineBuilder />)} />
@@ -174,7 +173,7 @@ export default function AppRoutes() {
 
         {/* ── Redirects (old paths → new paths) ── */}
         <Route path="/cause-list" element={<Navigate to="/cases/cause-list" replace />} />
-        <Route path="/case-manage" element={<Navigate to="/cases/manage" replace />} />
+        <Route path="/case-manage" element={<Navigate to="/cases" replace />} />
         <Route path="/hearing-notes" element={<Navigate to="/cases/hearings" replace />} />
         <Route path="/timeline" element={<Navigate to="/cases/timeline" replace />} />
         <Route path="/citations" element={<Navigate to="/research/citations" replace />} />

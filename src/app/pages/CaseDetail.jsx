@@ -141,8 +141,11 @@ export default function CaseDetail() {
               <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
               <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
               <Row label="Court Name" value={c.courtName} />
+              <Row label="Court Hierarchy" value={c.court_hierarchy} />
+              <Row label="Bench Type" value={c.bench_type} />
               <Row label="Presiding Officer" value={c.judge} />
               <Row label="Status" value={c.status} />
+              <Row label="Priority" value={c.priority} />
               <Row label="Client" value={c.client} />
               <Row label="Advocate" value={c.advocate} />
             </Card>
@@ -153,7 +156,9 @@ export default function CaseDetail() {
                 actions={<PermissionGate perm="casevault.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
               >
                 <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
-                <p className="case-detail__description">{c.description || c.case_summary || '—'}</p>
+                <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
+                <div className="card__sub" style={{ marginTop: 10, marginBottom: 4 }}>Internal Notes</div>
+                <p className="case-detail__description" style={{ color: 'var(--text-muted)' }}>{c.internal_notes || '—'}</p>
                 <div className="case-detail__tags">
                   {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
                   <PermissionGate perm="casevault.edit">
