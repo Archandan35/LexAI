@@ -775,7 +775,7 @@ export default function CaseDocuments() {
             <div className="empty">
               <div className="empty__icon"><Icon name="folder" size={24} /></div>
               <p className="muted">This folder is empty.</p>
-              <Button size="sm" variant="ghost" onClick={() => toast.push('Upload functionality coming soon.', 'info')}>Upload a document</Button>
+              <Button size="sm" variant="ghost" onClick={() => fileInputRef.current?.click()}>Upload a document</Button>
             </div>
           )}
         </div>
