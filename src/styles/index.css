@@ -2813,19 +2813,7 @@ kbd.cmd__kbd {
   color: var(--navy-700);
 }
 
-.docmgr__tree-expand-root {
-  width: 15px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-faint);
-}
 
-.docmgr__tree-expand-root:hover {
-  color: var(--navy-700);
-}
 
 .docmgr__folder-name {
   flex: 1;
@@ -2992,6 +2980,96 @@ kbd.cmd__kbd {
 
 .docmgr__main {
   min-width: 0;
+}
+
+/* Breadcrumb */
+.docmgr__path {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.docmgr__path-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--text-soft);
+  font-size: 13px;
+  transition: all 0.15s var(--ease);
+}
+
+.docmgr__path-btn:hover {
+  background: var(--surface-2);
+  color: var(--navy-700);
+}
+
+.docmgr__path-btn.active {
+  color: var(--navy-700);
+  font-weight: 600;
+  background: var(--brand-soft);
+}
+
+.docmgr__path-sep {
+  color: var(--text-faint);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+}
+
+/* Folder grid in main container */
+.docmgr__folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.docmgr__folder-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+}
+
+.docmgr__folder-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-strong);
+}
+
+.docmgr__folder-card:hover .docmgr__folder-card-name {
+  color: var(--navy-700);
+}
+
+.docmgr__folder-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  transition: color 0.15s var(--ease);
+}
+
+.docmgr__folder-card-meta {
+  font-size: 11px;
+  color: var(--text-faint);
 }
 
 /* Grid view */

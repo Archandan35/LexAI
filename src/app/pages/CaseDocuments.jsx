@@ -66,6 +66,17 @@ export default function CaseDocuments() {
     !search || (d.name || d.title || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const breadcrumbPath = useMemo(() => {
+    if (!activeFolder) return [];
+    const path = [];
+    let current = folders.find((f) => f.id === activeFolder);
+    while (current) {
+      path.unshift(current);
+      current = current.parent_id ? folders.find((f) => f.id === current.parent_id) : null;
+    }
+    return path;
+  }, [activeFolder, folders]);
+
   function getFolderName(id) {
     const f = folders.find((x) => x.id === id);
     return f ? f.name : null;
@@ -271,23 +282,17 @@ export default function CaseDocuments() {
               />
             )}
 
-            {guides.length > 0 && guides.map((showLine, i) => (
+            {guides.map((showLine, i) => (
               <span key={i} className={`docmgr__tree-guide ${showLine ? 'docmgr__tree-guide--v' : ''}`} />
             ))}
 
-            {guides.length > 0 ? (
-              <span className={`docmgr__tree-conn ${isLast ? 'docmgr__tree-conn--last' : ''}`}>
-                {hasChildren && (
-                  <span className="docmgr__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                    <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
-                  </span>
-                )}
-              </span>
-            ) : hasChildren ? (
-              <span className="docmgr__tree-expand-root" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
-              </span>
-            ) : null}
+            <span className={`docmgr__tree-conn ${isLast ? 'docmgr__tree-conn--last' : ''}`}>
+              {hasChildren && (
+                <span className="docmgr__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
+                  <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
+                </span>
+              )}
+            </span>
 
             <Icon name={hasChildren ? 'folder' : 'file'} size={15} />
             {isEditing ? (
@@ -418,71 +423,115 @@ export default function CaseDocuments() {
         </aside>
 
         <div className="docmgr__main">
-          <div className="toolbar-row">
-            <div style={{ flex: 1 }} />
-            <div className="seg">
-              <button className={`seg__btn ${view === 'list' ? 'active' : ''}`} title="List view" onClick={() => setView('list')}>
-                <Icon name="list" size={15} />
-              </button>
-              <button className={`seg__btn ${view === 'grid' ? 'active' : ''}`} title="Grid view" onClick={() => setView('grid')}>
-                <Icon name="grid" size={15} />
-              </button>
-            </div>
+          {/* Breadcrumb */}
+          <div className="docmgr__path">
+            <button className={`docmgr__path-btn ${!activeFolder ? 'active' : ''}`} onClick={() => { setActiveFolder(null); setDocSelected([]); }}>
+              <Icon name="layers" size={14} /> All Documents
+            </button>
+            {breadcrumbPath.map((f) => (
+              <React.Fragment key={f.id}>
+                <span className="docmgr__path-sep"><Icon name="chevron" size={10} /></span>
+                <button className="docmgr__path-btn" onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}>{f.name}</button>
+              </React.Fragment>
+            ))}
           </div>
 
-          <div className="search-row" style={{ marginBottom: 12 }}>
-            <div className="datatable__search search-row__input">
-              <Icon name="search" size={15} />
-              <input value={search} placeholder="Search documents..." onChange={(e) => setSearch(e.target.value)} />
+          {/* Folder grid — root or sub-folders */}
+          {(!activeFolder || getChildren(activeFolder).length > 0) && (
+            <div className="docmgr__folder-grid">
+              {(activeFolder === null ? rootFolders : getChildren(activeFolder)).map((f) => {
+                const childCount = getChildren(f.id).length;
+                const fileCount = docCounts[f.name] || 0;
+                return (
+                  <div
+                    key={f.id}
+                    className="docmgr__folder-card"
+                    onClick={() => { setActiveFolder(f.id); setDocSelected([]); }}
+                  >
+                    <Icon name="folder" size={32} />
+                    <span className="docmgr__folder-card-name">{f.name}</span>
+                    <span className="docmgr__folder-card-meta">
+                      {childCount > 0 && `${childCount} folder${childCount > 1 ? 's' : ''}`}
+                      {childCount > 0 && fileCount > 0 && ' · '}
+                      {fileCount > 0 && `${fileCount} file${fileCount > 1 ? 's' : ''}`}
+                      {childCount === 0 && fileCount === 0 && 'Empty'}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          )}
 
-          {loading ? (
-            <div className="empty"><span className="spinner" /></div>
-          ) : filtered.length === 0 ? (
-            <div className="empty">
-              <div className="empty__icon"><Icon name="folder" size={24} /></div>
-              <p className="muted">No documents found.</p>
-            </div>
-          ) : view === 'list' ? (
-            <Card bodyClass="card__body--flush">
-              <div className="table-scroll">
-                <table className="table">
-                  <thead>
-                    <tr><th style={{ width: 34 }} /><th>Name</th><th>Folder</th><th>Size</th><th>Date</th></tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((d) => (
-                      <tr key={d.id} className={docSelected.includes(d.id) ? 'row--selected' : ''}>
-                        <td><input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} /></td>
-                        <td style={{ fontWeight: 600 }}>
-                          <Icon name="file" size={14} /> {d.name || d.title || 'Untitled'}
-                        </td>
-                        <td><span className="badge badge--grey">{d.folder || '—'}</span></td>
-                        <td>{bytes(d.size)}</td>
-                        <td>{formatDate(d.uploaded_at || d.created_at || d.uploadedAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          ) : (
-            <div className="docgrid">
-              {filtered.map((d) => (
-                <div key={d.id} className={`doccard ${docSelected.includes(d.id) ? 'doccard--sel' : ''}`}>
-                  <div className="doccard__top">
-                    <input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} />
-                  </div>
-                  <div className="doccard__icon"><Icon name="file" size={26} /></div>
-                  <div className="doccard__name" title={d.name}>{d.name || d.title || 'Untitled'}</div>
-                  <div className="doccard__meta">
-                    <span className="badge badge--grey">{d.folder || '—'}</span>
-                    <span>{bytes(d.size)}</span>
-                  </div>
+          {/* File view — leaf folder with documents */}
+          {activeFolder && getChildren(activeFolder).length === 0 && (
+            <>
+              <div className="toolbar-row">
+                <div style={{ flex: 1 }} />
+                <div className="seg">
+                  <button className={`seg__btn ${view === 'list' ? 'active' : ''}`} title="List view" onClick={() => setView('list')}>
+                    <Icon name="list" size={15} />
+                  </button>
+                  <button className={`seg__btn ${view === 'grid' ? 'active' : ''}`} title="Grid view" onClick={() => setView('grid')}>
+                    <Icon name="grid" size={15} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              <div className="search-row" style={{ marginBottom: 12 }}>
+                <div className="datatable__search search-row__input">
+                  <Icon name="search" size={15} />
+                  <input value={search} placeholder="Search documents..." onChange={(e) => setSearch(e.target.value)} />
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="empty"><span className="spinner" /></div>
+              ) : filtered.length === 0 ? (
+                <div className="empty">
+                  <div className="empty__icon"><Icon name="folder" size={24} /></div>
+                  <p className="muted">No documents found.</p>
+                </div>
+              ) : view === 'list' ? (
+                <Card bodyClass="card__body--flush">
+                  <div className="table-scroll">
+                    <table className="table">
+                      <thead>
+                        <tr><th style={{ width: 34 }} /><th>Name</th><th>Folder</th><th>Size</th><th>Date</th></tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map((d) => (
+                          <tr key={d.id} className={docSelected.includes(d.id) ? 'row--selected' : ''}>
+                            <td><input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} /></td>
+                            <td style={{ fontWeight: 600 }}>
+                              <Icon name="file" size={14} /> {d.name || d.title || 'Untitled'}
+                            </td>
+                            <td><span className="badge badge--grey">{d.folder || '—'}</span></td>
+                            <td>{bytes(d.size)}</td>
+                            <td>{formatDate(d.uploaded_at || d.created_at || d.uploadedAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              ) : (
+                <div className="docgrid">
+                  {filtered.map((d) => (
+                    <div key={d.id} className={`doccard ${docSelected.includes(d.id) ? 'doccard--sel' : ''}`}>
+                      <div className="doccard__top">
+                        <input type="checkbox" checked={docSelected.includes(d.id)} onChange={() => toggleDocSelect(d.id)} />
+                      </div>
+                      <div className="doccard__icon"><Icon name="file" size={26} /></div>
+                      <div className="doccard__name" title={d.name}>{d.name || d.title || 'Untitled'}</div>
+                      <div className="doccard__meta">
+                        <span className="badge badge--grey">{d.folder || '—'}</span>
+                        <span>{bytes(d.size)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
