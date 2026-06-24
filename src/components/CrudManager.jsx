@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
@@ -27,6 +27,18 @@ function tryOk(r) {
 function tryErr(r) {
   if (!r) return 'Unknown error';
   return r.error || r.message || 'Operation failed';
+}
+
+function ProgressBar({ current, total }) {
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  return (
+    <div className="crud-progress">
+      <div className="crud-progress__bar">
+        <div className="crud-progress__fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="crud-progress__text">{current} / {total} ({pct}%)</div>
+    </div>
+  );
 }
 
 function useItems(logic) {
@@ -128,6 +140,11 @@ function renderField(f, values, setValues) {
             onChange={(e) => set(e.target.value)}
           />
         </div>
+      ) : f.type === 'password' ? (
+        <div className="crud-input-icon">
+          <span className="crud-input-icon__ico"><Icon name="lock" size={15} /></span>
+          <Input type="password" value={val} placeholder={f.placeholder || f.label} onChange={(e) => set(e.target.value)} />
+        </div>
       ) : (
         <div className="crud-input-icon">
           <span className="crud-input-icon__ico">
@@ -167,7 +184,7 @@ function SingleAdd({ config, entity }) {
     try {
       const r = entity === 'Stage'
         ? await config.logic.add(values.name)
-        : await config.logic.create(values);
+        : await config.logic.create(values, config.actor);
       if (tryOk(r)) {
         setMsg({ type: 'success', text: `${entity} added successfully.` });
         setValues({});
@@ -220,7 +237,7 @@ function SingleEdit({ config, entity }) {
     if (!selected) { setMsg({ type: 'error', text: 'Select an item to edit.' }); return; }
     setSaving(true); setMsg(null);
     try {
-      const r = await config.logic.update(selected, values);
+      const r = await config.logic.update(selected, values, config.actor);
       if (tryOk(r)) { setMsg({ type: 'success', text: `${entity} updated.` }); config.refresh?.(); refresh(); }
       else setMsg({ type: 'error', text: tryErr(r) });
     } catch (e) { setMsg({ type: 'error', text: e.message }); }
@@ -270,7 +287,7 @@ function SingleDelete({ config, entity }) {
   const submit = async () => {
     setSaving(true); setMsg(null);
     try {
-      const r = await config.logic.remove(selected);
+      const r = await config.logic.remove(selected, config.actor);
       if (tryOk(r)) {
         setMsg({ type: 'success', text: `${entity} deleted.` });
         setSelected(''); setConfirming(false);
@@ -317,29 +334,37 @@ function BulkAdd({ config, entity }) {
   const hasCode = HAS_CODE.includes(entity);
   const [lines, setLines] = useState('');
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [msg, setMsg] = useState(null);
+  const [errors, setErrors] = useState([]);
+  const cancelled = useRef(false);
 
   const submit = async () => {
     const entries = lines.split('\n').map((l) => l.trim()).filter(Boolean);
     if (!entries.length) { setMsg({ type: 'error', text: 'Enter at least one item.' }); return; }
-    setSaving(true); setMsg(null);
+    setSaving(true); setMsg(null); setErrors([]); cancelled.current = false;
+    setProgress({ current: 0, total: entries.length });
     let created = 0;
-    for (const line of entries) {
+    for (let i = 0; i < entries.length; i++) {
+      if (cancelled.current) break;
+      const line = entries[i];
       try {
         let r;
         if (entity === 'Stage') {
           r = await config.logic.add(line);
         } else if (hasCode) {
           const [name, code] = line.split(':').map((s) => s.trim());
-          r = await config.logic.create({ name: name || line, short_code: (code || name?.substring(0, 4) || '').toUpperCase(), ...config.defaults });
+          r = await config.logic.create({ name: name || line, short_code: (code || name?.substring(0, 4) || '').toUpperCase(), ...config.defaults }, config.actor);
         } else {
-          r = await config.logic.create({ name: line, ...config.defaults });
+          r = await config.logic.create({ name: line, ...config.defaults }, config.actor);
         }
         if (tryOk(r)) created++;
-      } catch { /* skip */ }
+        else setErrors((prev) => [...prev, `${line}: ${tryErr(r)}`]);
+      } catch (e) { setErrors((prev) => [...prev, `${line}: ${e.message}`]); }
+      setProgress({ current: i + 1, total: entries.length });
     }
     setMsg({ type: 'success', text: `${created} of ${entries.length} ${entity}(s) created.` });
-    setLines('');
+    if (!errors.length) setLines('');
     config.refresh?.();
     setSaving(false);
   };
@@ -349,6 +374,7 @@ function BulkAdd({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
+      {saving && <ProgressBar current={progress.current} total={progress.total} />}
       <div style={{ marginBottom: 4 }}>
         <div className="crud-field-label">
           {hasCode ? `Paste entries — Name:CODE per line` : `Paste names — one per line`}
@@ -360,11 +386,18 @@ function BulkAdd({ config, entity }) {
           placeholder={hasCode
             ? `Civil Suit:CIV\nCriminal Case:CRL\nWrit Petition:WP`
             : `Item 1\nItem 2\nItem 3`}
+          disabled={saving}
         />
       </div>
+      {errors.length > 0 && (
+        <div className="crud-error-log">
+          <div className="crud-error-log__head">Errors ({errors.length}):</div>
+          {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
+        </div>
+      )}
       <div className="crud-form-actions">
         <Button icon="plus" onClick={submit} disabled={saving || !lines.trim()}>
-          {saving ? 'Creating...' : `Add All (${count})`}
+          {saving ? `Creating... ${progress.current}/${progress.total}` : `Add All (${count})`}
         </Button>
       </div>
     </>
@@ -379,16 +412,31 @@ function BulkEdit({ config, entity }) {
   const [selected, setSelected] = useState([]);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [msg, setMsg] = useState(null);
+  const [errors, setErrors] = useState([]);
 
   const toggle = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
   const submit = async () => {
     if (!selected.length) { setMsg({ type: 'error', text: 'Select items to edit.' }); return; }
-    setSaving(true); setMsg(null);
+    setSaving(true); setMsg(null); setErrors([]);
+    setProgress({ current: 0, total: selected.length });
     let updated = 0;
-    for (const id of selected) {
-      try { if (tryOk(await config.logic.update(id, values))) updated++; } catch { /* skip */ }
+    for (let i = 0; i < selected.length; i++) {
+      const id = selected[i];
+      try {
+        const r = await config.logic.update(id, values, config.actor);
+        if (tryOk(r)) updated++;
+        else {
+          const item = items.find((x) => x.id === id);
+          setErrors((prev) => [...prev, `${item?.name || id}: ${tryErr(r)}`]);
+        }
+      } catch (e) {
+        const item = items.find((x) => x.id === id);
+        setErrors((prev) => [...prev, `${item?.name || id}: ${e.message}`]);
+      }
+      setProgress({ current: i + 1, total: selected.length });
     }
     setMsg({ type: 'success', text: `${updated} of ${selected.length} updated.` });
     config.refresh?.();
@@ -398,12 +446,19 @@ function BulkEdit({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
+      {saving && <ProgressBar current={progress.current} total={progress.total} />}
+      {errors.length > 0 && (
+        <div className="crud-error-log">
+          <div className="crud-error-log__head">Errors ({errors.length}):</div>
+          {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
+        </div>
+      )}
       <div style={{ marginBottom: 16 }}>
         <div className="crud-field-label">Select {entity}s to edit <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
-              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} />
+              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} disabled={saving} />
               {i.name}
             </label>
           ))}
@@ -420,7 +475,7 @@ function BulkEdit({ config, entity }) {
           </div>
           <div className="crud-form-actions">
             <Button icon="check" onClick={submit} disabled={saving}>
-              {saving ? 'Updating...' : `Update Selected (${selected.length})`}
+              {saving ? `Updating... ${progress.current}/${progress.total}` : `Update Selected (${selected.length})`}
             </Button>
           </div>
         </>
@@ -437,18 +492,33 @@ function BulkDelete({ config, entity }) {
   const [selected, setSelected] = useState([]);
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [msg, setMsg] = useState(null);
+  const [errors, setErrors] = useState([]);
 
   const toggle = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
   const submit = async () => {
-    setSaving(true); setMsg(null);
+    setSaving(true); setMsg(null); setErrors([]);
+    setProgress({ current: 0, total: selected.length });
     let deleted = 0;
-    for (const id of selected) {
-      try { if (tryOk(await config.logic.remove(id))) deleted++; } catch { /* skip */ }
+    for (let i = 0; i < selected.length; i++) {
+      const id = selected[i];
+      try {
+        const r = await config.logic.remove(id, config.actor);
+        if (tryOk(r)) deleted++;
+        else {
+          const item = items.find((x) => x.id === id);
+          setErrors((prev) => [...prev, `${item?.name || id}: ${tryErr(r)}`]);
+        }
+      } catch (e) {
+        const item = items.find((x) => x.id === id);
+        setErrors((prev) => [...prev, `${item?.name || id}: ${e.message}`]);
+      }
+      setProgress({ current: i + 1, total: selected.length });
     }
     setMsg({ type: 'success', text: `${deleted} of ${selected.length} deleted.` });
-    setSelected([]); setConfirming(false);
+    if (!errors.length) { setSelected([]); setConfirming(false); }
     config.refresh?.(); refresh();
     setSaving(false);
   };
@@ -456,12 +526,19 @@ function BulkDelete({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
+      {saving && <ProgressBar current={progress.current} total={progress.total} />}
+      {errors.length > 0 && (
+        <div className="crud-error-log">
+          <div className="crud-error-log__head">Errors ({errors.length}):</div>
+          {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
+        </div>
+      )}
       <div style={{ marginBottom: 16 }}>
         <div className="crud-field-label">Select {entity}s to delete <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({selected.length} selected)</span></div>
         <div className="crud-checkbox-list">
           {items.map((i) => (
             <label key={i.id} className="crud-checkbox-row">
-              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} />
+              <input type="checkbox" checked={selected.includes(i.id)} onChange={() => toggle(i.id)} disabled={saving} />
               {i.name}
             </label>
           ))}
@@ -469,7 +546,7 @@ function BulkDelete({ config, entity }) {
       </div>
       {selected.length > 0 && !confirming && (
         <div className="crud-form-actions">
-          <Button variant="danger" icon="trash" onClick={() => setConfirming(true)}>
+          <Button variant="danger" icon="trash" onClick={() => setConfirming(true)} disabled={saving}>
             Delete Selected ({selected.length})
           </Button>
         </div>
@@ -478,8 +555,8 @@ function BulkDelete({ config, entity }) {
         <div className="crud-confirm">
           <p>Delete {selected.length} {entity}(s)? This cannot be undone.</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="danger" onClick={submit} disabled={saving}>{saving ? 'Deleting...' : 'Yes, Delete All'}</Button>
-            <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
+            <Button variant="danger" onClick={submit} disabled={saving}>{saving ? `Deleting... ${progress.current}/${progress.total}` : 'Yes, Delete All'}</Button>
+            <Button variant="ghost" onClick={() => setConfirming(false)} disabled={saving}>Cancel</Button>
           </div>
         </div>
       )}
@@ -494,11 +571,13 @@ function BulkImport({ config, entity }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [msg, setMsg] = useState(null);
+  const [errors, setErrors] = useState([]);
 
   const handleFile = (e) => {
     const f = e.target.files?.[0]; if (!f) return;
-    setFile(f);
+    setFile(f); setErrors([]);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target.result;
@@ -517,24 +596,28 @@ function BulkImport({ config, entity }) {
 
   const submit = async () => {
     if (!file) { setMsg({ type: 'error', text: 'Select a CSV file first.' }); return; }
-    setSaving(true); setMsg(null);
+    setSaving(true); setMsg(null); setErrors([]);
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const text = ev.target.result;
       const lines = text.split('\n').map((s) => s.trim()).filter(Boolean);
-      const headers = lines[0]?.split(',').map((h) => h.trim().toLowerCase()) || [];
+      const total = lines.length - 1;
+      setProgress({ current: 0, total });
       let imported = 0;
       for (let i = 1; i < lines.length; i++) {
         const vals = lines[i].split(',').map((v) => v.trim());
         const obj = {};
-        headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
+        const headerRow = lines[0].split(',').map((h) => h.trim().toLowerCase());
+        headerRow.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
         try {
-          const r = entity === 'Stage' ? await config.logic.add(obj.name) : await config.logic.create(obj);
+          const r = entity === 'Stage' ? await config.logic.add(obj.name) : await config.logic.create(obj, config.actor);
           if (tryOk(r)) imported++;
-        } catch { /* skip */ }
+          else setErrors((prev) => [...prev, `Row ${i}: ${tryErr(r)}`]);
+        } catch (e) { setErrors((prev) => [...prev, `Row ${i}: ${e.message}`]); }
+        setProgress({ current: i, total });
       }
-      setMsg({ type: 'success', text: `${imported} of ${lines.length - 1} rows imported.` });
-      setFile(null); setPreview([]);
+      setMsg({ type: 'success', text: `${imported} of ${total} rows imported.` });
+      if (!errors.length) { setFile(null); setPreview([]); }
       config.refresh?.();
       setSaving(false);
     };
@@ -546,12 +629,19 @@ function BulkImport({ config, entity }) {
   return (
     <>
       <Feedback msg={msg} />
+      {saving && <ProgressBar current={progress.current} total={progress.total} />}
+      {errors.length > 0 && (
+        <div className="crud-error-log">
+          <div className="crud-error-log__head">Errors ({errors.length}):</div>
+          {errors.map((e, i) => <div key={i} className="crud-error-log__item">{e}</div>)}
+        </div>
+      )}
       <div className="crud-import-zone">
         <div className="crud-import-zone__icon"><Icon name="upload" size={24} /></div>
         <div className="crud-import-zone__title">Import from CSV</div>
         <div className="crud-import-zone__sub">CSV columns: <code style={{ fontSize: 12 }}>{colNames}</code></div>
         <label style={{ cursor: 'pointer' }}>
-          <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={handleFile} />
+          <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={handleFile} disabled={saving} />
           <span className="btn btn--ghost">{file ? file.name : 'Choose CSV file'}</span>
         </label>
       </div>
@@ -566,7 +656,7 @@ function BulkImport({ config, entity }) {
       {file && (
         <div className="crud-form-actions">
           <Button icon="upload" onClick={submit} disabled={saving}>
-            {saving ? 'Importing...' : `Import ${file.name}`}
+            {saving ? `Importing... ${progress.current}/${progress.total}` : `Import ${file.name}`}
           </Button>
         </div>
       )}

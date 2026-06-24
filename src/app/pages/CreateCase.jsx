@@ -71,23 +71,6 @@ function GearSelect({ value, onChange, options, placeholder, entity, onGearClick
   );
 }
 
-function PlusSelect({ value, onChange, options, placeholder }) {
-  return (
-    <div className="select-with-add">
-      <Select value={value} onChange={onChange}>
-        <option value="">{placeholder}</option>
-        {options.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-      </Select>
-      <button
-        type="button"
-        style={{ padding: 7, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)', cursor: 'pointer', color: 'var(--text-soft)', display: 'grid', placeItems: 'center', flexShrink: 0 }}
-      >
-        <Icon name="plus" size={16} />
-      </button>
-    </div>
-  );
-}
-
 function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove, placeholder }) {
   return (
     <div className="cc-party-col">
@@ -138,6 +121,7 @@ const ENTITY_CONFIGS = {
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
   Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
   Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }], defaults: {} },
+  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: true }], defaults: {} },
 };
 
 const PRIORITY_OPTIONS = [
@@ -274,6 +258,7 @@ export default function CreateCase() {
     'Court Hierarchy': refreshHierarchy, 'Bench Type': refreshBenchTypes,
     Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
     Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
+    Advocate: () => userLogic.list().then((r) => { if (Array.isArray(r)) setUsers(r); }).catch(() => { }),
   };
 
   const summaryLen = (form.case_summary || '').length;
@@ -288,7 +273,7 @@ export default function CreateCase() {
           open={!!crudEntity}
           onClose={closeCrudManager}
           entity={crudEntity}
-          config={{ ...activeEntityConfig, refresh: refreshMap[crudEntity] }}
+          config={{ ...activeEntityConfig, refresh: refreshMap[crudEntity], actor: crudEntity === 'Advocate' ? user : undefined }}
         />
       )}
 
@@ -358,7 +343,9 @@ export default function CreateCase() {
           />
         </div>
         <Field label="Cause Title">
-          <Input value={autoTitle} readOnly className="cc-cause-title" placeholder="Auto-generated from parties" style={{ background: 'var(--surface-2)', color: 'var(--text-soft)' }} />
+          <div className="cc-cause-title">
+            <Input value={autoTitle} readOnly placeholder="Auto-generated from parties" />
+          </div>
         </Field>
       </SectionCard>
 
@@ -366,15 +353,17 @@ export default function CreateCase() {
       <SectionCard num="3" title="Assignment">
         <div className="grid-2">
           <Field label="Client" required>
-            <PlusSelect
+            <GearSelect
               value={form.client} onChange={setFieldEvent('client')}
               options={clientOptions} placeholder="Select client"
+              entity="Client" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Advocate" required>
-            <PlusSelect
+            <GearSelect
               value={form.advocate} onChange={setFieldEvent('advocate')}
               options={userOptions} placeholder="Select advocate"
+              entity="Advocate" onGearClick={openCrudManager}
             />
           </Field>
         </div>
