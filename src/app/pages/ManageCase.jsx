@@ -25,7 +25,7 @@ const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers
 
 const PRIORITY_TONE = { Urgent: 'red', High: 'red', Medium: 'amber', Low: 'green' };
 
-export default function CaseDetail() {
+export default function ManageCase() {
   const { id } = useParams();
   const nav = useNavigate();
   const toast = useToast();

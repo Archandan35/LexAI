@@ -32,7 +32,7 @@ import DocumentReview from '@/app/pages/DocumentReview.jsx';
 import TimelineBuilder from '@/app/pages/TimelineBuilder.jsx';
 import HearingNotes from '@/app/pages/HearingNotes.jsx';
 import CaseVault from '@/app/pages/CaseVault.jsx';
-import CaseDetail from '@/app/pages/CaseDetail.jsx';
+import ManageCase from '@/app/pages/ManageCase.jsx';
 import CauseList from '@/app/pages/CauseList.jsx';
 
 import NotFound from '@/app/pages/NotFound.jsx';
@@ -98,7 +98,7 @@ export default function AppRoutes() {
         <Route path="/cases/hearings" element={G('hearingNotes', <HearingNotes />)} />
         <Route path="/cases/timeline" element={G('timeline', <TimelineBuilder />)} />
         <Route path="/cases" element={G('casevault', <CaseVault />)} />
-        <Route path="/cases/:id" element={G('casevault', <CaseDetail />)} />
+        <Route path="/cases/:id" element={G('casevault', <ManageCase />)} />
 
         {/* ── Calendar / Clients / Contacts ── */}
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
