@@ -118,8 +118,8 @@ const ENTITY_CONFIGS = {
   Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
   Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
-  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }], defaults: {} },
-  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: true }], defaults: {} },
+  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name', required: true }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'client_type', label: 'Type', placeholder: 'e.g., Individual, Firm', default: 'Individual' }], defaults: {} },
+  Advocate: { label: 'Advocate', logic: userLogic, fields: [{ key: 'name', label: 'Name', placeholder: 'Enter advocate name', required: true }, { key: 'email', label: 'Email', placeholder: 'email@example.com' }, { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' }, { key: 'address', label: 'Address', placeholder: 'Enter address' }, { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password', required: true }], defaults: {} },
 };
 
 const PRIORITY_OPTIONS = [
@@ -163,6 +163,7 @@ export default function CreateCase() {
 
   const [folderMode, setFolderMode] = useState('select');
   const [customFolderName, setCustomFolderName] = useState('');
+  const [subFolderName, setSubFolderName] = useState('');
 
   const openCrudManager = useCallback((entity) => setCrudEntity(entity), []);
   const closeCrudManager = useCallback(() => {
@@ -224,7 +225,7 @@ export default function CreateCase() {
 
   const resetForm = useCallback(() => {
     setForm({ ...INITIAL_FORM }); setSelectedFiles([]); setPlaintiffInput(''); setDefendantInput('');
-    setFolderMode('select'); setCustomFolderName('');
+    setFolderMode('select'); setCustomFolderName(''); setSubFolderName('');
     if (fileRef.current) fileRef.current.value = '';
   }, []);
 
@@ -236,8 +237,13 @@ export default function CreateCase() {
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
         if (form.document_folder) {
-          const folderResult = await caseFolderLogic.create(result.id, form.document_folder, 'document', user);
-          if (!folderResult.ok) toast.warning(`Case created but folder failed: ${folderResult.error}`);
+          const parts = form.document_folder.split('/').map((p) => p.trim()).filter(Boolean);
+          let parentId = null;
+          for (const name of parts) {
+            const fr = await caseFolderLogic.create(result.id, name, 'document', user, parentId);
+            if (fr.ok && fr.data?.id) parentId = fr.data.id;
+            else if (!fr.ok) { toast.warning(`Folder "${name}" failed: ${fr.error}`); break; }
+          }
         }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
         resetForm();
@@ -273,6 +279,7 @@ export default function CreateCase() {
       setField('document_folder', '');
     } else {
       setField('document_folder', val);
+      setSubFolderName('');
     }
   }, [setField]);
 
@@ -282,6 +289,7 @@ export default function CreateCase() {
     setField('document_folder', n);
     setFolderMode('select');
     setCustomFolderName('');
+    setSubFolderName('');
   }, [customFolderName, setField]);
 
   return (
@@ -514,9 +522,24 @@ export default function CreateCase() {
         <div className="grid-2">
           <Field label="Document Folder">
             {folderMode === 'select' ? (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <SearchableSelect value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)} options={folderOptions} placeholder="Select folder..." />
-                <button type="button" className="btn btn--ghost" style={{ flexShrink: 0 }} onClick={() => handleFolderSelect('__create__')}><Icon name="folderPlus" size={15} /> New</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <SearchableSelect value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)} options={folderOptions} placeholder="Select folder..." />
+                  <button type="button" className="btn btn--ghost" style={{ flexShrink: 0 }} onClick={() => handleFolderSelect('__create__')}><Icon name="folderPlus" size={15} /> New</button>
+                </div>
+                {form.document_folder && (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <Icon name="chevron" size={14} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
+                    <Input
+                      value={subFolderName}
+                      onChange={(e) => {
+                        setSubFolderName(e.target.value);
+                        setField('document_folder', e.target.value ? `${form.document_folder.split('/')[0]}/${e.target.value}` : form.document_folder.split('/')[0]);
+                      }}
+                      placeholder="Sub-folder (optional)"
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 8 }}>

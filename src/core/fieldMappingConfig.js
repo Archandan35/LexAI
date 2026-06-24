@@ -29,6 +29,7 @@ const SCHEMAS = {
   settings: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
   envVars: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
   schema_meta: { ...COMMON, appVersion: 'app_version', installedAt: 'installed_at' },
+  clients: { ...COMMON },
   case_statuses: { ...COMMON },
   priorities: { ...COMMON },
   bench_types: { ...COMMON },

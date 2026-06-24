@@ -31,13 +31,13 @@ export const caseFolderLogic = {
     return [...filtered].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   },
 
-  async create(caseId, name, kind, user) {
+  async create(caseId, name, kind, user, parentId) {
     const n = (name || '').trim();
     if (!n) return fail('Folder name is required.');
-    const rows = await caseFolderService.list(caseId, kind);
-    if (rows.some((f) => f.name.toLowerCase() === n.toLowerCase())) return fail('Folder already exists.');
-    const order = rows.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
-    const row = await caseFolderService.create({ caseId, name: n, kind, order, system: false, createdAt: DateEngine.now() });
+    const existing = await caseFolderService.list(caseId, kind);
+    if (!parentId && parentId !== null && existing.some((f) => f.name.toLowerCase() === n.toLowerCase())) return fail('Folder already exists.');
+    const order = existing.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
+    const row = await caseFolderService.create({ caseId, name: n, kind, order, parentId: parentId || null, system: false, createdAt: DateEngine.now() });
     await caseActivityService.record(caseId, 'folder.create', `Created ${kind} folder "${n}"`, user);
     return ok(row);
   },

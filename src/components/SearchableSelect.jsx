@@ -4,8 +4,10 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [focusedIdx, setFocusedIdx] = useState(-1);
+  const [dropdownStyle, setDropdownStyle] = useState({});
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const selectedLabel = useMemo(() => {
     const match = options.find((o) => o.value === value);
@@ -30,6 +32,31 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
     return () => document.removeEventListener('mousedown', handle);
   }, []);
 
+  const updatePosition = useCallback(() => {
+    if (!open || !inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    const h = Math.min(filtered.length * 42 + 8, 220);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow >= h + 8 ? rect.bottom : Math.max(4, rect.top - h - 4);
+    setDropdownStyle({
+      position: 'fixed',
+      left: rect.left + 'px',
+      width: rect.width + 'px',
+      top: top + 'px',
+      zIndex: 9999,
+    });
+  }, [open, filtered.length]);
+
+  useEffect(() => {
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [updatePosition]);
+
   const select = useCallback((opt) => {
     onChange({ target: { value: opt.value } });
     setOpen(false);
@@ -50,15 +77,15 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
         className="input"
         value={open ? query : selectedLabel}
         placeholder={placeholder}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { setOpen(true); }}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); setFocusedIdx(-1); }}
         onKeyDown={handleKey}
         style={{ cursor: 'text', caretColor: open ? 'auto' : 'transparent' }}
         readOnly={!open}
       />
-      {open && filtered.length > 0 && (
-        <div className="searchable-select__dropdown">
-          {filtered.map((opt, i) => (
+      {open && (
+        <div ref={dropdownRef} className="searchable-select__dropdown" style={dropdownStyle}>
+          {filtered.length > 0 ? filtered.map((opt, i) => (
             <div
               key={opt.value}
               className={`searchable-select__option${i === focusedIdx ? ' searchable-select__option--focused' : ''}${opt.value === value ? ' searchable-select__option--selected' : ''}`}
@@ -67,12 +94,9 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
             >
               {opt.label}
             </div>
-          ))}
-        </div>
-      )}
-      {open && filtered.length === 0 && (
-        <div className="searchable-select__dropdown">
-          <div className="searchable-select__option searchable-select__option--empty">No results</div>
+          )) : (
+            <div className="searchable-select__option searchable-select__option--empty">No results</div>
+          )}
         </div>
       )}
     </div>
