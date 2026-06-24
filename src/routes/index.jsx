@@ -63,6 +63,9 @@ import UserActivity from '@/app/pages/UserActivity.jsx';
 import BenchTypes from '@/app/pages/BenchTypes.jsx';
 import CourtHierarchy from '@/app/pages/CourtHierarchy.jsx';
 import Jurisdictions from '@/app/pages/Jurisdictions.jsx';
+import CaseStages from '@/app/pages/CaseStages.jsx';
+import Priorities from '@/app/pages/Priorities.jsx';
+import CaseStatuses from '@/app/pages/CaseStatuses.jsx';
 import SchemaManager from '@/app/pages/SchemaManager.jsx';
 import SchemaMappingManager from '@/app/pages/SchemaMappingManager.jsx';
 import DatabaseStudio from '@/app/pages/DatabaseStudio.jsx';
@@ -133,6 +136,9 @@ export default function AppRoutes() {
         <Route path="/court-management/bench-types" element={G('courtTypes', <BenchTypes />)} />
         <Route path="/court-management/case-types" element={G('caseTypes', <CaseTypes />)} />
         <Route path="/court-management/jurisdictions" element={G('courtTypes', <Jurisdictions />)} />
+        <Route path="/court-management/case-stages" element={G('courtTypes', <CaseStages />)} />
+        <Route path="/court-management/priorities" element={G('courtTypes', <Priorities />)} />
+        <Route path="/court-management/case-statuses" element={G('courtTypes', <CaseStatuses />)} />
 
         {/* ── Administration ── */}
         <Route path="/admin/users" element={G('users', <UserManagement />)} />
