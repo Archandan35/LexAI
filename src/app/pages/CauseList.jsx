@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -9,6 +9,7 @@ import EmptyState from '@/components/EmptyState.jsx';
 import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
+import DocEditor from '@/components/DocEditor.jsx';
 import { HEARING_STATUS } from '@/constants/courts.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import { caseLogic } from '@/logic/caseLogic.js';
@@ -73,6 +74,11 @@ export default function CauseList() {
   const [history, setHistory] = useState(null);
   const [seeding, setSeeding] = useState(false);
 
+  // Rich text editor state
+  const [draftTemplates, setDraftTemplates] = useState([]);
+  const [editorContent, setEditorContent] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+
   const loadList = useCallback(async () => {
     const res = await causeListLogic.causeList();
     setRows(res.ok ? res.data.rows : []);
@@ -81,6 +87,8 @@ export default function CauseList() {
   const loadDraftingTemplates = useCallback(async () => {
     const list = await templateLogic.list();
     setTplList(list);
+    const ok = Array.isArray(list) ? list : (list.ok ? list.data : []);
+    setDraftTemplates(ok);
   }, []);
 
   const checkAndSeed = useCallback(async () => {
@@ -233,8 +241,20 @@ export default function CauseList() {
   }, [cases, histCaseId, loadHistory]);
 
   // ----- Hearing CRUD -----
-  const openNew = () => { setEditing(null); setForm(EMPTY_HEARING); setOpen(true); };
-  const openEdit = (h) => { setEditing(h); setForm({ ...EMPTY_HEARING, ...h }); setOpen(true); };
+  const openNew = () => {
+    setEditing(null);
+    setForm(EMPTY_HEARING);
+    setEditorContent('');
+    setSelectedTemplate('');
+    setOpen(true);
+  };
+  const openEdit = (h) => {
+    setEditing(h);
+    setForm({ ...EMPTY_HEARING, ...h });
+    setEditorContent(h.notes || '');
+    setSelectedTemplate('');
+    setOpen(true);
+  };
 
   const onHearingFile = async (file) => {
     const rec = await fileLogic.uploadDocument(file, { caseId: form.caseId || null, folder: 'Hearing' });
@@ -249,8 +269,9 @@ export default function CauseList() {
 
   const saveHearing = async () => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
-    if (editing) await causeListLogic.updateHearing(editing.id, form);
-    else await causeListLogic.addHearing(form);
+    const payload = { ...form, notes: editorContent || form.notes || '' };
+    if (editing) await causeListLogic.updateHearing(editing.id, payload);
+    else await causeListLogic.addHearing(payload);
     setOpen(false);
     await loadList();
     if (histCaseId) await loadHistory(histCaseId);
@@ -363,6 +384,53 @@ export default function CauseList() {
   const handlePrint = () => {
     window.print();
   };
+
+  // ----- Case details lookup for shortcode resolution -----
+  const getCaseDetails = useCallback((caseId) => {
+    if (!caseId) return null;
+    return cases.find((c) => c.id === caseId) || null;
+  }, [cases]);
+
+  const hearingShortcodes = useMemo(() => [
+    { label: 'Case Number', value: '{caseNumber}' },
+    { label: 'Parties / Title', value: '{parties}' },
+    { label: 'Court', value: '{court}' },
+    { label: 'Judge / Officer', value: '{judge}' },
+    { label: 'Stage', value: '{stage}' },
+    { label: 'Hearing Date', value: '{hearingDate}' },
+    { label: 'Next Hearing Date', value: '{nextHearingDate}' },
+    { label: 'Purpose', value: '{purpose}' },
+    { label: 'Status', value: '{status}' },
+    { label: 'Today\'s Date', value: '{todayDate}' },
+  ], []);
+
+  const resolveShortcodes = useCallback((text, caseData) => {
+    if (!text) return '';
+    const c = caseData || {};
+    const d = form.date ? new Date(form.date) : new Date();
+    const nd = c.next_hearing ? new Date(c.next_hearing) : null;
+    const today = new Date();
+    return text
+      .replace(/\{caseNumber\}/g, c.caseNumber || '—')
+      .replace(/\{parties\}/g, c.title || '—')
+      .replace(/\{court\}/g, c.court || '—')
+      .replace(/\{judge\}/g, c.judge || '—')
+      .replace(/\{stage\}/g, c.stage || '—')
+      .replace(/\{hearingDate\}/g, formatDate(form.date) || formatDate(d))
+      .replace(/\{nextHearingDate\}/g, nd ? formatDate(nd) : '—')
+      .replace(/\{purpose\}/g, form.purpose || '—')
+      .replace(/\{status\}/g, form.status || '—')
+      .replace(/\{todayDate\}/g, formatDate(today));
+  }, [form]);
+
+  const applyTemplate = useCallback((tplId) => {
+    if (!tplId) return;
+    const tpl = draftTemplates.find((t) => t.id === tplId || t._id === tplId);
+    if (!tpl) return;
+    const caseData = getCaseDetails(form.caseId);
+    const resolved = resolveShortcodes(tpl.content || '', caseData);
+    setEditorContent(resolved);
+  }, [draftTemplates, getCaseDetails, resolveShortcodes, form.caseId]);
 
   // Templates grid client-side filtering
   const filteredTpls = tplList.filter((t) => {
@@ -915,7 +983,7 @@ export default function CauseList() {
         </div>
       )}
 
-      {/* Hearing add/edit modal */}
+      {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
       <Modal
         open={open}
         title={editing ? 'Edit Hearing' : 'Add Hearing'}
@@ -923,27 +991,120 @@ export default function CauseList() {
         onClose={() => setOpen(false)}
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
       >
-        <div className="input-row">
-          <Field label="Case Number"><CaseSelect value={form.caseId} onChange={(v) => setForm({ ...form, caseId: v })} /></Field>
-          <Field label="Hearing Date & Time"><Input type="datetime-local" value={form.date ? new Date(form.date).toISOString().slice(0, 16) : ''} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-        </div>
-        <div className="input-row">
-          <Field label="Status">
-            <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>{HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}</Select>
-          </Field>
-          <Field label="Purpose"><Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" /></Field>
-        </div>
-        <Field label="Hearing Details / Proceedings Description"><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Write detailing description of case developments..." /></Field>
-        <Field label="Attach File">
-          {form.docName ? (
-            <div className="list-row cause-list__file-row">
-              <div className="list-row__icon"><Icon name="file" size={15} /></div>
-              <div className="cause-list__file-name">{form.docName}</div>
-              <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
-              <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}><Icon name="close" size={13} /></button>
+        <div className="hearing-modal">
+          {/* Section 1: Case & Date */}
+          <div className="hearing-modal__section">
+            <div className="hearing-modal__section-title">
+              <Icon name="target" size={16} />
+              <span>Case & Date</span>
             </div>
-          ) : <FileDrop onFile={onHearingFile} hint="Attach order sheet / hearing documents" />}
-        </Field>
+            <div className="input-row">
+              <Field label="Case Number">
+                <CaseSelect value={form.caseId} onChange={(v) => { setForm({ ...form, caseId: v }); setEditorContent(''); setSelectedTemplate(''); }} />
+              </Field>
+              <Field label="Hearing Date & Time">
+                <Input
+                  type="datetime-local"
+                  value={form.date ? new Date(form.date).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </Field>
+            </div>
+            {form.caseId && (() => {
+              const cd = getCaseDetails(form.caseId);
+              return cd ? (
+                <div className="hearing-modal__case-preview">
+                  <Icon name="balance" size={13} />
+                  <span><strong>{cd.caseNumber}</strong> — {cd.title}</span>
+                  <span className="hearing-modal__case-preview-badge">{cd.court || '—'}</span>
+                </div>
+              ) : null;
+            })()}
+          </div>
+
+          {/* Section 2: Hearing Details */}
+          <div className="hearing-modal__section">
+            <div className="hearing-modal__section-title">
+              <Icon name="settings" size={16} />
+              <span>Hearing Details</span>
+            </div>
+            <div className="input-row">
+              <Field label="Status">
+                <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                  {HEARING_STATUS.map((s) => <option key={s}>{s}</option>)}
+                </Select>
+              </Field>
+              <Field label="Purpose">
+                <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
+              </Field>
+            </div>
+            <Field label="Judge / Officer">
+              <Input
+                value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
+                onChange={(e) => setForm({ ...form, judge: e.target.value })}
+                placeholder="Presiding judge or officer name"
+              />
+            </Field>
+          </div>
+
+          {/* Section 3: Proceedings — Rich Text Editor with Template Import */}
+          <div className="hearing-modal__section hearing-modal__section--grow">
+            <div className="hearing-modal__section-title">
+              <Icon name="file" size={16} />
+              <span>Proceedings</span>
+            </div>
+            <div className="hearing-modal__template-bar">
+              <div className="hearing-modal__template-bar-left">
+                <Icon name="copy" size={14} />
+                <span>Import Template:</span>
+                <select
+                  className="hearing-modal__template-select"
+                  value={selectedTemplate}
+                  onChange={(e) => { setSelectedTemplate(e.target.value); applyTemplate(e.target.value); }}
+                >
+                  <option value="">— Select a drafting template —</option>
+                  {draftTemplates.map((t) => (
+                    <option key={t.id || t._id} value={t.id || t._id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+              {editorContent && (
+                <button className="hearing-modal__clear-btn" onClick={() => { setEditorContent(''); setSelectedTemplate(''); }}>
+                  <Icon name="close" size={12} /> Clear
+                </button>
+              )}
+            </div>
+            <div className="hearing-modal__editor-wrapper">
+              <DocEditor
+                value={editorContent}
+                onChange={setEditorContent}
+                pageSize="letter"
+                margin="narrow"
+                placeholders={hearingShortcodes}
+              />
+            </div>
+          </div>
+
+          {/* Section 4: Attachment */}
+          <div className="hearing-modal__section">
+            <div className="hearing-modal__section-title">
+              <Icon name="paperclip" size={16} />
+              <span>Attachment</span>
+            </div>
+            {form.docName ? (
+              <div className="list-row cause-list__file-row">
+                <div className="list-row__icon"><Icon name="file" size={15} /></div>
+                <div className="cause-list__file-name">{form.docName}</div>
+                <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
+                <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}>
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
+            ) : (
+              <FileDrop onFile={onHearingFile} hint="Attach order sheet / hearing documents" />
+            )}
+          </div>
+        </div>
       </Modal>
 
       {/* Template creation modal */}
