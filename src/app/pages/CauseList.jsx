@@ -20,7 +20,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, formatDateTime } from '@/utils/format.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: HEARING_STATUS[0], purpose: '', notes: '', docRef: null, docName: '' };
-const EMPTY_TPL = { name: '', category: 'Pleading', description: '', content: '' };
+const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function CauseList() {
   const toast = useToast();
@@ -178,17 +178,14 @@ export default function CauseList() {
         await causeListLogic.addHearing(h);
       }
 
-      // 3. Seed Drafting Templates
+      // 3. Seed Drafting Templates — hearing-related only
       const demoTemplates = [
-        { name: 'Written Statement', category: 'Pleading', content: 'Written statement draft template...', is_active: true, description: 'Template for drafting written statement by defendant.' },
-        { name: 'Plaintiff Evidence Affidavit', category: 'Evidence', content: 'Affidavit of evidence by plaintiff...', is_active: true, description: 'Template for affidavit of evidence by plaintiff.' },
-        { name: 'Interlocutory Application', category: 'Application', content: 'Interlocutory application draft template...', is_active: true, description: 'Template for filing interlocutory applications.' },
-        { name: 'Bail Application', category: 'Criminal', content: 'Bail application draft template...', is_active: true, description: 'Template for bail application in criminal matters.' },
-        { name: 'Legal Notice', category: 'Notice', content: 'Legal notice draft template...', is_active: true, description: 'Template for issuing legal notice to opposite party.' },
-        { name: 'Wakalatnama', category: 'Miscellaneous', content: 'Wakalatnama draft template...', is_active: true, description: 'Authorization letter template for legal representation.' },
-        { name: 'Reply to Notice', category: 'Notice', content: 'Reply to notice draft template...', is_active: true, description: 'Template for replying to received legal notice.' },
-        { name: 'Affidavit in Support', category: 'Affidavit', content: 'Affidavit in support draft template...', is_active: true, description: 'General affidavit template in support of application.' },
-        { name: 'Memo of Parties', category: 'Miscellaneous', content: 'Memo of parties draft template...', is_active: true, description: 'Template for memo of parties in the case.' },
+        { name: 'Hearing Notice', category: 'Hearing', content: 'Hearing notice draft template...', is_active: true, description: 'Notice to parties for scheduled court hearing date and time.' },
+        { name: 'Adjournment Application', category: 'Hearing', content: 'Adjournment application draft template...', is_active: true, description: 'Application seeking adjournment of hearing to a future date.' },
+        { name: 'Short Cause Notice', category: 'Hearing', content: 'Short cause notice draft template...', is_active: true, description: 'Notice for listing of short cause matters before the court.' },
+        { name: 'Hearing Order Sheet', category: 'Hearing', content: 'Hearing order sheet template...', is_active: true, description: 'Standard order sheet for recording proceedings at each hearing.' },
+        { name: 'Next Date Intimation', category: 'Hearing', content: 'Next date intimation draft template...', is_active: true, description: 'Letter intimating parties of the next scheduled hearing date.' },
+        { name: 'Hearing Appearance Memo', category: 'Hearing', content: 'Appearance memo draft template...', is_active: true, description: 'Memo confirming counsel appearance at the court hearing.' },
       ];
 
       for (const t of demoTemplates) {
@@ -269,7 +266,7 @@ export default function CauseList() {
 
   // ----- Templates CRUD -----
   const openTplNew = () => { setTplEditing(null); setTplForm(EMPTY_TPL); setTplOpen(true); };
-  
+
   const saveTpl = async () => {
     if (!tplForm.name || !tplForm.category) { toast.push('Name and category are required.', 'error'); return; }
     await templateLogic.create(tplForm);
@@ -399,7 +396,7 @@ export default function CauseList() {
       </div>
 
       {/* TABS CONTAINER */}
-      
+
       {/* 1. CAUSE LIST TAB */}
       {tab === 'list' && (
         <>
@@ -470,7 +467,7 @@ export default function CauseList() {
               <button className="cause-list__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
                 <Icon name="grid" size={13} /> Columns
               </button>
-              
+
               {showColumnsMenu && (
                 <div className="cause-list__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
                   {Object.keys(visibleColumns).map(col => (
@@ -618,7 +615,9 @@ export default function CauseList() {
                   <div className="cause-list__case-title-area">
                     <h2 className="cause-list__case-title">
                       {history.case?.caseNumber}
-                      <span className="cause-list__case-badge-active">Active</span>
+                      {history.case?.status && (
+                        <span className="cause-list__case-badge-active">{history.case.status}</span>
+                      )}
                     </h2>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
                   </div>
@@ -631,7 +630,7 @@ export default function CauseList() {
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
-                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '09 Dec 2015'}</span>
+                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Current Stage</span>
@@ -708,13 +707,7 @@ export default function CauseList() {
             {/* Categories select */}
             <select className="cause-list__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
               <option value="">All Categories</option>
-              <option value="Pleading">Pleading</option>
-              <option value="Evidence">Evidence</option>
-              <option value="Application">Application</option>
-              <option value="Criminal">Criminal</option>
-              <option value="Notice">Notice</option>
-              <option value="Affidavit">Affidavit</option>
-              <option value="Miscellaneous">Miscellaneous</option>
+              <option value="Hearing">Hearing</option>
             </select>
 
             <button className="cause-list__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
@@ -736,27 +729,14 @@ export default function CauseList() {
               {paginatedTpls.map((t) => {
                 let iconColor = 'blue';
                 const catLower = t.category?.toLowerCase() || '';
-                if (catLower.includes('plead')) iconColor = 'green';
+                if (catLower === 'hearing') iconColor = 'blue';
+                else if (catLower.includes('plead')) iconColor = 'green';
                 else if (catLower.includes('evid')) iconColor = 'blue';
                 else if (catLower.includes('app')) iconColor = 'purple';
                 else if (catLower.includes('crim')) iconColor = 'green';
                 else if (catLower.includes('notic')) iconColor = 'blue';
                 else if (catLower.includes('affid')) iconColor = 'blue';
                 else iconColor = 'orange';
-
-                // Fixed aesthetic usage counts mapping
-                const mockUsage = {
-                  'Written Statement': 32,
-                  'Plaintiff Evidence Affidavit': 21,
-                  'Interlocutory Application': 16,
-                  'Bail Application': 25,
-                  'Legal Notice': 40,
-                  'Wakalatnama': 10,
-                  'Reply to Notice': 12,
-                  'Affidavit in Support': 17,
-                  'Memo of Parties': 10
-                };
-                const usageCount = mockUsage[t.name] || 15;
 
                 return (
                   <div className="cause-list__tpl-card" key={t.id}>
@@ -770,7 +750,6 @@ export default function CauseList() {
                         <span className={`cause-list__tpl-tag cause-list__tpl-tag--${catLower}`}>
                           {t.category}
                         </span>
-                        <span className="cause-list__tpl-used">Used {usageCount} times</span>
                       </div>
                     </div>
                   </div>
@@ -803,135 +782,136 @@ export default function CauseList() {
 
       {/* 4. TIMELINE TAB */}
       {tab === 'timeline' && (
-        <div className="grid-sidebar">
-          {/* Left panel - Selection */}
-          <div className="flex-col gap-16">
-            <Card title="Select Case">
-              <Field label="Litigation Case">
-                <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
-              </Field>
-            </Card>
+        <div className="cause-list__timeline-tab">
+          {/* Case selector bar */}
+          <div className="cause-list__timeline-selector-bar">
+            <div className="cause-list__timeline-selector-label">
+              <Icon name="vault" size={15} />
+              <span>Case</span>
+            </div>
+            <div className="cause-list__timeline-selector-field">
+              <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
+            </div>
           </div>
 
-          {/* Right panel - Timeline details */}
-          <div>
-            {!history ? (
-              <Card><EmptyState icon="clock" title="Select a case to view its visual timeline." /></Card>
-            ) : (
-              <>
-                {/* Case Info Header Card */}
-                <div className="cause-list__case-info-card">
-                  <div className="cause-list__case-info-header">
-                    <div className="cause-list__case-icon-box">
-                      <Icon name="vault" size={24} />
-                    </div>
-                    <div className="cause-list__case-title-area">
-                      <h2 className="cause-list__case-title">
-                        {history.case?.caseNumber}
-                        <span className="cause-list__case-badge-active">Active</span>
-                      </h2>
-                      <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    </div>
+          {!history ? (
+            <Card><EmptyState icon="clock" title="Select a case to view its visual timeline." /></Card>
+          ) : (
+            <>
+              {/* Case Info Header Card */}
+              <div className="cause-list__case-info-card">
+                <div className="cause-list__case-info-header">
+                  <div className="cause-list__case-icon-box">
+                    <Icon name="vault" size={24} />
                   </div>
-
-                  <div className="cause-list__details-grid">
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Court</span>
-                      <span className="cause-list__details-value">{history.case?.court || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Filing Date</span>
-                      <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '09 Dec 2015'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Current Stage</span>
-                      <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Next Hearing</span>
-                      <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
-                    </div>
-                    <div className="cause-list__details-item">
-                      <span className="cause-list__details-label">Judge</span>
-                      <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
-                    </div>
+                  <div className="cause-list__case-title-area">
+                    <h2 className="cause-list__case-title">
+                      {history.case?.caseNumber}
+                      <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
+                    </h2>
+                    <p className="cause-list__case-subtitle">{history.case?.title}</p>
                   </div>
                 </div>
 
-                {/* Horizontal Scrollable node timeline */}
-                {history.hearings.length > 0 && (
-                  <div className="cause-list__timeline-h-container">
-                    <div className="cause-list__timeline-h">
-                      <div className="cause-list__timeline-h-track" />
-                      {history.hearings.map((h, i) => {
-                        const markerClass = h.status?.toLowerCase() || 'default';
-                        return (
-                          <div className="cause-list__timeline-h-node" key={h.id || i}>
-                            <div className={`cause-list__timeline-h-circle cause-list__timeline-h-circle--${markerClass}`}>
-                              {h.status === 'Completed' ? (
-                                <Icon name="check" size={13} />
-                              ) : (
-                                <Icon name="clock" size={13} />
-                              )}
-                            </div>
-                            <div className="cause-list__timeline-h-text">
-                              <span className="cause-list__timeline-h-name">{h.purpose || 'Hearing'}</span>
-                              <span className="cause-list__timeline-h-date">{formatDate(h.date)}</span>
-                            </div>
+                <div className="cause-list__details-grid">
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Court</span>
+                    <span className="cause-list__details-value">{history.case?.court || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Filing Date</span>
+                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Current Stage</span>
+                    <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Next Hearing</span>
+                    <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                  </div>
+                  <div className="cause-list__details-item">
+                    <span className="cause-list__details-label">Judge</span>
+                    <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Horizontal Scrollable node timeline */}
+              {history.hearings.length > 0 && (
+                <div className="cause-list__timeline-h-container">
+                  <div className="cause-list__timeline-h">
+                    <div className="cause-list__timeline-h-track" />
+                    {history.hearings.map((h, i) => {
+                      const markerClass = h.status?.toLowerCase() || 'default';
+                      const isScheduled = h.status === 'Scheduled';
+                      return (
+                        <div className="cause-list__timeline-h-node" key={h.id || i}>
+                          <div className={`cause-list__timeline-h-circle cause-list__timeline-h-circle--${markerClass}`}>
+                            {isScheduled ? (
+                              <Icon name="clock" size={14} />
+                            ) : (
+                              <Icon name="check" size={14} />
+                            )}
                           </div>
+                          <div className="cause-list__timeline-h-text">
+                            <span className="cause-list__timeline-h-name">{h.purpose || 'Hearing'}</span>
+                            <span className="cause-list__timeline-h-date">{formatDate(h.date)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* All Events table */}
+              <Card title="All Events">
+                {history.hearings.length === 0 ? (
+                  <EmptyState icon="clock" title="No events to display." />
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Event</th>
+                        <th>Details</th>
+                        <th style={{ textAlign: 'right' }}>Document</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.hearings.map((h, i) => {
+                        const statusClass = h.status?.toLowerCase() || 'default';
+                        return (
+                          <tr key={h.id || i}>
+                            <td style={{ whiteSpace: 'nowrap' }} className="cause-list__timeline-event-date-cell">{formatDate(h.date)}</td>
+                            <td>
+                              <div className="flex align-center gap-8">
+                                <span className={`cause-list__timeline-event-dot cause-list__timeline-event-dot--${statusClass}`} />
+                                <span className="cause-list__timeline-event-name">{h.purpose || 'Hearing'}</span>
+                              </div>
+                            </td>
+                            <td className="cause-list__timeline-event-detail">{h.notes || '—'}</td>
+                            <td style={{ textAlign: 'right' }}>
+                              {h.docRef ? (
+                                <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(h.docRef)}>
+                                  View
+                                </Button>
+                              ) : (
+                                <button className="cause-list__timeline-doc-icon" disabled title="No document">
+                                  <Icon name="file" size={15} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
                         );
                       })}
-                    </div>
-                  </div>
+                    </tbody>
+                  </table>
                 )}
-
-                {/* All Events List table */}
-                <Card title="All Events" sub="Overview checklist of all case developments">
-                  {history.hearings.length === 0 ? (
-                    <EmptyState icon="clock" title="No events checklist to display." />
-                  ) : (
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Event</th>
-                          <th>Details</th>
-                          <th style={{ textAlign: 'right' }}>Document</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {history.hearings.map((h, i) => {
-                          const statusClass = h.status?.toLowerCase() || 'default';
-                          return (
-                            <tr key={h.id || i}>
-                              <td style={{ whiteSpace: 'nowrap' }}>{formatDate(h.date)}</td>
-                              <td>
-                                <div className="flex align-center gap-8">
-                                  <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`} style={{ padding: '2px 8px', fontSize: '11px' }}>
-                                    {h.purpose || 'Hearing'}
-                                  </span>
-                                </div>
-                              </td>
-                              <td>{h.notes || '—'}</td>
-                              <td style={{ textAlign: 'right' }}>
-                                {h.docRef ? (
-                                  <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(h.docRef)}>
-                                    View
-                                  </Button>
-                                ) : (
-                                  <span className="cause-list__no-file">—</span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  )}
-                </Card>
-              </>
-            )}
-          </div>
+              </Card>
+            </>
+          )}
         </div>
       )}
 
@@ -976,13 +956,7 @@ export default function CauseList() {
         <Field label="Template Name"><Input value={tplForm.name} onChange={(e) => setTplForm({ ...tplForm, name: e.target.value })} placeholder="e.g. Legal Notice" /></Field>
         <Field label="Category">
           <Select value={tplForm.category} onChange={(e) => setTplForm({ ...tplForm, category: e.target.value })}>
-            <option value="Pleading">Pleading</option>
-            <option value="Evidence">Evidence</option>
-            <option value="Application">Application</option>
-            <option value="Criminal">Criminal</option>
-            <option value="Notice">Notice</option>
-            <option value="Affidavit">Affidavit</option>
-            <option value="Miscellaneous">Miscellaneous</option>
+            <option value="Hearing">Hearing</option>
           </Select>
         </Field>
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." /></Field>

@@ -10376,10 +10376,21 @@ kbd.cmd__kbd {
   border: 3px solid var(--border);
 }
 
-.cause-list__timeline-v-marker--scheduled { border-color: #0066cc; }
-.cause-list__timeline-v-marker--rescheduled { border-color: #d97706; }
-.cause-list__timeline-v-marker--completed { border-color: #0ca678; }
-.cause-list__timeline-v-marker--adjourned { border-color: #e03131; }
+.cause-list__timeline-v-marker--scheduled {
+  border-color: #0066cc;
+}
+
+.cause-list__timeline-v-marker--rescheduled {
+  border-color: #d97706;
+}
+
+.cause-list__timeline-v-marker--completed {
+  border-color: #0ca678;
+}
+
+.cause-list__timeline-v-marker--adjourned {
+  border-color: #e03131;
+}
 
 .cause-list__timeline-v-header {
   display: flex;
@@ -10586,10 +10597,25 @@ kbd.cmd__kbd {
   flex-shrink: 0;
 }
 
-.cause-list__tpl-icon-wrapper--green { background: #e3f6ee; color: #1f9d6b; }
-.cause-list__tpl-icon-wrapper--blue { background: #e8eefc; color: #1e3a8a; }
-.cause-list__tpl-icon-wrapper--purple { background: #f3ebfc; color: #7048e8; }
-.cause-list__tpl-icon-wrapper--orange { background: #fbf1dc; color: #c9871f; }
+.cause-list__tpl-icon-wrapper--green {
+  background: #e3f6ee;
+  color: #1f9d6b;
+}
+
+.cause-list__tpl-icon-wrapper--blue {
+  background: #e8eefc;
+  color: #1e3a8a;
+}
+
+.cause-list__tpl-icon-wrapper--purple {
+  background: #f3ebfc;
+  color: #7048e8;
+}
+
+.cause-list__tpl-icon-wrapper--orange {
+  background: #fbf1dc;
+  color: #c9871f;
+}
 
 .cause-list__tpl-card-content {
   display: flex;
@@ -10627,13 +10653,45 @@ kbd.cmd__kbd {
   border-radius: 12px;
 }
 
-.cause-list__tpl-tag--pleading { background: #e3f6ee; color: #1f9d6b; }
-.cause-list__tpl-tag--evidence { background: #e8eefc; color: #1e3a8a; }
-.cause-list__tpl-tag--application { background: #f3ebfc; color: #7048e8; }
-.cause-list__tpl-tag--criminal { background: #fff0f6; color: #d6336c; }
-.cause-list__tpl-tag--notice { background: #e3fafc; color: #0c8599; }
-.cause-list__tpl-tag--miscellaneous { background: #fbf1dc; color: #c9871f; }
-.cause-list__tpl-tag--affidavit { background: #fff4e6; color: #d97706; }
+.cause-list__tpl-tag--pleading {
+  background: #e3f6ee;
+  color: #1f9d6b;
+}
+
+.cause-list__tpl-tag--evidence {
+  background: #e8eefc;
+  color: #1e3a8a;
+}
+
+.cause-list__tpl-tag--application {
+  background: #f3ebfc;
+  color: #7048e8;
+}
+
+.cause-list__tpl-tag--criminal {
+  background: #fff0f6;
+  color: #d6336c;
+}
+
+.cause-list__tpl-tag--notice {
+  background: #e3fafc;
+  color: #0c8599;
+}
+
+.cause-list__tpl-tag--miscellaneous {
+  background: #fbf1dc;
+  color: #c9871f;
+}
+
+.cause-list__tpl-tag--affidavit {
+  background: #fff4e6;
+  color: #d97706;
+}
+
+.cause-list__tpl-tag--hearing {
+  background: #e8eefc;
+  color: #1e3a8a;
+}
 
 .cause-list__tpl-used {
   font-size: 11.5px;
@@ -10767,11 +10825,35 @@ kbd.cmd__kbd {
   z-index: 3;
 }
 
-.cause-list__timeline-v-circle--scheduled { border-color: #0066cc; color: #0066cc; background: #e7f5ff; }
-.cause-list__timeline-v-circle--rescheduled { border-color: #d97706; color: #d97706; background: #fff9db; }
-.cause-list__timeline-v-circle--completed { border-color: #0ca678; color: #0ca678; background: #ebfbee; }
-.cause-list__timeline-v-circle--adjourned { border-color: #e03131; color: #e03131; background: #fff5f5; }
-.cause-list__timeline-v-circle--default { border-color: var(--text-faint); color: var(--text-soft); background: var(--surface-2); }
+.cause-list__timeline-v-circle--scheduled {
+  border-color: #0066cc;
+  color: #0066cc;
+  background: #e7f5ff;
+}
+
+.cause-list__timeline-v-circle--rescheduled {
+  border-color: #d97706;
+  color: #d97706;
+  background: #fff9db;
+}
+
+.cause-list__timeline-v-circle--completed {
+  border-color: #0ca678;
+  color: #0ca678;
+  background: #ebfbee;
+}
+
+.cause-list__timeline-v-circle--adjourned {
+  border-color: #e03131;
+  color: #e03131;
+  background: #fff5f5;
+}
+
+.cause-list__timeline-v-circle--default {
+  border-color: var(--text-faint);
+  color: var(--text-soft);
+  background: var(--surface-2);
+}
 
 .cause-list__timeline-v-connector {
   width: 12px;
@@ -10854,4 +10936,101 @@ kbd.cmd__kbd {
 .cause-list__timeline-v-circle svg {
   width: 14px;
   height: 14px;
+}
+
+/* Timeline Tab Layout */
+.cause-list__timeline-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cause-list__timeline-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cause-list__timeline-selector-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cause-list__timeline-selector-field {
+  flex: 1;
+  max-width: 400px;
+}
+
+/* Timeline Events Table */
+.cause-list__timeline-event-date-cell {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.cause-list__timeline-event-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.cause-list__timeline-event-dot--completed {
+  background: #0ca678;
+}
+
+.cause-list__timeline-event-dot--scheduled {
+  background: #0066cc;
+}
+
+.cause-list__timeline-event-dot--rescheduled {
+  background: #d97706;
+}
+
+.cause-list__timeline-event-dot--adjourned {
+  background: #e03131;
+}
+
+.cause-list__timeline-event-dot--default {
+  background: var(--text-faint);
+}
+
+.cause-list__timeline-event-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cause-list__timeline-event-detail {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.cause-list__timeline-doc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-faint);
+  cursor: default;
+  transition: all 0.15s;
 }
