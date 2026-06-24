@@ -6,13 +6,11 @@ import RequireAuth from '@/components/RequireAuth.jsx';
 import Login from '@/app/pages/Login.jsx';
 import ForgotPassword from '@/app/pages/ForgotPassword.jsx';
 import AccessDenied from '@/app/pages/AccessDenied.jsx';
-import PlaceholderPage from '@/app/pages/PlaceholderPage.jsx';
 import TemplatesLibrary from '@/app/pages/TemplatesLibrary.jsx';
 import LegalNotices from '@/app/pages/LegalNotices.jsx';
 import VersionControl from '@/app/pages/VersionControl.jsx';
 import DocumentArchive from '@/app/pages/DocumentArchive.jsx';
 import Calendar from '@/app/pages/Calendar.jsx';
-import TasksAndReminders from '@/app/pages/TasksAndReminders.jsx';
 import Clients from '@/app/pages/Clients.jsx';
 import Contacts from '@/app/pages/Contacts.jsx';
 import CaseDocuments from '@/app/pages/CaseDocuments.jsx';
@@ -43,7 +41,6 @@ import UserManagement from '@/app/pages/UserManagement.jsx';
 import UserDetails from '@/app/pages/UserDetails.jsx';
 import RoleManagement from '@/app/pages/RoleManagement.jsx';
 import RoleDetails from '@/app/pages/RoleDetails.jsx';
-import PermissionCenter from '@/app/pages/PermissionCenter.jsx';
 import PermissionManager from '@/app/pages/PermissionManager.jsx';
 import BackupManagement from '@/app/pages/BackupManagement.jsx';
 import BackupHistory from '@/app/pages/BackupHistory.jsx';
@@ -59,7 +56,7 @@ import CaseTypes from '@/app/pages/CaseTypes.jsx';
 import CourtTypes from '@/app/pages/CourtTypes.jsx';
 import AiAssistant from '@/app/pages/AiAssistant.jsx';
 import PromptLibrary from '@/app/pages/PromptLibrary.jsx';
-import AiUsageLogs from '@/app/pages/AiUsageLogs.jsx';
+import AiUsage from '@/app/pages/AiUsage.jsx';
 import CaseReports from '@/app/pages/CaseReports.jsx';
 import CourtReports from '@/app/pages/CourtReports.jsx';
 import UserActivity from '@/app/pages/UserActivity.jsx';
@@ -71,12 +68,10 @@ import SchemaMappingManager from '@/app/pages/SchemaMappingManager.jsx';
 import DatabaseStudio from '@/app/pages/DatabaseStudio.jsx';
 import SqlConsole from '@/app/pages/SqlConsole.jsx';
 import RestoreCenter from '@/app/pages/RestoreCenter.jsx';
-import AiUsageReports from '@/app/pages/AiUsageReports.jsx';
 import PerformanceAnalytics from '@/app/pages/PerformanceAnalytics.jsx';
 import CustomReports from '@/app/pages/CustomReports.jsx';
 
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
-const P = (module, title, icon) => G(module, <PlaceholderPage title={title} icon={icon} />);
 
 export default function AppRoutes() {
   return (
@@ -103,9 +98,9 @@ export default function AppRoutes() {
         <Route path="/cases" element={G('casevault', <CaseVault />)} />
         <Route path="/cases/:id" element={G('casevault', <CaseDetail />)} />
 
-        {/* ── Calendar / Tasks / Clients / Contacts ── */}
+        {/* ── Calendar / Clients / Contacts ── */}
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
-        <Route path="/tasks" element={G('calendar', <TasksAndReminders />)} />
+        <Route path="/tasks" element={<Navigate to="/calendar" replace />} />
         <Route path="/clients" element={G('clients', <Clients />)} />
         <Route path="/contacts" element={G('contacts', <Contacts />)} />
 
@@ -142,7 +137,7 @@ export default function AppRoutes() {
         {/* ── Administration ── */}
         <Route path="/admin/users" element={G('users', <UserManagement />)} />
         <Route path="/admin/users/:id" element={G('users', <UserDetails />)} />
-        <Route path="/admin/roles-permissions" element={G('roles', <RoleManagement />)} />
+        <Route path="/admin/roles-permissions" element={<Navigate to="/admin/roles" replace />} />
         <Route path="/admin/activity" element={G('audit', <AuditLogs />)} />
         <Route path="/admin/backup" element={G('backup', <BackupManagement />)} />
         <Route path="/admin/backup/history" element={G('backup', <BackupHistory />)} />
@@ -160,11 +155,11 @@ export default function AppRoutes() {
         {/* ── Tools ── */}
         <Route path="/tools/ai" element={G('drafting', <AiAssistant />)} />
         <Route path="/tools/ai/prompts" element={G('drafting', <PromptLibrary />)} />
-        <Route path="/tools/ai/usage" element={G('drafting', <AiUsageLogs />)} />
+        <Route path="/tools/ai/usage" element={G('drafting', <AiUsage />)} />
         <Route path="/tools/reports/cases" element={G('reports', <CaseReports />)} />
         <Route path="/tools/reports/courts" element={G('reports', <CourtReports />)} />
         <Route path="/tools/reports/activity" element={G('reports', <UserActivity />)} />
-        <Route path="/tools/reports/ai-usage" element={G('reports', <AiUsageReports />)} />
+        <Route path="/tools/reports/ai-usage" element={G('reports', <AiUsage />)} />
         <Route path="/tools/reports/performance" element={G('reports', <PerformanceAnalytics />)} />
         <Route path="/tools/reports/custom" element={G('reports', <CustomReports />)} />
 
@@ -190,7 +185,7 @@ export default function AppRoutes() {
         {/* Admin sub-routes that still exist */}
         <Route path="/admin/roles" element={G('roles', <RoleManagement />)} />
         <Route path="/admin/roles/:id" element={G('roles', <RoleDetails />)} />
-        <Route path="/admin/permissions" element={G('permissions', <PermissionCenter />)} />
+        <Route path="/admin/permissions" element={<Navigate to="/admin/permission-manager" replace />} />
         <Route path="/admin/permission-manager" element={G('permissions', <PermissionManager />)} />
 
         <Route path="/404" element={<NotFound />} />

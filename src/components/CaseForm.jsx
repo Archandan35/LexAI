@@ -9,6 +9,7 @@ import { CASE_TAGS } from '@/constants/caseFolders.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCourts } from '@/hooks/useCourts.js';
+import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 
 const currentYear = new Date().getFullYear();
 
@@ -27,6 +28,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const { stages, names, refresh } = useCaseStages();
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { courts, courtNames, refresh: refreshCourts } = useCourts();
+  const { statuses } = useCaseStatuses();
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
   const [courtTypeMgr, setCourtTypeMgr] = useState(false);
@@ -118,7 +120,8 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       <div className="input-row">
         <Field label="Status">
           <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
-            {['Active', 'Disposed', 'Stayed', 'Appeal'].map((s) => <option key={s}>{s}</option>)}
+            <option value="">Select status…</option>
+            {statuses.map((s) => <option key={s}>{s}</option>)}
           </Select>
         </Field>
         <Field label={<span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>Court Type</span>}>

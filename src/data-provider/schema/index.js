@@ -42,6 +42,8 @@ import { TemplatesSchema } from './templates.schema.js';
 import { LegalNoticesSchema } from './legal_notices.schema.js';
 import { PrecedentsSchema } from './precedents.schema.js';
 import { ReportsSchema } from './reports.schema.js';
+import { CaseStatusesSchema } from './case_statuses.schema.js';
+import { PrioritiesSchema } from './priorities.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -83,11 +85,13 @@ export const schemas = {
   legal_notices: LegalNoticesSchema,
   precedents: PrecedentsSchema,
   reports: ReportsSchema,
+  case_statuses: CaseStatusesSchema,
+  priorities: PrioritiesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 29;
+export const SCHEMA_VERSION = 30;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

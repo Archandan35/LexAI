@@ -20,8 +20,7 @@ export const NAV_GROUPS = [
           { to: '/cases/timeline', label: 'Timeline Builder', icon: 'clock', module: 'timeline' },
         ],
       },
-      { to: '/calendar', label: 'Calendar', icon: 'calendar' },
-      { to: '/tasks', label: 'Tasks & Reminders', icon: 'check' },
+      { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
       { to: '/clients', label: 'Clients', icon: 'users' },
       { to: '/contacts', label: 'Contacts', icon: 'book' },
     ],
@@ -73,7 +72,7 @@ export const NAV_GROUPS = [
     label: '',
     items: [
       { to: '/admin/users', label: 'Users', icon: 'users', module: 'users' },
-      { to: '/admin/roles-permissions', label: 'Roles & Permissions', icon: 'lock', module: 'roles' },
+      { to: '/admin/roles', label: 'Roles & Permissions', icon: 'lock', module: 'roles' },
       { to: '/admin/activity', label: 'Activity Monitoring', icon: 'history', module: 'audit' },
       {
         label: 'Backup & Database', icon: 'database',
