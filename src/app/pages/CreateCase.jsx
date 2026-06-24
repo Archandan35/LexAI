@@ -4,7 +4,8 @@ import Card from '@/components/Card.jsx';
 import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import InlineEntityManager from '@/components/InlineEntityManager.jsx';
+import CrudContextMenu from '@/components/CrudContextMenu.jsx';
+import CrudManager from '@/components/CrudManager.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { userLogic } from '@/logic/userLogic.js';
@@ -59,7 +60,7 @@ const INITIAL_FORM = {
 function MultiValueField({ items, inputValue, onInputChange, onAdd, onRemove, placeholder }) {
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div className="input-row">
         <Input
           value={inputValue}
           onChange={(e) => onInputChange(e.target.value)}
@@ -84,27 +85,40 @@ function MultiValueField({ items, inputValue, onInputChange, onAdd, onRemove, pl
   );
 }
 
-function InlineAddButton({ onClick, title }) {
-  return (
-    <button type="button" className="icon-btn" onClick={onClick} title={title}>
-      <Icon name="plus" size={16} />
-    </button>
-  );
-}
+function GearSelect({ value, onChange, options, placeholder, entity, onGearClick }) {
+  const [menuOpen, setMenuOpen] = useState(false);
 
-function SelectWithAdd({ value, onChange, options, placeholder, onAdd, addTitle }) {
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-      <Select value={value} onChange={onChange} style={{ flex: 1 }}>
+    <div className="select-with-add">
+      <Select value={value} onChange={onChange}>
         <option value="">{placeholder}</option>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </Select>
-      <InlineAddButton onClick={onAdd} title={addTitle} />
+      <button type="button" className="icon-btn" title={`Manage ${entity}`} onClick={() => setMenuOpen((p) => !p)}>
+        <Icon name="gear" size={16} />
+      </button>
+      <CrudContextMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        entityLabel={entity}
+        onAction={(action) => onGearClick(entity, action)}
+      />
     </div>
   );
 }
+
+const ENTITY_CONFIGS = {
+  Status: { label: 'Status', logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], defaults: {} },
+  'Case Type': { label: 'Case Type', logic: caseTypeLogic, fields: [{ key: 'name', label: 'Case Type Name', placeholder: 'e.g., Civil' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., CIV' }], defaults: {} },
+  'Court Hierarchy': { label: 'Court Hierarchy', logic: courtHierarchyLogic, fields: [{ key: 'name', label: 'Hierarchy Name', placeholder: 'e.g., Supreme Court' }], defaults: {} },
+  'Bench Type': { label: 'Bench Type', logic: benchTypeLogic, fields: [{ key: 'name', label: 'Bench Type Name', placeholder: 'e.g., Single Bench' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., SB' }], defaults: {} },
+  Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
+  Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
+  Priority: { label: 'Priority', logic: priorityLogic, fields: [{ key: 'name', label: 'Priority Name', placeholder: 'e.g., High' }, { key: 'color', label: 'Color', type: 'color', default: '#6b7280' }], defaults: {} },
+  Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }], defaults: {} },
+};
 
 export default function CreateCase() {
   const { user } = useAuth();
@@ -134,49 +148,45 @@ export default function CreateCase() {
   const [saving, setSaving] = useState(false);
   const fileRef = useRef(null);
 
-  const [entityModal, setEntityModal] = useState({ open: false, title: '', fields: [], onSave: null });
+  const [crudEntity, setCrudEntity] = useState(null);
 
-  const openEntityManager = useCallback((title, fields, handler) => {
-    setEntityModal({ open: true, title, fields, onSave: handler });
+  const openCrudManager = useCallback((entity, action) => {
+    setCrudEntity(entity);
   }, []);
 
-  const closeEntityManager = useCallback(() => {
-    setEntityModal((prev) => ({ ...prev, open: false }));
-  }, []);
+  const closeCrudManager = useCallback(() => {
+    setCrudEntity(null);
+    refreshStatuses();
+    refreshCaseTypes();
+    refreshStages();
+    refreshPriorities();
+    refreshCourts();
+    refreshHierarchy();
+    refreshBenchTypes();
+    refreshJurisdictions();
+    clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => {});
+  }, [refreshStatuses, refreshCaseTypes, refreshStages, refreshPriorities, refreshCourts, refreshHierarchy, refreshBenchTypes, refreshJurisdictions]);
 
-  const setField = useCallback((key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
-  const setFieldEvent = useCallback((key) => (e) => {
-    setField(key, e.target.value);
-  }, [setField]);
+  const setField = useCallback((key, value) => setForm((prev) => ({ ...prev, [key]: value })), []);
+  const setFieldEvent = useCallback((key) => (e) => setField(key, e.target.value), [setField]);
 
   const addPlaintiff = useCallback(() => {
     const val = plaintiffInput.trim();
     if (!val) return;
-    if (!form.plaintiffs.includes(val)) {
-      setField('plaintiffs', [...form.plaintiffs, val]);
-    }
+    if (!form.plaintiffs.includes(val)) setField('plaintiffs', [...form.plaintiffs, val]);
     setPlaintiffInput('');
   }, [plaintiffInput, form.plaintiffs, setField]);
 
-  const removePlaintiff = useCallback((index) => {
-    setField('plaintiffs', form.plaintiffs.filter((_, i) => i !== index));
-  }, [form.plaintiffs, setField]);
+  const removePlaintiff = useCallback((index) => setField('plaintiffs', form.plaintiffs.filter((_, i) => i !== index)), [form.plaintiffs, setField]);
 
   const addDefendant = useCallback(() => {
     const val = defendantInput.trim();
     if (!val) return;
-    if (!form.defendants.includes(val)) {
-      setField('defendants', [...form.defendants, val]);
-    }
+    if (!form.defendants.includes(val)) setField('defendants', [...form.defendants, val]);
     setDefendantInput('');
   }, [defendantInput, form.defendants, setField]);
 
-  const removeDefendant = useCallback((index) => {
-    setField('defendants', form.defendants.filter((_, i) => i !== index));
-  }, [form.defendants, setField]);
+  const removeDefendant = useCallback((index) => setField('defendants', form.defendants.filter((_, i) => i !== index)), [form.defendants, setField]);
 
   const autoTitle = useMemo(() => {
     const pl = form.plaintiffs.join(', ');
@@ -185,83 +195,13 @@ export default function CreateCase() {
     return [pl, df].filter(Boolean).join(' vs ');
   }, [form.plaintiffs, form.defendants]);
 
-  const handleFileChange = useCallback((e) => {
-    setSelectedFiles(Array.from(e.target.files || []));
-  }, []);
-
-  const handleAddStatus = useCallback(async (data) => {
-    const result = await caseStatusLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create status'); return; }
-    await refreshStatuses();
-    toast.success('Status created');
-    closeEntityManager();
-  }, [refreshStatuses, toast, closeEntityManager]);
-
-  const handleAddCaseType = useCallback(async (data) => {
-    const result = await caseTypeLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create case type'); return; }
-    await refreshCaseTypes();
-    toast.success('Case type created');
-    closeEntityManager();
-  }, [refreshCaseTypes, toast, closeEntityManager]);
-
-  const handleAddHierarchy = useCallback(async (data) => {
-    const result = await courtHierarchyLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create hierarchy'); return; }
-    await refreshHierarchy();
-    toast.success('Court hierarchy created');
-    closeEntityManager();
-  }, [refreshHierarchy, toast, closeEntityManager]);
-
-  const handleAddBenchType = useCallback(async (data) => {
-    const result = await benchTypeLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create bench type'); return; }
-    await refreshBenchTypes();
-    toast.success('Bench type created');
-    closeEntityManager();
-  }, [refreshBenchTypes, toast, closeEntityManager]);
-
-  const handleAddJurisdiction = useCallback(async (data) => {
-    const result = await jurisdictionLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create jurisdiction'); return; }
-    await refreshJurisdictions();
-    toast.success('Jurisdiction created');
-    closeEntityManager();
-  }, [refreshJurisdictions, toast, closeEntityManager]);
-
-  const handleAddStage = useCallback(async (data) => {
-    const result = await caseStageLogic.add(data.name);
-    if (!result.ok) { toast.error(result.error || 'Failed to create stage'); return; }
-    await refreshStages();
-    toast.success('Stage created');
-    closeEntityManager();
-  }, [refreshStages, toast, closeEntityManager]);
-
-  const handleAddPriority = useCallback(async (data) => {
-    const result = await priorityLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create priority'); return; }
-    await refreshPriorities();
-    toast.success('Priority created');
-    closeEntityManager();
-  }, [refreshPriorities, toast, closeEntityManager]);
-
-  const handleAddClient = useCallback(async (data) => {
-    const result = await clientLogic.create(data);
-    if (!result.ok) { toast.error(result.error || 'Failed to create client'); return; }
-    const updated = await clientLogic.list();
-    if (Array.isArray(updated)) setClients(updated);
-    toast.success('Client created');
-    closeEntityManager();
-  }, [toast, closeEntityManager]);
+  const handleFileChange = useCallback((e) => setSelectedFiles(Array.from(e.target.files || [])), []);
 
   const validate = useCallback(() => {
     if (!form.case_number.trim()) { toast.error('Case number is required.'); return false; }
     if (!form.status) { toast.error('Status is required.'); return false; }
     if (!form.case_type) { toast.error('Case type is required.'); return false; }
-    if (form.plaintiffs.length === 0 && form.defendants.length === 0) {
-      toast.error('At least one plaintiff or defendant is required.');
-      return false;
-    }
+    if (form.plaintiffs.length === 0 && form.defendants.length === 0) { toast.error('At least one plaintiff or defendant is required.'); return false; }
     if (!form.client) { toast.error('Client is required.'); return false; }
     return true;
   }, [form, toast]);
@@ -316,14 +256,8 @@ export default function CreateCase() {
         }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
         resetForm();
-      } else {
-        toast.error('Failed to create case.');
-      }
-    } catch (e) {
-      toast.error(e?.message || 'An error occurred.');
-    } finally {
-      setSaving(false);
-    }
+      } else toast.error('Failed to create case.');
+    } catch (e) { toast.error(e?.message || 'An error occurred.'); } finally { setSaving(false); }
   }, [validate, buildPayload, form.document_folder, user, toast, resetForm]);
 
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
@@ -337,17 +271,30 @@ export default function CreateCase() {
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
 
+  const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
+  const refreshMap = {
+    Status: refreshStatuses,
+    'Case Type': refreshCaseTypes,
+    'Court Hierarchy': refreshHierarchy,
+    'Bench Type': refreshBenchTypes,
+    Jurisdiction: refreshJurisdictions,
+    Stage: refreshStages,
+    Priority: refreshPriorities,
+    Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => {}),
+  };
+
   return (
     <div className="page-area">
       <PageHeader title="Create Case" icon="pen" />
 
-      <InlineEntityManager
-        open={entityModal.open}
-        title={entityModal.title}
-        fields={entityModal.fields}
-        onClose={closeEntityManager}
-        onSave={entityModal.onSave}
-      />
+      {crudEntity && activeEntityConfig && (
+        <CrudManager
+          open={!!crudEntity}
+          onClose={closeCrudManager}
+          entity={crudEntity}
+          config={{ ...activeEntityConfig, refresh: refreshMap[crudEntity] }}
+        />
+      )}
 
       <Card title="Case Header">
         <div className="grid-2">
@@ -358,26 +305,17 @@ export default function CreateCase() {
             <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" />
           </Field>
           <Field label="Status">
-            <SelectWithAdd
-              value={form.status}
-              onChange={setFieldEvent('status')}
-              options={statusOptions}
-              placeholder="Select status"
-              onAdd={() => openEntityManager('Add Status', [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], handleAddStatus)}
-              addTitle="Add new status"
+            <GearSelect
+              value={form.status} onChange={setFieldEvent('status')}
+              options={statusOptions} placeholder="Select status"
+              entity="Status" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Case Type">
-            <SelectWithAdd
-              value={form.case_type}
-              onChange={setFieldEvent('case_type')}
-              options={caseTypeOptions}
-              placeholder="Select case type"
-              onAdd={() => openEntityManager('Add Case Type', [
-                { key: 'name', label: 'Case Type Name', placeholder: 'e.g., Civil' },
-                { key: 'short_code', label: 'Short Code', placeholder: 'e.g., CIV' },
-              ], handleAddCaseType)}
-              addTitle="Add new case type"
+            <GearSelect
+              value={form.case_type} onChange={setFieldEvent('case_type')}
+              options={caseTypeOptions} placeholder="Select case type"
+              entity="Case Type" onGearClick={openCrudManager}
             />
           </Field>
         </div>
@@ -387,21 +325,15 @@ export default function CreateCase() {
         <div className="grid-2">
           <Field label="Plaintiff / Petitioner">
             <MultiValueField
-              items={form.plaintiffs}
-              inputValue={plaintiffInput}
-              onInputChange={setPlaintiffInput}
-              onAdd={addPlaintiff}
-              onRemove={removePlaintiff}
+              items={form.plaintiffs} inputValue={plaintiffInput}
+              onInputChange={setPlaintiffInput} onAdd={addPlaintiff} onRemove={removePlaintiff}
               placeholder="Add plaintiff name"
             />
           </Field>
           <Field label="Defendant / Respondent">
             <MultiValueField
-              items={form.defendants}
-              inputValue={defendantInput}
-              onInputChange={setDefendantInput}
-              onAdd={addDefendant}
-              onRemove={removeDefendant}
+              items={form.defendants} inputValue={defendantInput}
+              onInputChange={setDefendantInput} onAdd={addDefendant} onRemove={removeDefendant}
               placeholder="Add defendant name"
             />
           </Field>
@@ -414,15 +346,10 @@ export default function CreateCase() {
       <Card title="Assignment">
         <div className="grid-2">
           <Field label="Client">
-            <SelectWithAdd
-              value={form.client}
-              onChange={setFieldEvent('client')}
-              options={clientOptions}
-              placeholder="Select client"
-              onAdd={() => openEntityManager('Add Client', [
-                { key: 'name', label: 'Client Name', placeholder: 'Enter client name' },
-              ], handleAddClient)}
-              addTitle="Add new client"
+            <GearSelect
+              value={form.client} onChange={setFieldEvent('client')}
+              options={clientOptions} placeholder="Select client"
+              entity="Client" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Advocate">
@@ -437,28 +364,17 @@ export default function CreateCase() {
       <Card title="Court Information">
         <div className="grid-2">
           <Field label="Court Hierarchy">
-            <SelectWithAdd
-              value={form.court_hierarchy}
-              onChange={setFieldEvent('court_hierarchy')}
-              options={hierarchyOptions}
-              placeholder="Select hierarchy"
-              onAdd={() => openEntityManager('Add Court Hierarchy', [
-                { key: 'name', label: 'Hierarchy Name', placeholder: 'e.g., Supreme Court' },
-              ], handleAddHierarchy)}
-              addTitle="Add new court hierarchy"
+            <GearSelect
+              value={form.court_hierarchy} onChange={setFieldEvent('court_hierarchy')}
+              options={hierarchyOptions} placeholder="Select hierarchy"
+              entity="Court Hierarchy" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Court Type">
-            <SelectWithAdd
-              value={form.court_type}
-              onChange={setFieldEvent('court_type')}
-              options={caseTypeOptions}
-              placeholder="Select court type"
-              onAdd={() => openEntityManager('Add Case Type', [
-                { key: 'name', label: 'Case Type Name' },
-                { key: 'short_code', label: 'Short Code' },
-              ], handleAddCaseType)}
-              addTitle="Add new court type"
+            <GearSelect
+              value={form.court_type} onChange={setFieldEvent('court_type')}
+              options={caseTypeOptions} placeholder="Select court type"
+              entity="Case Type" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Court Name">
@@ -468,32 +384,20 @@ export default function CreateCase() {
             </Select>
           </Field>
           <Field label="Bench Type">
-            <SelectWithAdd
-              value={form.bench_type}
-              onChange={setFieldEvent('bench_type')}
-              options={benchTypeOptions}
-              placeholder="Select bench type"
-              onAdd={() => openEntityManager('Add Bench Type', [
-                { key: 'name', label: 'Bench Type Name', placeholder: 'e.g., Single Bench' },
-                { key: 'short_code', label: 'Short Code', placeholder: 'e.g., SB' },
-              ], handleAddBenchType)}
-              addTitle="Add new bench type"
+            <GearSelect
+              value={form.bench_type} onChange={setFieldEvent('bench_type')}
+              options={benchTypeOptions} placeholder="Select bench type"
+              entity="Bench Type" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Presiding Officer">
             <Input value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')} placeholder="e.g., Justice Sharma" />
           </Field>
           <Field label="Jurisdiction">
-            <SelectWithAdd
-              value={form.jurisdiction}
-              onChange={setFieldEvent('jurisdiction')}
-              options={jurisdictionOptions}
-              placeholder="Select jurisdiction"
-              onAdd={() => openEntityManager('Add Jurisdiction', [
-                { key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' },
-                { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' },
-              ], handleAddJurisdiction)}
-              addTitle="Add new jurisdiction"
+            <GearSelect
+              value={form.jurisdiction} onChange={setFieldEvent('jurisdiction')}
+              options={jurisdictionOptions} placeholder="Select jurisdiction"
+              entity="Jurisdiction" onGearClick={openCrudManager}
             />
           </Field>
         </div>
@@ -502,28 +406,17 @@ export default function CreateCase() {
       <Card title="Case Tracking">
         <div className="grid-2">
           <Field label="Case Stage">
-            <SelectWithAdd
-              value={form.case_stage}
-              onChange={setFieldEvent('case_stage')}
-              options={stageOptions}
-              placeholder="Select stage"
-              onAdd={() => openEntityManager('Add Case Stage', [
-                { key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' },
-              ], handleAddStage)}
-              addTitle="Add new case stage"
+            <GearSelect
+              value={form.case_stage} onChange={setFieldEvent('case_stage')}
+              options={stageOptions} placeholder="Select stage"
+              entity="Stage" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Priority">
-            <SelectWithAdd
-              value={form.priority}
-              onChange={setFieldEvent('priority')}
-              options={priorityOptions}
-              placeholder="Select priority"
-              onAdd={() => openEntityManager('Add Priority', [
-                { key: 'name', label: 'Priority Name', placeholder: 'e.g., High' },
-                { key: 'color', label: 'Color', type: 'color', default: '#6b7280' },
-              ], handleAddPriority)}
-              addTitle="Add new priority"
+            <GearSelect
+              value={form.priority} onChange={setFieldEvent('priority')}
+              options={priorityOptions} placeholder="Select priority"
+              entity="Priority" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Filing Date">
@@ -566,11 +459,7 @@ export default function CreateCase() {
 
       <Card title="Documents">
         <Field label="Document Folder">
-          <Input
-            value={form.document_folder}
-            onChange={setFieldEvent('document_folder')}
-            placeholder="Enter folder name for case documents"
-          />
+          <Input value={form.document_folder} onChange={setFieldEvent('document_folder')} placeholder="Enter folder name for case documents" />
         </Field>
         <Field label="Upload Documents">
           <input type="file" multiple ref={fileRef} onChange={handleFileChange} className="input" />
