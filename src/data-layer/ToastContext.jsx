@@ -21,7 +21,7 @@ export function ToastProvider({ children }) {
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  return ctx || { push: () => {}, remove: () => {}, toasts: [] };
+  return ctx || { push: () => {}, remove: () => {}, toasts: [], error: () => {}, success: () => {}, warning: () => {} };
 }
 
 export default ToastContext;

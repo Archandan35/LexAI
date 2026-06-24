@@ -4,6 +4,7 @@ import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
+import SearchableSelect from '@/components/SearchableSelect.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { userLogic } from '@/logic/userLogic.js';
@@ -54,10 +55,7 @@ function SectionCard({ num, title, children }) {
 function GearSelect({ value, onChange, options, placeholder, entity, onGearClick }) {
   return (
     <div className="select-with-add">
-      <Select value={value} onChange={onChange}>
-        <option value="">{placeholder}</option>
-        {options.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-      </Select>
+      <SearchableSelect value={value} onChange={onChange} options={options} placeholder={placeholder} />
       <button
         type="button"
         className="icon-btn"
@@ -426,7 +424,7 @@ export default function CreateCase() {
 
       {/* ---- 5. Case Tracking ---- */}
       <SectionCard num="5" title="Case Tracking">
-        <div className="grid-2">
+        <div className="grid-3">
           <Field label="Priority" required>
             <div>
               <Select value={form.priority} onChange={setFieldEvent('priority')} style={{ marginBottom: 10 }}>
@@ -517,11 +515,8 @@ export default function CreateCase() {
           <Field label="Document Folder">
             {folderMode === 'select' ? (
               <div style={{ display: 'flex', gap: 8 }}>
-                <Select value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)}>
-                  <option value="">Select folder...</option>
-                  {folderOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  <option value="__create__">── Create new ──</option>
-                </Select>
+                <SearchableSelect value={form.document_folder} onChange={(e) => handleFolderSelect(e.target.value)} options={folderOptions} placeholder="Select folder..." />
+                <button type="button" className="btn btn--ghost" style={{ flexShrink: 0 }} onClick={() => handleFolderSelect('__create__')}><Icon name="folderPlus" size={15} /> New</button>
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 8 }}>

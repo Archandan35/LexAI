@@ -9,7 +9,10 @@ export function useToastState() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);
   const remove = useCallback((id) => setToasts((t) => t.filter((x) => x.id !== id)), []);
-  return { toasts, push, remove };
+  const error = useCallback((msg) => push(msg, 'error'), [push]);
+  const success = useCallback((msg) => push(msg, 'success'), [push]);
+  const warning = useCallback((msg) => push(msg, 'warning'), [push]);
+  return { toasts, push, remove, error, success, warning };
 }
 
 export default useToastState;
