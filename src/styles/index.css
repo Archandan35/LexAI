@@ -2739,6 +2739,131 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
+.docmgr__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.docmgr__folder-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docmgr__folder-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.docmgr__folder-wrap:hover .docmgr__folder-actions {
+  display: flex;
+}
+
+.docmgr__folder--cut {
+  opacity: 0.4;
+}
+
+.docmgr__folder--selected {
+  background: var(--brand-soft);
+  border-radius: 8px;
+  margin: 1px 0;
+}
+
+.docmgr__folder-checkbox {
+  margin: 0 4px 0 8px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--brand);
+}
+
+.docmgr__bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--red-soft, #fef2f2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.docmgr__bulk-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-size: 13px;
+  padding: 8px;
+}
+
+.docmgr__bulk-toggle {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.docmgr__bulk-toggle:hover {
+  text-decoration: underline;
+}
+
+.docmgr__folder-actions {
+  display: none;
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  z-index: 2;
+}
+
+.docmgr__paste-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--brand);
+  cursor: pointer;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand);
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.docmgr__paste-btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+.docmgr__clipboard-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--brand-soft);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.docmgr__rename-input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 6px;
+}
+
 .docmgr__count {
   font-size: 11px;
   color: var(--text-faint);

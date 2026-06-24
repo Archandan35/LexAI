@@ -116,7 +116,7 @@ function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove,
 const ENTITY_CONFIGS = {
   Status: { label: 'Status', logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], defaults: {} },
   'Case Type': { label: 'Case Type', logic: caseTypeLogic, fields: [{ key: 'name', label: 'Case Type Name', placeholder: 'e.g., Civil' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., CIV' }], defaults: {} },
-  'Court Hierarchy': { label: 'Court Hierarchy', logic: courtHierarchyLogic, fields: [{ key: 'name', label: 'Hierarchy Name', placeholder: 'e.g., Supreme Court' }], defaults: {} },
+  Courts: { label: 'Courts', logic: courtHierarchyLogic, fields: [{ key: 'name', label: 'Court Name', placeholder: 'e.g., Supreme Court' }], defaults: {} },
   'Bench Type': { label: 'Bench Type', logic: benchTypeLogic, fields: [{ key: 'name', label: 'Bench Type Name', placeholder: 'e.g., Single Bench' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., SB' }], defaults: {} },
   Jurisdiction: { label: 'Jurisdiction', logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'e.g., Delhi' }, { key: 'short_code', label: 'Short Code', placeholder: 'e.g., DL' }], defaults: {} },
   Stage: { label: 'Stage', logic: caseStageLogic, fields: [{ key: 'name', label: 'Stage Name', placeholder: 'e.g., Pleading' }], defaults: {} },
@@ -283,7 +283,7 @@ export default function CreateCase() {
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {
     'Case Type': refreshCaseTypes,
-    'Court Hierarchy': refreshHierarchy, 'Bench Type': refreshBenchTypes,
+    Courts: refreshHierarchy, 'Bench Type': refreshBenchTypes,
     Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
     Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
     Advocate: () => userLogic.list().then((r) => { if (Array.isArray(r)) setUsers(r); }).catch(() => { }),
@@ -419,11 +419,11 @@ export default function CreateCase() {
       {/* ---- 4. Court Information ---- */}
       <SectionCard num="4" title="Court Information">
         <div className="grid-2">
-          <Field label="Court Hierarchy" required>
+          <Field label="Courts" required>
             <GearSelect
               value={form.court_hierarchy} onChange={setFieldEvent('court_hierarchy')}
-              options={hierarchyOptions} placeholder="Select hierarchy"
-              entity="Court Hierarchy" onGearClick={openCrudManager}
+              options={hierarchyOptions} placeholder="Select court"
+              entity="Courts" onGearClick={openCrudManager}
             />
           </Field>
           <Field label="Jurisdiction" required>

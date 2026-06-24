@@ -6,7 +6,7 @@ import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtHierarchyLogic } from '@/logic/courtHierarchyLogic.js';
 
-export default function CourtHierarchy() {
+export default function Courts() {
   const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,7 @@ export default function CourtHierarchy() {
 
   return (
     <div className="fade-in">
-      <PageHeader icon="layers" title="Court Hierarchy" subtitle="Define the hierarchical structure of courts." />
+      <PageHeader icon="layers" title="Courts" subtitle="Define the hierarchical structure of courts." />
 
       <Card title="Add Court Level" className="court-hierarchy__add-card">
         <div className="court-hierarchy__add-row">

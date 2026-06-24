@@ -142,7 +142,7 @@ export default function ManageCase() {
               <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
               <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
               <Row label="Court Name" value={c.court_name} />
-              <Row label="Court Hierarchy" value={c.court_hierarchy} />
+              <Row label="Courts" value={c.court_hierarchy} />
               <Row label="Bench Type" value={c.bench_type} />
               <Row label="Presiding Officer" value={c.judge} />
               <Row label="Status" value={c.status} />
@@ -268,7 +268,7 @@ export default function ManageCase() {
         <Card title="Court Info">
           <Row label="Court" value={c.court} />
           <Row label="Court Name" value={c.court_name} />
-          <Row label="Court Hierarchy" value={c.court_hierarchy} />
+          <Row label="Courts" value={c.court_hierarchy} />
           <Row label="Bench Type" value={c.bench_type} />
           <Row label="Presiding Officer / Judge" value={c.judge} />
           <Row label="Combined Court" value={combinedCourt(c)} />

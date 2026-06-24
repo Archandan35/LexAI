@@ -53,7 +53,6 @@ import BootstrapAdmin from '@/app/pages/BootstrapAdmin.jsx';
 import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
 import SystemSettings from '@/app/pages/SystemSettings.jsx';
 import CaseTypes from '@/app/pages/CaseTypes.jsx';
-import CourtTypes from '@/app/pages/CourtTypes.jsx';
 import AiAssistant from '@/app/pages/AiAssistant.jsx';
 import PromptLibrary from '@/app/pages/PromptLibrary.jsx';
 import AiUsage from '@/app/pages/AiUsage.jsx';
@@ -61,7 +60,7 @@ import CaseReports from '@/app/pages/CaseReports.jsx';
 import CourtReports from '@/app/pages/CourtReports.jsx';
 import UserActivity from '@/app/pages/UserActivity.jsx';
 import BenchTypes from '@/app/pages/BenchTypes.jsx';
-import CourtHierarchy from '@/app/pages/CourtHierarchy.jsx';
+import Courts from '@/app/pages/Courts.jsx';
 import Jurisdictions from '@/app/pages/Jurisdictions.jsx';
 import CaseStages from '@/app/pages/CaseStages.jsx';
 import Priorities from '@/app/pages/Priorities.jsx';
@@ -130,8 +129,7 @@ export default function AppRoutes() {
         <Route path="/research" element={G('research', <LegalResearch />)} />
 
         {/* ── Court Management ── */}
-        <Route path="/court-management/courts" element={G('courtTypes', <CourtTypes />)} />
-        <Route path="/court-management/hierarchy" element={G('courtTypes', <CourtHierarchy />)} />
+        <Route path="/court-management/courts" element={G('courtTypes', <Courts />)} />
         <Route path="/court-management/bench-types" element={G('courtTypes', <BenchTypes />)} />
         <Route path="/court-management/case-types" element={G('caseTypes', <CaseTypes />)} />
         <Route path="/court-management/jurisdictions" element={G('courtTypes', <Jurisdictions />)} />
@@ -183,6 +181,7 @@ export default function AppRoutes() {
         <Route path="/cross-examination" element={<Navigate to="/research/cross-examination" replace />} />
         <Route path="/evidence" element={<Navigate to="/research/evidence-gap" replace />} />
         <Route path="/admin/court-types" element={<Navigate to="/court-management/courts" replace />} />
+        <Route path="/court-management/hierarchy" element={<Navigate to="/court-management/courts" replace />} />
         <Route path="/admin/case-types" element={<Navigate to="/court-management/case-types" replace />} />
         <Route path="/admin/audit" element={<Navigate to="/admin/activity" replace />} />
         <Route path="/admin/settings" element={<Navigate to="/settings" replace />} />

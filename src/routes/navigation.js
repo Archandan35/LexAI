@@ -59,8 +59,7 @@ export const NAV_GROUPS = [
   {
     label: 'Court Management',
     items: [
-      { to: '/court-management/courts', label: 'Courts', icon: 'folder', module: 'courtTypes' },
-      { to: '/court-management/hierarchy', label: 'Court Hierarchy', icon: 'layers', module: 'courtTypes' },
+      { to: '/court-management/courts', label: 'Courts', icon: 'layers', module: 'courtTypes' },
       { to: '/court-management/bench-types', label: 'Bench Types', icon: 'users', module: 'courtTypes' },
       { to: '/court-management/case-types', label: 'Case Types', icon: 'badge', module: 'caseTypes' },
       { to: '/court-management/jurisdictions', label: 'Jurisdictions', icon: 'grid', module: 'courtTypes' },
