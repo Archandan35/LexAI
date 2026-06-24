@@ -2678,7 +2678,7 @@ kbd.cmd__kbd {
 /* ===== Document / Draft manager ===== */
 .docmgr {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 18px;
   align-items: start;
 }
@@ -2691,6 +2691,8 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 16px;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .docmgr__folders-head {
@@ -2708,11 +2710,12 @@ kbd.cmd__kbd {
 .docmgr__folder {
   display: flex;
   align-items: center;
-  gap: 9px;
-  width: 100%;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
   border: none;
   background: transparent;
-  padding: 9px 10px;
+  padding: 6px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 13px;
@@ -2732,20 +2735,96 @@ kbd.cmd__kbd {
   font-weight: 650;
 }
 
-.docmgr__folder>span:nth-child(2) {
+.docmgr__folder .docmgr__folder-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
-.docmgr__toggle {
-  display: inline-flex;
+.docmgr__tree-guide {
+  width: 18px;
+  flex-shrink: 0;
+  position: relative;
+  height: 100%;
+}
+
+.docmgr__tree-guide--v::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  border-left: 1.5px solid var(--border);
+}
+
+.docmgr__tree-conn {
+  width: 18px;
+  flex-shrink: 0;
+  position: relative;
+  height: 100%;
+}
+
+.docmgr__tree-conn::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 10px;
+  border-top: 1.5px solid var(--border);
+}
+
+.docmgr__tree-conn::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  bottom: 0;
+  border-left: 1.5px solid var(--border);
+}
+
+.docmgr__tree-conn--last::after {
+  display: none;
+}
+
+.docmgr__tree-expand {
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  flex-shrink: 0;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
   color: var(--text-faint);
+  transition: all 0.15s var(--ease);
+  font-size: 10px;
+}
+
+.docmgr__tree-expand:hover {
+  background: var(--surface-2);
+  color: var(--navy-700);
+}
+
+.docmgr__tree-expand-root {
+  width: 15px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-faint);
+}
+
+.docmgr__tree-expand-root:hover {
+  color: var(--navy-700);
 }
 
 .docmgr__folder-name {
@@ -2756,9 +2835,26 @@ kbd.cmd__kbd {
 }
 
 .docmgr__folder-wrap {
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 2px;
+  min-width: 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s var(--ease);
+}
+
+.docmgr__folder-wrap:hover {
+  background: var(--surface-2);
+}
+
+.docmgr__folder-wrap.active {
+  background: var(--brand-soft);
+}
+
+.docmgr__folder-wrap.active .docmgr__folder-name {
+  color: var(--navy-700);
+  font-weight: 650;
 }
 
 .docmgr__folder-wrap:hover .docmgr__folder-actions {
@@ -2776,10 +2872,10 @@ kbd.cmd__kbd {
 }
 
 .docmgr__folder-checkbox {
-  margin: 0 4px 0 8px;
   flex-shrink: 0;
   cursor: pointer;
   accent-color: var(--brand);
+  margin: 0;
 }
 
 .docmgr__bulk-bar {
@@ -2813,32 +2909,54 @@ kbd.cmd__kbd {
   text-decoration: underline;
 }
 
+.docmgr__mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--text-faint);
+}
+
+.docmgr__mode-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.docmgr__mode-btn.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
 .docmgr__folder-actions {
   display: none;
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 4px;
+}
+
+.docmgr__folder-actions .iconbtn {
   padding: 2px;
-  z-index: 2;
 }
 
 .docmgr__paste-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 3px;
+  font-size: 10px;
   color: var(--brand);
   cursor: pointer;
   background: var(--brand-soft);
   border: 1px solid var(--brand);
-  border-radius: 6px;
-  padding: 2px 8px;
+  border-radius: 5px;
+  padding: 1px 6px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .docmgr__paste-btn:hover {
@@ -2850,7 +2968,7 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   background: var(--brand-soft);
   border-bottom: 1px solid var(--border);
   font-size: 12px;
@@ -2859,7 +2977,7 @@ kbd.cmd__kbd {
 .docmgr__rename-input {
   flex: 1;
   min-width: 0;
-  height: 24px;
+  height: 22px;
   font-size: 12px;
   padding: 0 6px;
 }

@@ -58,6 +58,7 @@ const PATHS = {
   balance: 'M12 3v17M12 5l-8 4 8 4 8-4-8-4M2 17l4 2 4-2-4-2-4 2M14 17l4 2 4-2-4-2-4 2M6 9v8M18 9v8',
   scissors: 'M6 4l12 16M6 20l12-16M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 21a3 3 0 0 0 0-6 3 3 0 0 0 0 6z',
   cornerDownRight: 'M15 10l5 5-5 5M4 4v7a4 4 0 0 0 4 4h12',
+  checkSquare: 'M3 3h18v18H3zM8 12l3 3 5-5',
 };
 
 export default function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {

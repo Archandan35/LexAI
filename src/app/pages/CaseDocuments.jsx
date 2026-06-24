@@ -29,6 +29,7 @@ export default function CaseDocuments() {
   const [editName, setEditName] = useState('');
   const [clipboard, setClipboard] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const [selectMode, setSelectMode] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,6 +90,7 @@ export default function CaseDocuments() {
 
   const selectFolder = (id) => {
     if (clipboard) return;
+    if (selectMode) return; // don't navigate while selecting
     setActiveFolder(id);
     setDocSelected([]);
   };
@@ -232,9 +234,10 @@ export default function CaseDocuments() {
     });
   };
 
-  const renderTree = (nodes, depth = 0) => {
-    return nodes.map((f) => {
+  const renderTree = (nodes, guides = []) => {
+    return nodes.map((f, idx) => {
       const children = getChildren(f.id);
+      const isLast = idx === nodes.length - 1;
       const isExpanded = expanded[f.id];
       const isActive = activeFolder === f.id;
       const isEditing = editingId === f.id;
@@ -242,62 +245,81 @@ export default function CaseDocuments() {
       const isHovered = hoveredId === f.id;
       const isSelected = folderSelected.has(f.id);
       const canPaste = clipboard && clipboard.folderId !== f.id && !getAllDescendantIds(f.id).includes(clipboard.folderId);
+      const hasChildren = children.length > 0;
+
+      const handleClick = () => {
+        if (selectMode || clipboard) return;
+        selectFolder(f.id);
+        if (hasChildren) toggleExpand(f.id);
+      };
 
       return (
         <React.Fragment key={f.id}>
           <div
-            className={`docmgr__folder-wrap ${isCut ? 'docmgr__folder--cut' : ''} ${isSelected ? 'docmgr__folder--selected' : ''}`}
+            className={`docmgr__folder-wrap ${isActive ? 'active' : ''} ${isCut ? 'docmgr__folder--cut' : ''} ${isSelected ? 'docmgr__folder--selected' : ''}`}
             onMouseEnter={() => setHoveredId(f.id)}
             onMouseLeave={() => setHoveredId(null)}
+            onClick={handleClick}
           >
-            <input
-              type="checkbox"
-              className="docmgr__folder-checkbox"
-              checked={isSelected}
-              onChange={() => toggleFolderSelect(f.id)}
-              onClick={(e) => e.stopPropagation()}
-            />
-            <button
-              className={`docmgr__folder ${isActive ? 'active' : ''}`}
-              style={{ paddingLeft: 8 + depth * 16 }}
-              onClick={() => selectFolder(f.id)}
-            >
-              {children.length > 0 ? (
-                <span className="docmgr__toggle" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                  <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={12} />
-                </span>
-              ) : <span style={{ width: 12 }} />}
-              <Icon name="folder" size={15} />
-              {isEditing ? (
-                <Input
-                  autoFocus
-                  value={editName}
-                  className="docmgr__rename-input"
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }}
-                />
-              ) : (
-                <span className="docmgr__folder-name">{f.name}</span>
-              )}
-              <span className="docmgr__count">{docCounts[f.name] || 0}</span>
-            </button>
-            {(isHovered || isEditing) && !clipboard && (
-              <div className="docmgr__folder-actions">
+            {selectMode && (
+              <input
+                type="checkbox"
+                className="docmgr__folder-checkbox"
+                checked={isSelected}
+                onChange={() => toggleFolderSelect(f.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+
+            {guides.length > 0 && guides.map((showLine, i) => (
+              <span key={i} className={`docmgr__tree-guide ${showLine ? 'docmgr__tree-guide--v' : ''}`} />
+            ))}
+
+            {guides.length > 0 ? (
+              <span className={`docmgr__tree-conn ${isLast ? 'docmgr__tree-conn--last' : ''}`}>
+                {hasChildren && (
+                  <span className="docmgr__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
+                    <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
+                  </span>
+                )}
+              </span>
+            ) : hasChildren ? (
+              <span className="docmgr__tree-expand-root" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
+                <Icon name={isExpanded ? 'chevronDown' : 'chevron'} size={10} />
+              </span>
+            ) : null}
+
+            <Icon name={hasChildren ? 'folder' : 'file'} size={15} />
+            {isEditing ? (
+              <Input
+                autoFocus
+                value={editName}
+                className="docmgr__rename-input"
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }}
+              />
+            ) : (
+              <span className={`docmgr__folder-name ${isActive ? 'active' : ''}`}>{f.name}</span>
+            )}
+            <span className="docmgr__count">{docCounts[f.name] || 0}</span>
+
+            {!selectMode && (isHovered || isEditing) && !clipboard && (
+              <div className="docmgr__folder-actions" onClick={(e) => e.stopPropagation()}>
                 {isEditing ? (
-                  <><button className="iconbtn" title="Save" onClick={(e) => { e.stopPropagation(); saveRename(); }}><Icon name="check" size={13} /></button><button className="iconbtn" title="Cancel" onClick={(e) => { e.stopPropagation(); cancelRename(); }}><Icon name="close" size={13} /></button></>
+                  <><button className="iconbtn" title="Save" onClick={() => saveRename()}><Icon name="check" size={13} /></button><button className="iconbtn" title="Cancel" onClick={() => cancelRename()}><Icon name="close" size={13} /></button></>
                 ) : (
-                  <><button className="iconbtn" title="Rename" onClick={(e) => { e.stopPropagation(); startRename(f); }}><Icon name="edit" size={13} /></button><button className="iconbtn" title="Cut" onClick={(e) => { e.stopPropagation(); cutFolder(f); }}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={(e) => { e.stopPropagation(); copyFolder(f); }}><Icon name="copy" size={13} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={(e) => { e.stopPropagation(); deleteFolder(f); }}><Icon name="trash" size={13} /></button></>
+                  <><button className="iconbtn" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={13} /></button><button className="iconbtn" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={13} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={13} /></button></>
                 )}
               </div>
             )}
-            {canPaste && (
-              <button className="docmgr__paste-btn" title="Paste here" onClick={(e) => { e.stopPropagation(); pasteHere(f.id); }}>
+            {!selectMode && canPaste && (
+              <button className="docmgr__paste-btn" onClick={(e) => { e.stopPropagation(); pasteHere(f.id); }}>
                 <Icon name="cornerDownRight" size={13} /> Paste
               </button>
             )}
           </div>
-          {children.length > 0 && isExpanded && renderTree(children, depth + 1)}
+          {hasChildren && isExpanded && renderTree(children, [...guides, !isLast])}
         </React.Fragment>
       );
     });
@@ -311,9 +333,14 @@ export default function CaseDocuments() {
         <aside className="docmgr__folders">
           <div className="docmgr__folders-head">
             <span>Folders ({folders.length})</span>
-            <button className="iconbtn" title="Create folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
-              <Icon name="plus" size={14} />
-            </button>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <button className={`docmgr__mode-btn ${selectMode ? 'active' : ''}`} title={selectMode ? 'Exit select mode' : 'Select folders'} onClick={() => { setSelectMode((s) => !s); if (selectMode) setFolderSelected(new Set()); }}>
+                <Icon name="checkSquare" size={13} />
+              </button>
+              <button className="iconbtn" title="Create folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
+                <Icon name="plus" size={14} />
+              </button>
+            </div>
           </div>
 
           {clipboard && (
@@ -325,7 +352,7 @@ export default function CaseDocuments() {
             </div>
           )}
 
-          {folderSelected.size > 0 && !clipboard && (
+          {selectMode && folderSelected.size > 0 && !clipboard && (
             <div className="docmgr__bulk-bar">
               <span className="muted">{folderSelected.size} selected</span>
               <button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button>
