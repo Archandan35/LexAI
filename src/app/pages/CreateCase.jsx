@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
-import Card from '@/components/Card.jsx';
+import { useNavigate } from 'react-router-dom';
 import Field, { Input, Textarea, Select } from '@/components/Field.jsx';
-import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
@@ -28,58 +26,27 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 
 const INITIAL_FORM = {
-  case_number: '',
-  case_year: '',
-  status: 'Active',
-  case_type: '',
-  plaintiffs: [],
-  defendants: [],
-  client: '',
-  advocate: '',
-  court_hierarchy: '',
-  court_type: '',
-  court_name: '',
-  bench_type: '',
-  presiding_officer: '',
-  jurisdiction: '',
-  case_stage: '',
-  priority: '',
-  filing_date: '',
-  next_hearing_date: '',
-  filing_number: '',
-  registration_number: '',
-  cnr_number: '',
-  registration_date: '',
-  disposal_date: '',
-  case_summary: '',
-  internal_notes: '',
-  document_folder: '',
+  case_number: '', case_year: '', status: 'Active', case_type: '',
+  plaintiffs: [], defendants: [],
+  client: '', advocate: '',
+  court_hierarchy: '', court_type: '', court_name: '', bench_type: '',
+  presiding_officer: '', jurisdiction: '',
+  case_stage: '', priority: '',
+  filing_date: '', next_hearing_date: '',
+  filing_number: '', registration_number: '', cnr_number: '',
+  registration_date: '', disposal_date: '',
+  case_summary: '', internal_notes: '', document_folder: '',
 };
 
-function MultiValueField({ items, inputValue, onInputChange, onAdd, onRemove, placeholder }) {
+/* ---- Sub-components ---- */
+function SectionCard({ num, title, children }) {
   return (
-    <div>
-      <div className="input-row">
-        <Input
-          value={inputValue}
-          onChange={(e) => onInputChange(e.target.value)}
-          placeholder={placeholder}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onAdd(); } }}
-        />
-        <Button variant="secondary" size="sm" onClick={onAdd} disabled={!inputValue.trim()}>Add</Button>
+    <div className="cc-section">
+      <div className="cc-section__head">
+        <span className="cc-section__num">{num}</span>
+        <span className="cc-section__title">{title}</span>
       </div>
-      {items.length > 0 && (
-        <div className="multi-value-container">
-          {items.map((item, i) => (
-            <span key={i} className="multi-value-item">
-              {item}
-              <button type="button" className="icon-btn" onClick={() => onRemove(i)} aria-label={`Remove ${item}`}>
-                <Icon name="close" size={14} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="cc-section__body">{children}</div>
     </div>
   );
 }
@@ -89,13 +56,75 @@ function GearSelect({ value, onChange, options, placeholder, entity, onGearClick
     <div className="select-with-add">
       <Select value={value} onChange={onChange}>
         <option value="">{placeholder}</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
+        {options.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
       </Select>
-      <button type="button" className="icon-btn" title={`Manage ${entity}`} onClick={() => onGearClick(entity)}>
+      <button
+        type="button"
+        className="icon-btn"
+        title={`Manage ${entity}`}
+        onClick={() => onGearClick(entity)}
+        style={{ padding: 7, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)', cursor: 'pointer', color: 'var(--text-soft)', display: 'grid', placeItems: 'center', flexShrink: 0 }}
+      >
         <Icon name="gear" size={16} />
       </button>
+    </div>
+  );
+}
+
+function PlusSelect({ value, onChange, options, placeholder }) {
+  return (
+    <div className="select-with-add">
+      <Select value={value} onChange={onChange}>
+        <option value="">{placeholder}</option>
+        {options.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+      </Select>
+      <button
+        type="button"
+        style={{ padding: 7, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)', cursor: 'pointer', color: 'var(--text-soft)', display: 'grid', placeItems: 'center', flexShrink: 0 }}
+      >
+        <Icon name="plus" size={16} />
+      </button>
+    </div>
+  );
+}
+
+function PartyColumn({ label, items, inputValue, onInputChange, onAdd, onRemove, placeholder }) {
+  return (
+    <div className="cc-party-col">
+      <div className="cc-party-col__head">
+        <span className="cc-party-col__label">{label} <span style={{ color: 'var(--red)' }}>*</span></span>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={onAdd}
+          disabled={!inputValue.trim()}
+        >
+          <Icon name="plus" size={13} /> Add
+        </button>
+      </div>
+      <Input
+        value={inputValue}
+        onChange={(e) => onInputChange(e.target.value)}
+        placeholder={placeholder}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onAdd(); } }}
+      />
+      {items.length > 0 ? (
+        <div className="multi-value-container" style={{ marginTop: 10 }}>
+          {items.map((item, i) => (
+            <span key={i} className="multi-value-item">
+              {item}
+              <button type="button" className="icon-btn" onClick={() => onRemove(i)} aria-label={`Remove ${item}`} style={{ marginLeft: 4, display: 'inline-flex', border: 'none', background: 'none', cursor: 'pointer', color: 'inherit' }}>
+                <Icon name="close" size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="cc-party-empty">
+          <Icon name="users" size={22} />
+          No parties added yet
+        </div>
+      )}
     </div>
   );
 }
@@ -111,9 +140,20 @@ const ENTITY_CONFIGS = {
   Client: { label: 'Client', logic: clientLogic, fields: [{ key: 'name', label: 'Client Name', placeholder: 'Enter client name' }], defaults: {} },
 };
 
+const PRIORITY_OPTIONS = [
+  { key: 'Low', cls: 'priority-chip--low' },
+  { key: 'Medium', cls: 'priority-chip--medium' },
+  { key: 'High', cls: 'priority-chip--high' },
+  { key: 'Urgent', cls: 'priority-chip--urgent' },
+];
+
+/* ================================================================
+   Main component
+   ================================================================ */
 export default function CreateCase() {
   const { user } = useAuth();
   const toast = useToast();
+  const nav = useNavigate();
 
   const { statuses, refresh: refreshStatuses } = useCaseStatuses();
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
@@ -128,8 +168,8 @@ export default function CreateCase() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); else setClients([]); }).catch(() => setClients([]));
-    userLogic.list().then((r) => { if (Array.isArray(r)) setUsers(r); else setUsers([]); }).catch(() => setUsers([]));
+    clientLogic.list().then((r) => setClients(Array.isArray(r) ? r : [])).catch(() => setClients([]));
+    userLogic.list().then((r) => setUsers(Array.isArray(r) ? r : [])).catch(() => setUsers([]));
   }, []);
 
   const [form, setForm] = useState({ ...INITIAL_FORM });
@@ -137,99 +177,65 @@ export default function CreateCase() {
   const [defendantInput, setDefendantInput] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileRef = useRef(null);
-
   const [crudEntity, setCrudEntity] = useState(null);
 
-  const openCrudManager = useCallback((entity) => {
-    setCrudEntity(entity);
-  }, []);
-
+  const openCrudManager = useCallback((entity) => setCrudEntity(entity), []);
   const closeCrudManager = useCallback(() => {
     setCrudEntity(null);
-    refreshStatuses();
-    refreshCaseTypes();
-    refreshStages();
-    refreshPriorities();
-    refreshCourts();
-    refreshHierarchy();
-    refreshBenchTypes();
-    refreshJurisdictions();
-    clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => {});
+    refreshStatuses(); refreshCaseTypes(); refreshStages(); refreshPriorities();
+    refreshCourts(); refreshHierarchy(); refreshBenchTypes(); refreshJurisdictions();
+    clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { });
   }, [refreshStatuses, refreshCaseTypes, refreshStages, refreshPriorities, refreshCourts, refreshHierarchy, refreshBenchTypes, refreshJurisdictions]);
 
   const setField = useCallback((key, value) => setForm((prev) => ({ ...prev, [key]: value })), []);
   const setFieldEvent = useCallback((key) => (e) => setField(key, e.target.value), [setField]);
 
-  const addPlaintiff = useCallback(() => {
-    const val = plaintiffInput.trim();
-    if (!val) return;
-    if (!form.plaintiffs.includes(val)) setField('plaintiffs', [...form.plaintiffs, val]);
-    setPlaintiffInput('');
-  }, [plaintiffInput, form.plaintiffs, setField]);
-
-  const removePlaintiff = useCallback((index) => setField('plaintiffs', form.plaintiffs.filter((_, i) => i !== index)), [form.plaintiffs, setField]);
-
-  const addDefendant = useCallback(() => {
-    const val = defendantInput.trim();
-    if (!val) return;
-    if (!form.defendants.includes(val)) setField('defendants', [...form.defendants, val]);
-    setDefendantInput('');
-  }, [defendantInput, form.defendants, setField]);
-
-  const removeDefendant = useCallback((index) => setField('defendants', form.defendants.filter((_, i) => i !== index)), [form.defendants, setField]);
+  const addPlaintiff = useCallback(() => { const v = plaintiffInput.trim(); if (!v) return; if (!form.plaintiffs.includes(v)) setField('plaintiffs', [...form.plaintiffs, v]); setPlaintiffInput(''); }, [plaintiffInput, form.plaintiffs, setField]);
+  const removePlaintiff = useCallback((i) => setField('plaintiffs', form.plaintiffs.filter((_, idx) => idx !== i)), [form.plaintiffs, setField]);
+  const addDefendant = useCallback(() => { const v = defendantInput.trim(); if (!v) return; if (!form.defendants.includes(v)) setField('defendants', [...form.defendants, v]); setDefendantInput(''); }, [defendantInput, form.defendants, setField]);
+  const removeDefendant = useCallback((i) => setField('defendants', form.defendants.filter((_, idx) => idx !== i)), [form.defendants, setField]);
 
   const autoTitle = useMemo(() => {
-    const pl = form.plaintiffs.join(', ');
-    const df = form.defendants.join(', ');
-    if (!pl && !df) return '';
+    const pl = form.plaintiffs.join(', '), df = form.defendants.join(', ');
     return [pl, df].filter(Boolean).join(' vs ');
   }, [form.plaintiffs, form.defendants]);
 
   const handleFileChange = useCallback((e) => setSelectedFiles(Array.from(e.target.files || [])), []);
 
+  const handleDrop = useCallback((e) => {
+    e.preventDefault(); setIsDragging(false);
+    setSelectedFiles(Array.from(e.dataTransfer.files || []));
+  }, []);
+
   const validate = useCallback(() => {
     if (!form.case_number.trim()) { toast.error('Case number is required.'); return false; }
     if (!form.status) { toast.error('Status is required.'); return false; }
     if (!form.case_type) { toast.error('Case type is required.'); return false; }
-    if (form.plaintiffs.length === 0 && form.defendants.length === 0) { toast.error('At least one plaintiff or defendant is required.'); return false; }
+    if (!form.plaintiffs.length && !form.defendants.length) { toast.error('At least one plaintiff or defendant is required.'); return false; }
     if (!form.client) { toast.error('Client is required.'); return false; }
     return true;
   }, [form, toast]);
 
   const buildPayload = useCallback((draft) => ({
-    case_number: form.case_number,
-    case_year: form.case_year,
-    status: draft ? 'Draft' : form.status,
-    case_type: form.case_type,
-    plaintiff: form.plaintiffs.join(', '),
-    defendant: form.defendants.join(', '),
-    client: form.client,
-    advocate: form.advocate,
-    court_hierarchy: form.court_hierarchy,
-    court_type: form.court_type,
-    court_name: form.court_name,
-    bench_type: form.bench_type,
-    presiding_officer: form.presiding_officer,
-    jurisdiction: form.jurisdiction,
-    case_stage: form.case_stage,
-    priority: form.priority,
-    filing_date: form.filing_date,
-    next_hearing_date: form.next_hearing_date,
-    filing_number: form.filing_number,
-    registration_number: form.registration_number,
-    cnr_number: form.cnr_number,
-    registration_date: form.registration_date,
+    case_number: form.case_number, case_year: form.case_year,
+    status: draft ? 'Draft' : form.status, case_type: form.case_type,
+    plaintiff: form.plaintiffs.join(', '), defendant: form.defendants.join(', '),
+    client: form.client, advocate: form.advocate,
+    court_hierarchy: form.court_hierarchy, court_type: form.court_type,
+    court_name: form.court_name, bench_type: form.bench_type,
+    presiding_officer: form.presiding_officer, jurisdiction: form.jurisdiction,
+    case_stage: form.case_stage, priority: form.priority,
+    filing_date: form.filing_date, next_hearing_date: form.next_hearing_date,
+    filing_number: form.filing_number, registration_number: form.registration_number,
+    cnr_number: form.cnr_number, registration_date: form.registration_date,
     disposal_date: form.disposal_date,
-    case_summary: form.case_summary,
-    internal_notes: form.internal_notes,
+    case_summary: form.case_summary, internal_notes: form.internal_notes,
   }), [form]);
 
   const resetForm = useCallback(() => {
-    setForm({ ...INITIAL_FORM });
-    setSelectedFiles([]);
-    setPlaintiffInput('');
-    setDefendantInput('');
+    setForm({ ...INITIAL_FORM }); setSelectedFiles([]); setPlaintiffInput(''); setDefendantInput('');
     if (fileRef.current) fileRef.current.value = '';
   }, []);
 
@@ -251,33 +257,32 @@ export default function CreateCase() {
     } catch (e) { toast.error(e?.message || 'An error occurred.'); } finally { setSaving(false); }
   }, [validate, buildPayload, form.document_folder, user, toast, resetForm]);
 
+  /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
   const statusOptions = statuses.map((s) => ({ value: s, label: s }));
   const hierarchyOptions = hierarchy.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
-  const priorityOptions = priorities.map((p) => ({ value: p, label: p }));
   const courtNameOptions = courtNames.map((c) => ({ value: c, label: c }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
 
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {
-    Status: refreshStatuses,
-    'Case Type': refreshCaseTypes,
-    'Court Hierarchy': refreshHierarchy,
-    'Bench Type': refreshBenchTypes,
-    Jurisdiction: refreshJurisdictions,
-    Stage: refreshStages,
-    Priority: refreshPriorities,
-    Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => {}),
+    Status: refreshStatuses, 'Case Type': refreshCaseTypes,
+    'Court Hierarchy': refreshHierarchy, 'Bench Type': refreshBenchTypes,
+    Jurisdiction: refreshJurisdictions, Stage: refreshStages, Priority: refreshPriorities,
+    Client: () => clientLogic.list().then((r) => { if (Array.isArray(r)) setClients(r); }).catch(() => { }),
   };
 
-  return (
-    <div className="page-area">
-      <PageHeader title="Create Case" icon="pen" />
+  const summaryLen = (form.case_summary || '').length;
+  const notesLen = (form.internal_notes || '').length;
 
+  return (
+    <div className="page-area" style={{ paddingBottom: 80 }}>
+
+      {/* Crud Manager Modal */}
       {crudEntity && activeEntityConfig && (
         <CrudManager
           open={!!crudEntity}
@@ -287,22 +292,40 @@ export default function CreateCase() {
         />
       )}
 
-      <Card title="Case Header">
+      {/* ---- Top bar ---- */}
+      <div className="cc-topbar">
+        <div className="cc-topbar__left">
+          <div className="cc-topbar__icon-wrap"><Icon name="pen" size={22} /></div>
+          <div>
+            <h1 className="cc-topbar__title">Create Case</h1>
+            <p className="cc-topbar__sub">Fill in the details below to create a new case</p>
+          </div>
+        </div>
+        <button
+          className="btn btn--ghost"
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <Icon name="download" size={16} /> Load from Template
+        </button>
+      </div>
+
+      {/* ---- 1. Case Header ---- */}
+      <SectionCard num="1" title="Case Header">
         <div className="grid-2">
-          <Field label="Case Number">
+          <Field label="Case Number" required>
             <Input value={form.case_number} onChange={setFieldEvent('case_number')} placeholder="e.g., 123/2024" />
           </Field>
-          <Field label="Case Year">
-            <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" />
+          <Field label="Case Year" required>
+            <Input value={form.case_year} onChange={setFieldEvent('case_year')} placeholder="e.g., 2024" type="text" />
           </Field>
-          <Field label="Status">
+          <Field label="Status" required>
             <GearSelect
               value={form.status} onChange={setFieldEvent('status')}
               options={statusOptions} placeholder="Select status"
               entity="Status" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Case Type">
+          <Field label="Case Type" required>
             <GearSelect
               value={form.case_type} onChange={setFieldEvent('case_type')}
               options={caseTypeOptions} placeholder="Select case type"
@@ -310,71 +333,77 @@ export default function CreateCase() {
             />
           </Field>
         </div>
-      </Card>
+      </SectionCard>
 
-      <Card title="Parties">
-        <div className="grid-2">
-          <Field label="Plaintiff / Petitioner">
-            <MultiValueField
-              items={form.plaintiffs} inputValue={plaintiffInput}
-              onInputChange={setPlaintiffInput} onAdd={addPlaintiff} onRemove={removePlaintiff}
-              placeholder="Add plaintiff name"
-            />
-          </Field>
-          <Field label="Defendant / Respondent">
-            <MultiValueField
-              items={form.defendants} inputValue={defendantInput}
-              onInputChange={setDefendantInput} onAdd={addDefendant} onRemove={removeDefendant}
-              placeholder="Add defendant name"
-            />
-          </Field>
+      {/* ---- 2. Parties ---- */}
+      <SectionCard num="2" title="Parties">
+        <div className="grid-2" style={{ marginBottom: 16 }}>
+          <PartyColumn
+            label="Plaintiff / Petitioner"
+            items={form.plaintiffs}
+            inputValue={plaintiffInput}
+            onInputChange={setPlaintiffInput}
+            onAdd={addPlaintiff}
+            onRemove={removePlaintiff}
+            placeholder="Enter plaintiff / petitioner name"
+          />
+          <PartyColumn
+            label="Defendant / Respondent"
+            items={form.defendants}
+            inputValue={defendantInput}
+            onInputChange={setDefendantInput}
+            onAdd={addDefendant}
+            onRemove={removeDefendant}
+            placeholder="Enter defendant / respondent name"
+          />
         </div>
         <Field label="Cause Title">
-          <Input value={autoTitle} readOnly className="title-preview" />
+          <Input value={autoTitle} readOnly className="cc-cause-title" placeholder="Auto-generated from parties" style={{ background: 'var(--surface-2)', color: 'var(--text-soft)' }} />
         </Field>
-      </Card>
+      </SectionCard>
 
-      <Card title="Assignment">
+      {/* ---- 3. Assignment ---- */}
+      <SectionCard num="3" title="Assignment">
         <div className="grid-2">
-          <Field label="Client">
-            <GearSelect
+          <Field label="Client" required>
+            <PlusSelect
               value={form.client} onChange={setFieldEvent('client')}
               options={clientOptions} placeholder="Select client"
-              entity="Client" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Advocate">
-            <Select value={form.advocate} onChange={setFieldEvent('advocate')}>
-              <option value="">Select advocate</option>
-              {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </Select>
+          <Field label="Advocate" required>
+            <PlusSelect
+              value={form.advocate} onChange={setFieldEvent('advocate')}
+              options={userOptions} placeholder="Select advocate"
+            />
           </Field>
         </div>
-      </Card>
+      </SectionCard>
 
-      <Card title="Court Information">
+      {/* ---- 4. Court Information ---- */}
+      <SectionCard num="4" title="Court Information">
         <div className="grid-2">
-          <Field label="Court Hierarchy">
+          <Field label="Court Hierarchy" required>
             <GearSelect
               value={form.court_hierarchy} onChange={setFieldEvent('court_hierarchy')}
               options={hierarchyOptions} placeholder="Select hierarchy"
               entity="Court Hierarchy" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Court Type">
+          <Field label="Court Type" required>
             <GearSelect
               value={form.court_type} onChange={setFieldEvent('court_type')}
               options={caseTypeOptions} placeholder="Select court type"
               entity="Case Type" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Court Name">
+          <Field label="Court Name" required>
             <Select value={form.court_name} onChange={setFieldEvent('court_name')}>
               <option value="">Select court</option>
               {courtNameOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </Select>
           </Field>
-          <Field label="Bench Type">
+          <Field label="Bench Type" required>
             <GearSelect
               value={form.bench_type} onChange={setFieldEvent('bench_type')}
               options={benchTypeOptions} placeholder="Select bench type"
@@ -384,7 +413,7 @@ export default function CreateCase() {
           <Field label="Presiding Officer">
             <Input value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')} placeholder="e.g., Justice Sharma" />
           </Field>
-          <Field label="Jurisdiction">
+          <Field label="Jurisdiction" required>
             <GearSelect
               value={form.jurisdiction} onChange={setFieldEvent('jurisdiction')}
               options={jurisdictionOptions} placeholder="Select jurisdiction"
@@ -392,34 +421,49 @@ export default function CreateCase() {
             />
           </Field>
         </div>
-      </Card>
+      </SectionCard>
 
-      <Card title="Case Tracking">
+      {/* ---- 5. Case Tracking ---- */}
+      <SectionCard num="5" title="Case Tracking">
         <div className="grid-2">
-          <Field label="Case Stage">
+          <Field label="Case Stage" required>
             <GearSelect
               value={form.case_stage} onChange={setFieldEvent('case_stage')}
               options={stageOptions} placeholder="Select stage"
               entity="Stage" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Priority">
-            <GearSelect
-              value={form.priority} onChange={setFieldEvent('priority')}
-              options={priorityOptions} placeholder="Select priority"
-              entity="Priority" onGearClick={openCrudManager}
-            />
+          <Field label="Priority" required>
+            <div>
+              <Select value={form.priority} onChange={setFieldEvent('priority')} style={{ marginBottom: 10 }}>
+                <option value="">Select priority</option>
+                {PRIORITY_OPTIONS.map((p) => <option key={p.key} value={p.key}>{p.key}</option>)}
+              </Select>
+              <div className="priority-chips">
+                {PRIORITY_OPTIONS.map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    className={`priority-chip ${p.cls}${form.priority === p.key ? ' priority-chip--selected' : ''}`}
+                    onClick={() => setField('priority', p.key)}
+                  >
+                    {p.key}
+                  </button>
+                ))}
+              </div>
+            </div>
           </Field>
-          <Field label="Filing Date">
+          <Field label="Filing Date" required>
             <Input type="date" value={form.filing_date} onChange={setFieldEvent('filing_date')} />
           </Field>
           <Field label="Next Hearing Date">
             <Input type="date" value={form.next_hearing_date} onChange={setFieldEvent('next_hearing_date')} />
           </Field>
         </div>
-      </Card>
+      </SectionCard>
 
-      <Card title="Identifiers">
+      {/* ---- 6. Identifiers ---- */}
+      <SectionCard num="6" title="Identifiers">
         <div className="grid-2">
           <Field label="Filing Number">
             <Input value={form.filing_number} onChange={setFieldEvent('filing_number')} placeholder="Enter filing number" />
@@ -437,26 +481,69 @@ export default function CreateCase() {
             <Input type="date" value={form.disposal_date} onChange={setFieldEvent('disposal_date')} />
           </Field>
         </div>
-      </Card>
+      </SectionCard>
 
-      <Card title="Summary &amp; Notes">
-        <Field label="Case Summary">
-          <Textarea value={form.case_summary} onChange={setFieldEvent('case_summary')} rows={4} placeholder="Enter case summary" />
-        </Field>
-        <Field label="Internal Notes">
-          <Textarea value={form.internal_notes} onChange={setFieldEvent('internal_notes')} rows={3} placeholder="Enter internal notes" />
-        </Field>
-      </Card>
+      {/* ---- 7. Summary & Notes ---- */}
+      <SectionCard num="7" title="Summary & Notes">
+        <div className="grid-2">
+          <Field label="Case Summary">
+            <div style={{ position: 'relative' }}>
+              <Textarea
+                value={form.case_summary}
+                onChange={setFieldEvent('case_summary')}
+                rows={5}
+                placeholder="Enter case summary..."
+                maxLength={1000}
+              />
+              <div style={{ textAlign: 'right', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4 }}>
+                {summaryLen} / 1000
+              </div>
+            </div>
+          </Field>
+          <Field label="Internal Notes">
+            <div style={{ position: 'relative' }}>
+              <Textarea
+                value={form.internal_notes}
+                onChange={setFieldEvent('internal_notes')}
+                rows={5}
+                placeholder="Enter internal notes..."
+                maxLength={1000}
+              />
+              <div style={{ textAlign: 'right', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4 }}>
+                {notesLen} / 1000
+              </div>
+            </div>
+          </Field>
+        </div>
+      </SectionCard>
 
-      <Card title="Documents">
-        <Field label="Document Folder">
-          <Input value={form.document_folder} onChange={setFieldEvent('document_folder')} placeholder="Enter folder name for case documents" />
-        </Field>
-        <Field label="Upload Documents">
-          <input type="file" multiple ref={fileRef} onChange={handleFileChange} className="input" />
-        </Field>
+      {/* ---- 8. Documents ---- */}
+      <SectionCard num="8" title="Documents">
+        <div className="grid-2">
+          <Field label="Document Folder">
+            <Input value={form.document_folder} onChange={setFieldEvent('document_folder')} placeholder="Enter folder name for case documents" />
+          </Field>
+          <Field label="Upload Documents">
+            <div
+              className="cc-file-drop"
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => fileRef.current?.click()}
+              style={isDragging ? { borderColor: 'var(--navy-600)', background: 'var(--brand-soft)' } : {}}
+            >
+              <div className="cc-file-drop__icon"><Icon name="upload" size={24} /></div>
+              <div className="cc-file-drop__text">
+                Drag &amp; drop files here or{' '}
+                <span className="cc-file-drop__link">Choose Files</span>
+              </div>
+              <div className="cc-file-drop__hint">PDF, DOC, DOCX, JPG, PNG (Max. 50MB)</div>
+              <input ref={fileRef} type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
+            </div>
+          </Field>
+        </div>
         {selectedFiles.length > 0 && (
-          <div className="multi-value-container" style={{ marginTop: 8 }}>
+          <div className="multi-value-container" style={{ marginTop: 12 }}>
             {selectedFiles.map((file, i) => (
               <span key={i} className="multi-value-item">
                 {file.name} ({(file.size / 1024).toFixed(1)} KB)
@@ -464,14 +551,20 @@ export default function CreateCase() {
             ))}
           </div>
         )}
-      </Card>
+      </SectionCard>
 
-      <div className="form-actions" style={{ marginTop: 24 }}>
-        <Button variant="ghost" onClick={resetForm} disabled={saving}>Cancel</Button>
-        <Button variant="secondary" onClick={() => submitCase(true)} disabled={saving}>Save Draft</Button>
-        <Button variant="primary" onClick={() => submitCase(false)} disabled={saving}>
-          {saving ? 'Creating...' : 'Create Case'}
-        </Button>
+      {/* ---- Sticky footer ---- */}
+      <div className="cc-footer">
+        <button className="btn btn--ghost" onClick={() => nav(-1)} disabled={saving}>
+          <Icon name="close" size={15} /> Cancel
+        </button>
+        <div className="cc-footer__spacer" />
+        <button className="btn btn--ghost" onClick={() => submitCase(true)} disabled={saving}>
+          <Icon name="save" size={15} /> Save Draft
+        </button>
+        <button className="btn btn--primary" onClick={() => submitCase(false)} disabled={saving}>
+          <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Case'}
+        </button>
       </div>
     </div>
   );
