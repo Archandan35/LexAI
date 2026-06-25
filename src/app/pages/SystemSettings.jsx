@@ -492,7 +492,7 @@ function SettingsField({ field, value, onChange, settings }) {
       );
     case 'timezone': {
       const now = new Date();
-      const utcStr = `UTC time is ${String(now.getDate()).padStart(2,'0')}-${String(now.getMonth()+1).padStart(2,'0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      const utcStr = `UTC time is ${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
       return (
         <div className="gs-timezone-row">
           <div className="gs-select-wrap">
