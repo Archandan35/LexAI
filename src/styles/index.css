@@ -11969,8 +11969,6 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   padding: 20px 20px 24px;
   min-width: 0;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
 }
 
 .cdoc__content::-webkit-scrollbar {
@@ -12135,6 +12133,73 @@ kbd.cmd__kbd {
   background: var(--brand-soft);
   color: var(--navy-700);
   border-color: var(--border-strong);
+}
+
+/* ── Toolbar action buttons (Upload, Add Folder, Filters) ── */
+.cdoc__toolbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  padding: 6px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+  white-space: nowrap;
+}
+
+.cdoc__toolbtn:hover {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+  border-color: var(--border-strong);
+}
+
+.cdoc__toolbtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cdoc__toolbtn--active {
+  background: var(--navy-700);
+  color: #fff;
+  border-color: var(--navy-700);
+}
+
+.cdoc__toolbtn--active:hover {
+  background: var(--navy-800);
+  color: #fff;
+}
+
+.cdoc__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Search input ── */
+.cdoc__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 5px 10px;
+  background: var(--surface);
+  min-width: 180px;
+  transition: border-color 0.15s;
+}
+
+.cdoc__search-wrap:focus-within {
+  border-color: var(--brand);
+}
+
+.cdoc__search-wrap input::placeholder {
+  color: var(--text-faint);
 }
 
 /* ── Folder card icon ── */

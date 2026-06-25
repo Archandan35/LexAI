@@ -556,13 +556,16 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged }) {
                 </div>
               </>
             )}
-            <select className="cdoc__sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="name-az">Name A–Z</option>
-              <option value="name-za">Name Z–A</option>
-              <option value="date-new">Date (newest)</option>
-              <option value="date-old">Date (oldest)</option>
-              <option value="size">Size</option>
-            </select>
+            <div className="cdoc__sort-wrap">
+              <span className="cdoc__sort-label">Sort: {({ 'name-az': 'Name A–Z', 'name-za': 'Name Z–A', 'date-new': 'Date (newest)', 'date-old': 'Date (oldest)', size: 'Size' })[sortBy]}</span>
+              <select className="cdoc__sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <option value="name-az">Name A–Z</option>
+                <option value="name-za">Name Z–A</option>
+                <option value="date-new">Date (newest)</option>
+                <option value="date-old">Date (oldest)</option>
+                <option value="size">Size</option>
+              </select>
+            </div>
             <button className="cdoc__toolbtn" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               {uploading ? 'Uploading…' : 'Upload'}
