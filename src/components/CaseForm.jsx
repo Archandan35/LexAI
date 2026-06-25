@@ -157,7 +157,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           <Field label="Bench Type">
             {sel('Bench Type', form.bench_type, benchTypeOptions, (v) => setField('bench_type', v), 'Select bench type')}
           </Field>
-          <Field label="Presiding Officer">
+          <Field label="Judge">
             <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
           </Field>
         </div>

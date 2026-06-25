@@ -443,7 +443,7 @@ export default function CreateCase() {
               entity="Bench Type" onGearClick={openCrudManager}
             />
           </Field>
-          <Field label="Presiding Officer">
+          <Field label="Judge">
             <Input value={form.presiding_officer} onChange={setFieldEvent('presiding_officer')} placeholder="e.g., Justice Sharma" />
           </Field>
         </div>

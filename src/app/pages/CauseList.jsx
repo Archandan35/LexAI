@@ -37,6 +37,7 @@ export default function CauseList() {
   // Advanced filters state for Cause List Tab
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCourt, setFilterCourt] = useState('');
+  const [filterCourtLocation, setFilterCourtLocation] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -169,7 +170,8 @@ export default function CauseList() {
   };
 
   // ----- Filtering & Sorting calculations -----
-  const uniqueCourts = Array.from(new Set(cases.map(c => combinedCourt(c)).filter(name => name && name !== '—')));
+  const uniqueCourtNames = Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean)));
+  const uniqueCourtLocations = Array.from(new Set(cases.map(c => c.court_name || c.courtName || '').filter(Boolean)));
 
   const handleSortToggle = () => {
     setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -177,7 +179,7 @@ export default function CauseList() {
 
   const resetFilters = () => {
     setSearchQuery('');
-    setFilterCourt('');
+    setFilterCourt(''); setFilterCourtLocation('');
     setFilterStatus('');
     setDateFrom('');
     setDateTo('');
@@ -197,7 +199,8 @@ export default function CauseList() {
       const purposeMatch = row.purpose?.toLowerCase().includes(q);
       if (!numMatch && !titleMatch && !courtMatch && !purposeMatch) return false;
     }
-    if (filterCourt && row.court !== filterCourt) return false;
+    if (filterCourt && (row.case?.court_hierarchy || row.case?.court) !== filterCourt) return false;
+    if (filterCourtLocation && (row.case?.court_name || row.case?.courtName) !== filterCourtLocation) return false;
     if (filterStatus && row.status !== filterStatus) return false;
     if (dateFrom || dateTo) {
       const rowDate = new Date(row.date).getTime();
@@ -381,8 +384,16 @@ export default function CauseList() {
             {/* Court dropdown */}
             <select className="cause-list__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
               <option value="">All Courts</option>
-              {uniqueCourts.map(court => (
-                <option key={court} value={court}>{court}</option>
+              {uniqueCourtNames.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* Jurisdiction dropdown */}
+            <select className="cause-list__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
+              <option value="">All Jurisdictions</option>
+              {uniqueCourtLocations.map(l => (
+                <option key={l} value={l}>{l}</option>
               ))}
             </select>
 

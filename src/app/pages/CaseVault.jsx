@@ -18,7 +18,6 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
-import { preferencesService } from '@/services/preferencesService.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate } from '@/utils/format.js';
 
@@ -36,23 +35,8 @@ export default function CaseVault() {
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState([]);
-  const [filters, setFilters] = useState({ court: '', stage: '', status: '', view: 'active' });
-  const [savedFilters, setSavedFilters] = useState(() => {
-    const f = preferencesService.get('lexai.casefilters.v1', []); return Array.isArray(f) ? f : [];
-  });
+  const [filters, setFilters] = useState({ court: '', courtLocation: '', stage: '', status: '', view: 'active' });
 
-  const persistFilters = (next) => { setSavedFilters(next); preferencesService.set('lexai.casefilters.v1', next); };
-  const saveCurrentFilter = () => {
-    const name = prompt('Name this filter:');
-    if (!name?.trim()) return;
-    persistFilters([...savedFilters.filter((f) => f.name !== name.trim()), { name: name.trim(), query, filters }]);
-    toast.push('Filter saved.', 'success');
-  };
-  const applyFilter = (name) => {
-    const f = savedFilters.find((x) => x.name === name);
-    if (f) { setQuery(f.query || ''); setFilters(f.filters); }
-  };
-  const deleteFilter = (name) => persistFilters(savedFilters.filter((f) => f.name !== name));
 
   const reload = async () => { await refresh(); await refreshCases(); };
 
@@ -71,11 +55,13 @@ export default function CaseVault() {
   const remove = (c) => { if (confirm(`Delete case ${c.caseNumber}?`)) act(() => caseLogic.remove(c.id, user), 'Case deleted.'); };
   const bulkRemove = () => { if (confirm(`Delete ${selected.length} case(s)?`)) { act(() => caseLogic.bulkRemove(selected, user), 'Cases deleted.'); setSelected([]); } };
 
-  const uniqueCourts = useMemo(() => Array.from(new Set(cases.map(c => combinedCourt(c)).filter(name => name && name !== '—'))), [cases]);
+  const uniqueCourtNames = useMemo(() => Array.from(new Set(cases.map(c => c.court_hierarchy || c.court || '').filter(Boolean))), [cases]);
+  const uniqueCourtLocations = useMemo(() => Array.from(new Set(cases.map(c => c.court_name || c.courtName || '').filter(Boolean))), [cases]);
 
   const filtered = useMemo(() => {
     let rows = cases.filter((c) => (filters.view === 'archived' ? c.archived : !c.archived));
-    if (filters.court) rows = rows.filter((c) => combinedCourt(c) === filters.court);
+    if (filters.court) rows = rows.filter((c) => (c.court_hierarchy || c.court) === filters.court);
+    if (filters.courtLocation) rows = rows.filter((c) => (c.court_name || c.courtName) === filters.courtLocation);
     if (filters.stage) rows = rows.filter((c) => c.stage === filters.stage);
     if (filters.status) rows = rows.filter((c) => c.status === filters.status);
     if (query.trim()) {
@@ -104,7 +90,10 @@ export default function CaseVault() {
           <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <select className="select case-vault__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
-          <option value="">All courts</option>{uniqueCourts.map((c) => <option key={c}>{c}</option>)}
+          <option value="">All courts</option>{uniqueCourtNames.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select className="select case-vault__filter-court" value={filters.courtLocation} onChange={(e) => setFilters({ ...filters, courtLocation: e.target.value })}>
+          <option value="">All jurisdictions</option>{uniqueCourtLocations.map((l) => <option key={l} value={l}>{l}</option>)}
         </select>
         <select className="select case-vault__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
           <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
@@ -112,16 +101,6 @@ export default function CaseVault() {
         <select className="select case-vault__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
           <option value="">All status</option>{statuses.map((s) => <option key={s}>{s}</option>)}
         </select>
-        {savedFilters.length > 0 && (
-          <select className="select case-vault__filter-stage" value="" onChange={(e) => { if (e.target.value) applyFilter(e.target.value); }}>
-            <option value="">Saved filters…</option>
-            {savedFilters.map((f) => <option key={f.name}>{f.name}</option>)}
-          </select>
-        )}
-        <button className="iconbtn" title="Save current filter" onClick={saveCurrentFilter}><Icon name="save" size={15} /></button>
-        {savedFilters.length > 0 && (
-          <button className="iconbtn iconbtn--danger" title="Delete a saved filter" onClick={() => { const n = prompt('Delete which saved filter? (name)'); if (n) deleteFilter(n); }}><Icon name="trash" size={15} /></button>
-        )}
         <div className="spacer" />
         <div className="seg">
           <button className={`seg__btn ${filters.view === 'active' ? 'active' : ''}`} onClick={() => setFilters({ ...filters, view: 'active' })}>Active</button>

@@ -9,7 +9,7 @@ import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import CaseForm from '@/components/CaseForm.jsx';
 import CaseHistory from '@/components/CaseHistory.jsx';
-import DocumentManager from '@/components/DocumentManager.jsx';
+import CaseDocTab from '@/components/CaseDocTab.jsx';
 import NotesPanel from '@/components/NotesPanel.jsx';
 import CaseTimeline from '@/components/CaseTimeline.jsx';
 import RemindersPanel from '@/components/RemindersPanel.jsx';
@@ -38,6 +38,7 @@ export default function ManageCase() {
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
+  const [showDeleteDlg, setShowDeleteDlg] = useState(false);
 
   const load = useCallback(async () => {
     const res = await caseLogic.vault(id);
@@ -66,7 +67,11 @@ export default function ManageCase() {
   };
   const exportCase = async () => exportJson(`case_${vault.case.caseNumber}`, await caseLogic.exportBundle(id));
   const archive = async () => { await caseLogic.setArchived(id, !vault.case.archived, user); toast.push(vault.case.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); };
-  const remove = async () => { if (confirm(`Delete case ${vault.case.caseNumber}? This cannot be undone.`)) { await caseLogic.remove(id, user); toast.push('Case deleted.', 'info'); nav('/cases'); } };
+  const remove = async (deleteFolders) => {
+    await caseLogic.remove(id, user, deleteFolders);
+    toast.push('Case deleted.', 'info');
+    nav('/cases');
+  };
 
   if (loading) return <Spinner label="Loading case…" />;
   if (!vault?.case) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Vault</Button>} />;
@@ -102,7 +107,7 @@ export default function ManageCase() {
           <PermissionGate perm="casevault.create"><Button size="sm" variant="ghost" icon="layers" onClick={duplicate}>Duplicate</Button></PermissionGate>
           <PermissionGate perm="casevault.export"><Button size="sm" variant="ghost" icon="download" onClick={exportCase}>Export</Button></PermissionGate>
           <PermissionGate perm="casevault.archive"><Button size="sm" variant="ghost" icon={c.archived ? 'history' : 'vault'} onClick={archive}>{c.archived ? 'Restore' : 'Archive'}</Button></PermissionGate>
-          <PermissionGate perm="casevault.delete"><Button size="sm" variant="danger" icon="trash" onClick={remove}>Delete</Button></PermissionGate>
+          <PermissionGate perm="casevault.delete"><Button size="sm" variant="danger" icon="trash" onClick={() => setShowDeleteDlg(true)}>Delete</Button></PermissionGate>
         </div>
       </div>
 
@@ -138,13 +143,11 @@ export default function ManageCase() {
               <Row label="Case Type" value={c.case_type} />
               <Row label="Case Stage" value={c.stage} />
               <Row label="Filing Date" value={formatDate(c.filing_date)} />
-              <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
               <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
               <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
               <Row label="Court Name" value={c.court_name} />
-              <Row label="Courts" value={c.court_hierarchy} />
               <Row label="Bench Type" value={c.bench_type} />
-              <Row label="Presiding Officer" value={c.judge} />
+              <Row label="Judge" value={c.judge} />
               <Row label="Status" value={c.status} />
               <Row label="Priority" value={c.priority} />
               <Row label="Client" value={c.client} />
@@ -266,12 +269,9 @@ export default function ManageCase() {
 
       {tab === 'Court Info' && (
         <Card title="Court Info">
-          <Row label="Court" value={c.court} />
           <Row label="Court Name" value={c.court_name} />
-          <Row label="Courts" value={c.court_hierarchy} />
           <Row label="Bench Type" value={c.bench_type} />
-          <Row label="Presiding Officer / Judge" value={c.judge} />
-          <Row label="Combined Court" value={combinedCourt(c)} />
+          <Row label="Judge" value={c.judge} />
         </Card>
       )}
 
@@ -307,19 +307,18 @@ export default function ManageCase() {
       {tab === 'Identifiers' && (
         <Card title="Identifiers">
           <Row label="Case Display Number" value={c.case_display_number} />
-          <Row label="Case Number" value={c.caseNumber} />
           <Row label="Case Number (Numeric)" value={c.case_number} />
           <Row label="Case Year" value={c.case_year} />
           <Row label="Case Type" value={c.case_type} />
           <Row label="CNR Number" value={c.cnr_number} />
           <Row label="Filing Number" value={c.filing_number} />
           <Row label="Registration Number" value={c.registration_number} />
-          <Row label="Document Folder" value={c.document_folder} />
+          <Row label="Document Folder Name" value={c.caseNumber || c.case_display_number || '—'} />
         </Card>
       )}
 
       {tab === 'Documents' && (
-        <DocumentManager caseId={id} documents={vault.documents} folders={vault.folders} onChanged={load} />
+        <CaseDocTab caseId={id} caseNumber={c.caseNumber || c.case_display_number} folders={vault.folders} documents={vault.documents} onChanged={load} />
       )}
 
       {tab === 'Hearings' && (
@@ -346,6 +345,28 @@ export default function ManageCase() {
 
       <Modal open={editing} title="Edit Case" size="lg" onClose={() => setEditing(false)}>
         <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" />
+      </Modal>
+
+      {/* Delete confirmation */}
+      <Modal
+        open={showDeleteDlg}
+        title="Delete Case"
+        onClose={() => setShowDeleteDlg(false)}
+        footer={(
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Button variant="ghost" onClick={() => setShowDeleteDlg(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => { setShowDeleteDlg(false); remove(false); }}>No, keep folders</Button>
+            <Button variant="danger" icon="trash" onClick={() => { setShowDeleteDlg(false); remove(true); }}>Yes, delete folders</Button>
+          </div>
+        )}
+      >
+        <div className="confirm-dialog">
+          <span className="confirm-dialog__icon confirm-dialog__icon--danger"><Icon name="trash" size={20} /></span>
+          <div>
+            <div className="confirm-dialog__title">Delete case {vault?.case?.caseNumber}?</div>
+            <div className="confirm-dialog__text">Do you want to remove the case folders also? All case-related folders and their contents will be permanently deleted.</div>
+          </div>
+        </div>
       </Modal>
     </div>
   );

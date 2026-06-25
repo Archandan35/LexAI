@@ -60,7 +60,13 @@ export const caseLogic = {
     return row;
   },
 
-  async remove(id, user) {
+  async remove(id, user, deleteFolders) {
+    if (deleteFolders) {
+      const folders = await caseFolderService.list(id);
+      for (const f of folders) {
+        await caseFolderService.remove(f.id);
+      }
+    }
     await caseActivityService.record(id, 'case.delete', 'Case deleted', user);
     return caseService.deleteCase(id);
   },
