@@ -11,6 +11,7 @@ import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
+import HearingPreviewModal from '@/components/HearingPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import { templateLogic } from '@/logic/templateLogic.js';
@@ -22,7 +23,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate, formatDateTime } from '@/utils/format.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 
-const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', docRef: null, docName: '' };
+const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', judge: '', docRef: null, docName: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function CauseList() {
@@ -85,6 +86,8 @@ export default function CauseList() {
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importText, setImportText] = useState('');
+  const [previewHearing, setPreviewHearing] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const loadList = useCallback(async () => {
     const res = await causeListLogic.causeList();
@@ -163,10 +166,20 @@ export default function CauseList() {
   };
 
   const deleteHearing = async (id) => {
+    if (!window.confirm('Delete this cause list entry?')) return;
     await causeListLogic.deleteHearing(id);
     await loadList();
     if (histCaseId) await loadHistory(histCaseId);
-    toast.push('Hearing deleted.', 'info');
+    toast.push('Cause list entry deleted.', 'info');
+  };
+
+  const duplicateHearing = (h) => {
+    setEditing(null);
+    setForm({ ...EMPTY_HEARING, ...h, id: undefined });
+    setEditorContent(h.notes || '');
+    setSelectedTemplate('');
+    setOpen(true);
+    toast.push('Editing duplicated record. Save to create a new entry.', 'info');
   };
 
   // ----- Import / Export -----
@@ -668,15 +681,16 @@ export default function CauseList() {
                         )}
                         {visibleColumns.actions && (
                           <td className="cause-list__cell-actions" style={{ textAlign: 'right' }}>
-                            {h.docRef && (
-                              <button className="btn btn--ghost btn--sm" onClick={() => viewFile(h.docRef)} title="View Document">
-                                <Icon name="eye" size={13} />
-                              </button>
-                            )}
-                            <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit Hearing">
+                            <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
+                              <Icon name="eye" size={13} />
+                            </button>
+                            <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit">
                               <Icon name="edit" size={13} />
                             </button>
-                            <button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete Hearing">
+                            <button className="btn btn--ghost btn--sm" onClick={() => duplicateHearing(h)} title="Duplicate">
+                              <Icon name="copy" size={13} />
+                            </button>
+                            <button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete">
                               <Icon name="trash" size={13} />
                             </button>
                           </td>
@@ -797,15 +811,9 @@ export default function CauseList() {
                             {h.notes || '—'}
                           </div>
                           <div className="cause-list__timeline-v-action-col">
-                            {h.docRef ? (
-                              <button className="cause-list__timeline-v-btn" onClick={() => viewFile(h.docRef)}>
-                                Document
-                              </button>
-                            ) : (
-                              <button className="cause-list__timeline-v-btn" onClick={() => openEdit(h)}>
-                                View Details
-                              </button>
-                            )}
+                            <button className="cause-list__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
+                              View Details
+                            </button>
                           </div>
                         </div>
                       );
@@ -1020,7 +1028,7 @@ export default function CauseList() {
                             <td className="cause-list__timeline-event-detail">{h.notes || '—'}</td>
                             <td style={{ textAlign: 'right' }}>
                               {h.docRef ? (
-                                <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(h.docRef)}>
+                                <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
                                   View
                                 </Button>
                               ) : (
@@ -1220,6 +1228,16 @@ export default function CauseList() {
         entity="Case Status"
         config={{ logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], defaults: {}, refresh: refreshStatuses }}
       />
+
+      {/* Hearing Preview Modal */}
+      {(previewHearing || previewDoc) && (
+        <HearingPreviewModal
+          hearing={previewHearing}
+          doc={previewDoc}
+          onClose={() => { setPreviewHearing(null); setPreviewDoc(null); }}
+          onViewDocument={(ref) => viewFile(ref)}
+        />
+      )}
 
       {/* Template creation modal */}
       <Modal
