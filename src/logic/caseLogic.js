@@ -16,7 +16,7 @@ export const caseLogic = {
   async create(data, user) {
     const enriched = { ...data };
     if (!enriched.case_display_number && enriched.case_type && enriched.case_number && enriched.case_year) {
-      enriched.case_display_number = `${enriched.case_type} No. ${enriched.case_number} of ${enriched.case_year}`;
+      enriched.case_display_number = `${enriched.case_type} ${enriched.case_number}/${enriched.case_year}`;
     }
     if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number || '';
     if (!enriched.title && (enriched.plaintiff || enriched.defendant)) {
@@ -36,7 +36,7 @@ export const caseLogic = {
       const cn = enriched.case_number ?? before?.case_number;
       const cy = enriched.case_year ?? before?.case_year;
       if (ct && cn != null && cy) {
-        enriched.case_display_number = `${ct} No. ${cn} of ${cy}`;
+        enriched.case_display_number = `${ct} ${cn}/${cy}`;
         if (!enriched.caseNumber) enriched.caseNumber = enriched.case_display_number;
       }
     }
