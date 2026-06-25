@@ -14090,43 +14090,6 @@ kbd.cmd__kbd {
   .pagination__controls { justify-content: center; flex-wrap: wrap; }
 }
 
-/* ---- Dashboard ---- */
-@media (max-width: 991px) {
-  .dash-greeting__title { font-size: 22px; }
-  .dash-greeting__sub { font-size: 13px; }
-}
-@media (max-width: 767px) {
-  .dash-greeting__title { font-size: 18px; }
-  .dash-greeting__sub { font-size: 12px; }
-  .dash-cases-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .dash-donut-svg { width: 100px; height: 100px; }
-  .dash-donut-row { gap: 12px; }
-  .dash-bar-chart { padding: 12px; }
-  .dash-bars { height: 70px; gap: 8px; }
-  .dash-bar__label { white-space: normal; font-size: 10px; word-break: break-word; }
-  .dash-stat { padding: 12px 14px; gap: 10px; }
-  .dash-stat__icon-wrap { width: 38px; height: 38px; }
-  .dash-stat__value { font-size: 20px; }
-  .dash-stat__label { font-size: 11px; }
-  .dash-hearing-row { padding: 10px 14px; gap: 10px; }
-  .dash-hearing__date { font-size: 11px; }
-  .dash-hearing__time { font-size: 10px; }
-  .dash-qa-item { padding: 11px 14px; }
-  .dash-doc-row { padding: 10px 12px; }
-  .dash-donut-wrap { padding: 12px; }
-}
-@media (max-width: 480px) {
-  .dash-stats { grid-template-columns: 1fr; }
-  .dash-greeting__title { font-size: 16px; }
-  .dash-greeting__actions { width: 100%; }
-  .dash-date-badge { flex: 1; justify-content: center; }
-  .dash-donut-row { flex-direction: column; align-items: center; text-align: center; }
-  .dash-donut-legend { width: 100%; min-width: 0; }
-  .dash-donut-svg { width: 90px; height: 90px; }
-  .dash-hearing-row { flex-wrap: wrap; gap: 6px; }
-  .dash-hearing__date-col { flex: 1; text-align: left; }
-}
-
 /* ---- Auth Pages ---- */
 @media (max-width: 991px) {
   .auth-card { max-width: 100%; margin: 0 16px; padding: 24px 20px; }
