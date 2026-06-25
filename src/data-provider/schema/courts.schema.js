@@ -6,6 +6,7 @@ export const CourtsSchema = {
   fields: {
     id: 'string',
     name: 'string',
+    short_code: 'string',
     level: 'number',
     parent_id: 'string',
     display_order: 'number',
@@ -14,7 +15,7 @@ export const CourtsSchema = {
     updated_at: 'datetime',
   },
   required: ['name'],
-  defaults: { level: 1, parent_id: null, display_order: 0, status: 'Active' },
+  defaults: { level: 1, parent_id: null, display_order: 0, status: 'Active', short_code: '' },
   relations: [{ field: 'parent_id', references: 'courts', on: 'id' }],
   indexes: ['name', 'level', 'parent_id', 'status'],
 };
