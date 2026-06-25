@@ -25,7 +25,7 @@ import { usePriorities } from '@/hooks/usePriorities.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
-import { DEFAULT_DOC_FOLDERS } from '@/constants/caseFolders.js';
+import { useFolderTemplates } from '@/hooks/useFolderTemplates.js';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ApiDebugLog, { useApiLog } from '@/components/ApiDebugLog.jsx';
 
@@ -143,6 +143,7 @@ export default function CreateCase() {
   const { hierarchy, refresh: refreshHierarchy } = useCourtHierarchy();
   const { benchTypes, refresh: refreshBenchTypes } = useBenchTypes();
   const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
+  const { templates: folderTemplates } = useFolderTemplates('document');
 
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
@@ -278,7 +279,7 @@ export default function CreateCase() {
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
   const clientOptions = clients.map((c) => ({ value: c.name, label: c.name }));
   const userOptions = users.map((u) => ({ value: u.name, label: u.name }));
-  const folderOptions = DEFAULT_DOC_FOLDERS.map((f) => ({ value: f, label: f }));
+  const folderOptions = folderTemplates.map((f) => ({ value: f.name, label: f.name }));
 
   const activeEntityConfig = ENTITY_CONFIGS[crudEntity];
   const refreshMap = {

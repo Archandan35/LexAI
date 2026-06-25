@@ -46,37 +46,6 @@ function DonutChart({ segments, size = 120, stroke = 18 }) {
   );
 }
 
-function TaskDonut({ segments, total, size = 110, stroke = 16 }) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const cx = size / 2, cy = size / 2;
-  let offset = 0;
-  const sum = segments.reduce((s, seg) => s + (seg.value || 0), 0) || 1;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
-      {segments.map((seg, i) => {
-        const pct = seg.value / sum;
-        const dash = pct * circ;
-        const gap = circ - dash;
-        const el = (
-          <circle
-            key={i} cx={cx} cy={cy} r={r}
-            fill="none" stroke={seg.color} strokeWidth={stroke}
-            strokeDasharray={`${dash} ${gap}`}
-            strokeDashoffset={-offset * circ}
-            style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
-          />
-        );
-        offset += pct;
-        return el;
-      })}
-      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="20" fontWeight="800" fill="var(--navy-900)">{total}</text>
-      <text x={cx} y={cy + 12} textAnchor="middle" fontSize="9" fill="var(--text-faint)">Total Tasks</text>
-    </svg>
-  );
-}
-
 const HEARING_ICONS = ['blue', 'amber', 'green', 'navy', 'blue', 'amber'];
 
 const QUICK_ACTIONS = [
@@ -84,7 +53,6 @@ const QUICK_ACTIONS = [
   { icon: 'users', color: 'green', title: 'Add New Client', sub: 'Register a new client', route: '/clients' },
   { icon: 'upload', color: 'amber', title: 'Upload Document', sub: 'Add documents to case', route: '/documents' },
   { icon: 'calendar', color: 'red', title: 'Schedule Hearing', sub: 'Add new hearing date', route: '/cause-list' },
-  { icon: 'check', color: 'purple', title: 'Create Task', sub: 'Create a new task', route: '/tasks' },
 ];
 
 const DOC_COLORS = { pdf: 'pdf', docx: 'doc', doc: 'doc' };
@@ -111,38 +79,28 @@ export default function Dashboard() {
   if (loading) return <Spinner label="Loading dashboard…" />;
   if (!data) return <EmptyState title="Could not load dashboard." />;
 
-  const { stats, activeCases, recentDrafts, recentDocuments, upcomingHearings } = data;
+  const { stats, activeCases, recentDrafts, recentDocuments, upcomingHearings, caseTypeDistribution } = data;
 
   /* Build derived stats */
   const totalCases = stats.totalCases ?? 0;
   const activeCnt = stats.activeCases ?? 0;
-  const closedCnt = Math.max(0, totalCases - activeCnt);
+  const onHoldCnt = stats.onHoldCases ?? 0;
+  const closedCnt = Math.max(0, totalCases - activeCnt - onHoldCnt);
   const docsCnt = stats.documents ?? 0;
   const hearingsCnt = stats.hearings ?? 0;
+  const draftCnt = stats.drafts ?? 0;
 
   const donutSegments = [
     { label: 'Active', value: activeCnt, color: '#2547a3', pct: totalCases ? ((activeCnt / totalCases) * 100).toFixed(1) : 0 },
     { label: 'Closed', value: closedCnt, color: '#1f9d6b', pct: totalCases ? ((closedCnt / totalCases) * 100).toFixed(1) : 0 },
-    { label: 'On Hold', value: 0, color: '#e07b00', pct: '0.0' },
-    { label: 'Draft', value: stats.drafts ?? 0, color: '#d4d9e8', pct: '0.0' },
+    { label: 'On Hold', value: onHoldCnt, color: '#e07b00', pct: totalCases ? ((onHoldCnt / totalCases) * 100).toFixed(1) : 0 },
+    { label: 'Draft', value: draftCnt, color: '#d4d9e8', pct: '0.0' },
   ];
 
-  const taskSegments = [
-    { label: 'Due Today', value: 5, color: '#2547a3' },
-    { label: 'Due This Week', value: 12, color: '#1f9d6b' },
-    { label: 'Overdue', value: 6, color: '#d8453c' },
-    { label: 'Completed', value: 5, color: '#d4d9e8' },
-  ];
-  const totalTasks = taskSegments.reduce((s, t) => s + t.value, 0);
-
-  /* Category distribution bars */
-  const categories = [
-    { label: 'Criminal', value: 72 },
-    { label: 'Civil', value: 38 },
-    { label: 'Corporate', value: 24 },
-    { label: 'Family', value: 16 },
-    { label: 'Others', value: 10 },
-  ];
+  /* Case type distribution bars */
+  const categories = caseTypeDistribution && caseTypeDistribution.length > 0
+    ? caseTypeDistribution
+    : [{ label: 'No data', value: 1 }];
   const maxCat = Math.max(...categories.map((c) => c.value));
 
   return (
@@ -172,7 +130,6 @@ export default function Dashboard() {
           <div className="dash-stat__body">
             <div className="dash-stat__value">{totalCases}</div>
             <div className="dash-stat__label">Total Cases</div>
-            <div className="dash-stat__trend dash-stat__trend--up">↑ 12% vs last month</div>
           </div>
         </div>
         <div className="dash-stat">
@@ -180,7 +137,6 @@ export default function Dashboard() {
           <div className="dash-stat__body">
             <div className="dash-stat__value">{activeCnt}</div>
             <div className="dash-stat__label">Active Cases</div>
-            <div className="dash-stat__trend dash-stat__trend--up">↑ 8% vs last month</div>
           </div>
         </div>
         <div className="dash-stat">
@@ -188,7 +144,6 @@ export default function Dashboard() {
           <div className="dash-stat__body">
             <div className="dash-stat__value">{closedCnt}</div>
             <div className="dash-stat__label">Closed Cases</div>
-            <div className="dash-stat__trend dash-stat__trend--up">↑ 15% vs last month</div>
           </div>
         </div>
         <div className="dash-stat">
@@ -196,7 +151,6 @@ export default function Dashboard() {
           <div className="dash-stat__body">
             <div className="dash-stat__value">{hearingsCnt}</div>
             <div className="dash-stat__label">Hearings This Month</div>
-            <div className="dash-stat__trend dash-stat__trend--down">↓ 5% vs last month</div>
           </div>
         </div>
         <div className="dash-stat">
@@ -204,13 +158,12 @@ export default function Dashboard() {
           <div className="dash-stat__body">
             <div className="dash-stat__value">{docsCnt}</div>
             <div className="dash-stat__label">Documents</div>
-            <div className="dash-stat__trend dash-stat__trend--up">↑ 16% vs last month</div>
           </div>
         </div>
       </div>
 
-      {/* ---- Row 1: Case Status | Upcoming Hearings | Task Summary ---- */}
-      <div className="dash-grid-3">
+      {/* ---- Row 1: Case Status | Upcoming Hearings ---- */}
+      <div className="dash-grid-2">
 
         {/* Case Status Overview */}
         <div className="card">
@@ -266,32 +219,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Task Summary */}
-        <div className="card">
-          <div className="dash-card-head">
-            <span className="dash-card-head__title">Task Summary</span>
-            <Icon name="list" size={15} style={{ color: 'var(--text-faint)', cursor: 'pointer' }} />
-          </div>
-          <div className="dash-task-wrap">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <TaskDonut segments={taskSegments} total={totalTasks} size={120} stroke={18} />
-            </div>
-            <div className="dash-task-legend">
-              {taskSegments.map((t) => (
-                <div className="dash-task-legend__item" key={t.label}>
-                  <div className="dash-task-legend__left">
-                    <span className="dash-donut-legend__dot" style={{ background: t.color }} />
-                    {t.label}
-                  </div>
-                  <span className="dash-task-legend__count">{t.value}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 14, textAlign: 'right' }}>
-              <span className="dash-card-head__link" onClick={() => nav('/tasks')}>View All Tasks <Icon name="arrow" size={13} /></span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* ---- Row 2: Recent Cases | Category Distribution | Quick Actions ---- */}

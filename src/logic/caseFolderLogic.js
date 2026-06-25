@@ -2,7 +2,7 @@ import { caseFolderService } from '@/services/caseFolderService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { draftsRepository } from '@/data-layer/repositories/draftsRepository.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
-import { DEFAULT_DOC_FOLDERS, DEFAULT_DRAFT_FOLDERS } from '@/constants/caseFolders.js';
+import { folderTemplateLogic } from '@/logic/folderTemplateLogic.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 
@@ -12,15 +12,17 @@ export const caseFolderLogic = {
   async ensureForCase(caseId) {
     const existing = await caseFolderService.list(caseId);
     if (existing.length) return existing;
+    const allTemplates = await folderTemplateLogic.list();
+    const docTemplates = allTemplates.filter((t) => t.kind === 'document');
+    const draftTemplates = allTemplates.filter((t) => t.kind === 'draft');
     let order = 0;
-    for (const name of DEFAULT_DOC_FOLDERS) {
+    for (const tpl of docTemplates) {
       // eslint-disable-next-line no-await-in-loop
-      await caseFolderService.create({ caseId, name, kind: 'document', order: order++, system: true, createdAt: DateEngine.now() });
+      await caseFolderService.create({ caseId, name: tpl.name, kind: 'document', order: order++, system: true, createdAt: DateEngine.now() });
     }
-    order = 0;
-    for (const name of DEFAULT_DRAFT_FOLDERS) {
+    for (const tpl of draftTemplates) {
       // eslint-disable-next-line no-await-in-loop
-      await caseFolderService.create({ caseId, name, kind: 'draft', order: order++, system: true, createdAt: DateEngine.now() });
+      await caseFolderService.create({ caseId, name: tpl.name, kind: 'draft', order: order++, system: true, createdAt: DateEngine.now() });
     }
     return caseFolderService.list(caseId);
   },

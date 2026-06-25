@@ -14,7 +14,7 @@ const SCHEMAS = {
   caseStages: { createdAt: 'created_at' },
   reminders: { ...COMMON, caseId: 'case_id', dueAt: 'due_at' },
   notes: { ...COMMON, caseId: 'case_id' },
-  hearings: { ...COMMON, caseId: 'case_id' },
+  hearings: { ...COMMON, caseId: 'case_id', docRef: 'doc_ref', docName: 'doc_name' },
   drafts: { ...COMMON, caseId: 'case_id' },
   documents: { caseId: 'case_id', syncStatus: 'sync_status', syncMessage: 'sync_message', lastSyncAt: 'last_sync_at', uploadedAt: 'uploaded_at' },
   case_history: { caseId: 'case_id', createdAt: 'created_at' },
@@ -36,6 +36,9 @@ const SCHEMAS = {
   jurisdictions: { ...COMMON },
   court_hierarchy: { ...COMMON },
   hearing_statuses: { ...COMMON },
+  folder_templates: { ...COMMON },
+  draft_types: { ...COMMON },
+  case_tags: { ...COMMON },
   acts: { ...COMMON },
   contact_types: { ...COMMON },
 };

@@ -129,11 +129,20 @@ export const caseLogic = {
       try { recentCitations = (await citationService.searchCases({ keywords: 'contract limitation title' })).slice(0, 4); }
       catch { recentCitations = []; }
 
+      /* case type distribution from live cases */
+      const typeMap = {};
+      for (const c of live) { const t = c.case_type || 'Other'; typeMap[t] = (typeMap[t] || 0) + 1; }
+      const caseTypeDistribution = Object.entries(typeMap).map(([label, value]) => ({ label, value }));
+
+      const onHoldCnt = live.filter((c) => c.status === 'On Hold').length;
+      const draftCnt = drafts.length;
+
       return ok({
         stats: {
           activeCases: live.filter((c) => c.status === 'Active').length,
           totalCases: live.length,
-          drafts: drafts.length,
+          onHoldCases: onHoldCnt,
+          drafts: draftCnt,
           documents: documents.length,
           hearings: upcoming.length,
         },
@@ -142,6 +151,7 @@ export const caseLogic = {
         recentDocuments: [...documents].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).slice(0, 5),
         upcomingHearings: upcoming,
         recentCitations,
+        caseTypeDistribution,
       });
     } catch (e) {
       return fail(e);

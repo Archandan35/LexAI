@@ -151,8 +151,6 @@ export default function CauseList() {
   const saveHearing = async () => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, notes: editorContent || form.notes || '' };
-    delete payload.docRef;
-    delete payload.docName;
     try {
       const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }

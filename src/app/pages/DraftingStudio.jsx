@@ -12,8 +12,9 @@ import GuardrailBanner from '@/components/GuardrailBanner.jsx';
 import StoreInCaseModal from '@/components/StoreInCaseModal.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
-import { DRAFT_TYPES, DRAFT_TYPE_MAP } from '@/constants/draftTypes.js';
-import { DEFAULT_DRAFT_FOLDERS, DRAFT_FILE_TYPES, DEFAULT_DRAFT_FILE_TYPE } from '@/constants/caseFolders.js';
+import { draftTypeLogic } from '@/logic/draftTypeLogic.js';
+import { folderTemplateLogic } from '@/logic/folderTemplateLogic.js';
+import { DRAFT_FILE_TYPES, DEFAULT_DRAFT_FILE_TYPE } from '@/constants/caseFolders.js';
 import { draftingLogic } from '@/logic/draftingLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -35,17 +36,14 @@ const PLACEHOLDERS = [
   { label: 'Advocate', value: '«Advocate for the Plaintiff»' },
 ];
 
-function loadFolders() {
-  const f = preferencesService.get(FOLDER_KEY, null);
-  if (Array.isArray(f) && f.length) return f;
-  return [...DEFAULT_DRAFT_FOLDERS];
-}
-
 export default function DraftingStudio() {
   const toast = useToast();
   const { user } = useAuth();
   const [drafts, setDrafts] = useState([]);
-  const [folders, setFolders] = useState(loadFolders);
+  const [draftTypes, setDraftTypes] = useState([]);
+  const [draftTypeMap, setDraftTypeMap] = useState({});
+  const [folderTpls, setFolderTpls] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [activeFolder, setActiveFolder] = useState('all');
   const [active, setActive] = useState(null);
   const [content, setContent] = useState('');
@@ -60,13 +58,13 @@ export default function DraftingStudio() {
   const [busy, setBusy] = useState(false);
   const [saveState, setSaveState] = useState(''); // '', 'saving', 'saved'
   const [lastSaved, setLastSaved] = useState(null);
-  const [autoSave, setAutoSave] = useState(() => preferencesService.get(AUTOSAVE_KEY, 'on') !== 'off');
+  const [autoSave, setAutoSave] = useState(() => preferencesService.get(AUTOSAVE_KEY, 'on') !== 'on');
 
   const [form, setForm] = useState({
-    type: 'plaint', caseId: '', folder: DEFAULT_DRAFT_FOLDERS[0], fileType: DEFAULT_DRAFT_FILE_TYPE,
+    type: '', caseId: '', folder: '', fileType: DEFAULT_DRAFT_FILE_TYPE,
     court: '', caseNumber: '', plaintiff: '', defendant: '', facts: '', reliefs: '', attachCitations: true,
   });
-  const [blank, setBlank] = useState({ title: '', folder: DEFAULT_DRAFT_FOLDERS[0], fileType: DEFAULT_DRAFT_FILE_TYPE });
+  const [blank, setBlank] = useState({ title: '', folder: '', fileType: DEFAULT_DRAFT_FILE_TYPE });
 
   const interval = config.storage?.autoSaveInterval || 5000;
   const saveTimer = useRef(null);
@@ -76,7 +74,27 @@ export default function DraftingStudio() {
     setDrafts(rows);
     return rows;
   }, []);
+
+  const loadLookups = useCallback(async () => {
+    const [typesResult, folderResult] = await Promise.all([
+      draftTypeLogic.list(),
+      folderTemplateLogic.list('draft'),
+    ]);
+    const types = Array.isArray(typesResult) ? typesResult : [];
+    const tpls = Array.isArray(folderResult) ? folderResult : [];
+    setDraftTypes(types);
+    setDraftTypeMap(Object.fromEntries(types.map((t) => [t.id || t.name, t])));
+    setFolderTpls(tpls);
+    const fSaved = preferencesService.get(FOLDER_KEY, null);
+    const fList = Array.isArray(fSaved) && fSaved.length ? fSaved : tpls.map((t) => t.name);
+    setFolders(fList);
+    const defaultFolder = fList[0] || '';
+    setForm((prev) => ({ ...prev, folder: prev.folder || defaultFolder }));
+    setBlank((prev) => ({ ...prev, folder: prev.folder || defaultFolder }));
+  }, []);
+
   useEffect(() => { loadDrafts(); }, [loadDrafts]);
+  useEffect(() => { loadLookups(); }, [loadLookups]);
 
   const persistFolders = (next) => { setFolders(next); preferencesService.set(FOLDER_KEY, next); };
 
@@ -107,7 +125,7 @@ export default function DraftingStudio() {
     if (!res.ok) { toast.push(res.error, 'error'); return; }
     const created = await draftingLogic.createDraft({
       caseId: form.caseId || null, type: form.type, folder: form.folder, fileType: form.fileType,
-      title: `${DRAFT_TYPE_MAP[form.type].label}${form.plaintiff ? ` — ${form.plaintiff}` : ''}`,
+      title: `${draftTypeMap[form.type]?.label || form.type}${form.plaintiff ? ` — ${form.plaintiff}` : ''}`,
       content: res.data.content, court: form.court, caseNumber: form.caseNumber,
       plaintiff: form.plaintiff, defendant: form.defendant,
     });
@@ -120,7 +138,7 @@ export default function DraftingStudio() {
   const onCreateBlank = async () => {
     if (!blank.title.trim()) { toast.push('Enter a title.', 'error'); return; }
     const created = await draftingLogic.createDraft({ type: 'note', title: blank.title.trim(), folder: blank.folder, fileType: blank.fileType, content: '' });
-    setBlankOpen(false); setBlank({ title: '', folder: DEFAULT_DRAFT_FOLDERS[0], fileType: DEFAULT_DRAFT_FILE_TYPE });
+    setBlankOpen(false); setBlank({ title: '', folder: folders[0] || '', fileType: DEFAULT_DRAFT_FILE_TYPE });
     await loadDrafts(); openDraft(created); toast.push('Draft created.', 'success');
   };
 
@@ -210,7 +228,7 @@ export default function DraftingStudio() {
                   title={active.title}
                   sub={(
                     <span>
-                      {DRAFT_TYPE_MAP[active.type]?.label || active.type} · {(active.fileType || 'docx').toUpperCase()}
+                      {draftTypeMap[active.type]?.label || active.type} · {(active.fileType || 'docx').toUpperCase()}
                       {mode === 'edit' && saveState === 'saving' && ' · Saving…'}
                       {mode === 'edit' && saveState === 'saved' && ' · ✓ Saved'}
                       {mode === 'edit' && dirty && saveState !== 'saving' && ' · unsaved changes'}
@@ -270,7 +288,7 @@ export default function DraftingStudio() {
         footer={<><Button variant="ghost" onClick={() => setGenOpen(false)}>Cancel</Button><Button icon="bolt" loading={busy} onClick={onGenerate}>Generate</Button></>}>
         <GuardrailBanner />
         <div className="input-row">
-          <Field label="Document Type"><Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{DRAFT_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</Select></Field>
+          <Field label="Document Type"><Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{draftTypes.map((t) => <option key={t.id || t.name} value={t.id || t.name}>{t.label || t.name}</option>)}</Select></Field>
           <Field label="Link to Case (optional)"><CaseSelect value={form.caseId} onChange={(v) => setForm({ ...form, caseId: v })} /></Field>
         </div>
         <div className="input-row">
