@@ -1415,6 +1415,20 @@ select {
   margin-top: 3px;
 }
 
+.timeline-item__source p,
+.timeline-item__source span,
+.timeline-item__source div {
+  margin: 0 0 4px;
+  font-size: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.timeline-item__source b,
+.timeline-item__source strong {
+  color: var(--navy-900);
+}
+
 /* Folder grid */
 .folder {
   display: flex;

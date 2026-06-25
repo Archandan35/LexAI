@@ -329,7 +329,7 @@ export default function ManageCase() {
                 <div className="timeline-item" key={h.id}>
                   <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
                   <div className="timeline-item__event">{h.purpose || '—'}</div>
-                  {h.notes && <div className="timeline-item__source">{h.notes}</div>}
+                  {h.notes && <div className="timeline-item__source" dangerouslySetInnerHTML={{ __html: h.notes }} />}
                 </div>
               ))}
             </div>
