@@ -136,11 +136,23 @@ export default function CauseList() {
     setSelectedTemplate('');
     setOpen(true);
   };
+  const toDateInput = (v) => {
+    if (!v) return '';
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return String(v);
+    return d.toISOString().split('T')[0];
+  };
+
   const openEdit = async (h) => {
     const res = await causeListLogic.getHearing(h.id);
     const record = res.ok ? res.data : FieldMapper.toLexAI('hearings', h);
     setEditing(record);
-    setForm({ ...EMPTY_HEARING, ...record });
+    setForm({
+      ...EMPTY_HEARING,
+      ...record,
+      date: toDateInput(record.date),
+      nextHearingDate: toDateInput(record.nextHearingDate),
+    });
     setEditorContent(record.notes || '');
     setSummaryContent(record.summary || '');
     setSelectedTemplate('');
@@ -188,7 +200,13 @@ export default function CauseList() {
   const duplicateHearing = (h) => {
     const record = FieldMapper.toLexAI('hearings', h);
     setEditing(null);
-    setForm({ ...EMPTY_HEARING, ...record, id: undefined });
+    setForm({
+      ...EMPTY_HEARING,
+      ...record,
+      id: undefined,
+      date: toDateInput(record.date),
+      nextHearingDate: toDateInput(record.nextHearingDate),
+    });
     setEditorContent(record.notes || '');
     setSummaryContent(record.summary || '');
     setSelectedTemplate('');
