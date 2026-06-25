@@ -3309,21 +3309,23 @@ kbd.cmd__kbd {
   cursor: pointer;
 }
 
-.doc-color {
+.doc-colours {
   display: inline-flex;
-  align-items: center;
   gap: 3px;
-  cursor: pointer;
-  font-weight: 700;
 }
 
-.doc-color input {
-  width: 22px;
-  height: 22px;
+.doc-colour-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   border: none;
-  background: none;
   padding: 0;
   cursor: pointer;
+}
+
+.doc-colour-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 1.5px var(--accent);
 }
 
 .doc-hilites {
@@ -6657,21 +6659,23 @@ kbd.cmd__kbd {
   cursor: pointer;
 }
 
-.doc-color {
+.doc-colours {
   display: inline-flex;
-  align-items: center;
   gap: 3px;
-  cursor: pointer;
-  font-weight: 700;
 }
 
-.doc-color input {
-  width: 22px;
-  height: 22px;
+.doc-colour-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   border: none;
-  background: none;
   padding: 0;
   cursor: pointer;
+}
+
+.doc-colour-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 1.5px var(--accent);
 }
 
 .doc-hilites {
@@ -11655,14 +11659,14 @@ kbd.cmd__kbd {
 }
 
 .hearing-modal__editor-wrapper .doc-canvas {
-  max-height: 320px;
+  max-height: none;
   padding: 10px;
   background: var(--surface);
 }
 
 .hearing-modal__editor-wrapper .doc-page {
   width: 100%;
-  min-height: 180px;
+  min-height: 80px;
   padding: 16px;
   font-size: 14px;
   line-height: 1.6;

@@ -10,10 +10,12 @@ import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
-import { useHearingStatuses } from '@/hooks/useHearingStatuses.js';
+import CrudManager from '@/components/CrudManager.jsx';
+import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import { templateLogic } from '@/logic/templateLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
+import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -27,7 +29,7 @@ export default function CauseList() {
   const toast = useToast();
   const { user } = useAuth();
   const { cases } = useAppData();
-  const { statuses: hearingStatuses } = useHearingStatuses();
+  const { statuses: caseStatuses, refresh: refreshStatuses } = useCaseStatuses();
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState('list'); // list | history | templates | timeline
   const [open, setOpen] = useState(false);
@@ -44,6 +46,7 @@ export default function CauseList() {
   const [tempDateFrom, setTempDateFrom] = useState('');
   const [tempDateTo, setTempDateTo] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStatusCrud, setShowStatusCrud] = useState(false);
 
   // Sorting & Pagination for Cause List Tab
   const [sortDir, setSortDir] = useState('asc'); // asc | desc
@@ -945,10 +948,10 @@ export default function CauseList() {
               <Field label="Case Number">
                 <CaseSelect value={form.caseId} onChange={(v) => { setForm({ ...form, caseId: v }); setEditorContent(''); setSelectedTemplate(''); }} />
               </Field>
-              <Field label="Hearing Date & Time">
+              <Field label="Hearing Date">
                 <Input
-                  type="datetime-local"
-                  value={form.date ? new Date(form.date).toISOString().slice(0, 16) : ''}
+                  type="date"
+                  value={form.date || ''}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
                 />
               </Field>
@@ -979,9 +982,9 @@ export default function CauseList() {
                 <div className="hearing-modal__status-row">
                   <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                     <option value="">Select status…</option>
-                    {hearingStatuses.map((s) => <option key={s}>{s}</option>)}
+                    {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
                   </Select>
-                  <button className="hearing-modal__gear-btn" title="Manage hearing statuses">
+                  <button className="hearing-modal__gear-btn" title="Manage case statuses" onClick={() => setShowStatusCrud(true)}>
                     <Icon name="gear" size={15} />
                   </button>
                 </div>
@@ -990,11 +993,11 @@ export default function CauseList() {
                 <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
               </Field>
             </div>
-            <Field label="Judge / Officer">
+            <Field label="Judge">
               <Input
                 value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
                 onChange={(e) => setForm({ ...form, judge: e.target.value })}
-                placeholder="Presiding judge or officer name"
+                placeholder="Judge name"
               />
             </Field>
           </div>
@@ -1015,7 +1018,7 @@ export default function CauseList() {
                   onChange={(e) => { setSelectedTemplate(e.target.value); applyTemplate(e.target.value); }}
                 >
                   <option value="">— Select a drafting template —</option>
-                  {draftTemplates.map((t) => (
+                  {draftTemplates.filter((t) => t.category === 'Hearing').map((t) => (
                     <option key={t.id || t._id} value={t.id || t._id}>{t.name}</option>
                   ))}
                 </select>
@@ -1058,6 +1061,14 @@ export default function CauseList() {
           </div>
         </div>
       </Modal>
+
+      {/* Case Status Crud Manager */}
+      <CrudManager
+        open={showStatusCrud}
+        onClose={() => { setShowStatusCrud(false); refreshStatuses(); }}
+        entity="Case Status"
+        config={{ logic: caseStatusLogic, fields: [{ key: 'name', label: 'Status Name', placeholder: 'Enter status name' }], defaults: {}, refresh: refreshStatuses }}
+      />
 
       {/* Template creation modal */}
       <Modal

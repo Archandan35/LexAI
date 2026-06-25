@@ -4,11 +4,15 @@ import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
 import CaseTypeManager from './CaseTypeManager.jsx';
+import CrudManager from './CrudManager.jsx';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { useCaseStages } from '@/hooks/useCaseStages.js';
 import { useCourtHierarchy } from '@/hooks/useCourtHierarchy.js';
 import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
+import { useJurisdictions } from '@/hooks/useJurisdictions.js';
+import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
+import { extractJurisdiction } from '@/utils/caseFormat.js';
 
 const currentYear = new Date().getFullYear();
 
@@ -17,7 +21,7 @@ function blank() {
   return {
     case_number: '', case_year: String(currentYear), case_type: '',
     plaintiff: '', defendant: '', client: '', advocate: '',
-    court_hierarchy: '', court_name: '', bench_type: '', judge: '',
+    court_hierarchy: '', court_name: '', jurisdiction: '', bench_type: '', judge: '',
     stage: '', priority: '',
     filing_date: '', next_hearing: '',
     filing_number: '', registration_number: '', cnr_number: '',
@@ -46,8 +50,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const { benchTypes } = useBenchTypes();
   const { priorities } = usePriorities();
 
+  const { jurisdictions, refresh: refreshJurisdictions } = useJurisdictions();
   const [stageMgr, setStageMgr] = useState(false);
   const [caseTypeMgr, setCaseTypeMgr] = useState(false);
+  const [jurisdictionMgr, setJurisdictionMgr] = useState(false);
 
   const [form, setForm] = useState(() => {
     const base = { ...blank(), ...(initial || {}) };
@@ -57,6 +63,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     if (initial?.judge && !base.judge) base.judge = initial.judge;
     if (initial?.presiding_officer && !base.judge) base.judge = initial.presiding_officer;
     if (!base.court_name && initial?.court) base.court_name = initial.court;
+    if (!base.jurisdiction) {
+      const extracted = extractJurisdiction(initial);
+      if (extracted) base.jurisdiction = extracted;
+    }
     return base;
   });
 
@@ -70,17 +80,23 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const priorityOptions = priorities.map((p) => ({ value: p.name || p, label: p.name || p }));
   const stageOptions = stageNames.map((s) => ({ value: s, label: s }));
+  const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
 
   const autoCourtName = useMemo(() => {
     const h = hierarchyOptions.find((o) => o.value === form.court_hierarchy);
-    return h ? h.label : form.court_name || '';
-  }, [form.court_hierarchy, form.court_name, hierarchyOptions]);
+    const j = form.jurisdiction;
+    if (h && j) return `${h.label}, ${j}`;
+    if (h) return h.label;
+    if (j) return j;
+    return form.court_name || '';
+  }, [form.court_hierarchy, form.jurisdiction, form.court_name, hierarchyOptions]);
 
   const submit = () => {
     const payload = { ...form };
     if (payload.case_number) payload.case_number = String(payload.case_number);
     if (payload.case_year) payload.case_year = String(payload.case_year);
-    if (!payload.court_name && autoCourtName) payload.court_name = autoCourtName;
+    payload.court_name = autoCourtName;
+    delete payload.jurisdiction;
     onSubmit?.(payload);
   };
 
@@ -160,6 +176,12 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
           <Field label="Judge">
             <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
           </Field>
+          <Field label="Jurisdiction">
+            <div style={{ display: 'flex', gap: 8 }}>
+              {sel('Jurisdiction', form.jurisdiction, jurisdictionOptions, (v) => setField('jurisdiction', v), 'Select jurisdiction')}
+              <button type="button" className="btn btn--ghost btn--sm" title="Manage jurisdictions" onClick={() => setJurisdictionMgr(true)}><Icon name="gear" size={15} /></button>
+            </div>
+          </Field>
         </div>
         <Field label="Court Name">
           <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Enter court location" />
@@ -226,6 +248,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
 
       <StageManager open={stageMgr} stages={stages} onClose={() => setStageMgr(false)} onChanged={refreshStages} />
       <CaseTypeManager open={caseTypeMgr} caseTypes={caseTypes} onClose={() => setCaseTypeMgr(false)} onChanged={refreshCaseTypes} />
+      <CrudManager open={jurisdictionMgr} onClose={() => { setJurisdictionMgr(false); refreshJurisdictions(); }} entity="Jurisdiction" config={{ logic: jurisdictionLogic, fields: [{ key: 'name', label: 'Jurisdiction Name', placeholder: 'Enter jurisdiction name' }], defaults: {}, refresh: refreshJurisdictions }} />
     </div>
   );
 }

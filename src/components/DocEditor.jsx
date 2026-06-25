@@ -82,7 +82,11 @@ export default function DocEditor({
             <Btn cmd="subscript" label="x₂" title="Subscript" />
           </div>
           <div className="doc-tb-group">
-            <label className="doc-color" title="Text colour"><span>A</span><input type="color" onChange={(e) => exec('foreColor', e.target.value)} /></label>
+            <span className="doc-colours" title="Text colour">
+              {['#000000', '#dc2626', '#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#ea580c', '#0891b2', '#78716c', '#ffffff'].map((c) => (
+                <button key={c} type="button" className="doc-colour-swatch" style={{ background: c, border: c === '#ffffff' ? '1px solid #d4d4d4' : 'none' }} onMouseDown={(e) => { e.preventDefault(); exec('foreColor', c); }} />
+              ))}
+            </span>
             <span className="doc-hilites">
               {HILITES.map((h) => <button key={h} type="button" title="Highlight" className="doc-hilite" style={{ background: h === 'transparent' ? '#fff' : h }} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', h); }}>{h === 'transparent' ? '×' : ''}</button>)}
             </span>
