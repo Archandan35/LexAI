@@ -83,17 +83,18 @@ export default function CaseDocuments() {
   const [fileExtFilter, setFileExtFilter] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
   const [ctxMenu, setCtxMenu] = useState(null);
+  const [contentCtx, setContentCtx] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [folderProps, setFolderProps] = useState(null);
   const fileInputRef = useRef(null);
 
-  // close context menu on click outside
+  // close context menus on click outside
   useEffect(() => {
-    if (!ctxMenu) return;
-    const handler = () => setCtxMenu(null);
+    if (!ctxMenu && !contentCtx) return;
+    const handler = () => { setCtxMenu(null); setContentCtx(null); };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, [ctxMenu]);
+  }, [ctxMenu, contentCtx]);
 
   // close filter popup on click outside
   useEffect(() => {
@@ -482,33 +483,10 @@ export default function CaseDocuments() {
 
           {renderTree(filteredRootFolders)}
 
-          {creating && (
-            <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {!bulkAdding ? (
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <Input autoFocus value={newName} placeholder="Folder name..." onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }} />
-                  <button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button>
-                  <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <textarea className="input docmgr__bulk-textarea" autoFocus value={bulkNames} placeholder="Enter folder names, one per line..." onChange={(e) => setBulkNames(e.target.value)} rows={4} />
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setBulkAdding(false)}>Single</Button>
-                    <div style={{ flex: 1 }} />
-                    <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
-                  </div>
-                </div>
-              )}
-              {!bulkAdding && <button className="docmgr__bulk-toggle" onClick={() => { setBulkAdding(true); setNewName(''); }}>+ Add multiple folders</button>}
-            </div>
-          )}
-
         </aside>
 
         {/* Right: Content panel */}
-        <div className="cdoc__content">
+        <div className="cdoc__content" onContextMenu={(e) => { e.preventDefault(); setContentCtx({ x: e.clientX, y: e.clientY }); }}>
 
           {/* Content toolbar */}
           <div className="cdoc__toolbar">
@@ -779,6 +757,30 @@ export default function CaseDocuments() {
               </div>
             </div>
           )}
+
+          {/* Inline folder creation */}
+          {creating && (
+            <div style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {!bulkAdding ? (
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <Input autoFocus value={newName} placeholder="Folder name..." onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }} />
+                  <button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button>
+                  <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <textarea className="input docmgr__bulk-textarea" autoFocus value={bulkNames} placeholder="Enter folder names, one per line..." onChange={(e) => setBulkNames(e.target.value)} rows={4} />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setBulkAdding(false)}>Single</Button>
+                    <div style={{ flex: 1 }} />
+                    <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
+                  </div>
+                </div>
+              )}
+              {!bulkAdding && <button className="docmgr__bulk-toggle" onClick={() => { setBulkAdding(true); setNewName(''); }}>+ Add multiple folders</button>}
+            </div>
+          )}
         </div>
       </div>
 
@@ -812,6 +814,64 @@ export default function CaseDocuments() {
           </div>
         );
       })()}
+
+      {/* Content-panel right-click context menu */}
+      {contentCtx && (
+        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: contentCtx.x, top: contentCtx.y }}>
+          <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setCreating(true); setBulkAdding(false); setNewName(''); setContentCtx(null); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Add new folder
+          </button>
+          <div className="cdoc__ctx-divider" />
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+            Redo
+          </button>
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+            Undo
+          </button>
+          <div className="cdoc__ctx-divider" />
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+            Delete
+          </button>
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" /></svg>
+            Cut
+          </button>
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 9 2 12 5 15" /><polyline points="9 5 12 2 15 5" /><polyline points="15 19 12 22 9 19" /><polyline points="19 9 22 12 19 15" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="12" y1="2" x2="12" y2="22" /></svg>
+            Move
+          </button>
+          <div className="cdoc__ctx-divider" />
+          <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setContentCtx(null); if (activeFolder) { const f = folders.find((x) => x.id === activeFolder); if (f) setFolderProps(f); } }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+            Properties
+          </button>
+          <div className="cdoc__ctx-divider" />
+          <button className={`cdoc__ctx-item${viewMode === 'grid' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setViewMode('grid'); setContentCtx(null); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+            View: Grid
+          </button>
+          <button className={`cdoc__ctx-item${viewMode === 'list' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setViewMode('list'); setContentCtx(null); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+            View: List
+          </button>
+          <div className="cdoc__ctx-divider" />
+          <div className="cdoc__ctx-label">Sort by</div>
+          <button className={`cdoc__ctx-item${sortBy === 'name-az' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('name-az'); setContentCtx(null); }}>Name (A–Z)</button>
+          <button className={`cdoc__ctx-item${sortBy === 'name-za' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('name-za'); setContentCtx(null); }}>Name (Z–A)</button>
+          <button className={`cdoc__ctx-item${sortBy === 'date-new' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('date-new'); setContentCtx(null); }}>Date (Newest)</button>
+          <button className={`cdoc__ctx-item${sortBy === 'date-old' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('date-old'); setContentCtx(null); }}>Date (Oldest)</button>
+          <button className={`cdoc__ctx-item${sortBy === 'size' ? ' cdoc__ctx-item--active' : ''}`} onClick={(e) => { e.stopPropagation(); setSortBy('size'); setContentCtx(null); }}>Size</button>
+          <div className="cdoc__ctx-divider" />
+          <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+            Group by
+          </button>
+        </div>
+      )}
 
       {/* Preview modal */}
       {preview && (
