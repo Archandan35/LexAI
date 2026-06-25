@@ -23,6 +23,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
+import { FieldMapper } from '@/core/FieldMapper.js';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -137,7 +138,7 @@ export default function CauseList() {
   };
   const openEdit = async (h) => {
     const res = await causeListLogic.getHearing(h.id);
-    const record = res.ok ? res.data : h;
+    const record = res.ok ? res.data : FieldMapper.toLexAI('hearings', h);
     setEditing(record);
     setForm({ ...EMPTY_HEARING, ...record });
     setEditorContent(record.notes || '');
@@ -185,10 +186,11 @@ export default function CauseList() {
   };
 
   const duplicateHearing = (h) => {
+    const record = FieldMapper.toLexAI('hearings', h);
     setEditing(null);
-    setForm({ ...EMPTY_HEARING, ...h, id: undefined });
-    setEditorContent(h.notes || '');
-    setSummaryContent(h.summary || '');
+    setForm({ ...EMPTY_HEARING, ...record, id: undefined });
+    setEditorContent(record.notes || '');
+    setSummaryContent(record.summary || '');
     setSelectedTemplate('');
     setOpen(true);
     toast.push('Editing duplicated record. Save to create a new entry.', 'info');
