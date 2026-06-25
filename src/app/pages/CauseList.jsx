@@ -24,7 +24,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 
-const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '' };
+const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function CauseList() {
@@ -87,6 +87,7 @@ export default function CauseList() {
   // Rich text editor state
   const [draftTemplates, setDraftTemplates] = useState([]);
   const [editorContent, setEditorContent] = useState('');
+  const [summaryContent, setSummaryContent] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importText, setImportText] = useState('');
@@ -130,6 +131,7 @@ export default function CauseList() {
     setEditing(null);
     setForm(EMPTY_HEARING);
     setEditorContent('');
+    setSummaryContent('');
     setSelectedTemplate('');
     setOpen(true);
   };
@@ -139,6 +141,7 @@ export default function CauseList() {
     setEditing(record);
     setForm({ ...EMPTY_HEARING, ...record });
     setEditorContent(record.notes || '');
+    setSummaryContent(record.summary || '');
     setSelectedTemplate('');
     setOpen(true);
   };
@@ -156,7 +159,7 @@ export default function CauseList() {
 
   const saveHearing = async () => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
-    const payload = { ...form, notes: editorContent || form.notes || '' };
+    const payload = { ...form, notes: editorContent || form.notes || '', summary: summaryContent || '' };
     try {
       const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
@@ -185,6 +188,7 @@ export default function CauseList() {
     setEditing(null);
     setForm({ ...EMPTY_HEARING, ...h, id: undefined });
     setEditorContent(h.notes || '');
+    setSummaryContent(h.summary || '');
     setSelectedTemplate('');
     setOpen(true);
     toast.push('Editing duplicated record. Save to create a new entry.', 'info');
@@ -199,6 +203,7 @@ export default function CauseList() {
     nexthearingdate: 'nextHearingDate', 'next hearing date': 'nextHearingDate',
     postedfor: 'postedFor', 'posted for': 'postedFor', 'posted_for': 'postedFor',
     notes: 'notes', proceedings: 'notes', content: 'notes',
+    summary: 'summary', 'hearing summary': 'summary',
     judge: 'judge', 'presiding officer': 'judge', officer: 'judge',
     docref: 'docRef', doc_ref: 'docRef', 'document ref': 'docRef',
     docname: 'docName', doc_name: 'docName', 'document name': 'docName', file: 'docName',
@@ -251,6 +256,7 @@ export default function CauseList() {
   const applyImport = (mapped) => {
     setForm((f) => ({ ...f, ...mapped }));
     if (mapped.notes) setEditorContent(mapped.notes);
+    if (mapped.summary) setSummaryContent(mapped.summary);
     setShowImport(false);
     setImportText('');
     toast.push('Import applied to form.', 'success');
@@ -270,7 +276,7 @@ export default function CauseList() {
   };
 
   const exportAsJson = () => {
-    const payload = { ...form, notes: editorContent || form.notes || '' };
+    const payload = { ...form, notes: editorContent || form.notes || '', summary: summaryContent || '' };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -282,8 +288,8 @@ export default function CauseList() {
   };
 
   const exportAsCsv = () => {
-    const payload = { ...form, notes: editorContent || form.notes || '' };
-    const headers = ['caseId', 'date', 'status', 'purpose', 'nextHearingDate', 'postedFor', 'notes', 'judge', 'docRef', 'docName'];
+    const payload = { ...form, notes: editorContent || form.notes || '', summary: summaryContent || '' };
+    const headers = ['caseId', 'date', 'status', 'purpose', 'nextHearingDate', 'postedFor', 'notes', 'summary', 'judge', 'docRef', 'docName'];
     const vals = headers.map((h) => `"${(payload[h] || '').replace(/"/g, '""')}"`);
     const csv = [headers.join(','), vals.join(',')].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -452,6 +458,35 @@ export default function CauseList() {
       .replace(/\{todayDate\}/g, formatDate(today));
   }, [form]);
 
+  const autoGenerateSummary = useCallback(() => {
+    if (!editorContent) return;
+    const plain = editorContent
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&[a-z]+;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const raw = plain.split(/\.(?=\s+[A-Z]|\.\s*$)/);
+    const sentences = raw
+      .map((s) => s.replace(/^[^a-zA-Z0-9]+/, '').trim())
+      .filter((s) => s.length > 3)
+      .map((s) => {
+        const capped = s.charAt(0).toUpperCase() + s.slice(1);
+        return capped.endsWith('.') ? capped : capped + '.';
+      });
+    const merged = [];
+    for (const s of sentences) {
+      if (merged.length > 0 && s.length < 30 && !/^[A-Z][a-z]/.test(s.replace(/^["'(]+/, ''))) {
+        const prev = merged.pop();
+        merged.push(prev.replace(/\.$/, '') + ', ' + s.charAt(0).toLowerCase() + s.slice(1));
+      } else {
+        merged.push(s);
+      }
+    }
+    setSummaryContent(merged.length > 0 ? merged.join('\n\n') : '');
+  }, [editorContent]);
+
   const applyTemplate = useCallback((tplId) => {
     if (!tplId) return;
     const tpl = draftTemplates.find((t) => t.id === tplId || t._id === tplId);
@@ -578,7 +613,7 @@ export default function CauseList() {
                   {Object.keys(visibleColumns).map(col => (
                     <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
                       <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
-                      {col === 'date' ? 'Hearing Date' : col.charAt(0).toUpperCase() + col.slice(1)}
+                      {col === 'date' ? 'Date' : col.charAt(0).toUpperCase() + col.slice(1)}
                     </label>
                   ))}
                 </div>
@@ -642,7 +677,7 @@ export default function CauseList() {
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}><input type="checkbox" /></th>
-                    {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Hearing Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
+                    {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
                     {visibleColumns.case && <th>Case Number & Title</th>}
                     {visibleColumns.court && <th>Court</th>}
                     {visibleColumns.bench && <th>Bench</th>}
@@ -662,10 +697,7 @@ export default function CauseList() {
                         <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
                         {visibleColumns.date && (
                           <td className="cause-list__cell-date">
-                            <div className="flex align-center gap-8">
-                              <Icon name="calendar" size={13} className="text-muted" />
-                              <span>{formatDate(h.date)}</span>
-                            </div>
+                            <span>{formatDate(h.date)}</span>
                           </td>
                         )}
                         {visibleColumns.case && (
@@ -1229,34 +1261,30 @@ export default function CauseList() {
           </div>
 
           {/* Section 4: Hearing Summary */}
-          <div className="hearing-modal__section">
+          <div className="hearing-modal__section hearing-modal__section--grow">
             <div className="hearing-modal__section-title">
               <Icon name="list" size={16} />
               <span>Hearing Summary</span>
             </div>
-            {editorContent ? (
-              <div className="hearing-summary">
-                {(() => {
-                  const lines = editorContent
-                    .replace(/<[^>]+>/g, '')
-                    .split(/[.;\n]+/)
-                    .map((s) => s.trim())
-                    .filter((s) => s.length > 3)
-                    .map((s) => s.endsWith('.') ? s : s + '.');
-                  return lines.length > 0 ? (
-                    <ul className="hearing-summary__list">
-                      {lines.map((line, i) => (
-                        <li key={i} className="hearing-summary__item">{line}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <span className="text-muted">Write proceedings above to generate summary.</span>
-                  );
-                })()}
+            <div className="hearing-modal__template-bar">
+              <div className="hearing-modal__template-bar-left">
+                <span>Auto-generate from Proceedings</span>
               </div>
-            ) : (
-              <span className="text-muted">Proceedings text will be summarised here as a point-wise list.</span>
-            )}
+              {editorContent && (
+                <button className="btn btn--sm btn--ghost" onClick={autoGenerateSummary}>
+                  <Icon name="refresh" size={12} /> Generate
+                </button>
+              )}
+            </div>
+            <div className="hearing-modal__editor-wrapper">
+              <DocEditor
+                value={summaryContent}
+                onChange={setSummaryContent}
+                pageSize="letter"
+                margin="narrow"
+                placeholders={[]}
+              />
+            </div>
           </div>
 
           {/* Section 5: Attachment */}

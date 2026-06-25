@@ -13,6 +13,7 @@ export const HearingsSchema = {
     next_hearing_date: 'datetime',
     posted_for: 'string',
     notes: 'string',
+    summary: 'string',
     judge: 'string',
     doc_ref: 'string',
     doc_name: 'string',

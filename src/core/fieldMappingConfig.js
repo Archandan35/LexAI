@@ -14,7 +14,7 @@ const SCHEMAS = {
   caseStages: { createdAt: 'created_at' },
   reminders: { ...COMMON, caseId: 'case_id', dueAt: 'due_at' },
   notes: { ...COMMON, caseId: 'case_id' },
-  hearings: { ...COMMON, caseId: 'case_id', nextHearingDate: 'next_hearing_date', postedFor: 'posted_for', docRef: 'doc_ref', docName: 'doc_name' },
+  hearings: { ...COMMON, caseId: 'case_id', nextHearingDate: 'next_hearing_date', postedFor: 'posted_for', docRef: 'doc_ref', docName: 'doc_name', summary: 'summary' },
   drafts: { ...COMMON, caseId: 'case_id' },
   documents: { caseId: 'case_id', syncStatus: 'sync_status', syncMessage: 'sync_message', lastSyncAt: 'last_sync_at', uploadedAt: 'uploaded_at' },
   case_history: { caseId: 'case_id', createdAt: 'created_at' },

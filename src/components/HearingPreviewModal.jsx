@@ -85,6 +85,14 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
               </div>
             </div>
 
+            {data.summary && (
+              <div className="hpm-section">
+                <div className="hpm-section__title"><Icon name="list" size={15} /> Summary</div>
+                <div className="hpm-card hpm-card--rich">
+                  <div className="hpm-richtext" style={{ whiteSpace: 'pre-line' }}>{data.summary}</div>
+                </div>
+              </div>
+            )}
             {data.notes && (
               <div className="hpm-section">
                 <div className="hpm-section__title"><Icon name="file" size={15} /> Proceedings</div>
