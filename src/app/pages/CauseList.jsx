@@ -16,6 +16,7 @@ import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import { templateLogic } from '@/logic/templateLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
+import { caseLogic } from '@/logic/caseLogic.js';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -23,7 +24,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
 import { combinedCourt, extractJurisdiction } from '@/utils/caseFormat.js';
 
-const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', notes: '', judge: '', docRef: null, docName: '' };
+const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
 export default function CauseList() {
@@ -61,6 +62,8 @@ export default function CauseList() {
     court: true,
     bench: true,
     purpose: true,
+    nextHearingDate: true,
+    postedFor: true,
     judge: true,
     status: true,
     actions: true,
@@ -157,6 +160,10 @@ export default function CauseList() {
     try {
       const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
+      // Sync next hearing date to the case record
+      if (form.nextHearingDate) {
+        await caseLogic.update(form.caseId, { next_hearing: form.nextHearingDate }, user);
+      }
       setOpen(false);
       await loadList();
       if (histCaseId) await loadHistory(histCaseId);
@@ -189,6 +196,8 @@ export default function CauseList() {
     date: 'date', 'hearing date': 'date', 'hearing date & time': 'date',
     status: 'status', 'hearing status': 'status',
     purpose: 'purpose',
+    nexthearingdate: 'nextHearingDate', 'next hearing date': 'nextHearingDate',
+    postedfor: 'postedFor', 'posted for': 'postedFor', 'posted_for': 'postedFor',
     notes: 'notes', proceedings: 'notes', content: 'notes',
     judge: 'judge', 'presiding officer': 'judge', officer: 'judge',
     docref: 'docRef', doc_ref: 'docRef', 'document ref': 'docRef',
@@ -274,7 +283,7 @@ export default function CauseList() {
 
   const exportAsCsv = () => {
     const payload = { ...form, notes: editorContent || form.notes || '' };
-    const headers = ['caseId', 'date', 'status', 'purpose', 'notes', 'judge', 'docRef', 'docName'];
+    const headers = ['caseId', 'date', 'status', 'purpose', 'nextHearingDate', 'postedFor', 'notes', 'judge', 'docRef', 'docName'];
     const vals = headers.map((h) => `"${(payload[h] || '').replace(/"/g, '""')}"`);
     const csv = [headers.join(','), vals.join(',')].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -359,7 +368,7 @@ export default function CauseList() {
       toast.push('No hearings to export.', 'info');
       return;
     }
-    const headers = ['Hearing Date', 'Case Number', 'Title', 'Court', 'Bench', 'Purpose', 'Judge', 'Status'];
+    const headers = ['Hearing Date', 'Case Number', 'Title', 'Court', 'Bench', 'Purpose', 'Next Hearing', 'Posted For', 'Judge', 'Status'];
     const csvContent = [
       headers.join(','),
       ...sortedRows.map(r => [
@@ -369,6 +378,8 @@ export default function CauseList() {
         `"${r.court}"`,
         `"${r.case?.bench_type || '—'}"`,
         `"${r.purpose || '—'}"`,
+        `"${formatDate(r.nextHearingDate || r.next_hearing_date) || '—'}"`,
+        `"${r.postedFor || r.posted_for || '—'}"`,
         `"${r.case?.judge || '—'}"`,
         `"${r.status}"`
       ].join(','))
@@ -636,6 +647,8 @@ export default function CauseList() {
                     {visibleColumns.court && <th>Court</th>}
                     {visibleColumns.bench && <th>Bench</th>}
                     {visibleColumns.purpose && <th>Purpose</th>}
+                    {visibleColumns.nextHearingDate && <th>Next Hearing</th>}
+                    {visibleColumns.postedFor && <th>Posted For</th>}
                     {visibleColumns.judge && <th>Judge</th>}
                     {visibleColumns.status && <th>Status</th>}
                     {visibleColumns.actions && <th style={{ textAlign: 'right' }}>Actions</th>}
@@ -675,6 +688,8 @@ export default function CauseList() {
                         {visibleColumns.court && <td>{h.court}</td>}
                         {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
                         {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
+                        {visibleColumns.nextHearingDate && <td>{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
+                        {visibleColumns.postedFor && <td>{h.postedFor || h.posted_for || '—'}</td>}
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
                           <td>
@@ -1089,7 +1104,7 @@ export default function CauseList() {
             <div className="hearing-modal__import-panel">
               <textarea
                 className="hearing-modal__import-textarea"
-                placeholder="Paste JSON or CSV here...&#10;&#10;JSON example:&#10;{&quot;caseId&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-06-25&quot;, &quot;status&quot;: &quot;Active&quot;, &quot;purpose&quot;: &quot;Hearing&quot;, &quot;judge&quot;: &quot;Judge name&quot; }&#10;&#10;CSV example:&#10;caseId,date,status,purpose,judge&#10;abc123,2026-06-25,Active,Hearing,Judge name"
+                placeholder="Paste JSON or CSV here...&#10;&#10;JSON example:&#10;{&quot;caseId&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-06-25&quot;, &quot;status&quot;: &quot;Active&quot;, &quot;purpose&quot;: &quot;Hearing&quot;, &quot;nextHearingDate&quot;: &quot;2026-07-10&quot;, &quot;postedFor&quot;: &quot;Defendant Evidence&quot;, &quot;judge&quot;: &quot;Judge name&quot; }&#10;&#10;CSV example:&#10;caseId,date,status,purpose,nextHearingDate,postedFor,judge&#10;abc123,2026-06-25,Active,Hearing,2026-07-10,Defendant Evidence,Judge name"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
                 rows={4}
@@ -1154,6 +1169,14 @@ export default function CauseList() {
               </Field>
               <Field label="Purpose">
                 <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
+              </Field>
+            </div>
+            <div className="input-row">
+              <Field label="Next Hearing Date">
+                <Input type="date" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
+              </Field>
+              <Field label="Next Hearing Purpose">
+                <Input value={form.postedFor} onChange={(e) => setForm({ ...form, postedFor: e.target.value })} placeholder="e.g. Defendant Evidence, Arguments" />
               </Field>
             </div>
             <Field label="Judge">

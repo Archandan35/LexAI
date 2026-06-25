@@ -119,6 +119,7 @@ export const NAV_GROUPS = [
     label: '',
     items: [
       { to: '/settings', label: 'System Settings', icon: 'gear', module: 'settings' },
+      { to: '/admin/database', label: 'Database Manager & Migration', icon: 'database' },
     ],
   },
 ];

@@ -10,6 +10,8 @@ export const HearingsSchema = {
     date: 'datetime',
     status: 'string',
     purpose: 'string',
+    next_hearing_date: 'datetime',
+    posted_for: 'string',
     notes: 'string',
     judge: 'string',
     doc_ref: 'string',
@@ -18,9 +20,9 @@ export const HearingsSchema = {
     updated_at: 'datetime',
   },
   required: ['case_id'],
-  defaults: { status: 'Scheduled', notes: '' },
+  defaults: { status: 'Scheduled', notes: '', posted_for: '' },
   relations: [{ field: 'case_id', references: 'cases', on: 'id' }],
-  indexes: ['case_id', 'date', 'status'],
+  indexes: ['case_id', 'date', 'status', 'next_hearing_date'],
 };
 
 export default HearingsSchema;

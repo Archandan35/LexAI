@@ -1,27 +1,9 @@
 import { config } from '@/config/config.js';
+import DatabasePreferencesProvider from './DatabasePreferencesProvider.js';
 
-// Simple in-memory preferences provider used when no remote provider is configured.
-// Preferences are inherently client-side; swap in a synced provider via
-// VITE_PREFERENCES_PROVIDER when needed.
-class MemoryPreferencesProvider {
-  #store = new Map();
-
-  get(key, fallback = null) {
-    return this.#store.has(key) ? this.#store.get(key) : fallback;
-  }
-
-  set(key, value) {
-    this.#store.set(key, value);
-    return true;
-  }
-
-  remove(key) {
-    this.#store.delete(key);
-    return true;
-  }
-}
-
-const registry = {};
+const registry = {
+  database: () => new DatabasePreferencesProvider(),
+};
 
 let instance = null;
 
@@ -31,7 +13,9 @@ export function getPreferencesProvider() {
   if (key && registry[key]) {
     instance = registry[key]();
   } else {
-    instance = new MemoryPreferencesProvider();
+    // Default: persist through the active database provider so preferences
+    // (backup catalogs, schedules, UI state) survive page reloads.
+    instance = new DatabasePreferencesProvider();
   }
   return instance;
 }
