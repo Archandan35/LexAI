@@ -166,15 +166,9 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
 
       {/* ── 3. Court Information ── */}
       <SectionCard num="3" title="Court Information">
-        <div className="grid-3">
+        <div className="grid-5">
           <Field label="Courts">
             {sel('Courts', form.court_hierarchy, hierarchyOptions, (v) => setField('court_hierarchy', v), 'Select court')}
-          </Field>
-          <Field label="Bench Type">
-            {sel('Bench Type', form.bench_type, benchTypeOptions, (v) => setField('bench_type', v), 'Select bench type')}
-          </Field>
-          <Field label="Judge">
-            <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
           </Field>
           <Field label="Jurisdiction">
             <div style={{ display: 'flex', gap: 8 }}>
@@ -182,10 +176,16 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
               <button type="button" className="btn btn--ghost btn--sm" title="Manage jurisdictions" onClick={() => setJurisdictionMgr(true)}><Icon name="gear" size={15} /></button>
             </div>
           </Field>
+          <Field label="Bench Type">
+            {sel('Bench Type', form.bench_type, benchTypeOptions, (v) => setField('bench_type', v), 'Select bench type')}
+          </Field>
+          <Field label="Judge">
+            <Input value={form.judge} onChange={(e) => setField('judge', e.target.value)} placeholder="Judge name" />
+          </Field>
+          <Field label="Court Name">
+            <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Enter court location" />
+          </Field>
         </div>
-        <Field label="Court Name">
-          <Input value={form.court_name || autoCourtName} onChange={(e) => setField('court_name', e.target.value)} placeholder="Enter court location" />
-        </Field>
       </SectionCard>
 
       {/* ── 4. Case Tracking ── */}
