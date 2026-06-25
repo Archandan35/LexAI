@@ -40,6 +40,7 @@ const SCHEMAS = {
   draft_types: { ...COMMON },
   case_tags: { ...COMMON },
   judges: { ...COMMON },
+  reminder_types: { ...COMMON },
   acts: { ...COMMON },
   contact_types: { ...COMMON },
 };

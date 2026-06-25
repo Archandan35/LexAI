@@ -6,11 +6,18 @@ import Icon from './Icon.jsx';
 import Modal from './Modal.jsx';
 import EmptyState from './EmptyState.jsx';
 import PermissionGate from './PermissionGate.jsx';
-import { Field, Input, Select } from './Field.jsx';
-import { reminderLogic, REMINDER_TYPES } from '@/logic/reminderLogic.js';
+import SearchableSelect from './SearchableSelect.jsx';
+import CrudManager from './CrudManager.jsx';
+import { Field, Input } from './Field.jsx';
+import { reminderLogic } from '@/logic/reminderLogic.js';
+import { reminderTypesLogic } from '@/logic/reminderTypesLogic.js';
+import { caseCrudLogic } from '@/logic/caseCrudLogic.js';
+import { caseLogic } from '@/logic/caseLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { formatDate } from '@/utils/format.js';
+
+const FALLBACK_TYPES = ['Hearing Date', 'Filing Deadline', 'Evidence Deadline', 'Compliance Deadline'];
 
 function dayDiff(date) {
   const d = new Date(date); d.setHours(0, 0, 0, 0);
@@ -24,18 +31,52 @@ export default function RemindersPanel({ caseId, onChanged }) {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ type: REMINDER_TYPES[0], title: '', date: '' });
+  const [typeOptions, setTypeOptions] = useState(FALLBACK_TYPES);
+  const [caseOptions, setCaseOptions] = useState([]);
+  const [form, setForm] = useState({ type: '', caseId, title: '', date: '' });
+  const [typeMgr, setTypeMgr] = useState(false);
+  const [caseMgr, setCaseMgr] = useState(false);
 
   const load = useCallback(async () => { setItems(await reminderLogic.list(caseId)); }, [caseId]);
   useEffect(() => { load(); }, [load]);
 
+  const loadTypes = useCallback(async () => {
+    const rows = await reminderTypesLogic.list();
+    const names = Array.isArray(rows) ? rows.map((r) => r.name).filter(Boolean) : [];
+    setTypeOptions(names.length ? names : FALLBACK_TYPES);
+  }, []);
+
+  const loadCases = useCallback(async () => {
+    const rows = await caseLogic.list();
+    setCaseOptions(Array.isArray(rows) ? rows : []);
+  }, []);
+
+  useEffect(() => { loadTypes(); loadCases(); }, [loadTypes, loadCases]);
+
+  useEffect(() => {
+    if (!open) return;
+    loadTypes();
+    loadCases();
+  }, [open, loadTypes, loadCases]);
+
   const add = async () => {
-    const res = await reminderLogic.add(caseId, form, user);
-    if (res.ok) { toast.push('Reminder added.', 'success'); setOpen(false); setForm({ type: REMINDER_TYPES[0], title: '', date: '' }); load(); onChanged?.(); }
-    else toast.push(res.error, 'error');
+    const targetCaseId = form.caseId || caseId;
+    const res = await reminderLogic.add(targetCaseId, form, user);
+    if (res.ok) {
+      toast.push('Reminder added.', 'success');
+      setOpen(false);
+      setForm({ type: '', caseId, title: '', date: '' });
+      load();
+      onChanged?.();
+    } else toast.push(res.error, 'error');
   };
   const toggle = async (r) => { await reminderLogic.toggle(r); load(); onChanged?.(); };
   const remove = async (r) => { if (confirm('Delete this reminder?')) { await reminderLogic.remove(r.id); load(); onChanged?.(); } };
+
+  const caseOptionsFormatted = caseOptions.map((c) => ({
+    value: c.id,
+    label: c.case_display_number || c.caseNumber || c.case_number || c.id,
+  }));
 
   return (
     <Card
@@ -68,10 +109,39 @@ export default function RemindersPanel({ caseId, onChanged }) {
 
       <Modal open={open} title="Add Reminder" onClose={() => setOpen(false)}
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={add}>Add</Button></>}>
-        <Field label="Type"><Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{REMINDER_TYPES.map((t) => <option key={t}>{t}</option>)}</Select></Field>
+        <Field label="Type">
+          <div style={{ display: 'flex', gap: 8 }}>
+            <select
+              className="select"
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              style={{ flex: 1 }}
+            >
+              <option value="">Select type…</option>
+              {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <button type="button" className="btn btn--ghost btn--sm" title="Manage reminder types" onClick={() => setTypeMgr(true)}><Icon name="gear" size={15} /></button>
+          </div>
+        </Field>
+        <Field label="Case">
+          <div style={{ display: 'flex', gap: 8 }}>
+            <SearchableSelect
+              value={form.caseId}
+              onChange={(e) => setForm({ ...form, caseId: e.target.value })}
+              options={caseOptionsFormatted}
+              placeholder="Select case…"
+              style={{ flex: 1 }}
+            />
+            <button type="button" className="btn btn--ghost btn--sm" title="Manage cases" onClick={() => setCaseMgr(true)}><Icon name="gear" size={15} /></button>
+          </div>
+        </Field>
         <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. File written statement" autoFocus /></Field>
         <Field label="Date"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       </Modal>
+
+      <CrudManager open={typeMgr} onClose={() => { setTypeMgr(false); loadTypes(); }} entity="Reminder Type" config={{ logic: reminderTypesLogic, fields: [{ key: 'name', label: 'Reminder Type Name', placeholder: 'e.g., Hearing Date' }, { key: 'description', label: 'Description', placeholder: 'Optional description' }], defaults: {}, refresh: loadTypes }} />
+
+      <CrudManager open={caseMgr} onClose={() => { setCaseMgr(false); loadCases(); }} entity="Case" config={{ logic: caseCrudLogic, fields: [{ key: 'case_number', label: 'Case Number', placeholder: 'e.g., 123/2024' }, { key: 'case_type', label: 'Case Type', placeholder: 'e.g., Civil' }, { key: 'plaintiff', label: 'Plaintiff', placeholder: 'Plaintiff name' }, { key: 'defendant', label: 'Defendant', placeholder: 'Defendant name' }], defaults: {}, refresh: loadCases }} />
     </Card>
   );
 }
