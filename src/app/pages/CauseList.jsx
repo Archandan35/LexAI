@@ -409,7 +409,7 @@ export default function CauseList() {
             {/* Status dropdown */}
             <select className="cause-list__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="">All Status</option>
-              {hearingStatuses.map(st => (
+              {caseStatuses.map(st => (
                 <option key={st} value={st}>{st}</option>
               ))}
             </select>
@@ -464,13 +464,13 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{selCase.title}</p>
-                    <div className="cause-list__header-court">{combinedCourt(selCase)}</div>
+                    <div className="cause-list__header-court">{selCase.court_hierarchy || ''}{selCase.court_hierarchy && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
                   </div>
                 </div>
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{combinedCourt(selCase)}</span>
+                    <span className="cause-list__details-label">Case Type</span>
+                    <span className="cause-list__details-value">{selCase.case_type || '—'}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
@@ -632,14 +632,14 @@ export default function CauseList() {
                       )}
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{combinedCourt(history.case)}</div>
+                    <div className="cause-list__header-court">{history.case?.court_hierarchy || ''}{history.case?.court_hierarchy && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{combinedCourt(history.case)}</span>
+                    <span className="cause-list__details-label">Case Type</span>
+                    <span className="cause-list__details-value">{history.case?.case_type || '—'}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>
@@ -823,14 +823,14 @@ export default function CauseList() {
                       <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
                     </div>
                     <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{combinedCourt(history.case)}</div>
+                    <div className="cause-list__header-court">{history.case?.court_hierarchy || ''}{history.case?.court_hierarchy && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 
                 <div className="cause-list__details-grid">
                   <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Court</span>
-                    <span className="cause-list__details-value">{combinedCourt(history.case)}</span>
+                    <span className="cause-list__details-label">Case Type</span>
+                    <span className="cause-list__details-value">{history.case?.case_type || '—'}</span>
                   </div>
                   <div className="cause-list__details-item">
                     <span className="cause-list__details-label">Filing Date</span>

@@ -12682,3 +12682,117 @@ kbd.cmd__kbd {
   color: var(--navy-700);
   border-color: var(--brand);
 }
+
+/* ── Clients grid ── */
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.client-card {
+  display: flex;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.15s var(--ease), border-color 0.15s var(--ease);
+  position: relative;
+}
+
+.client-card:hover {
+  border-color: var(--brand);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.client-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.client-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.client-card__name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-card__meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 6px;
+}
+
+.client-card__meta span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-card__badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.client-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.client-card:hover .client-card__actions {
+  opacity: 1;
+}
+
+/* ── Client detail modal ── */
+.client-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.client-detail__avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+}
+
+.client-detail__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.grid-2 > * > .client-detail__label + span {
+  font-size: 14px;
+  color: var(--text);
+  word-break: break-word;
+}
