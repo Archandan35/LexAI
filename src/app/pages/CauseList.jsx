@@ -148,6 +148,8 @@ export default function CauseList() {
   const saveHearing = async () => {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, notes: editorContent || form.notes || '' };
+    delete payload.docRef;
+    delete payload.docName;
     try {
       const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
@@ -452,7 +454,7 @@ export default function CauseList() {
         subtitle="View and manage all hearings across your matters."
         actions={
           <div className="cause-list__header-actions">
-            <Button icon="plus" onClick={openNew}>Add Hearing</Button>
+            <Button icon="plus" onClick={openNew}>Add Cause List</Button>
           </div>
         }
       />
@@ -607,7 +609,7 @@ export default function CauseList() {
           <Card bodyClass="card__body--flush">
             {paginatedRows.length === 0 ? (
               <div style={{ padding: '40px' }}>
-                <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Hearing</Button>} />
+                <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Cause List</Button>} />
               </div>
             ) : (
               <table className="table">
@@ -1042,7 +1044,7 @@ export default function CauseList() {
       {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
       <Modal
         open={open}
-        title={editing ? 'Edit Hearing' : 'Add Hearing'}
+        title={editing ? 'Edit Cause List' : 'Add Cause List'}
         size="lg"
         onClose={() => setOpen(false)}
         footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
