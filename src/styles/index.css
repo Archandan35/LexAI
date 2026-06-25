@@ -6588,6 +6588,190 @@ kbd.cmd__kbd {
   border-bottom: 2px solid var(--navy-500);
 }
 
+.courts__table td {
+  vertical-align: middle;
+}
+
+.courts__cell--checkbox {
+  width: 30px;
+}
+
+.courts__th-checkbox {
+  width: 30px;
+}
+
+.courts__th-checkbox input[type="checkbox"],
+.courts__cell--checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.courts__code {
+  font-size: 12px;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.courts__code-wrap {
+  flex: 0 1 140px;
+  min-width: 0;
+}
+
+.courts__bulk-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.courts__bulk-tab {
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.courts__bulk-tab:hover {
+  background: var(--surface-2);
+}
+
+.courts__bulk-tab--active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.courts__bulk-spacer {
+  flex: 1;
+}
+
+.courts__bulk-hint {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.courts__bulk-textarea {
+  width: 100%;
+  min-height: 100px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.courts__bulk-upload-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.courts__bulk-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.courts__empty {
+  text-align: center;
+  padding: 32px !important;
+  color: var(--text-faint);
+}
+
+.courts__import-summary {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.courts__import-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.courts__import-stat {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.courts__import-stat strong {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.courts__import-stat--ok {
+  background: #d4edda;
+  color: #155724;
+}
+
+.courts__import-stat--skip {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.courts__import-stat--fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.courts__import-heading {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text);
+}
+
+.courts__import-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.courts__import-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.courts__import-item--ok {
+  background: #d4edda;
+  color: #155724;
+}
+
+.courts__import-item--skip {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.courts__import-item--fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.courts__import-item code {
+  font-size: 11px;
+  background: rgba(0,0,0,0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
 /* ---- CourtReports additions ---- */
 .court-reports__name {
   font-weight: 600;
@@ -8978,6 +9162,190 @@ kbd.cmd__kbd {
 
 .courts__add-card tr.drag-over td {
   border-bottom: 2px solid var(--navy-500);
+}
+
+.courts__table td {
+  vertical-align: middle;
+}
+
+.courts__cell--checkbox {
+  width: 30px;
+}
+
+.courts__th-checkbox {
+  width: 30px;
+}
+
+.courts__th-checkbox input[type="checkbox"],
+.courts__cell--checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.courts__code {
+  font-size: 12px;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.courts__code-wrap {
+  flex: 0 1 140px;
+  min-width: 0;
+}
+
+.courts__bulk-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.courts__bulk-tab {
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.courts__bulk-tab:hover {
+  background: var(--surface-2);
+}
+
+.courts__bulk-tab--active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.courts__bulk-spacer {
+  flex: 1;
+}
+
+.courts__bulk-hint {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.courts__bulk-textarea {
+  width: 100%;
+  min-height: 100px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.courts__bulk-upload-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.courts__bulk-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.courts__empty {
+  text-align: center;
+  padding: 32px !important;
+  color: var(--text-faint);
+}
+
+.courts__import-summary {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.courts__import-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.courts__import-stat {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.courts__import-stat strong {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.courts__import-stat--ok {
+  background: #d4edda;
+  color: #155724;
+}
+
+.courts__import-stat--skip {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.courts__import-stat--fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.courts__import-heading {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text);
+}
+
+.courts__import-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.courts__import-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.courts__import-item--ok {
+  background: #d4edda;
+  color: #155724;
+}
+
+.courts__import-item--skip {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.courts__import-item--fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.courts__import-item code {
+  font-size: 11px;
+  background: rgba(0,0,0,0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
 }
 
 /* ---- CourtReports additions ---- */

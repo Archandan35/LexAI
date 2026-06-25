@@ -2,12 +2,30 @@ import { courtsService } from '@/services/courtsService.js';
 import { nowISO } from '@/utils/id.js';
 import { ok, fail } from '@/utils/result.js';
 
+const STOP_WORDS = new Set(['of', 'and', 'the', 'in', 'at', 'a', 'an', 'for', 'to']);
+
 function slugShortCode(name = '') {
-  const cleaned = String(name).trim().replace(/\s+/g, ' ');
+  const cleaned = String(name).trim();
   if (!cleaned) return '';
-  // Prefer first 4 alpha chars to keep it compact/stable.
-  const letters = cleaned.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  return (letters.slice(0, 4) || cleaned.toUpperCase().slice(0, 4)).toUpperCase();
+
+  const parenMatch = cleaned.match(/\(([^)]+)\)/);
+  const parenPart = parenMatch ? parenMatch[1] : '';
+
+  let mainName = cleaned.replace(/\([^)]*\)/g, '').trim();
+
+  const mainWords = mainName.split(/\s+/).filter(Boolean);
+  const mainAbbrev = mainWords
+    .filter((w) => !STOP_WORDS.has(w.toLowerCase()))
+    .map((w) => w[0].toUpperCase())
+    .join('');
+
+  const parenWords = parenPart.split(/\s+/).filter(Boolean);
+  const parenAbbrev = parenWords
+    .filter((w) => !STOP_WORDS.has(w.toLowerCase()))
+    .map((w) => w[0].toUpperCase())
+    .join('');
+
+  return (mainAbbrev + parenAbbrev).toUpperCase();
 }
 
 async function resolveParentId({ parent_id, parent_name }, courtsService) {
@@ -87,6 +105,100 @@ export const courtsLogic = {
     try {
       return ok(await courtsService.remove(id));
     } catch (err) { return fail(err); }
+  },
+
+  async bulkCreate(records) {
+    try {
+      const existing = await courtsService.list();
+      const existingNames = new Set(existing.map((c) => c.name.trim().toLowerCase()));
+
+      let maxOrder = existing.reduce((m, c) => Math.max(m, c.display_order ?? 0), 0);
+
+      const imported = [];
+      const skipped = [];
+      const failed = [];
+
+      for (const r of records) {
+        try {
+          const name = (r.name || '').trim();
+          if (!name) { failed.push({ record: r, error: 'Name is required' }); continue; }
+
+          if (existingNames.has(name.toLowerCase())) {
+            skipped.push({ name, error: 'Duplicate court name' });
+            continue;
+          }
+
+          const parent_id = await resolveParentId(
+            { parent_id: r.parent_id, parent_name: r.parent_name },
+            courtsService
+          );
+
+          const short_code = (r.short_code || '').trim() || slugShortCode(name);
+
+          maxOrder += 1;
+          const result = await courtsService.create({
+            name,
+            short_code,
+            level: r.level ?? 1,
+            parent_id,
+            display_order: maxOrder,
+            status: 'Active',
+            createdAt: nowISO(),
+          });
+
+          existingNames.add(name.toLowerCase());
+          imported.push(result);
+        } catch (err) {
+          failed.push({ record: r, error: err.message || String(err) });
+        }
+      }
+
+      return ok({ imported, skipped, failed });
+    } catch (err) { return fail(err); }
+  },
+
+  async bulkRemove(ids) {
+    try {
+      let deleted = 0;
+      const batchSize = 5;
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batch = ids.slice(i, i + batchSize);
+        await Promise.all(batch.map((id) => courtsService.remove(id).then(() => { deleted += 1; }).catch(() => {})));
+      }
+      return ok({ deleted, failed: ids.length - deleted });
+    } catch (err) { return fail(err); }
+  },
+
+  async importCSV(csvText) {
+    const lines = csvText.split('\n').map((l) => l.trim()).filter(Boolean);
+    const records = [];
+    for (const line of lines) {
+      const parts = line.split(',').map((s) => s.trim());
+      const name = parts[0];
+      const short_code = parts[1] || '';
+      const parent_name = parts[2] || '';
+      if (!name) continue;
+      records.push({ name, short_code, parent_name });
+    }
+    return this.bulkCreate(records);
+  },
+
+  async importJSON(jsonText) {
+    let data;
+    try { data = JSON.parse(jsonText); } catch { return fail('Invalid JSON format.'); }
+    const arr = Array.isArray(data) ? data : [data];
+    const records = arr.map((r) => ({
+      name: r.name || r.court_name || r.court || '',
+      short_code: r.short_code || r.code || '',
+      parent_name: r.parent_name || r.parent || '',
+    }));
+    return this.bulkCreate(records);
+  },
+
+  async importText(text) {
+    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    const records = lines.map((name) => ({ name, short_code: '', parent_name: '' }));
+    return this.bulkCreate(records);
   },
 };
 

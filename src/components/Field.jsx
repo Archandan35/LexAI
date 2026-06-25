@@ -12,6 +12,18 @@ export function Field({ label, children, hint }) {
 
 export function Input({ className, ...props }) { return <input className={["input", className].filter(Boolean).join(" ")} {...props} />; }
 export function Textarea({ className, ...props }) { return <textarea className={["textarea", className].filter(Boolean).join(" ")} {...props} />; }
-export function Select({ children, className, ...props }) { return <select className={["select", className].filter(Boolean).join(" ")} {...props}>{children}</select>; }
+export function Select({ children, className, options, ...props }) {
+  return (
+    <select className={["select", className].filter(Boolean).join(" ")} {...props}>
+      {options
+        ? options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))
+        : children}
+    </select>
+  );
+}
 
 export default Field;
