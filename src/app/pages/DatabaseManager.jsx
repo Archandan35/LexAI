@@ -8,6 +8,7 @@ import PermissionGate from '@/components/PermissionGate.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
+import { migrateLocalStorage } from '@/utils/migrateLocalStorage.js';
 import { bytes, formatDateTime } from '@/utils/format.js';
 
 // DatabaseManager — universal, provider-agnostic database administration.
@@ -331,6 +332,33 @@ export default function DatabaseManager() {
           </div>
         </Card>
       </div>
+
+      {/* Migrate from localStorage */}
+      <Card title="Migrate from LocalStorage" sub="One-time migration: push existing localStorage data into the active database provider." className="dm-section">
+        <div className="alert alert--warn dm-mt">
+          <Icon name="alert" size={15} />
+          <span>Only run this once if you have data stored in localStorage from a previous local provider setup. After migration, the localStorage data is cleared.</span>
+        </div>
+        <div className="toolbar-row dm-toolbar-mt">
+          <PermissionGate perm="settings.manageSettings">
+            <Button icon="upload" loading={busy === 'migrate'}
+              onClick={async () => {
+                if (!window.confirm('Migrate localStorage data to the active provider? This cannot be undone.')) return;
+                setBusy('migrate');
+                const report = await migrateLocalStorage();
+                setBusy('');
+                if (report.errors?.length) {
+                  toast.push(`Migration finished with ${report.errors.length} error(s).`, 'warn');
+                } else {
+                  toast.push(report.message || 'Migration complete.', 'success');
+                }
+                load();
+              }}>
+              Migrate from LocalStorage
+            </Button>
+          </PermissionGate>
+        </div>
+      </Card>
 
       {/* Data */}
       <Card title="Data" sub="Row counts per collection." className="dm-section">
