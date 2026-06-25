@@ -13931,107 +13931,228 @@ kbd.cmd__kbd {
 }
 
 /* ============================================================
-   RESPONSIVE OVERRIDES — Mobile & Tablet
+   COMPREHENSIVE RESPONSIVE SYSTEM
+   Breakpoints:
+      ≥1200px  — Desktop (4-col grids)
+      992–1199 — Large tablet (3-col grids)
+      768–991  — Tablet (2-col grids)
+      <768px   — Mobile (1-col grids)
    ============================================================ */
 
-/* Tablet landscape (≤1024px) */
-@media (max-width: 1024px) {
-  .page-area { padding: 20px 20px 50px; }
-  .modal__body { padding: 16px; }
-  .hearing-modal__section .input-row { flex-wrap: wrap; }
-  .hearing-modal__section .input-row > * { min-width: 200px; flex: 1 1 45%; }
+/* ---- Responsive Grid System ---- */
+
+/* Desktop ≥1200px: default (4 cols where applicable) */
+
+/* Large tablet 992–1199px: 3 columns */
+@media (max-width: 1199px) {
+  .grid-4 { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* Tablet portrait (≤768px) */
-@media (max-width: 768px) {
-  .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .grid-2, .grid-3, .grid-sidebar { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .page-header__actions { width: 100%; flex-wrap: wrap; }
-  .page-area { padding: 16px 16px 40px; }
-  .topbar { padding: 0 14px; }
-  .topbar__title { font-size: 15px; }
+/* Tablet 768–991px: 2 columns */
+@media (max-width: 991px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-sidebar { grid-template-columns: 1fr; }
+  .dash-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .page-area { padding: 20px 20px 50px; }
   .topbar__crumb { display: none; }
+}
+
+/* Mobile <768px: 1 column */
+@media (max-width: 767px) {
+  .grid-4 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-sidebar { grid-template-columns: 1fr; }
+  .dash-grid-3 { grid-template-columns: 1fr; }
+  .dash-grid-2 { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .health-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Forms & Inputs ---- */
+@media (max-width: 767px) {
   .input-row { flex-direction: column; }
   .input-row > * { min-width: 100%; }
-  .card__body { padding: 16px; }
-  .card__head { padding: 14px 16px; }
-  table, .table { font-size: 13px; }
-  .table th, .table td { padding: 8px 6px; white-space: nowrap; }
-  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .auth-card { max-width: 100%; margin: 0 16px; padding: 24px 20px; }
-  .auth-shell { padding: 20px; }
-  .modal { max-width: calc(100vw - 16px); margin: 8px; max-height: 90vh; }
-  .modal--lg { max-width: calc(100vw - 16px); }
-  .modal__head { padding: 14px 16px; }
-  .modal__foot { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
   .hearing-modal__section .input-row > * { min-width: 100%; }
-  .hearing-modal__template-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-  .hearing-modal__template-bar-left { flex-wrap: wrap; }
-  .hearing-modal__template-select { width: 100%; }
-  .page-header__text h1 { font-size: 20px; }
-  .seg { width: 100%; }
-  .seg__btn { flex: 1; justify-content: center; font-size: 12px; padding: 6px 10px; }
-  .datatable__bar { flex-direction: column; align-items: stretch; gap: 8px; }
-  .datatable__search { width: 100%; min-width: 0; }
-  .pagination { flex-direction: column; gap: 8px; align-items: stretch; text-align: center; }
-  .pagination__controls { justify-content: center; flex-wrap: wrap; }
-  .cause-list__card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .cause-list__header-actions { width: 100%; flex-wrap: wrap; }
-  .hpm-grid { grid-template-columns: 1fr; }
-  .hpm-body { padding: 16px; }
-  .editor-toolbar { flex-wrap: wrap; gap: 2px; padding: 6px; }
-  .editor-surface { padding: 14px; font-size: 14px; min-height: 250px; }
-  .list-row { flex-wrap: wrap; }
-  .file-drop { padding: 20px; }
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; flex-wrap: nowrap; }
-  .tabs__tab { white-space: nowrap; }
-  .case-detail__row { flex-direction: column; gap: 2px; }
-  .notif__panel, .usermenu__panel { width: calc(100vw - 16px); right: 4px; }
+  .field input, .field select, .field textarea { font-size: 16px; } /* prevent iOS zoom */
 }
 
-/* Mobile (≤480px) */
-@media (max-width: 480px) {
-  .page-area { padding: 12px 10px 36px; }
-  .stat-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+/* ---- Tables ---- */
+@media (max-width: 991px) {
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { font-size: 13px; }
+  .table th, .table td { padding: 8px 6px; white-space: nowrap; }
+}
+@media (max-width: 767px) {
+  .table { font-size: 12px; }
+  .table th, .table td { padding: 6px 5px; }
+}
+
+/* ---- Dialogs & Popups ---- */
+@media (max-width: 991px) {
+  .modal { max-width: calc(100vw - 24px); margin: 12px; max-height: 90vh; }
+  .modal--lg { max-width: calc(100vw - 24px); }
+  .modal__head { padding: 14px 18px; }
+  .modal__body { padding: 16px; }
+  .modal__foot { padding: 12px 18px; flex-wrap: wrap; gap: 8px; }
+}
+@media (max-width: 767px) {
+  .modal { max-width: calc(100vw - 12px); margin: 6px; max-height: 92vh; }
+  .modal--lg { max-width: calc(100vw - 12px); }
+  .modal__head { padding: 12px 14px; }
+  .modal__body { padding: 12px; }
+  .modal__foot { padding: 10px 14px; }
+  .modal__close { width: 28px; height: 28px; }
+}
+
+/* ---- Buttons ---- */
+@media (max-width: 767px) {
+  .btn { padding: 7px 12px; font-size: 12px; }
+  .btn--sm { padding: 4px 8px; font-size: 11px; }
+}
+
+/* ---- Cards ---- */
+@media (max-width: 991px) {
+  .card__body { padding: 16px; }
+  .card__head { padding: 14px 16px; }
+  .stat-card { padding: 14px 16px; }
+  .stat-card__value { font-size: 22px; }
+  .stat-card__icon { width: 38px; height: 38px; }
+}
+@media (max-width: 767px) {
+  .card__body { padding: 12px; }
+  .card__head { padding: 10px 12px; }
   .stat-card { padding: 12px 12px; }
   .stat-card__value { font-size: 20px; }
   .stat-card__icon { width: 34px; height: 34px; }
+}
+
+/* ---- Page Layout ---- */
+@media (max-width: 1199px) {
+  .page-area { padding: 22px 24px 50px; }
+}
+@media (max-width: 991px) {
+  .page-area { padding: 16px 16px 40px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .page-header__actions { width: 100%; flex-wrap: wrap; }
+  .page-header__text h1 { font-size: 20px; }
+}
+@media (max-width: 767px) {
+  .page-area { padding: 12px 10px 36px; }
+  .page-header { padding: 10px 0; gap: 8px; }
+  .page-header__text h1 { font-size: 17px; }
+  .page-header__actions { gap: 6px; }
+}
+
+/* ---- Topbar / Header ---- */
+@media (max-width: 991px) {
+  .topbar { padding: 0 14px; }
+  .topbar__title { font-size: 15px; }
+}
+@media (max-width: 767px) {
   .topbar { height: 54px; padding: 0 8px; }
   .topbar__title { font-size: 13px; }
   .topbar__toggle { width: 32px; height: 32px; }
   .topbar__avatar { width: 30px; height: 30px; font-size: 12px; }
+  .topbar__search { display: none; }
+}
+
+/* ---- Sidebar ---- */
+@media (max-width: 767px) {
   .sidebar__brand { padding: 12px 14px; }
-  .sidebar.collapsed { width: 64px; }
-  .app-main.collapsed { margin-left: 64px; }
-  .btn { padding: 7px 12px; font-size: 12px; }
-  .btn--sm { padding: 4px 8px; font-size: 11px; }
-  .card__body { padding: 12px; }
-  .card__head { padding: 10px 12px; }
-  .table { font-size: 12px; }
-  .table th, .table td { padding: 6px 5px; }
-  .modal { margin: 4px; max-width: calc(100vw - 8px); }
-  .modal__head { padding: 12px 14px; }
-  .modal__body { padding: 12px; }
-  .modal__close { width: 28px; height: 28px; }
-  .modal--lg { max-width: calc(100vw - 8px); }
-  .page-header { padding: 12px 0; gap: 8px; }
-  .page-header__text h1 { font-size: 17px; }
-  .page-header__actions { gap: 6px; }
+}
+
+/* ---- Tabs ---- */
+@media (max-width: 991px) {
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; flex-wrap: nowrap; }
+  .tabs__tab { white-space: nowrap; font-size: 13px; padding: 10px 14px; }
+}
+@media (max-width: 767px) {
+  .tabs__tab { padding: 8px 12px; font-size: 12px; }
+}
+
+/* ---- Segment Control ---- */
+@media (max-width: 767px) {
+  .seg { width: 100%; }
+  .seg__btn { flex: 1; justify-content: center; font-size: 12px; padding: 6px 10px; }
+}
+
+/* ---- DataTable / Search ---- */
+@media (max-width: 991px) {
+  .datatable__bar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .datatable__search { width: 100%; min-width: 0; }
+}
+
+/* ---- Pagination ---- */
+@media (max-width: 767px) {
+  .pagination { flex-direction: column; gap: 8px; align-items: stretch; text-align: center; }
+  .pagination__controls { justify-content: center; flex-wrap: wrap; }
+}
+
+/* ---- Auth Pages ---- */
+@media (max-width: 991px) {
+  .auth-card { max-width: 100%; margin: 0 16px; padding: 24px 20px; }
+  .auth-shell { padding: 20px; }
+}
+@media (max-width: 767px) {
   .auth-card { padding: 20px 16px; margin: 0 8px; }
   .auth-card h1 { font-size: 20px; }
-  .field label { font-size: 12px; }
-  .field input, .field select, .field textarea { font-size: 14px; padding: 8px 10px; }
-  .input-row { gap: 8px; }
+}
+
+/* ---- Cause List ---- */
+@media (max-width: 991px) {
+  .cause-list__card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .cause-list__header-actions { width: 100%; flex-wrap: wrap; }
+  .hearing-modal__template-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .hearing-modal__template-bar-left { flex-wrap: wrap; }
+  .hearing-modal__template-select { width: 100%; }
+}
+@media (max-width: 767px) {
+  .cause-list__badge-status { font-size: 11px; padding: 2px 8px; }
+}
+
+/* ---- Hearing Preview Modal ---- */
+@media (max-width: 991px) {
+  .hpm-grid { grid-template-columns: 1fr; }
+  .hpm-body { padding: 16px; }
+}
+@media (max-width: 767px) {
   .hpm-header { padding: 14px 16px 10px; flex-direction: column; gap: 8px; }
   .hpm-header__right { width: 100%; justify-content: space-between; }
   .hpm-header__title { font-size: 15px; }
   .hpm-body { padding: 12px; }
   .hpm-grid { gap: 8px; }
-  .hearing-modal__section .input-row { gap: 8px; }
+}
+
+/* ---- Rich Text Editor ---- */
+@media (max-width: 991px) {
+  .editor-toolbar { flex-wrap: wrap; gap: 2px; padding: 6px; }
+  .editor-surface { padding: 14px; font-size: 14px; min-height: 250px; }
+}
+@media (max-width: 767px) {
   .editor-toolbar { gap: 1px; padding: 4px; }
   .editor-toolbar button { width: 26px; height: 26px; }
   .editor-surface { padding: 10px; font-size: 13px; min-height: 200px; }
-  .tabs__tab { padding: 8px 12px; font-size: 12px; }
-  .cause-list__badge-status { font-size: 11px; padding: 2px 8px; }
+}
+
+/* ---- Various UI Patterns ---- */
+@media (max-width: 991px) {
+  .list-row { flex-wrap: wrap; }
+  .file-drop { padding: 20px; }
+  .case-detail__row { flex-direction: column; gap: 2px; }
+  .notif__panel, .usermenu__panel { width: calc(100vw - 16px); right: 4px; }
+}
+@media (max-width: 767px) {
+  .field label { font-size: 12px; }
+  .input-row { gap: 8px; }
+  .hearing-modal__section .input-row { gap: 8px; }
+}
+
+/* ---- Grid gap consistency ---- */
+@media (max-width: 1199px) {
+  .grid-2, .grid-3, .grid-4, .grid-sidebar { gap: 16px; }
+}
+@media (max-width: 767px) {
+  .grid-2, .grid-3, .grid-4, .grid-sidebar { gap: 12px; }
 }
