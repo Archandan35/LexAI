@@ -584,8 +584,8 @@ export default function CauseList() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="text" value={dateFrom || ''} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="text" value={dateTo || ''} onChange={(e) => setDateTo(e.target.value)} placeholder="dd-mm-yyyy" onFocus={(e) => { e.target.type = 'date'; e.target.showPicker?.(); }} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
@@ -1418,7 +1418,7 @@ export default function CauseList() {
                     </thead>
                     <tbody>
                       {history.hearings.map((h, i) => {
-                      const statusClass = (h.status?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'default').replace(/^-+|-+$/g, '');
+                        const statusClass = h.status?.toLowerCase() || 'default';
                         return (
                           <tr key={h.id || i}>
                             <td style={{ whiteSpace: 'nowrap' }} className="cause-list__timeline-event-date-cell">{formatDate(h.date)}</td>

@@ -11256,11 +11256,8 @@ kbd.cmd__kbd {
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
+  border-radius: 20px;
+  display: inline-block;
 }
 
 .cause-list__badge-status--scheduled {
@@ -11285,12 +11282,6 @@ kbd.cmd__kbd {
   background: #fff5f5;
   color: #e03131;
   border: 1px solid #ffc9c9;
-}
-
-.cause-list__badge-status--pending {
-  background: #f3f0ff;
-  color: #7048e8;
-  border: 1px solid #d0bfff;
 }
 
 .cause-list__badge-status--default {
@@ -14347,13 +14338,12 @@ kbd.cmd__kbd {
 .cl-bulk-bar__delete { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
 .cl-bulk-bar__delete:hover { background: rgba(255,255,255,0.25); }
 
-@keyframes cl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-.cl-card__badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; animation: cl-blink 1.2s ease-in-out infinite; vertical-align: middle; }
+@keyframes cl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.cl-card__badge-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; animation: cl-blink 1.2s ease-in-out infinite; vertical-align: middle; }
 .cl-card__badge-dot--scheduled { background: #0066cc; }
 .cl-card__badge-dot--rescheduled { background: #d97706; }
 .cl-card__badge-dot--completed { background: #0ca678; }
 .cl-card__badge-dot--adjourned { background: #e03131; }
-.cl-card__badge-dot--pending { background: #7048e8; }
 .cl-card__badge-dot--default { background: var(--text-soft); }
 
 .cl-table-header { display: flex; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.04em; align-items: center; gap: 8px; }
