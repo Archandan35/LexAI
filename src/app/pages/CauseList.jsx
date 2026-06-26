@@ -71,6 +71,15 @@ export default function CauseList() {
   });
   const [showColumnsMenu, setShowColumnsMenu] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState('');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   // Templates Tab
   const [tplList, setTplList] = useState([]);

@@ -107,6 +107,15 @@ const COMPLEX = {
       <line key="l" x1="9" y1="11" x2="9" y2="17.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="2 2" />
     </>
   ),
+  'globe': (
+    <>
+      <circle key="c1" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <line key="l1" x1="3.27" y1="6.96" x2="20.73" y2="6.96" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <line key="l2" x1="3.27" y1="17.04" x2="20.73" y2="17.04" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <line key="l3" x1="12" y1="3" x2="12" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path key="p" d="M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1-4-9 14 14 0 0 1 4-9z" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+    </>
+  ),
   'briefcase-duo': (
     <>
       <path key="p1" d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
