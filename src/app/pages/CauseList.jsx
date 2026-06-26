@@ -504,8 +504,6 @@ export default function CauseList() {
   const tplTotalPages = Math.ceil(filteredTpls.length / tplPageSize);
   const paginatedTpls = filteredTpls.slice((tplPage - 1) * tplPageSize, tplPage * tplPageSize);
 
-  const mobileListFiltersOpen = showDatePicker; // reuse existing state to avoid adding more
-
   return (
     <>
       {/* Mobile View */}
@@ -558,8 +556,8 @@ export default function CauseList() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
