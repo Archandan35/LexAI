@@ -66,7 +66,6 @@ const PATHS = {
   filter: 'M22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3',
   building: 'M3 22h18M6 18V9m12 9V9M2 9l10-7 10 7M9 22V12h6v10',
   video: 'M23 7l-7 5 7 5V7z M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
-  gavel: 'M14 10L3 21M8.5 2.5l8 8-6 6-8-8zM18 14l3 3',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
@@ -91,6 +90,21 @@ const COMPLEX = {
       <rect key="r1" x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       <line key="l1" x1="9" y1="12" x2="15" y2="12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
       <line key="l2" x1="9" y1="16" x2="13" y2="16" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </>
+  ),
+  'gavel': (
+    <>
+      <path key="p1" d="M14 10L3 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <rect key="r1" x="8" y="2" width="8" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="rotate(45 12 5)" />
+      <path key="p2" d="M18 14l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </>
+  ),
+  'route': (
+    <>
+      <circle key="c1" cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <circle key="c2" cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <path key="p1" d="M7 9.5 C7 14, 17 10, 17 14.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <line key="l1" x1="7" y1="9.5" x2="7" y2="14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="1.5 1.5" />
     </>
   ),
   'briefcase-duo': (
