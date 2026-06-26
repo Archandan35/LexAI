@@ -56,13 +56,11 @@ export default function CaseHistory({ caseId, onChanged }) {
     <Card
       title={`Case History (${items.length})`}
       sub="Complete proceedings history — full text, imported from the cause list"
-      actions={(
-        <div style={{ display: 'flex', gap: 8 }}>
-          <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="history" onClick={importCauseList}>Import from Cause List</Button></PermissionGate>
-          <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setAdding(true)}>Add</Button></PermissionGate>
-        </div>
-      )}
     >
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="history" onClick={importCauseList}>Import from Cause List</Button></PermissionGate>
+        <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setAdding(true)}>Add</Button></PermissionGate>
+      </div>
       <div className="toolbar-row" style={{ marginBottom: 14 }}>
         <div className="datatable__search" style={{ maxWidth: 260 }}>
           <Icon name="search" size={15} />
