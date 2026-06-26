@@ -14136,11 +14136,6 @@ kbd.cmd__kbd {
   .input-row > * { min-width: 100%; }
   .hearing-modal__section .input-row > * { min-width: 100%; }
   .field input, .field select, .field textarea { font-size: 16px; } /* prevent iOS zoom */
-  .hearing-modal { gap: 4px; }
-  .hearing-modal__section { padding: 10px 12px 8px; }
-  .hearing-modal__section-title { margin-bottom: 8px; padding-bottom: 5px; font-size: 12px; }
-  .hearing-modal__section .input-row { gap: 6px; margin-bottom: 6px; }
-  .hearing-modal__import-export-bar { margin-bottom: 6px; padding-bottom: 6px; gap: 6px; }
 }
 
 /* ---- Tables ---- */
