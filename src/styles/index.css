@@ -6496,7 +6496,7 @@ kbd.cmd__kbd {
   font-size: 12px;
 }
 
-.cause-list__cell-actions {
+.table td.cause-list__cell-actions {
   display: flex;
   gap: 6px;
   align-items: center;
@@ -9076,7 +9076,7 @@ kbd.cmd__kbd {
   font-size: 12px;
 }
 
-.cause-list__cell-actions {
+.table td.cause-list__cell-actions {
   display: flex;
   gap: 6px;
   align-items: center;
