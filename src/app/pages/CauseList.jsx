@@ -584,8 +584,8 @@ export default function CauseList() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd mm yyyy" style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="dd mm yyyy" style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
