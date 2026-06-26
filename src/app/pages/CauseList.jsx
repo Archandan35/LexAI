@@ -1094,6 +1094,7 @@ export default function CauseList() {
                         {visibleColumns.status && (
                           <td>
                             <span className="cause-list__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                              <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
                               {h.status}
                             </span>
                           </td>
