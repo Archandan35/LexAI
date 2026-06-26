@@ -66,6 +66,7 @@ const PATHS = {
   filter: 'M22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3',
   building: 'M3 22h18M6 18V9m12 9V9M2 9l10-7 10 7M9 22V12h6v10',
   video: 'M23 7l-7 5 7 5V7z M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
+  gavel: 'M14 10L3 21M8.5 2.5l8 8-6 6-8-8zM18 14l3 3',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
