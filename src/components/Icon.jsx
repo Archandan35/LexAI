@@ -59,9 +59,39 @@ const PATHS = {
   scissors: 'M6 4l12 16M6 20l12-16M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 21a3 3 0 0 0 0-6 3 3 0 0 0 0 6z',
   cornerDownRight: 'M15 10l5 5-5 5M4 4v7a4 4 0 0 0 4 4h12',
   checkSquare: 'M3 3h18v18H3zM8 12l3 3 5-5',
+  home: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10',
+  briefcase: 'M2 7h20v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16',
+  'user-plus': 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M8.5 11a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M20 8v6 M17 11h6',
+  'check-circle': 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4 12 14.01 9 11.01',
+};
+
+/* Icons that need multiple SVG elements (circles, rects, etc.) */
+const COMPLEX = {
+  'more-horizontal': (
+    <>
+      <circle key="c1" cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle key="c2" cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle key="c3" cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </>
+  ),
+  'briefcase-duo': (
+    <>
+      <path key="p1" d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <rect key="r1" x="3" y="7" width="18" height="12" rx="2.5" fill="currentColor" fillOpacity="0.92" />
+      <circle key="c1" cx="12" cy="13" r="1.7" fill="var(--surface)" />
+      <circle key="c2" cx="12" cy="13" r="0.6" fill="currentColor" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 18, className = '', strokeWidth = 1.9, fill = false }) {
+  if (COMPLEX[name]) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true">
+        {COMPLEX[name]}
+      </svg>
+    );
+  }
   const d = PATHS[name] || PATHS.grid;
   return (
     <svg

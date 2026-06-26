@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
+import Bottombar from './Bottombar.jsx';
 import { BackupManager } from '@/logic/BackupManager.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import DebugOverlay from '@/components/DebugOverlay.jsx';
@@ -36,6 +37,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <Bottombar />
       {debugMode && <DebugOverlay />}
     </div>
   );
