@@ -233,7 +233,7 @@ export default function ManageCase() {
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="users" size={18} /></div>
                     <span className="mc-detail-chart__label">Plaintiff</span>
-                    <span className="mc-detail-chart__value">{c.plaintiff || c.parties?.plaintiff || '—'}</span>
+                    <span className="mc-detail-chart__value">{c.plaintiff || c.parties?.plaintiff || '').split(/\s*(?:,| and)\s*/).filter(Boolean); if (d.length === 0) return ''; return <>{d[0].length > 12 ? `${d[0].slice(0, 12)}...` : d[0]}{d.length > 1 && <><span style={{ margin: '0 4px' }}>and</span><Badge tone="navy" style={{ fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge></>}</>; })()}</span>
                   </div>
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
@@ -253,17 +253,17 @@ export default function ManageCase() {
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="balance" size={18} /></div>
                     <span className="mc-detail-chart__label">Judge</span>
-                    <span className="mc-detail-chart__value">{c.judge || '—'}</span>
+                    <span className="mc-detail-chart__value">{c.judge ? (c.judge.length > 30 ? `${c.judge.slice(0, 30)}...` : c.judge) : '—'}</span>
                   </div>
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
                     <span className="mc-detail-chart__label">Client</span>
-                    <span className="mc-detail-chart__value">{c.client || '—'}</span>
+                    <span className="mc-detail-chart__value">{c.client ? (c.client.length > 30 ? `${c.client.slice(0, 30)}...` : c.client) : '—'}</span>
                   </div>
                   <div className="mc-detail-chart__row">
                     <div className="mc-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
                     <span className="mc-detail-chart__label">Advocate</span>
-                    <span className="mc-detail-chart__value">{c.advocate || '—'}</span>
+                    <span className="mc-detail-chart__value">{c.advocate ? (c.advocate.length > 30 ? `${c.advocate.slice(0, 30)}...` : c.advocate) : '—'}</span>
                   </div>
                 </div>
 
