@@ -301,6 +301,10 @@ export default function ManageCase() {
               </div>
             </Card>
 
+            <div className="mc-section-head">
+              <span className="mc-section-head__title">Important Dates</span>
+              <button className="mc-section-head__action" onClick={() => setTab('Case Tracking')}>View All</button>
+            </div>
             <div className="mc-detail-dates">
               <div className="mc-detail-dates__card">
                 <div className="mc-detail-dates__head">
