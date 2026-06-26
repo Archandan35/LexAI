@@ -504,9 +504,308 @@ export default function CauseList() {
   const tplTotalPages = Math.ceil(filteredTpls.length / tplPageSize);
   const paginatedTpls = filteredTpls.slice((tplPage - 1) * tplPageSize, tplPage * tplPageSize);
 
+  const mobileListFiltersOpen = showDatePicker; // reuse existing state to avoid adding more
+
   return (
-    <div className="fade-in">
-      <PageHeader
+    <>
+      {/* Mobile View */}
+      {isMobile && (
+        <div className="cl-mobile-view">
+          {/* Header Card */}
+          <div className="cl-header">
+            <div className="cl-header__left">
+              <div className="cl-header__icon"><Icon name="calendar" size={22} /></div>
+              <div>
+                <div className="cl-header__title">Case List</div>
+                <div className="cl-header__sub">View and manage all hearings across your matters.</div>
+              </div>
+            </div>
+            <button className="cl-header__add" type="button" onClick={openNew}><Icon name="plus" size={15} /> Add</button>
+          </div>
+
+          {/* Tabs */}
+          <div className="tabs">
+            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cause List</div>
+            <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
+            <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
+            <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
+          </div>
+
+          {/* List Tab */}
+          {tab === 'list' && (
+            <>
+              {/* Mobile Filters */}
+              <div className="cl-filters">
+                <div className="cl-filters__header">
+                  <div className="cl-filters__title">
+                    <Icon name="search" size={15} /> Filter
+                  </div>
+                  <div className="cl-filters__hide" onClick={() => setShowDatePicker(!showDatePicker)}>
+                    {showDatePicker ? 'Hide' : 'Show'} Filters <Icon name={showDatePicker ? 'chevronUp' : 'chevronDown'} size={14} />
+                  </div>
+                </div>
+
+                {showDatePicker && (
+                  <>
+                    {/* Date Range */}
+                    <div className="cl-filters__row" onClick={() => {}}>
+                      <Icon name="calendar" size={16} color="var(--navy-600)" />
+                      <div style={{ flex: 1 }}>
+                        <div className="cl-filters__label">Date Range</div>
+                        <div className="cl-filters__value">
+                          {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : '01 Jun 2026 - 30 Jun 2026'}
+                        </div>
+                      </div>
+                      <Icon name="chevronDown" size={14} className="cl-filters__arrow" />
+                    </div>
+
+                    {/* Date Pickers (hidden by default, expand on tap) */}
+
+                    {/* Court */}
+                    <div className="cl-filters__search">
+                      <Icon name="building" size={15} color="var(--navy-600)" />
+                      <select
+                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        value={filterCourt}
+                        onChange={(e) => setFilterCourt(e.target.value)}
+                      >
+                        <option value="">All Courts</option>
+                        {uniqueCourtNames.map(c => (<option key={c} value={c}>{c}</option>))}
+                      </select>
+                    </div>
+
+                    {/* Jurisdiction */}
+                    <div className="cl-filters__search">
+                      <Icon name="globe" size={15} color="var(--navy-600)" />
+                      <select
+                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        value={filterCourtLocation}
+                        onChange={(e) => setFilterCourtLocation(e.target.value)}
+                      >
+                        <option value="">All Jurisdictions</option>
+                        {uniqueCourtLocations.map(l => (<option key={l} value={l}>{l}</option>))}
+                      </select>
+                    </div>
+
+                    {/* Search */}
+                    <div className="cl-filters__search">
+                      <Icon name="search" size={15} color="var(--navy-600)" />
+                      <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                    </div>
+
+                    {/* Status */}
+                    <div className="cl-filters__search">
+                      <Icon name="checkSquare" size={15} color="var(--navy-600)" />
+                      <select
+                        style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, background: 'transparent', fontFamily: 'inherit', color: 'var(--navy-900)', fontWeight: 600 }}
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                      >
+                        <option value="">All Status</option>
+                        {caseStatuses.map(st => (<option key={st} value={st}>{st}</option>))}
+                      </select>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="cl-filters__actions">
+                      <button className="cl-filters__reset" type="button" onClick={resetFilters}><Icon name="refresh" size={13} /> Reset</button>
+                      <button className="cl-filters__apply" type="button" onClick={loadList}><Icon name="gear" size={14} /> Apply Filters</button>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Hearings */}
+              <div className="cl-hearings">
+                <div className="cl-hearings__title">Hearings ({sortedRows.length})</div>
+                <div className="cl-hearings__bar">
+                  <button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button>
+                  <button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button>
+                  <button className="cl-hearings__btn" type="button" onClick={() => setShowColumnsMenu(!showColumnsMenu)}><Icon name="grid" size={13} /> Columns</button>
+                </div>
+
+                {paginatedRows.length === 0 ? (
+                  <Card bodyClass="card__body--flush">
+                    <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Cause List</Button>} />
+                  </Card>
+                ) : (
+                  <>
+                    {/* Table-like header */}
+                    <div className="cl-table-header">
+                      <div className="cl-table-header__check"><input type="checkbox" /></div>
+                      <div className="cl-table-header__date"><Icon name="calendar" size={12} /> Date</div>
+                      <div className="cl-table-header__case">Case Number &amp; Title</div>
+                      <div className="cl-table-header__actions"><Icon name="more-horizontal" size={14} /></div>
+                    </div>
+
+                    {/* Hearing cards */}
+                    {paginatedRows.map((h) => {
+                      const hDate = new Date(h.date);
+                      const dayNum = hDate.getDate();
+                      const mon = hDate.toLocaleString('default', { month: 'short' });
+                      const year = hDate.getFullYear();
+                      const statusClass = h.status?.toLowerCase() || 'default';
+                      return (
+                        <div
+                          key={h.id}
+                          className={`cl-card ${selectedCaseId === h.caseId ? 'selected' : ''}`}
+                          onClick={() => setSelectedCaseId(h.caseId)}
+                        >
+                          <div className="cl-card__check" onClick={(e) => e.stopPropagation()} />
+                          <div className="cl-card__date">
+                            <div className="cl-card__date-num">{dayNum}</div>
+                            <div className="cl-card__date-mon">{mon}</div>
+                            <div className="cl-card__date-yr">{year}</div>
+                          </div>
+                          <div className="cl-card__body">
+                            <div className="cl-card__top">
+                              <div className="cl-card__num">
+                                <a
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setHistCaseId(h.caseId);
+                                    loadHistory(h.caseId);
+                                    setTab('history');
+                                  }}
+                                  className="text-bold text-brand"
+                                >
+                                  {h.caseNumber}
+                                </a>
+                              </div>
+                              <span className={`cause-list__badge-status cause-list__badge-status--${statusClass}`}>
+                                {h.status}
+                              </span>
+                            </div>
+                            <div className="cl-card__parties">{h.parties}</div>
+                            <div className="cl-card__meta">
+                              <div className="cl-card__meta-item"><Icon name="building" size={11} /> {h.court}</div>
+                              <div className="cl-card__meta-item"><Icon name="users" size={11} /> {h.case?.bench_type || '—'}</div>
+                            </div>
+                            <div className="cl-card__footer">
+                              <div className="cl-card__footer-item"><Icon name="calendar" size={11} /> Next: {formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</div>
+                              <div className="cl-card__footer-item"><Icon name="users" size={11} /> {h.case?.judge || h.judge || '—'}</div>
+                            </div>
+                          </div>
+                          <div className="cl-card__more">
+                            <Icon name="more-horizontal" size={18} />
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="cause-list__footer-pagination">
+                        <div className="cause-list__pagination-info">
+                          Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
+                        </div>
+                        <div className="cause-list__pagination-controls">
+                          <select className="cause-list__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                          </select>
+                          <div className="cause-list__page-buttons">
+                            <button className="cause-list__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                            {Array.from({ length: totalPages }).map((_, i) => (
+                              <button key={i} className={`cause-list__page-btn ${page === i + 1 ? 'cause-list__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
+                                {i + 1}
+                              </button>
+                            ))}
+                            <button className="cause-list__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Non-list tabs (shared with desktop) */}
+          {tab !== 'list' && (
+            <div className="fade-in">
+              {tab === 'history' && (
+                <div className="flex-col gap-16">
+                  {/* Case Select bar inline */}
+                  <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
+                    <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
+                    <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
+                  </div>
+                  {!history ? (
+                    <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
+                  ) : (
+                    <>
+                      <div className="cause-list__case-info-card">
+                        <div className="cause-list__case-info-header">
+                          <div className="cause-list__case-icon-box">
+                            <Icon name="balance" size={24} />
+                          </div>
+                          <div className="cause-list__case-title-area">
+                            <div className="cause-list__case-title-row">
+                              <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                              {history.case?.status && (
+                                <span className="cause-list__case-badge-active">{history.case.status}</span>
+                              )}
+                            </div>
+                            <p className="cause-list__case-subtitle">{history.case?.title}</p>
+                            <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              {tab === 'templates' && (
+                <Card bodyClass="card__body--flush">
+                  <CrudManager
+                    columns={tplColumns}
+                    rows={filteredTpls}
+                    totalPages={tplTotalPages}
+                    page={tplPage}
+                    onPage={setTplPage}
+                    pageSize={10}
+                    emptyIcon="file"
+                    emptyTitle="No templates yet."
+                    emptyAction={<Button icon="plus" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add Template</Button>}
+                    onRowClick={(row) => { setTplForm({ ...row }); setTplEditing(row.id); setTplOpen(true); }}
+                    toolbarLeft={() => (
+                      <>
+                        <Field label="" className="mb-0">
+                          <Input placeholder="Search templates…" value={tplSearch} onChange={(e) => { setTplSearch(e.target.value); setTplPage(1); }} />
+                        </Field>
+                        <Select value={tplCategory} onChange={(e) => { setTplCategory(e.target.value); setTplPage(1); }}>
+                          <option value="">All Categories</option>
+                          <option value="Hearing">Hearing</option>
+                          <option value="Order">Order</option>
+                          <option value="Notice">Notice</option>
+                        </Select>
+                      </>
+                    )}
+                    toolbarRight={<Button icon="plus" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add Template</Button>}
+                  />
+                </Card>
+              )}
+              {tab === 'timeline' && (
+                <Card bodyClass="card__body--flush">
+                  <HearingPreviewModal open={false} onClose={() => {}} hearing={null} />
+                  {/* placeholder */}
+                  <EmptyState icon="clock" title="Timeline coming soon." />
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Desktop View */}
+      {!isMobile && (
+        <div className="cl-desktop-view fade-in">
+          <PageHeader
         icon="calendar"
         title="Cause List"
         subtitle="View and manage all hearings across your matters."
@@ -1314,6 +1613,8 @@ export default function CauseList() {
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." /></Field>
         <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." /></Field>
       </Modal>
-    </div>
+      </div>
+    )}
+  </>
   );
 }
