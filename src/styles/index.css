@@ -11261,42 +11261,39 @@ kbd.cmd__kbd {
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
 }
 
 .cause-list__badge-status--scheduled {
   background: #e7f5ff;
   color: #0066cc;
-  border: 1px solid #a5d8ff;
+  border-color: #a5d8ff;
 }
 
 .cause-list__badge-status--rescheduled {
   background: #fff9db;
   color: #d97706;
-  border: 1px solid #ffe066;
+  border-color: #ffe066;
 }
 
 .cause-list__badge-status--completed {
   background: #ebfbee;
   color: #0ca678;
-  border: 1px solid #b2f2bb;
+  border-color: #b2f2bb;
 }
 
 .cause-list__badge-status--adjourned {
   background: #fff5f5;
   color: #e03131;
-  border: 1px solid #ffc9c9;
+  border-color: #ffc9c9;
 }
 
 .cause-list__badge-status--pending {
   background: #f3f0ff;
   color: #7048e8;
-  border: 1px solid #d0bfff;
-}
-
-.cause-list__badge-status--default {
-  background: var(--surface-2);
-  color: var(--text-soft);
-  border: 1px solid var(--border);
+  border-color: #d0bfff;
 }
 
 /* Case Detail Card (History & Timeline) */
@@ -14348,13 +14345,12 @@ kbd.cmd__kbd {
 .cl-bulk-bar__delete:hover { background: rgba(255,255,255,0.25); }
 
 @keyframes cl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-.cl-card__badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; animation: cl-blink 1.2s ease-in-out infinite; vertical-align: middle; }
+.cl-card__badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; animation: cl-blink 1.2s ease-in-out infinite; vertical-align: middle; background: var(--text-soft); }
 .cl-card__badge-dot--scheduled { background: #0066cc; }
 .cl-card__badge-dot--rescheduled { background: #d97706; }
 .cl-card__badge-dot--completed { background: #0ca678; }
 .cl-card__badge-dot--adjourned { background: #e03131; }
 .cl-card__badge-dot--pending { background: #7048e8; }
-.cl-card__badge-dot--default { background: var(--text-soft); }
 
 .cl-table-header { display: flex; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.04em; align-items: center; gap: 8px; }
 .cl-table-header__check { width: 20px; }
