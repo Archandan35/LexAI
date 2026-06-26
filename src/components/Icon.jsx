@@ -84,6 +84,14 @@ const COMPLEX = {
       <circle key="c3" cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
     </>
   ),
+  'documents': (
+    <>
+      <path key="p1" d="M16 4H18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <rect key="r1" x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <line key="l1" x1="9" y1="12" x2="15" y2="12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <line key="l2" x1="9" y1="16" x2="13" y2="16" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </>
+  ),
   'briefcase-duo': (
     <>
       <path key="p1" d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
