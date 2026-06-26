@@ -171,25 +171,110 @@ export default function ManageCase() {
 
         {tab === 'Overview' && (
           <>
-            <Card
-              title="Case Particulars"
-              actions={<button className="linkbtn" onClick={() => setEditing(true)}>View All</button>}
-            >
-              <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
-              <Row label="Case Year" value={c.case_year} />
-              <Row label="Case Type" value={c.case_type} />
-              <Row label="Case Stage" value={c.stage} />
-              <Row label="Filing Date" value={formatDate(c.filing_date)} />
-              <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
-              <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
-              <Row label="Court Name" value={c.court_name} />
-              <Row label="Bench Type" value={c.bench_type} />
-              <Row label="Judge" value={c.judge} />
-              <Row label="Status" value={c.status} />
-              <Row label="Priority" value={c.priority} />
-              <Row label="Client" value={c.client} />
-              <Row label="Advocate" value={c.advocate} />
-            </Card>
+            <div className="mc-detail-hero">
+              <div className="mc-detail-hero__icon">
+                <Icon name="vault" size={28} />
+              </div>
+              <div>
+                <div className="mc-detail-hero__title">Case Particulars</div>
+                <div className="mc-detail-hero__sub">Case details and party information</div>
+              </div>
+            </div>
+
+            <div className="mc-detail-triad">
+              <div className="mc-detail-triad__item">
+                <div className="mc-detail-triad__icon mc-detail-triad__icon--blue">
+                  <Icon name="target" size={18} />
+                </div>
+                <div>
+                  <div className="mc-detail-triad__label">Current Stage</div>
+                  <div className="mc-detail-triad__value mc-detail-triad__value--blue">{c.stage || '—'}</div>
+                </div>
+              </div>
+              <div className="mc-detail-triad__divider" />
+              <div className="mc-detail-triad__item">
+                <div className="mc-detail-triad__icon mc-detail-triad__icon--green">
+                  <Icon name="check-circle" size={18} />
+                </div>
+                <div>
+                  <div className="mc-detail-triad__label">Status</div>
+                  <div className="mc-detail-triad__value mc-detail-triad__value--green">{c.status || '—'}</div>
+                </div>
+              </div>
+              <div className="mc-detail-triad__divider" />
+              <div className="mc-detail-triad__item">
+                <div className="mc-detail-triad__icon mc-detail-triad__icon--amber">
+                  <Icon name="alert" size={18} />
+                </div>
+                <div>
+                  <div className="mc-detail-triad__label">Priority</div>
+                  <div className="mc-detail-triad__value mc-detail-triad__value--amber">{c.priority || '—'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mc-detail-chart">
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="file" size={18} /></div>
+                <span className="mc-detail-chart__label">Case Number</span>
+                <span className="mc-detail-chart__value">{c.case_display_number || c.caseNumber || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="calendar" size={18} /></div>
+                <span className="mc-detail-chart__label">Case Year</span>
+                <span className="mc-detail-chart__value">{c.case_year || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="layers" size={18} /></div>
+                <span className="mc-detail-chart__label">Case Type</span>
+                <span className="mc-detail-chart__value">{c.case_type || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="users" size={18} /></div>
+                <span className="mc-detail-chart__label">Plaintiff</span>
+                <span className="mc-detail-chart__value">{c.plaintiff || c.parties?.plaintiff || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
+                <span className="mc-detail-chart__label">Defendant</span>
+                <span className="mc-detail-chart__value">{c.defendant || c.parties?.defendant || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
+                <span className="mc-detail-chart__label">Court</span>
+                <span className="mc-detail-chart__value">{c.court_name || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="grid" size={18} /></div>
+                <span className="mc-detail-chart__label">Bench</span>
+                <span className="mc-detail-chart__value">{c.bench_type || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="balance" size={18} /></div>
+                <span className="mc-detail-chart__label">Judge</span>
+                <span className="mc-detail-chart__value">{c.judge || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="user-plus" size={18} /></div>
+                <span className="mc-detail-chart__label">Client</span>
+                <span className="mc-detail-chart__value">{c.client || '—'}</span>
+              </div>
+              <div className="mc-detail-chart__row">
+                <div className="mc-detail-chart__icon"><Icon name="briefcase" size={18} /></div>
+                <span className="mc-detail-chart__label">Advocate</span>
+                <span className="mc-detail-chart__value">{c.advocate || '—'}</span>
+              </div>
+            </div>
+
+            <div className="mc-detail-note">
+              <div className="mc-detail-note__left">
+                <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 1 }} />
+                <p className="mc-detail-note__text">Key case information at a glance.<br />Track parties, court, and representation details.</p>
+              </div>
+              <div className="mc-detail-note__deco">
+                <Icon name="balance" size={48} />
+              </div>
+            </div>
 
             <Card
               title="Description & Summary"
