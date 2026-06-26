@@ -4196,7 +4196,7 @@ kbd.cmd__kbd {
   }
 
   .page-area {
-    padding: 18px 16px 95px;
+    padding: 18px 16px 50px;
   }
 
   .topbar__search {
@@ -7739,7 +7739,7 @@ kbd.cmd__kbd {
   }
 
   .page-area {
-    padding: 18px 16px 95px;
+    padding: 18px 16px 50px;
   }
 
   .topbar__search {
@@ -10434,7 +10434,7 @@ kbd.cmd__kbd {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--bg); color: var(--text); font-size: 14.5px; line-height: 1.5;
   max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative;
-  padding: 18px 16px 100px;
+  padding: 18px 16px 110px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -14193,13 +14193,13 @@ kbd.cmd__kbd {
   .page-area { padding: 22px 24px 50px; }
 }
 @media (max-width: 991px) {
-  .page-area { padding: 16px 16px 95px; }
+  .page-area { padding: 16px 16px 40px; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .page-header__actions { width: 100%; flex-wrap: wrap; }
   .page-header__text h1 { font-size: 20px; }
 }
 @media (max-width: 767px) {
-  .page-area { padding: 12px 10px 95px; }
+  .page-area { padding: 12px 10px 36px; }
   .page-header { padding: 10px 0; gap: 8px; }
   .page-header__text h1 { font-size: 17px; }
   .page-header__actions { gap: 6px; }
@@ -14321,10 +14321,8 @@ kbd.cmd__kbd {
    Bottombar — mobile sticky bottom navigation
    ================================================================ */
 
-@media (min-width: 992px) {
-  .bottombar-wrap {
-    display: none;
-  }
+.bottombar-wrap {
+  display: none;
 }
 
 @media (max-width: 991px) {
@@ -14334,19 +14332,19 @@ kbd.cmd__kbd {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 50;
-    pointer-events: none;
-  }
-
-  .bottombar {
-    position: relative;
-    pointer-events: auto;
-    height: 78px;
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    filter: drop-shadow(0 -4px 14px rgba(16, 31, 61, 0.10));
+    z-index: 50;
+    pointer-events: none;
   }
+}
+
+.bottombar {
+  position: relative;
+  pointer-events: auto;
+  height: 78px;
+  filter: drop-shadow(0 -4px 14px rgba(16, 31, 61, 0.10));
 }
 
 .bottombar__bg {

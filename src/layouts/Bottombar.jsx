@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 
@@ -14,7 +15,7 @@ export default function Bottombar() {
   const nav = useNavigate();
   const { pathname } = useLocation();
 
-  return (
+  const bar = (
     <div className="bottombar-wrap">
       <div className="bottombar">
         <svg className="bottombar__bg" viewBox="0 0 400 78" preserveAspectRatio="none">
@@ -59,4 +60,6 @@ export default function Bottombar() {
       </div>
     </div>
   );
+
+  return createPortal(bar, document.body);
 }
