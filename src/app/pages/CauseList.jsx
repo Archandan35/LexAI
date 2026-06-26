@@ -71,6 +71,7 @@ export default function CauseList() {
   });
   const [showColumnsMenu, setShowColumnsMenu] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState('');
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -202,6 +203,17 @@ export default function CauseList() {
     await loadList();
     if (histCaseId) await loadHistory(histCaseId);
     toast.push('Cause list entry deleted.', 'info');
+  };
+
+  const deleteSelected = async () => {
+    if (!window.confirm(`Delete ${selectedIds.size} selected entries?`)) return;
+    for (const id of selectedIds) {
+      await causeListLogic.deleteHearing(id);
+    }
+    setSelectedIds(new Set());
+    await loadList();
+    if (histCaseId) await loadHistory(histCaseId);
+    toast.push(`${selectedIds.size} entries deleted.`, 'info');
   };
 
   const duplicateHearing = (h) => {
@@ -357,6 +369,22 @@ export default function CauseList() {
     setTempDateTo('');
     setPage(1);
     toast.push('Filters reset.', 'info');
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    if (selectedIds.size === paginatedRows.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedRows.map(r => r.id)));
+    }
   };
 
   // Client-side filtering logic
@@ -629,12 +657,21 @@ export default function CauseList() {
                   </Card>
                 ) : (
                   <>
+                    {/* Bulk delete bar */}
+                    {selectedIds.size > 0 && (
+                      <div className="cl-bulk-bar">
+                        <span className="cl-bulk-bar__count">{selectedIds.size} selected</span>
+                        <button className="cl-bulk-bar__delete" onClick={(e) => { e.stopPropagation(); deleteSelected(); }}>
+                          <Icon name="trash" size={14} /> Delete Selected
+                        </button>
+                      </div>
+                    )}
+
                     {/* Table-like header */}
                     <div className="cl-table-header">
-                      <div className="cl-table-header__check"><input type="checkbox" /></div>
+                      <div className="cl-table-header__check"><input type="checkbox" checked={selectedIds.size === paginatedRows.length && paginatedRows.length > 0} onChange={selectAll} /></div>
                       <div className="cl-table-header__date"><Icon name="calendar" size={12} /> Date</div>
                       <div className="cl-table-header__case">Case Number &amp; Title</div>
-                      <div className="cl-table-header__actions"><Icon name="more-horizontal" size={14} /></div>
                     </div>
 
                     {/* Hearing cards */}
@@ -650,7 +687,9 @@ export default function CauseList() {
                           className={`cl-card ${selectedCaseId === h.caseId ? 'selected' : ''}`}
                           onClick={() => setSelectedCaseId(h.caseId)}
                         >
-                          <div className="cl-card__check" onClick={(e) => e.stopPropagation()} />
+                          <div className="cl-card__check" onClick={(e) => e.stopPropagation()}>
+                            <input type="checkbox" checked={selectedIds.has(h.id)} onChange={() => toggleSelect(h.id)} style={{ width: 18, height: 18, cursor: 'pointer' }} />
+                          </div>
                           <div className="cl-card__date">
                             <div className="cl-card__date-num">{dayNum}</div>
                             <div className="cl-card__date-mon">{mon}</div>
@@ -692,9 +731,20 @@ export default function CauseList() {
                                 <span className="cl-card__footer-value">{h.case?.judge || h.judge || '—'}</span>
                               </div>
                             </div>
-                          </div>
-                          <div className="cl-card__more">
-                            <Icon name="more-horizontal" size={18} />
+                            <div className="cl-card__actions">
+                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); setPreviewHearing(h); }} title="View">
+                                <Icon name="eye" size={16} />
+                                <span>View</span>
+                              </button>
+                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
+                                <Icon name="edit" size={16} />
+                                <span>Edit</span>
+                              </button>
+                              <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
+                                <Icon name="trash" size={16} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
