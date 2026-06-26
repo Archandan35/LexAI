@@ -39,7 +39,6 @@ export default function ManageCase() {
   const [busy, setBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
   const [showDeleteDlg, setShowDeleteDlg] = useState(false);
-  const [mobileSection, setMobileSection] = useState('details');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -159,114 +158,221 @@ export default function ManageCase() {
           </div>
         </div>
 
-        <div className="mc-detail-section-tabs">
-          {['details', 'hearings', 'documents', 'notes'].map((s) => (
-            <button
-              key={s}
-              className={`mc-detail-section-tab ${mobileSection === s ? 'is-active' : ''}`}
-              onClick={() => setMobileSection(s)}
-            >
-              {s === 'details' && 'Details'}
-              {s === 'hearings' && `Hearings (${hearings.length})`}
-              {s === 'documents' && `Docs (${documents.length})`}
-              {s === 'notes' && `Notes (${notes.length})`}
-            </button>
+        <div className="tabs">
+          {TABS.map((t) => (
+            <div key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
+              {t}
+              {t === 'Documents' && ` (${documents.length})`}
+              {t === 'Hearings' && ` (${hearings.length})`}
+              {t === 'Notes' && ` (${notes.length})`}
+            </div>
           ))}
         </div>
 
-        {mobileSection === 'details' && (
+        {tab === 'Overview' && (
           <>
-            <div className="mc-card mc-detail-info-card">
-              <div className="mc-card__head"><div className="mc-card__title">Case Particulars</div></div>
-              <div className="mc-detail-info-grid">
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Case Number</span><span>{c.case_display_number || c.caseNumber}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Case Year</span><span>{c.case_year || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Case Type</span><span>{c.case_type || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Stage</span><span>{c.stage || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Filing Date</span><span>{formatDate(c.filing_date)}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Plaintiff</span><span>{c.plaintiff || c.parties?.plaintiff || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Defendant</span><span>{c.defendant || c.parties?.defendant || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Court</span><span>{c.court_name || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Bench</span><span>{c.bench_type || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Judge</span><span>{c.judge || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Priority</span><span>{c.priority || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Client</span><span>{c.client || '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Advocate</span><span>{c.advocate || '—'}</span></div>
-              </div>
-            </div>
+            <Card
+              title="Case Particulars"
+              actions={<button className="linkbtn" onClick={() => setEditing(true)}>View All</button>}
+            >
+              <Row label="Case Number" value={c.case_display_number || c.caseNumber} />
+              <Row label="Case Year" value={c.case_year} />
+              <Row label="Case Type" value={c.case_type} />
+              <Row label="Case Stage" value={c.stage} />
+              <Row label="Filing Date" value={formatDate(c.filing_date)} />
+              <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
+              <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
+              <Row label="Court Name" value={c.court_name} />
+              <Row label="Bench Type" value={c.bench_type} />
+              <Row label="Judge" value={c.judge} />
+              <Row label="Status" value={c.status} />
+              <Row label="Priority" value={c.priority} />
+              <Row label="Client" value={c.client} />
+              <Row label="Advocate" value={c.advocate} />
+            </Card>
 
-            <div className="mc-card mc-detail-info-card">
-              <div className="mc-card__head"><div className="mc-card__title">Important Dates</div></div>
-              <div className="mc-detail-info-grid">
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Filing Date</span><span>{formatDate(c.filing_date)}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Next Hearing</span><span>{formatDate(c.next_hearing)}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Last Hearing</span><span>{lastHearing ? formatDate(lastHearing.date) : '—'}</span></div>
-                <div className="mc-detail-info-row"><span className="mc-detail-info-label">Judgment</span><span>{formatDate(c.disposal_date)}</span></div>
+            <Card
+              title="Description & Summary"
+              actions={editingBtn}
+            >
+              <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
+              <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
+              <div className="card__sub" style={{ marginTop: 10, marginBottom: 4 }}>Internal Notes</div>
+              <p className="case-detail__description" style={{ color: 'var(--text-muted)' }}>{c.internal_notes || '—'}</p>
+              <div className="case-detail__tags">
+                {c.stage && <span className="tag tag--navy">{c.stage}</span>}
+                {c.status && <span className="tag tag--green">{c.status}</span>}
+                {c.priority && <span className="tag tag--amber">{c.priority}</span>}
+                {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
+                <PermissionGate perm="casevault.edit">
+                  <button className="case-detail__add-tag-btn" onClick={() => setEditing(true)}><Icon name="plus" size={12} /> Add Tag</button>
+                </PermissionGate>
               </div>
-            </div>
+            </Card>
 
-            <div className="mc-card mc-detail-info-card">
-              <div className="mc-card__head"><div className="mc-card__title">Description & Tags</div></div>
-              <div className="mc-detail-info-card__body">
-                <div className="mc-detail-info-sub">Case Summary</div>
-                <p className="mc-detail-info-text">{c.case_summary || c.description || '—'}</p>
-                <div className="mc-detail-info-sub">Internal Notes</div>
-                <p className="mc-detail-info-text mc-detail-info-text--muted">{c.internal_notes || '—'}</p>
-                <div className="mc-detail-tags">
-                  {c.stage && <Badge tone="navy">{c.stage}</Badge>}
-                  {c.status && <Badge tone="green">{c.status}</Badge>}
-                  {c.priority && <Badge tone="amber">{c.priority}</Badge>}
-                  {(c.tags || []).map((t) => <Badge key={t} tone="navy">{t}</Badge>)}
+            <Card
+              title="Important Dates"
+              actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
+            >
+              <div className="case-detail__dates-grid">
+                <div className="case-detail__date-cell">
+                  <div className="case-detail__date-cell-label">Filing Date</div>
+                  <div className="case-detail__date-cell-value">{formatDate(c.filing_date)}</div>
+                </div>
+                <div className="case-detail__date-cell">
+                  <div className="case-detail__date-cell-label">Next Hearing Date</div>
+                  <div className="case-detail__date-cell-value">{formatDate(c.next_hearing)}</div>
+                </div>
+                <div className="case-detail__date-cell">
+                  <div className="case-detail__date-cell-label">Last Hearing Date</div>
+                  <div className="case-detail__date-cell-value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
+                </div>
+                <div className="case-detail__date-cell">
+                  <div className="case-detail__date-cell-label">Judgment Date</div>
+                  <div className="case-detail__date-cell-value">{formatDate(c.disposal_date)}</div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="mc-card">
-              <div className="mc-card__head"><div className="mc-card__title">Upcoming Hearing</div></div>
+            <Card
+              title="Upcoming Hearing"
+              actions={<button className="linkbtn" onClick={() => setTab('Hearings')}>View All</button>}
+            >
               {!upcomingHearing ? (
-                <div className="mc-detail-empty"><Icon name="calendar" size={20} /><span>No upcoming hearing.</span></div>
+                <MiniEmpty icon="calendar" title="No upcoming hearing." />
               ) : (
-                <div className="mc-detail-hearing">
-                  <div className="mc-detail-hearing__datebox">
-                    <div className="mc-detail-hearing__day">{datePart(upcomingHearing.date, 'day')}</div>
-                    <div className="mc-detail-hearing__mon">{datePart(upcomingHearing.date, 'mon')}</div>
-                    <div className="mc-detail-hearing__year">{datePart(upcomingHearing.date, 'year')}</div>
+                <div className="case-detail__hearing-card">
+                  <div className="case-detail__hearing-datebox">
+                    <div className="case-detail__hearing-datebox-day">{datePart(upcomingHearing.date, 'day')}</div>
+                    <div className="case-detail__hearing-datebox-mon">{datePart(upcomingHearing.date, 'mon')}</div>
+                    <div className="case-detail__hearing-datebox-year">{datePart(upcomingHearing.date, 'year')}</div>
                   </div>
-                  <div className="mc-detail-hearing__info">
-                    <div className="mc-detail-hearing__title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
-                    <div className="mc-detail-hearing__court">{combinedCourt(c)}</div>
-                    <Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge>
+                  <div className="case-detail__hearing-info">
+                    <div className="case-detail__hearing-title">{c.case_display_number || c.caseNumber || upcomingHearing.purpose || 'Hearing'}</div>
+                    <div className="case-detail__hearing-court">{combinedCourt(c)}</div>
+                    <div style={{ marginTop: 8 }}><Badge tone="navy">{upcomingHearing.status || 'Scheduled'}</Badge></div>
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
+
+            <RemindersPanel caseId={id} onChanged={load} />
+
+            <Card
+              title="Documents"
+              actions={<button className="linkbtn" onClick={() => setTab('Documents')}>View All</button>}
+            >
+              {folders.filter((f) => f.kind === 'document').length === 0 && documents.length === 0 ? (
+                <MiniEmpty
+                  icon="folder"
+                  title="No documents uploaded."
+                  hint="Upload or add documents related to this case."
+                  action={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                />
+              ) : (
+                folders.filter((f) => f.kind === 'document').map((f) => {
+                  const count = documents.filter((d) => d.folder === f.name).length;
+                  return (
+                    <div className="list-row" key={f.id} onClick={() => setTab('Documents')}>
+                      <div className="list-row__icon"><Icon name="folder" size={15} /></div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="list-row__title">{f.name}</div>
+                        <div className="list-row__meta">{count} document{count !== 1 ? 's' : ''}</div>
+                      </div>
+                      <Icon name="arrow" size={14} />
+                    </div>
+                  );
+                })
+              )}
+            </Card>
           </>
         )}
 
-        {mobileSection === 'hearings' && (
-          <div className="mc-card">
-            <div className="mc-card__head"><div className="mc-card__title">Hearing History</div></div>
-            {hearings.length === 0 ? (
-              <div className="mc-detail-empty"><Icon name="calendar" size={20} /><span>No hearings recorded.</span></div>
-            ) : (
-              hearings.map((h) => (
-                <div className="mc-detail-hearing-item" key={h.id}>
-                  <div className="mc-detail-hearing-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
-                  <div className="mc-detail-hearing-item__event">{h.purpose || '—'}</div>
-                  {h.notes && <div className="mc-detail-hearing-item__notes" dangerouslySetInnerHTML={{ __html: h.notes }} />}
-                </div>
-              ))
-            )}
-          </div>
+        {tab === 'Parties' && (
+          <Card title="Parties">
+            <Row label="Plaintiff / Petitioner" value={c.plaintiff || c.parties?.plaintiff} />
+            <Row label="Defendant / Respondent" value={c.defendant || c.parties?.defendant} />
+            <Row label="Cause Title" value={c.title} />
+            <Row label="Advocate" value={c.advocate} />
+            <Row label="Client" value={c.client} />
+          </Card>
         )}
 
-        {mobileSection === 'documents' && (
+        {tab === 'Court Info' && (
+          <Card title="Court Info">
+            <Row label="Court Name" value={c.court_name} />
+            <Row label="Bench Type" value={c.bench_type} />
+            <Row label="Judge" value={c.judge} />
+          </Card>
+        )}
+
+        {tab === 'Case Tracking' && (
+          <>
+            <Card title="Case Tracking">
+              <Row label="Current Stage" value={c.stage} />
+              <Row label="Status" value={c.status} />
+              <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
+              <Row label="Filing Date" value={formatDate(c.filing_date)} />
+              <Row label="Registration Date" value={formatDate(c.registration_date)} />
+              <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
+              <Row label="Next Hearing Date" value={formatDate(c.next_hearing)} />
+              <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
+              <Row label="Disposal / Judgment Date" value={formatDate(c.disposal_date)} />
+            </Card>
+            <Card title="Stage History" sub="Every stage change is tracked permanently">
+              {(c.stageHistory || []).length === 0 ? <EmptyState icon="target" title="No stage changes yet." /> : (
+                <div className="timeline">
+                  {c.stageHistory.map((s) => (
+                    <div className="timeline-item" key={s.id}>
+                      <div className="timeline-item__date">{formatDateTime(s.at)}</div>
+                      <div className="timeline-item__event"><Badge tone="grey">{s.from}</Badge> <Icon name="arrow" size={12} /> <Badge tone="navy">{s.to}</Badge></div>
+                      <div className="timeline-item__source">Changed by {s.by}{s.remarks ? ` · ${s.remarks}` : ''}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </>
+        )}
+
+        {tab === 'Identifiers' && (
+          <Card title="Identifiers">
+            <Row label="Case Display Number" value={c.case_display_number} />
+            <Row label="Case Number (Numeric)" value={c.case_number} />
+            <Row label="Case Year" value={c.case_year} />
+            <Row label="Case Type" value={c.case_type} />
+            <Row label="CNR Number" value={c.cnr_number} />
+            <Row label="Filing Number" value={c.filing_number} />
+            <Row label="Registration Number" value={c.registration_number} />
+            <Row label="Document Folder Name" value={c.caseNumber || c.case_display_number || '—'} />
+          </Card>
+        )}
+
+        {tab === 'Documents' && (
           <CaseDocTab caseId={id} caseNumber={c.caseNumber || c.case_display_number} folders={folders} documents={documents} onChanged={load} caseObj={c} />
         )}
 
-        {mobileSection === 'notes' && (
-          <NotesPanel caseId={id} notes={notes} onChanged={load} />
+        {tab === 'Hearings' && (
+          <Card title="Hearing History">
+            {hearings.length === 0 ? <EmptyState icon="calendar" title="No hearings recorded." /> : (
+              <div className="timeline">
+                {hearings.map((h) => (
+                  <div className="timeline-item" key={h.id}>
+                    <div className="timeline-item__date">{formatDate(h.date)} <Badge>{h.status}</Badge></div>
+                    <div className="timeline-item__event">{h.purpose || '—'}</div>
+                    {h.notes && <div className="timeline-item__source" dangerouslySetInnerHTML={{ __html: h.notes }} />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         )}
+
+        {tab === 'Timeline' && <CaseTimeline caseId={id} refreshKey={activityKey} />}
+
+        {tab === 'Notes' && <NotesPanel caseId={id} notes={notes} onChanged={load} />}
+
+        {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
       </div>
       )}
 

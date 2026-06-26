@@ -14226,10 +14226,10 @@ kbd.cmd__kbd {
 /* ---- Tabs ---- */
 @media (max-width: 991px) {
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; flex-wrap: nowrap; }
-  .tabs__tab { white-space: nowrap; font-size: 13px; padding: 10px 14px; }
+  .tab { white-space: nowrap; font-size: 13px; padding: 10px 14px; }
 }
 @media (max-width: 767px) {
-  .tabs__tab { padding: 8px 12px; font-size: 12px; }
+  .tab { padding: 8px 12px; font-size: 12px; }
 }
 
 /* ---- Segment Control ---- */
@@ -14528,7 +14528,10 @@ kbd.cmd__kbd {
    Manage Case — Mobile Detail view  — matches Dashboard pattern
    ================================================================ */
 
-.mc-mobile-detail { padding-bottom: 120px; }
+.mc-mobile-detail {
+  min-width: 0;
+  overflow-x: hidden;
+}
 .mc-detail-topbar {
   display: flex; align-items: center; gap: 10px; padding: 10px 0 4px;
   position: sticky; top: 0; background: var(--bg); z-index: 10;
@@ -14568,6 +14571,9 @@ kbd.cmd__kbd {
 .mc-detail-section-tabs { display: flex; gap: 4px; margin-bottom: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; padding: 3px; }
 .mc-detail-section-tab { flex: 1; padding: 8px 6px; border: none; background: transparent; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-soft); cursor: pointer; transition: all 0.15s var(--ease); text-align: center; }
 .mc-detail-section-tab.is-active { background: var(--surface); color: var(--navy-700); box-shadow: var(--shadow-sm); }
+@media (max-width: 380px) {
+  .mc-detail-section-tab { font-size: 11px; padding: 7px 4px; }
+}
 .mc-mobile-detail .mc-card { cursor: default; margin-bottom: 12px; }
 .mc-detail-info-card__body { padding: 4px 0 0; }
 .mc-detail-info-grid { display: flex; flex-direction: column; }
@@ -14970,7 +14976,6 @@ kbd.cmd__kbd {
   border-radius: 50%;
   animation: spin .7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 .cv-empty {
   text-align: center;
   padding: 40px 20px;
