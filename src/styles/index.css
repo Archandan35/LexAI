@@ -14419,7 +14419,8 @@ kbd.cmd__kbd {
    ================================================================ */
 
 @media (max-width: 991px) {
-  .mc-mobile-view {
+  .mc-mobile-view,
+  .mc-mobile-detail {
     display: block;
     padding: 0 16px 100px;
     max-width: 480px;
@@ -14546,7 +14547,7 @@ kbd.cmd__kbd {
     color: #fff;
     border-color: var(--navy-700);
   }
-  .mc-mobile-view .mc-card {
+  .mc-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -14556,31 +14557,31 @@ kbd.cmd__kbd {
     cursor: pointer;
     transition: all 0.2s var(--ease);
   }
-  .mc-mobile-view .mc-card:active {
+  .mc-card:active {
     transform: scale(0.98);
     border-color: var(--border-strong);
   }
-  .mc-mobile-view .mc-card__head {
+  .mc-card__head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 8px;
   }
-  .mc-mobile-view .mc-card__title {
+  .mc-card__title {
     font-weight: 700;
     font-size: 15px;
     color: var(--navy-900);
   }
-  .mc-mobile-view .mc-card__badge {
+  .mc-card__badge {
     flex-shrink: 0;
   }
-  .mc-mobile-view .mc-card__sub {
+  .mc-card__sub {
     font-size: 13px;
     color: var(--text-soft);
     margin-bottom: 8px;
     line-height: 1.4;
   }
-  .mc-mobile-view .mc-meta {
+  .mc-meta {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -14588,7 +14589,7 @@ kbd.cmd__kbd {
     color: var(--text-faint);
     flex-wrap: wrap;
   }
-  .mc-mobile-view .mc-meta__item {
+  .mc-meta__item {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -14658,11 +14659,329 @@ kbd.cmd__kbd {
   }
 }
 
-.mc-mobile-view {
+.mc-mobile-view,
+.mc-mobile-detail {
   display: none;
 }
+.mc-desktop-detail {
+  display: block;
+}
 @media (max-width: 991px) {
-  .mc-mobile-view {
+  .mc-mobile-view,
+  .mc-mobile-detail {
     display: block;
+  }
+  .mc-desktop-detail {
+    display: none;
+  }
+}
+
+/* ================================================================
+   Manage Case — Mobile Detail view styles
+   ================================================================ */
+
+@media (max-width: 991px) {
+  .mc-mobile-detail {
+    padding-bottom: 120px;
+  }
+  .mc-detail-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0 4px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  .mc-detail-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--text-soft);
+    flex-shrink: 0;
+  }
+  .mc-detail-topbar__title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--navy-900);
+  }
+  .mc-detail-topbar__spacer {
+    flex: 1;
+  }
+  .mc-detail-edit-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--navy-700);
+    flex-shrink: 0;
+  }
+  .mc-detail-header {
+    margin: 8px 0 14px;
+  }
+  .mc-detail-header__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .mc-detail-header__number {
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--navy-900);
+    letter-spacing: -0.4px;
+  }
+  .mc-detail-header__title {
+    font-size: 14px;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .mc-mobile-detail .mc-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-faint);
+    flex-wrap: wrap;
+  }
+  .mc-mobile-detail .mc-meta__item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .mc-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mc-detail-actions::-webkit-scrollbar { display: none; }
+  .mc-detail-actions__btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
+  }
+  .mc-detail-actions__btn:active {
+    background: var(--brand-soft);
+    color: var(--navy-700);
+  }
+  .mc-detail-actions__btn--danger:active {
+    background: var(--red-soft);
+    color: var(--red);
+  }
+  .mc-detail-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .mc-detail-metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px;
+    text-align: center;
+  }
+  .mc-detail-metric__label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .mc-detail-metric__value {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--navy-900);
+  }
+  .mc-detail-section-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 3px;
+  }
+  .mc-detail-section-tab {
+    flex: 1;
+    padding: 8px 6px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
+    text-align: center;
+  }
+  .mc-detail-section-tab.is-active {
+    background: var(--surface);
+    color: var(--navy-700);
+    box-shadow: var(--shadow-sm);
+  }
+  .mc-mobile-detail .mc-card {
+    cursor: default;
+    margin-bottom: 12px;
+  }
+  .mc-detail-info-card__body {
+    padding: 4px 0 0;
+  }
+  .mc-detail-info-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .mc-detail-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+    gap: 12px;
+  }
+  .mc-detail-info-row:last-child {
+    border-bottom: none;
+  }
+  .mc-detail-info-label {
+    color: var(--text-soft);
+    flex-shrink: 0;
+    font-size: 12.5px;
+  }
+  .mc-detail-info-row > span:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .mc-detail-info-sub {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+    margin-top: 8px;
+  }
+  .mc-detail-info-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    margin: 0 0 4px;
+  }
+  .mc-detail-info-text--muted {
+    color: var(--text-faint);
+  }
+  .mc-detail-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .mc-detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+    color: var(--text-faint);
+    font-size: 13px;
+  }
+  .mc-detail-hearing {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .mc-detail-hearing__datebox {
+    width: 60px;
+    height: 68px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--navy-700), var(--navy-900));
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mc-detail-hearing__day {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .mc-detail-hearing__mon {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .mc-detail-hearing__year {
+    font-size: 9px;
+    opacity: 0.75;
+  }
+  .mc-detail-hearing__info {
+    flex: 1;
+    min-width: 0;
+  }
+  .mc-detail-hearing__title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy-900);
+  }
+  .mc-detail-hearing__court {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin: 2px 0 6px;
+  }
+  .mc-detail-hearing-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mc-detail-hearing-item:last-child {
+    border-bottom: none;
+  }
+  .mc-detail-hearing-item__date {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy-700);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .mc-detail-hearing-item__event {
+    font-size: 13px;
+    color: var(--text);
+  }
+  .mc-detail-hearing-item__notes {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-top: 4px;
   }
 }
