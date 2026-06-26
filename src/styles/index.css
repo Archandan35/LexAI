@@ -14225,11 +14225,11 @@ kbd.cmd__kbd {
 
 /* ---- Tabs ---- */
 @media (max-width: 991px) {
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; flex-wrap: nowrap; }
-  .tab { white-space: nowrap; font-size: 13px; padding: 10px 14px; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .tab { font-size: 13px; padding: 10px 8px; text-align: center; }
 }
 @media (max-width: 767px) {
-  .tab { padding: 8px 12px; font-size: 12px; }
+  .tab { padding: 8px 6px; font-size: 12px; }
 }
 
 /* ---- Segment Control ---- */
@@ -14447,6 +14447,7 @@ kbd.cmd__kbd {
   background: var(--bg); color: var(--text); font-size: 14.5px; line-height: 1.5;
   max-width: 480px; margin: 0 auto; padding: 0 16px 100px;
   -webkit-font-smoothing: antialiased;
+  display: flex; flex-direction: column; gap: 12px;
 }
 
 /* ---- shared card/meta ---- */
@@ -14554,10 +14555,9 @@ kbd.cmd__kbd {
 .mc-detail-header__title { font-size: 14px; color: var(--text-soft); margin-bottom: 8px; line-height: 1.4; }
 .mc-mobile-detail .mc-meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-faint); flex-wrap: wrap; }
 .mc-mobile-detail .mc-meta__item { display: flex; align-items: center; gap: 4px; }
-.mc-detail-actions { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.mc-detail-actions::-webkit-scrollbar { display: none; }
+.mc-detail-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
 .mc-detail-actions__btn {
-  flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 7px 12px;
+  display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 12px;
   border-radius: 10px; border: 1px solid var(--border); background: var(--surface);
   font-size: 12px; font-weight: 600; color: var(--text-soft); cursor: pointer;
   transition: all 0.15s var(--ease);
