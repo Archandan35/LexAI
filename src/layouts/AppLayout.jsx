@@ -23,22 +23,24 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="app-shell">
-      <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} />
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,31,61,0.4)', zIndex: 35 }}
-        />
-      )}
-      <div className={`app-main ${collapsed ? 'collapsed' : ''}`}>
-        <Topbar onToggle={toggle} />
-        <main className="page-area">
-          <Outlet />
-        </main>
+    <>
+      <div className="app-shell">
+        <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} />
+        {mobileOpen && (
+          <div
+            className="sidebar-overlay"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+        <div className={`app-main ${collapsed ? 'collapsed' : ''}`}>
+          <Topbar onToggle={toggle} />
+          <main className="page-area">
+            <Outlet />
+          </main>
+        </div>
+        {debugMode && <DebugOverlay />}
       </div>
       <Bottombar />
-      {debugMode && <DebugOverlay />}
-    </div>
+    </>
   );
 }
