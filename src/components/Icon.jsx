@@ -94,17 +94,9 @@ const COMPLEX = {
   ),
   'gavel': (
     <>
-      <path key="p1" d="M14 10L3 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <rect key="r1" x="8" y="2" width="8" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" transform="rotate(45 12 5)" />
-      <path key="p2" d="M18 14l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </>
-  ),
-  'route': (
-    <>
-      <circle key="c1" cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.8" fill="none" />
-      <circle key="c2" cx="17" cy="17" r="2.5" stroke="currentColor" strokeWidth="1.8" fill="none" />
-      <path key="p1" d="M7 9.5 C7 14, 17 10, 17 14.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <line key="l1" x1="7" y1="9.5" x2="7" y2="14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="1.5 1.5" />
+      <path key="p1" d="M14 10L3 21" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <rect key="r1" x="8" y="2" width="8" height="6" rx="1.5" transform="rotate(45 12 5)" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path key="p2" d="M18 14l3 3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </>
   ),
   'briefcase-duo': (

@@ -237,13 +237,7 @@ export default function ManageCase() {
               <div className="mc-detail-chart__row">
                 <div className="mc-detail-chart__icon"><Icon name="shield" size={18} /></div>
                 <span className="mc-detail-chart__label">Defendant</span>
-                <span className="mc-detail-chart__value">{(() => {
-                  const raw = c.defendant || c.parties?.defendant || '';
-                  if (!raw) return '—';
-                  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
-                  if (parts.length <= 1) return raw;
-                  return <>{parts[0]} <Badge tone="navy">+{parts.length - 1}</Badge></>;
-                })()}</span>
+                <span className="mc-detail-chart__value">{(() => { const d = (c.defendant || c.parties?.defendant || '').split(',').map(s => s.trim()).filter(Boolean); return d.length === 0 ? '—' : <>{d[0]}{d.length > 1 && <Badge tone="navy" style={{ marginLeft: 6, fontSize: 10, padding: '1px 6px' }}>+{d.length - 1}</Badge>}</>; })()}</span>
               </div>
               <div className="mc-detail-chart__row">
                 <div className="mc-detail-chart__icon"><Icon name="building" size={18} /></div>
@@ -301,40 +295,41 @@ export default function ManageCase() {
               </div>
             </Card>
 
-            <div className="mc-section-head">
-              <span className="mc-section-head__title">Important Dates</span>
-              <button className="mc-section-head__action" onClick={() => setTab('Case Tracking')}>View All</button>
-            </div>
-            <div className="mc-detail-dates">
-              <div className="mc-detail-dates__card">
-                <div className="mc-detail-dates__head">
-                  <div className="mc-detail-dates__icon"><Icon name="calendar" size={17} /></div>
-                  <span className="mc-detail-dates__label">Filing Date</span>
+            <Card
+              title="Important Dates"
+              actions={<button className="linkbtn" onClick={() => setTab('Case Tracking')}>View All</button>}
+            >
+              <div className="mc-detail-dates">
+                <div className="mc-detail-dates__cell">
+                  <div className="mc-detail-dates__top">
+                    <div className="mc-detail-dates__icon"><Icon name="calendar" size={15} /></div>
+                    <span className="mc-detail-dates__label">Filing Date</span>
+                  </div>
+                  <div className="mc-detail-dates__value">{formatDate(c.filing_date)}</div>
                 </div>
-                <div className="mc-detail-dates__value">{formatDate(c.filing_date)}</div>
-              </div>
-              <div className="mc-detail-dates__card">
-                <div className="mc-detail-dates__head">
-                  <div className="mc-detail-dates__icon"><Icon name="calendar" size={17} /></div>
-                  <span className="mc-detail-dates__label">Next Hearing</span>
+                <div className="mc-detail-dates__cell">
+                  <div className="mc-detail-dates__top">
+                    <div className="mc-detail-dates__icon"><Icon name="calendar" size={15} /></div>
+                    <span className="mc-detail-dates__label">Next Hearing</span>
+                  </div>
+                  <div className="mc-detail-dates__value">{formatDate(c.next_hearing)}</div>
                 </div>
-                <div className="mc-detail-dates__value">{formatDate(c.next_hearing)}</div>
-              </div>
-              <div className="mc-detail-dates__card">
-                <div className="mc-detail-dates__head">
-                  <div className="mc-detail-dates__icon"><Icon name="gavel" size={17} /></div>
-                  <span className="mc-detail-dates__label">Last Hearing</span>
+                <div className="mc-detail-dates__cell">
+                  <div className="mc-detail-dates__top">
+                    <div className="mc-detail-dates__icon"><Icon name="gavel" size={15} /></div>
+                    <span className="mc-detail-dates__label">Last Hearing</span>
+                  </div>
+                  <div className="mc-detail-dates__value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
                 </div>
-                <div className="mc-detail-dates__value">{lastHearing ? formatDate(lastHearing.date) : '—'}</div>
-              </div>
-              <div className="mc-detail-dates__card">
-                <div className="mc-detail-dates__head">
-                  <div className="mc-detail-dates__icon"><Icon name="balance" size={17} /></div>
-                  <span className="mc-detail-dates__label">Judgment</span>
+                <div className="mc-detail-dates__cell">
+                  <div className="mc-detail-dates__top">
+                    <div className="mc-detail-dates__icon"><Icon name="balance" size={15} /></div>
+                    <span className="mc-detail-dates__label">Judgment</span>
+                  </div>
+                  <div className="mc-detail-dates__value">{formatDate(c.disposal_date)}</div>
                 </div>
-                <div className="mc-detail-dates__value">{formatDate(c.disposal_date)}</div>
               </div>
-            </div>
+            </Card>
 
             <Card
               title="Upcoming Hearing"
@@ -410,17 +405,7 @@ export default function ManageCase() {
 
         {tab === 'Case Tracking' && (
           <>
-            <div className="mc-detail-hero">
-              <div className="mc-detail-hero__icon">
-                <Icon name="route" size={28} />
-              </div>
-              <div>
-                <div className="mc-detail-hero__title">Case Tracking</div>
-                <div className="mc-detail-hero__sub">Track the progress and important dates of the case.</div>
-              </div>
-            </div>
-
-            <Card>
+            <Card title="Case Tracking">
               <Row label="Current Stage" value={c.stage} />
               <Row label="Status" value={c.status} />
               <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />

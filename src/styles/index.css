@@ -14644,22 +14644,23 @@ kbd.cmd__kbd {
 .mc-detail-note__text { font-size: 12.5px; color: var(--navy-600); line-height: 1.5; font-weight: 500; }
 .mc-detail-note__deco { flex-shrink: 0; opacity: 0.2; color: var(--navy-600); }
 
-.mc-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.mc-section-head__title { font-size: 16px; font-weight: 700; color: var(--navy-900); }
-.mc-section-head__action { font-size: 12.5px; font-weight: 600; color: var(--navy-600); cursor: pointer; background: none; border: none; padding: 0; }
-
-/* ---- Important Dates redesign ---- */
-.mc-detail-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mc-detail-dates__card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+.mc-detail-dates {
+  display: grid; grid-template-columns: 1fr 1fr; background: var(--surface);
+  border-radius: 16px; overflow: hidden;
 }
-.mc-detail-dates__head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.mc-detail-dates__cell {
+  padding: 14px 14px; border-bottom: 1px solid var(--border-soft);
+  border-right: 1px solid var(--border-soft);
+}
+.mc-detail-dates__cell:nth-child(even) { border-right: none; }
+.mc-detail-dates__cell:nth-last-child(-n+2) { border-bottom: none; }
+.mc-detail-dates__top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
 .mc-detail-dates__icon {
-  width: 32px; height: 32px; background: var(--brand-soft); border-radius: 8px; flex-shrink: 0;
+  width: 26px; height: 26px; background: var(--brand-soft); border-radius: 7px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; color: var(--navy-600);
 }
-.mc-detail-dates__label { font-size: 12.5px; color: var(--text-soft); font-weight: 500; }
-.mc-detail-dates__value { font-size: 13.5px; font-weight: 700; color: var(--navy-900); padding-left: 40px; }
+.mc-detail-dates__label { font-size: 11.5px; color: var(--text-soft); font-weight: 500; }
+.mc-detail-dates__value { font-size: 13px; color: var(--navy-900); font-weight: 700; padding-left: 33px; }
 .mc-detail-info-text--muted { color: var(--text-faint); }
 .mc-detail-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .mc-detail-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; color: var(--text-faint); font-size: 13px; }
