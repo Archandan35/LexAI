@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from '@/components/Icon.jsx';
+import { DateEngine } from '@/core/DateEngine.js';
 
 export function useApiLog() {
   const [entries, setEntries] = useState([]);
@@ -64,7 +65,7 @@ export default function ApiDebugLog({ entries, onClear }) {
             <div key={e.id} style={{ marginBottom: 4, padding: '4px 6px', borderRadius: 4, background: '#1e293b' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ color: '#475569', fontSize: 10, whiteSpace: 'nowrap' }}>
-                  {new Date(e.ts).toLocaleTimeString('en-IN', { hour12: false })}
+                  {DateEngine.formatTime(e.ts, '24h')}
                 </span>
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 3,

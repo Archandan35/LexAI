@@ -7,6 +7,7 @@ import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import Spinner from '@/components/Spinner.jsx';
+import { formatDate, formatDateTime } from '@/utils/format.js';
 
 const TABS = [
   { id: 'entities', label: 'Entity Mapping' },
@@ -332,7 +333,7 @@ export default function SchemaMappingManager() {
                 <select value={rollbackVersion} onChange={(e) => setRollbackVersion(e.target.value)} className="schema-mapping__version-select">
                   <option value="">Select version to rollback to...</option>
                   {versions.map((v) => (
-                    <option key={v.id} value={v.id}>v{v.version} — {v.description || 'No description'} ({v.created_at ? new Date(v.created_at).toLocaleDateString() : ''})</option>
+                    <option key={v.id} value={v.id}>v{v.version} — {v.description || 'No description'} ({v.created_at ? formatDate(v.created_at) : ''})</option>
                   ))}
                 </select>
                 <Button size="xs" variant="outline" icon="reset" onClick={handleRollback}
@@ -347,7 +348,7 @@ export default function SchemaMappingManager() {
                     <tr key={v.id}>
                       <td>{v.version}</td>
                       <td>{v.description || '-'}</td>
-                      <td>{v.created_at ? new Date(v.created_at).toLocaleString() : '-'}</td>
+                      <td>{v.created_at ? formatDateTime(v.created_at) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

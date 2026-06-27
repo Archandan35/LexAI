@@ -236,10 +236,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             {sel('Priority', form.priority, priorityOptions, (v) => setField('priority', v), 'Select priority')}
           </Field>
           <Field label="Filing Date">
-            <Input type="date" value={form.filing_date} onChange={(e) => setField('filing_date', e.target.value)} />
+            <Input type="date" placeholder="dd-mm-yyyy" value={form.filing_date} onChange={(e) => setField('filing_date', e.target.value)} />
           </Field>
           <Field label="Next Hearing Date">
-            <Input type="date" value={form.next_hearing} onChange={(e) => setField('next_hearing', e.target.value)} />
+            <Input type="date" placeholder="dd-mm-yyyy" value={form.next_hearing} onChange={(e) => setField('next_hearing', e.target.value)} />
           </Field>
         </div>
       </SectionCard>
@@ -257,10 +257,10 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
             <Input value={form.cnr_number} onChange={(e) => setField('cnr_number', e.target.value)} placeholder="e.g., 656026262662" />
           </Field>
           <Field label="Registration Date">
-            <Input type="date" value={form.registration_date} onChange={(e) => setField('registration_date', e.target.value)} />
+            <Input type="date" placeholder="dd-mm-yyyy" value={form.registration_date} onChange={(e) => setField('registration_date', e.target.value)} />
           </Field>
           <Field label="Disposal Date">
-            <Input type="date" value={form.disposal_date} onChange={(e) => setField('disposal_date', e.target.value)} />
+            <Input type="date" placeholder="dd-mm-yyyy" value={form.disposal_date} onChange={(e) => setField('disposal_date', e.target.value)} />
           </Field>
         </div>
       </SectionCard>

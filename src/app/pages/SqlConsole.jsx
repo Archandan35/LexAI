@@ -11,6 +11,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { databaseDdlService } from '@/services/databaseDdlService.js';
 import { AllowlistEngine } from '@/core/AllowlistEngine.js';
 import { settingsLogic } from '@/logic/settingsLogic.js';
+import { DateEngine } from '@/core/DateEngine.js';
 
 export default function SqlConsole() {
   const toast = useToast();
@@ -188,7 +189,7 @@ export default function SqlConsole() {
                       <td>{h.ok ? <Badge tone="green">OK</Badge> : <Badge tone="red">Failed</Badge>}</td>
                       <td><code style={{ fontSize: 12 }}>{h.sql}</code></td>
                       <td style={{ fontSize: 12, color: 'var(--text-faint)' }}>
-                        {h.ts ? new Date(h.ts).toLocaleTimeString() : '—'}
+                        {h.ts ? DateEngine.formatTime(h.ts) : '—'}
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <Button size="sm" variant="ghost" icon="edit" onClick={(e) => { e.stopPropagation(); selectHistory(h); }}>Load</Button>

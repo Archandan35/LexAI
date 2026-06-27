@@ -21,14 +21,13 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { config } from '@/config/config.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { exportPdf, exportDocx, exportHtml, exportTxt } from '@/utils/exportDoc.js';
-import { fromNow, formatDateTime } from '@/utils/format.js';
+import { fromNow, formatDateTime, formatDate } from '@/utils/format.js';
 
 const FOLDER_KEY = 'lexai.draftfolders.v1';
 const AUTOSAVE_KEY = 'lexai.autosave.v1';
 
-const today = () => new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 const PLACEHOLDERS = [
-  { label: 'Today’s Date', value: today() },
+  { label: 'Today’s Date', value: formatDate(new Date()) },
   { label: 'Court Name', value: '«Court Name»' },
   { label: 'Case Number', value: '«Case Number»' },
   { label: 'Plaintiff / Petitioner', value: '«Plaintiff»' },

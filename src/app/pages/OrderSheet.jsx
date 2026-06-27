@@ -606,8 +606,8 @@ export default function OrderSheet() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
-                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" placeholder="dd-mm-yyyy" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
+                      <input type="date" placeholder="dd-mm-yyyy" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--navy-900)' }} />
                     </div>
 
                     {/* Court */}
@@ -700,7 +700,8 @@ export default function OrderSheet() {
                     {paginatedRows.map((h) => {
                       const hDate = new Date(h.date);
                       const dayNum = hDate.getDate();
-                      const mon = hDate.toLocaleString('default', { month: 'short' });
+                      const MON_ABB = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const mon = MON_ABB[hDate.getMonth()];
                       const year = hDate.getFullYear();
                       return (
                         <div
@@ -917,10 +918,10 @@ export default function OrderSheet() {
                   {showDatePicker && (
                     <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
                       <Field label="From Date">
-                        <Input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
+                        <Input type="date" placeholder="dd-mm-yyyy" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
                       </Field>
                       <Field label="To Date">
-                        <Input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} />
+                        <Input type="date" placeholder="dd-mm-yyyy" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} />
                       </Field>
                       <div className="flex gap-8 mt-10">
                         <Button size="sm" variant="ghost" onClick={() => { setTempDateFrom(''); setTempDateTo(''); setDateFrom(''); setDateTo(''); setShowDatePicker(false); }}>Clear</Button>
@@ -1581,6 +1582,7 @@ export default function OrderSheet() {
                 <Field label="Hearing Date">
                   <Input
                     type="date"
+                    placeholder="dd-mm-yyyy"
                     value={form.date || ''}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                   />
@@ -1602,7 +1604,7 @@ export default function OrderSheet() {
                   <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
                 </Field>
                 <Field label="Next Hearing Date">
-                  <Input type="date" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
+                  <Input type="date" placeholder="dd-mm-yyyy" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
                 </Field>
               </div>
               <div className="input-row">

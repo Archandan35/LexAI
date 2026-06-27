@@ -64,7 +64,6 @@ function formatByPattern(date, format, timezone) {
     case 'mdy':
       return `${pad2(m + 1)}/${pad2(day)}/${y}`;
     default: {
-      // Try custom PHP-style format tokens
       const map = {
         'F': MONTHS_FULL[m],
         'M': MONTHS_SHORT[m],
@@ -195,6 +194,42 @@ export const DateEngine = {
   // Get the timestamp number from a date value.
   timestamp(date) {
     return new Date(this.toISO(date) || 0).getTime();
+  },
+
+  // Get the configured date format key from settings cache.
+  getDateFormat() {
+    const s = settingsCache.getAll();
+    return s.dateFormat || 'june23';
+  },
+
+  // Get the configured time format key from settings cache.
+  getTimeFormat() {
+    const s = settingsCache.getAll();
+    return s.timeFormat || '12h';
+  },
+
+  // Get a human-readable placeholder string for the configured date format.
+  getDatePlaceholder() {
+    const fmt = this.getDateFormat();
+    const map = {
+      'june23': 'dd Month yyyy',
+      '23june': 'dd Month yyyy',
+      '23rdjune': 'dd Month yyyy',
+      '23.06.2026': 'dd.mm.yyyy',
+      '2026-06-23': 'yyyy-mm-dd',
+      'iso': 'yyyy-mm-dd',
+      '23-06-2026': 'dd-mm-yyyy',
+      '23/06/2026': 'dd/mm/yyyy',
+      'dmy': 'dd/mm/yyyy',
+      '06/23/2026': 'mm/dd/yyyy',
+      'mdy': 'mm/dd/yyyy',
+    };
+    return map[fmt] || fmt || 'dd-mm-yyyy';
+  },
+
+  // Convert a date value to a YYYY-MM-DD string suitable for `<input type="date">` value.
+  toInputDate(value) {
+    return this.toDateString(value) || '';
   },
 
   // Format a date using a named pattern and optional timezone.

@@ -66,9 +66,9 @@ export default function CaseHistory({ caseId, onChanged }) {
           <Icon name="search" size={15} />
           <input value={search} placeholder="Search history…" onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Input type="date" style={{ maxWidth: 150 }} value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} />
+        <Input type="date" placeholder="dd-mm-yyyy" style={{ maxWidth: 150 }} value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} />
         <span className="muted">to</span>
-        <Input type="date" style={{ maxWidth: 150 }} value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} />
+        <Input type="date" placeholder="dd-mm-yyyy" style={{ maxWidth: 150 }} value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} />
         <div style={{ flex: 1 }} />
         <button className="btn btn--ghost btn--sm" onClick={() => setOrder((o) => (o === 'desc' ? 'asc' : 'desc'))}>
           <Icon name="arrow" size={14} style={{ transform: order === 'desc' ? 'rotate(90deg)' : 'rotate(-90deg)' }} /> {order === 'desc' ? 'Newest' : 'Oldest'}
@@ -104,7 +104,7 @@ export default function CaseHistory({ caseId, onChanged }) {
       <Modal open={adding} title="Add History Entry" onClose={() => setAdding(false)}
         footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button icon="save" onClick={add}>Add</Button></>}>
         <div className="input-row">
-          <Field label="Date"><Input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} /></Field>
+          <Field label="Date"><Input type="date" placeholder="dd-mm-yyyy" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} /></Field>
           <Field label="Status"><Select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })}><option value="">—</option>{hearingStatuses.map((s) => <option key={s}>{s}</option>)}</Select></Field>
         </div>
         <Field label="Full text" hint="Stored exactly as entered — no truncation."><Textarea value={draft.text} onChange={(e) => setDraft({ ...draft, text: e.target.value })} style={{ minHeight: 140 }} /></Field>

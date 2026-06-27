@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLogCapture } from '@/components/DebugPanel.jsx';
 import Icon from '@/components/Icon.jsx';
+import { DateEngine } from '@/core/DateEngine.js';
 
 export default function DebugOverlay() {
   const { logs, clearLogs, copyLogs } = useLogCapture();
@@ -55,7 +56,7 @@ export default function DebugOverlay() {
             color: l.level === 'error' ? '#ef4444' : l.level === 'warn' ? '#f59e0b' : '#94a3b8',
             marginBottom: 2, whiteSpace: 'pre-wrap', wordBreak: 'break-all',
           }}>
-            <span style={{ color: '#475569', marginRight: 6 }}>{new Date(l.t).toLocaleTimeString()}</span>
+            <span style={{ color: '#475569', marginRight: 6 }}>{DateEngine.formatTime(l.t)}</span>
             [{l.level.toUpperCase()}] {l.msg}
           </div>
         ))}

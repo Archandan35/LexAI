@@ -22,7 +22,7 @@ function NoticeForm({ load, setShowForm }) {
     <div className="card card--inset">
       <div className="field"><label>Notice No.</label><Input value={form.notice_number} onChange={(e) => setForm({ ...form, notice_number: e.target.value })} /></div>
       <div className="field"><label>Recipient</label><Input value={form.recipient} onChange={(e) => setForm({ ...form, recipient: e.target.value })} /></div>
-      <div className="field"><label>Date</label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+      <div className="field"><label>Date</label><Input type="date" placeholder="dd-mm-yyyy" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
       <Button onClick={add}>Save Notice</Button>
     </div>
   );

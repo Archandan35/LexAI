@@ -20,6 +20,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
 import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime } from '@/utils/format.js';
+import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
@@ -804,13 +805,14 @@ function startOfToday() {
   return d;
 }
 
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 function datePart(value, part) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  if (part === 'day') return d.toLocaleDateString('en-IN', { day: '2-digit' });
-  if (part === 'mon') return d.toLocaleDateString('en-IN', { month: 'short' }).toUpperCase();
-  if (part === 'year') return d.toLocaleDateString('en-IN', { year: 'numeric' });
-  if (part === 'time') return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  if (part === 'day') return String(d.getDate()).padStart(2, '0');
+  if (part === 'mon') return (MONTH_SHORT[d.getMonth()] || '').toUpperCase();
+  if (part === 'year') return String(d.getFullYear());
+  if (part === 'time') return DateEngine.formatTime(d);
   return '—';
 }

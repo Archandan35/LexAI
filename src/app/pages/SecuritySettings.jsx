@@ -8,6 +8,7 @@ import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Field, Select } from '@/components/Field.jsx';
+import { formatDate } from '@/utils/format.js';
 
 export default function SecuritySettings() {
   const { user: actor } = useAuth();
@@ -83,7 +84,7 @@ export default function SecuritySettings() {
               </div>
               <div className="kv"><span>Username</span><b>{superAdminUser.username || '—'}</b></div>
               <div className="kv"><span>Email</span><span>{superAdminUser.email || '—'}</span></div>
-              <div className="kv"><span>Created at</span><span>{new Date(superAdminUser.createdAt).toLocaleString()}</span></div>
+              <div className="kv"><span>Created at</span><span>{formatDate(superAdminUser.createdAt)}</span></div>
             </div>
           ) : (
             <div>

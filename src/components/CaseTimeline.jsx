@@ -5,6 +5,7 @@ import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { formatDate } from '@/utils/format.js';
+import { DateEngine } from '@/core/DateEngine.js';
 
 const ICONS = {
   'case.create': 'plus', 'case.update': 'edit', 'case.delete': 'trash',
@@ -16,8 +17,7 @@ const ICONS = {
 };
 
 function timeOnly(iso) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  return DateEngine.formatTime(iso);
 }
 
 // CaseTimeline — chronological system activity (audit trail) for a case.

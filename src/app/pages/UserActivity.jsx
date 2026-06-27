@@ -3,6 +3,7 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { auditService } from '@/services/auditService.js';
+import { formatDateTime } from '@/utils/format.js';
 
 export default function UserActivity() {
   const [logs, setLogs] = useState([]);
@@ -46,7 +47,7 @@ export default function UserActivity() {
                     <td>{l.userName || l.user || ''}</td>
                     <td><span className="badge badge--navy">{l.action}</span></td>
                     <td>{l.module}</td>
-                    <td>{l.at || l.timestamp || ''}</td>
+                    <td>{formatDateTime(l.at || l.timestamp)}</td>
                   </tr>
                 ))}
               </tbody>

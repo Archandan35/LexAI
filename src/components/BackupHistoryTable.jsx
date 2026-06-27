@@ -5,10 +5,10 @@ import DataTable from './DataTable.jsx';
 import PermissionGate from './PermissionGate.jsx';
 import { backupLogic } from '@/logic/backupLogic.js';
 import { bytes, formatDate } from '@/utils/format.js';
+import { DateEngine } from '@/core/DateEngine.js';
 
 function timeOnly(iso) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return DateEngine.formatTime(iso);
 }
 
 // BackupHistoryTable — single-row listing with inline actions. Shared by the

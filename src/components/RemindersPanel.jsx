@@ -127,7 +127,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
             placeholder="Select case…"
           />
         </Field>
-        <Field label="Date"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
+        <Field label="Date"><Input type="date" placeholder="dd-mm-yyyy" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       </Modal>
 
       <CrudManager open={typeMgr} onClose={() => { setTypeMgr(false); loadTypes(); }} entity="Reminder Type" config={{ logic: reminderTypesLogic, fields: [{ key: 'name', label: 'Reminder Type Name', placeholder: 'e.g., Hearing Date' }, { key: 'description', label: 'Description', placeholder: 'Optional description' }], defaults: {}, refresh: loadTypes }} />

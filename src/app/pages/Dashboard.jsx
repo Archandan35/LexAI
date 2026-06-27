@@ -9,9 +9,6 @@ import { formatDate } from '@/utils/format.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 
 /* ---- helpers ---- */
-function today() {
-  return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 function DonutChart({ segments, size = 120, stroke = 18 }) {
   const r = (size - stroke) / 2;
@@ -122,7 +119,7 @@ export default function Dashboard() {
         <div className="dash-greeting__actions">
           <div className="dash-date-badge">
             <Icon name="calendar" size={15} />
-            <span>{today()}</span>
+            <span>{formatDate(new Date())}</span>
           </div>
           <button className="btn btn--primary" onClick={() => nav('/cases/create')}>
             <Icon name="plus" size={15} /> Add New
@@ -355,7 +352,7 @@ export default function Dashboard() {
         <div className="lexm-date-row">
           <div className="lexm-date">
             <Icon name="calendar" size={17} />
-            {today()}
+            {formatDate(new Date())}
           </div>
           <button className="lexm-add-btn" onClick={() => nav('/cases/create')}>
             <Icon name="plus" size={15} />

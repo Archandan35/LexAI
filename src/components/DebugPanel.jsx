@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
+import { DateEngine } from '@/core/DateEngine.js';
 
 export function useLogCapture() {
   const [logs, setLogs] = useState([]);
@@ -125,7 +126,7 @@ export default function DebugPanel({ logs, error, result, onClear, onCopy, colla
             color: l.level === 'error' ? 'var(--error)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text)',
             marginBottom: 2,
           }}>
-            <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>{new Date(l.t).toLocaleTimeString()}</span>
+            <span style={{ color: 'var(--text-muted)', marginRight: 8 }}>{DateEngine.formatTime(l.t)}</span>
             <span style={{ fontWeight: l.level === 'error' ? 600 : 400 }}>{l.level.toUpperCase()}</span>
             <span>{' '}{l.msg}</span>
           </div>

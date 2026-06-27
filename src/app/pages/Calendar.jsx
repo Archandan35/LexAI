@@ -4,6 +4,7 @@ import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 import { reminderService } from '@/services/reminderService.js';
+import { formatDate } from '@/utils/format.js';
 
 const TABS = ['calendar', 'tasks'];
 
@@ -91,7 +92,7 @@ export default function Calendar() {
                       <tr key={e.id}>
                         <td><span className={`badge ${e.eventType === 'hearing' ? 'badge--navy' : e.done ? 'badge--green' : new Date(e.date) < now ? 'badge--red' : 'badge--amber'}`}>{e.eventType === 'hearing' ? 'Hearing' : e.done ? 'Done' : new Date(e.date) < now ? 'Overdue' : 'Task'}</span></td>
                         <td>{e.title}</td>
-                        <td>{e.date}</td>
+                        <td>{formatDate(e.date)}</td>
                         <td>{e.caseId || '—'}</td>
                       </tr>
                     ))}
@@ -153,7 +154,7 @@ export default function Calendar() {
                           )}
                         </td>
                         <td>{r.title}</td>
-                        <td>{r.date}</td>
+                        <td>{formatDate(r.date)}</td>
                         <td>{r.type}</td>
                       </tr>
                     ))}
