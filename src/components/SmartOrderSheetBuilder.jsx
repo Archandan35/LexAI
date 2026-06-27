@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 import CrudManager from './CrudManager.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
-import { partyLogic } from '@/logic/partyLogic.js';
+import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
 
 const STEPS = [
   { num: 1, title: 'HAZIRA', sub: 'Party Details' },
@@ -17,9 +17,9 @@ const STEPS = [
 
 const OBJECTION_STATUSES = ['Pending', 'No Objection Filed', 'Objection Filed'];
 
-export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStatuses = [], onSave, onClose, onRefreshParties, onRefreshStatuses }) {
+export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseStatuses = [], onSave, onClose, onRefreshPartyTypes, onRefreshStatuses }) {
   const [activeStep, setActiveStep] = useState(1);
-  const [showPartyCrud, setShowPartyCrud] = useState(false);
+  const [showPartyTypeCrud, setShowPartyTypeCrud] = useState(false);
   const [showStatusCrud, setShowStatusCrud] = useState(false);
   const [form, setForm] = useState({
     hazira: '',
@@ -94,10 +94,10 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
               </div>
               <div className="sosb-dropdown-row">
                 <select className="sosb-select sosb-select--grow" value={form.hazira} onChange={(e) => set('hazira', e.target.value)}>
-                  <option value="">Select party...</option>
-                  {parties.map((p) => <option key={p} value={p}>{p}</option>)}
+                  <option value="">Select party type...</option>
+                  {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
-                <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
+                <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
                   <Icon name="gear" size={16} strokeWidth={1.7} />
                 </button>
               </div>
@@ -115,9 +115,9 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
                 <div className="sosb-dropdown-row">
                   <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
                     <option value="">Select...</option>
-                    {parties.map((p) => <option key={p} value={p}>{p}</option>)}
+                    {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
-                  <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
+                  <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
                     <Icon name="gear" size={16} strokeWidth={1.7} />
                   </button>
                 </div>
@@ -181,9 +181,9 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
               <div className="sosb-dropdown-row">
                 <select className="sosb-select sosb-select--grow" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
                   <option value="">Select...</option>
-                  {parties.map((p) => <option key={p} value={p}>{p}</option>)}
+                  {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
-                <button className="sosb-gear-btn" title="Manage parties" onClick={() => setShowPartyCrud(true)}>
+                <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
                   <Icon name="gear" size={16} strokeWidth={1.7} />
                 </button>
               </div>
@@ -310,18 +310,18 @@ export default function SmartOrderSheetBuilder({ hearing, parties = [], caseStat
       </div>
 
       <CrudManager
-        open={showPartyCrud}
-        onClose={() => { setShowPartyCrud(false); onRefreshParties?.(); }}
-        entity="Party"
+        open={showPartyTypeCrud}
+        onClose={() => { setShowPartyTypeCrud(false); onRefreshPartyTypes?.(); }}
+        entity="Party Type"
         config={{
-          logic: partyLogic,
+          logic: partyTypeLogic,
           fields: [
-            { key: 'name', label: 'Party Name', placeholder: 'e.g. Appellant, Respondent' },
+            { key: 'name', label: 'Party Type Name', placeholder: 'e.g. Appellant, Respondent' },
             { key: 'type', label: 'Type', placeholder: 'e.g. Individual, Organization' },
             { key: 'display_order', label: 'Display Order', type: 'number' },
           ],
           defaults: { type: 'Individual', display_order: 0, status: 'Active' },
-          refresh: onRefreshParties,
+          refresh: onRefreshPartyTypes,
         }}
       />
 

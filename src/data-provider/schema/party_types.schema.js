@@ -1,6 +1,6 @@
-export const PartiesSchema = {
-  collection: 'parties',
-  label: 'Parties',
+export const PartyTypesSchema = {
+  collection: 'party_types',
+  label: 'Party Types',
   primaryKey: 'id',
   core: true,
   fields: {

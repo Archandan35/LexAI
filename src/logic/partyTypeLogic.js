@@ -1,16 +1,16 @@
-import { partyService } from '@/services/partyService.js';
+import { partyTypeService } from '@/services/partyTypeService.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 
-export const partyLogic = {
+export const partyTypeLogic = {
   async list() {
-    const rows = await partyService.list();
+    const rows = await partyTypeService.list();
     return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
   },
 
   async create(data) {
     try {
-      const row = await partyService.create({ ...data, id: uid('pty'), created_at: nowISO() });
+      const row = await partyTypeService.create({ ...data, id: uid('pty'), created_at: nowISO() });
       return ok(row);
     } catch (e) {
       return fail(e);
@@ -19,7 +19,7 @@ export const partyLogic = {
 
   async update(id, data) {
     try {
-      const row = await partyService.update(id, { ...data, updated_at: nowISO() });
+      const row = await partyTypeService.update(id, { ...data, updated_at: nowISO() });
       return ok(row);
     } catch (e) {
       return fail(e);
@@ -28,7 +28,7 @@ export const partyLogic = {
 
   async remove(id) {
     try {
-      await partyService.remove(id);
+      await partyTypeService.remove(id);
       return ok(true);
     } catch (e) {
       return fail(e);
@@ -38,7 +38,7 @@ export const partyLogic = {
   async reorder(ids) {
     try {
       for (let i = 0; i < ids.length; i++) {
-        await partyService.update(ids[i], { display_order: i });
+        await partyTypeService.update(ids[i], { display_order: i });
       }
       return ok(true);
     } catch (e) {
@@ -48,7 +48,7 @@ export const partyLogic = {
 
   async setStatus(id, status) {
     try {
-      const row = await partyService.update(id, { status, updated_at: nowISO() });
+      const row = await partyTypeService.update(id, { status, updated_at: nowISO() });
       return ok(row);
     } catch (e) {
       return fail(e);
@@ -58,7 +58,7 @@ export const partyLogic = {
   async bulkCreate(records) {
     try {
       const rows = records.map((r) => ({ ...r, id: uid('pty'), created_at: nowISO() }));
-      await partyService.bulkCreate(rows);
+      await partyTypeService.bulkCreate(rows);
       return ok(rows);
     } catch (e) {
       return fail(e);
@@ -67,7 +67,7 @@ export const partyLogic = {
 
   async bulkRemove(ids) {
     try {
-      await partyService.bulkDelete(ids);
+      await partyTypeService.bulkDelete(ids);
       return ok(true);
     } catch (e) {
       return fail(e);
@@ -75,4 +75,4 @@ export const partyLogic = {
   },
 };
 
-export default partyLogic;
+export default partyTypeLogic;

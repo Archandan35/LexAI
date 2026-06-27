@@ -1,0 +1,26 @@
+import { useEffect, useState, useCallback } from 'react';
+import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+
+let cached = null;
+
+export function usePartyTypes() {
+  const [partyTypes, setPartyTypes] = useState(cached?.partyTypes || []);
+  const [loading, setLoading] = useState(!cached);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await partyTypeLogic.list();
+      const names = (Array.isArray(data) ? data : []).map((p) => p.name);
+      cached = { partyTypes: names, raw: data };
+      setPartyTypes(names);
+    } catch { setPartyTypes([]); }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { if (!cached) refresh(); }, [refresh]);
+
+  return { partyTypes, loading, refresh };
+}
+
+export default usePartyTypes;

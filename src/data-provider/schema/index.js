@@ -49,7 +49,7 @@ import { FolderTemplatesSchema } from './folder_templates.schema.js';
 import { DraftTypesSchema } from './draft_types.schema.js';
 import { JudgesSchema } from './judges.schema.js';
 import { ReminderTypesSchema } from './reminder_types.schema.js';
-import { PartiesSchema } from './parties.schema.js';
+import { PartyTypesSchema } from './party_types.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -98,7 +98,7 @@ export const schemas = {
   draft_types: DraftTypesSchema,
   judges: JudgesSchema,
   reminder_types: ReminderTypesSchema,
-  parties: PartiesSchema,
+  party_types: PartyTypesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in

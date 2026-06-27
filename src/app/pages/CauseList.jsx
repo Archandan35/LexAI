@@ -13,7 +13,7 @@ import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import HearingPreviewModal from '@/components/HearingPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
-import { useParties } from '@/hooks/useParties.js';
+import { usePartyTypes } from '@/hooks/usePartyTypes.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
 import SmartOrderSheetBuilder from '@/components/SmartOrderSheetBuilder.jsx';
 import { templateLogic } from '@/logic/templateLogic.js';
@@ -53,7 +53,7 @@ export default function CauseList() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStatusCrud, setShowStatusCrud] = useState(false);
   const [smartMode, setSmartMode] = useState(false);
-  const { parties, refresh: refreshParties } = useParties();
+  const { partyTypes, refresh: refreshPartyTypes } = usePartyTypes();
 
   // Sorting & Pagination for Cause List Tab
   const [sortDir, setSortDir] = useState('asc'); // asc | desc
@@ -1487,11 +1487,11 @@ export default function CauseList() {
         {smartMode ? (
           <SmartOrderSheetBuilder
             hearing={form}
-            parties={parties}
+            partyTypes={partyTypes}
             caseStatuses={caseStatuses}
             onSave={saveHearing}
             onClose={() => { setOpen(false); setSmartMode(false); }}
-            onRefreshParties={refreshParties}
+            onRefreshPartyTypes={refreshPartyTypes}
             onRefreshStatuses={refreshStatuses}
           />
         ) : (
