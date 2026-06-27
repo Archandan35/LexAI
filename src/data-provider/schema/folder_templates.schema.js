@@ -15,6 +15,7 @@ export const FolderTemplatesSchema = {
   required: ['name'],
   defaults: { kind: 'document', system: false, display_order: 0 },
   indexes: ['name', 'kind'],
+  relations: [],
 };
 
 export default FolderTemplatesSchema;

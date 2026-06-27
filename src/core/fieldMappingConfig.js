@@ -38,7 +38,6 @@ const SCHEMAS = {
   hearing_statuses: { ...COMMON },
   folder_templates: { ...COMMON },
   draft_types: { ...COMMON },
-  case_tags: { ...COMMON },
   judges: { ...COMMON },
   reminder_types: { ...COMMON },
   acts: { ...COMMON },

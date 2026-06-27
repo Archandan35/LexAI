@@ -47,7 +47,6 @@ import { HearingStatusesSchema } from './hearing_statuses.schema.js';
 import { ContactTypesSchema } from './contact_types.schema.js';
 import { FolderTemplatesSchema } from './folder_templates.schema.js';
 import { DraftTypesSchema } from './draft_types.schema.js';
-import { CaseTagsSchema } from './case_tags.schema.js';
 import { JudgesSchema } from './judges.schema.js';
 import { ReminderTypesSchema } from './reminder_types.schema.js';
 import { PartiesSchema } from './parties.schema.js';
@@ -97,7 +96,6 @@ export const schemas = {
   contact_types: ContactTypesSchema,
   folder_templates: FolderTemplatesSchema,
   draft_types: DraftTypesSchema,
-  case_tags: CaseTagsSchema,
   judges: JudgesSchema,
   reminder_types: ReminderTypesSchema,
   parties: PartiesSchema,

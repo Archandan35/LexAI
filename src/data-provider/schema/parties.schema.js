@@ -1,6 +1,8 @@
 export const PartiesSchema = {
   collection: 'parties',
   label: 'Parties',
+  primaryKey: 'id',
+  core: true,
   fields: {
     id: 'string',
     name: 'string',
@@ -13,4 +15,5 @@ export const PartiesSchema = {
   required: ['name', 'type'],
   defaults: { display_order: 0, status: 'Active' },
   indexes: ['type', 'status', 'display_order'],
+  relations: [],
 };

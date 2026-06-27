@@ -15,6 +15,7 @@ export const DraftTypesSchema = {
   required: ['name', 'label'],
   defaults: { group: 'General', display_order: 0 },
   indexes: ['name', 'group'],
+  relations: [],
 };
 
 export default DraftTypesSchema;
