@@ -44,6 +44,22 @@ const CATALOG_QUERIES = {
   brokenForeignKeys: `select conrelid::regclass as table_name, conname as constraint_name, confrelid::regclass as referenced_table from pg_constraint where confrelid is not null and contype = 'f' and not exists (select 1 from pg_class c2 where c2.oid = pg_constraint.confrelid)`,
 
   tableColumns: `select table_name, count(*) as column_count from information_schema.columns where table_schema = 'public' group by table_name order by table_name`,
+
+  unusedIndexes: `select indexrelid::regclass::text as index_name, relname as table_name, idx_scan as scans from pg_stat_user_indexes where idx_scan = 0 order by relname`,
+
+  circularForeignKeys: `with recursive fk_chain as (select conname, conrelid::regclass::text as src, confrelid::regclass::text as dst from pg_constraint where contype = 'f' union select c.conname, c.conrelid::regclass, c.confrelid::regclass from pg_constraint c join fk_chain fc on c.conrelid::regclass::text = fc.dst and c.contype = 'f') select distinct src, dst from fk_chain where src = dst`,
+
+  duplicateTablesByStructure: `select c1.table_name as t1, c2.table_name as t2 from (select table_name, string_agg(column_name || ':' || data_type, ',' order by ordinal_position) as cols from information_schema.columns where table_schema = 'public' group by table_name) c1 join (select table_name, string_agg(column_name || ':' || data_type, ',' order by ordinal_position) as cols from information_schema.columns where table_schema = 'public' group by table_name) c2 on c1.table_name < c2.table_name and c1.cols = c2.cols`,
+
+  exclusionConstraints: `select conrelid::regclass::text as table_name, conname as constraint_name, pg_get_constraintdef(oid) as definition from pg_constraint where contype = 'x' order by table_name`,
+
+  compositeConstraints: `select conrelid::regclass::text as table_name, conname as constraint_name, contype, pg_get_constraintdef(oid) as definition from pg_constraint where array_length(conkey, 1) > 1 order by table_name`,
+
+  emptySchemas: `select schema_name from information_schema.schemata where schema_name not in ('pg_catalog','information_schema') and schema_name not in (select distinct table_schema from information_schema.tables) order by schema_name`,
+
+  tableRowCounts: `select relname as name, n_live_tup as row_count from pg_stat_user_tables order by n_live_tup`,
+
+  emptyTables: `select relname as name from pg_stat_user_tables where n_live_tup = 0 order by relname`,
 };
 
 export const databaseScannerService = {
@@ -63,7 +79,7 @@ export const databaseScannerService = {
       }
     };
 
-    const [schemas, tables, columns, primaryKeys, foreignKeys, uniqueConstraints, checkConstraints, indexes, views, functions, triggers, policies, extensions, enums, storageBuckets, roles, publications, tableSizes, duplicateIndexes] = await Promise.all([
+    const [schemas, tables, columns, primaryKeys, foreignKeys, uniqueConstraints, checkConstraints, indexes, views, functions, triggers, policies, extensions, enums, storageBuckets, roles, publications, tableSizes, duplicateIndexes, unusedIndexes, circularForeignKeys, duplicateTablesByStructure, exclusionConstraints, compositeConstraints, emptySchemas, tableRowCounts, emptyTables] = await Promise.all([
       run('schemas', CATALOG_QUERIES.schemas),
       run('tables', CATALOG_QUERIES.tables),
       run('columns', CATALOG_QUERIES.columns),
@@ -83,6 +99,14 @@ export const databaseScannerService = {
       run('publications', CATALOG_QUERIES.publications).catch(() => []),
       run('tableSizes', CATALOG_QUERIES.tableSizes),
       run('duplicateIndexes', CATALOG_QUERIES.duplicateIndexes),
+      run('unusedIndexes', CATALOG_QUERIES.unusedIndexes).catch(() => []),
+      run('circularForeignKeys', CATALOG_QUERIES.circularForeignKeys).catch(() => []),
+      run('duplicateTablesByStructure', CATALOG_QUERIES.duplicateTablesByStructure).catch(() => []),
+      run('exclusionConstraints', CATALOG_QUERIES.exclusionConstraints).catch(() => []),
+      run('compositeConstraints', CATALOG_QUERIES.compositeConstraints).catch(() => []),
+      run('emptySchemas', CATALOG_QUERIES.emptySchemas).catch(() => []),
+      run('tableRowCounts', CATALOG_QUERIES.tableRowCounts).catch(() => []),
+      run('emptyTables', CATALOG_QUERIES.emptyTables).catch(() => []),
     ]);
 
     const columnsByTable = {};
@@ -163,6 +187,14 @@ export const databaseScannerService = {
         publications: Array.isArray(publications) ? publications : [],
         tableSizes: Array.isArray(tableSizes) ? tableSizes : [],
         duplicateIndexes: Array.isArray(duplicateIndexes) ? duplicateIndexes : [],
+        unusedIndexes: Array.isArray(unusedIndexes) ? unusedIndexes : [],
+        circularForeignKeys: Array.isArray(circularForeignKeys) ? circularForeignKeys : [],
+        duplicateTablesByStructure: Array.isArray(duplicateTablesByStructure) ? duplicateTablesByStructure : [],
+        exclusionConstraints: Array.isArray(exclusionConstraints) ? exclusionConstraints : [],
+        compositeConstraints: Array.isArray(compositeConstraints) ? compositeConstraints : [],
+        emptySchemas: Array.isArray(emptySchemas) ? emptySchemas : [],
+        tableRowCounts: Array.isArray(tableRowCounts) ? tableRowCounts : [],
+        emptyTables: Array.isArray(emptyTables) ? emptyTables : [],
       },
     };
   },

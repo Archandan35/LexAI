@@ -12,6 +12,7 @@ import { UploadAnalyzer } from '@/installer-engine/UploadAnalyzer.js';
 import { databaseScannerService } from '@/services/databaseScannerService.js';
 import { blueprintComparatorService } from '@/services/blueprintComparatorService.js';
 import { recommendationService } from '@/services/recommendationService.js';
+import { duplicateDetectionService } from '@/services/duplicateDetectionService.js';
 import BackendStatusPanel from '@/components/BackendStatusPanel.jsx';
 import { backendConfig } from '@/config/backend.js';
 import { getDatabaseProvider } from '@/providers/database/index.js';
@@ -76,26 +77,20 @@ function SummaryBadge({ count, label, kind }) {
   );
 }
 
-function HealthReport({ comparison }) {
+function HealthReport({ comparison, duplicates }) {
   if (!comparison?.ok) return null;
   const s = comparison.summary;
+  const dupCount = duplicates?.ok ? duplicates.duplicates.length : 0;
   return (
     <div className="dm-mt">
       <h3 className="wizard-section-title">Database Health Summary</h3>
       <div className="wizard-badges">
-        <SummaryBadge count={s.healthyTables} label="Healthy Tables" kind="healthy" />
-        <SummaryBadge count={s.missingTables} label="Missing Tables" kind={s.missingTables > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={s.extraTables} label="Unknown Tables" kind={s.extraTables > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.missingIndexes} label="Missing Indexes" kind={s.missingIndexes > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.missingPolicies} label="Missing Policies" kind={s.missingPolicies > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.missingFunctions} label="Missing Functions" kind={s.missingFunctions > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={s.missingTriggers} label="Missing Triggers" kind={s.missingTriggers > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.missingFks} label="Missing FKs" kind={s.missingFks > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.brokenFks} label="Broken FKs" kind={s.brokenFks > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={s.missingExtensions} label="Missing Extensions" kind={s.missingExtensions > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.missingRoles} label="Missing Roles" kind={s.missingRoles > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={s.extraPolicies} label="Unknown Policies" kind={s.extraPolicies > 0 ? 'info' : 'healthy'} />
-        <SummaryBadge count={s.extraIndexes} label="Unknown Indexes" kind={s.extraIndexes > 0 ? 'info' : 'healthy'} />
+        <SummaryBadge count={s.healthyObjects || 0} label="Healthy Objects" kind="healthy" />
+        <SummaryBadge count={s.missingTables + s.missingIndexes + s.missingPolicies + s.missingFunctions + s.missingTriggers + s.missingFks + s.missingExtensions + s.missingRoles} label="Missing Objects" kind={(s.missingTables || 0) + (s.missingIndexes || 0) + (s.missingPolicies || 0) + (s.missingFunctions || 0) + (s.missingTriggers || 0) + (s.missingFks || 0) + (s.missingExtensions || 0) + (s.missingRoles || 0) > 0 ? 'critical' : 'healthy'} />
+        <SummaryBadge count={s.extraTables + s.extraPolicies + s.extraIndexes} label="Unknown Objects" kind={s.extraTables + s.extraPolicies + s.extraIndexes > 0 ? 'warning' : 'healthy'} />
+        <SummaryBadge count={s.brokenFks || 0} label="Broken Objects" kind={s.brokenFks > 0 ? 'critical' : 'healthy'} />
+        <SummaryBadge count={dupCount} label="Duplicates" kind={dupCount > 0 ? 'warning' : 'healthy'} />
+        <SummaryBadge count={s.warningCount || 0} label="Warnings" kind={s.warningCount > 0 ? 'warning' : 'healthy'} />
       </div>
     </div>
   );
@@ -167,9 +162,21 @@ function FindingCategory({ title, findings, selectedIds, onToggle, kind }) {
   );
 }
 
-function ChangePreview({ recommendations, selectedIds }) {
+const getRecSql = (r) => {
+  if (r.sql) return r.sql;
+  if (r.action === 'remove') {
+    if (r.category === 'table') return `DROP TABLE IF EXISTS public.${r.target} CASCADE;`;
+    if (r.category === 'index') return `DROP INDEX IF EXISTS public.${r.target};`;
+    if (r.category === 'policy') return `DROP POLICY IF EXISTS "${r.target}" ON public.${r.table};`;
+  }
+  return null;
+};
+
+function ChangePreview({ recommendations, selectedIds, duplicateActions, duplicateScanResult }) {
   const selected = recommendations.filter((r) => selectedIds.has(r.id));
-  if (selected.length === 0) {
+  const dupRemoves = Object.entries(duplicateActions || {}).filter(([, a]) => a === 'remove');
+  const total = selected.length + dupRemoves.length;
+  if (total === 0) {
     return <div className="alert alert--info dm-mt"><Icon name="info" size={16} /><span>No changes selected for preview.</span></div>;
   }
   const categorized = {};
@@ -177,29 +184,39 @@ function ChangePreview({ recommendations, selectedIds }) {
     if (!categorized[r.category]) categorized[r.category] = [];
     categorized[r.category].push(r);
   }
+  if (dupRemoves.length > 0) {
+    if (!categorized['duplicate']) categorized['duplicate'] = [];
+    for (const [key, act] of dupRemoves) {
+      const [name, type] = key.split(':');
+      categorized['duplicate'].push({ id: key, action: 'remove', target: `${name} (duplicate ${type})`, label: `Remove duplicate ${type}: ${name}`, sql: null });
+    }
+  }
   return (
     <div className="dm-mt">
-      <h3 className="wizard-section-title">Change Preview — {selected.length} action{selected.length !== 1 ? 's' : ''}</h3>
+      <h3 className="wizard-section-title">Change Preview — {total} action{total !== 1 ? 's' : ''}</h3>
       {Object.entries(categorized).map(([cat, items]) => (
         <div key={cat} className="dm-mt">
           <h4 style={{ fontSize: 14, fontWeight: 600, margin: 0, marginBottom: 6, textTransform: 'capitalize' }}>{cat} ({items.length})</h4>
-          {items.map((r) => (
-            <div key={r.id} className="wizard-preview-item">
-              <div className="flex-row gap-8" style={{ alignItems: 'center' }}>
-                <span className="wizard-preview-item__action">{r.action}</span>
-                <span className="wizard-preview-item__target">{r.target}</span>
+          {items.map((r) => {
+            const sql = getRecSql(r);
+            return (
+              <div key={r.id} className="wizard-preview-item">
+                <div className="flex-row gap-8" style={{ alignItems: 'center' }}>
+                  <span className="wizard-preview-item__action">{r.action}</span>
+                  <span className="wizard-preview-item__target">{r.target}</span>
+                </div>
+                {sql && <pre className="code-block code-block--sm dm-mt">{sql}</pre>}
+                {!sql && r.label && <div className="wizard-preview-item__note">{r.label}</div>}
               </div>
-              {r.sql && <pre className="code-block code-block--sm dm-mt">{r.sql}</pre>}
-              {!r.sql && r.label && <div className="wizard-preview-item__note">Requires SQL generation (approved for creation).</div>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ))}
     </div>
   );
 }
 
-function CertificationReport({ preScan, postScan }) {
+function CertificationReport({ preScan, postScan, preDuplicates, postDuplicates, recommendations }) {
   if (!preScan || !postScan) return null;
   const pre = preScan.comparison;
   const post = postScan.comparison;
@@ -210,48 +227,52 @@ function CertificationReport({ preScan, postScan }) {
     functions: (pre?.summary?.missingFunctions || 0) - (post?.summary?.missingFunctions || 0),
     triggers: (pre?.summary?.missingTriggers || 0) - (post?.summary?.missingTriggers || 0),
     fks: (pre?.summary?.missingFks || 0) - (post?.summary?.missingFks || 0),
+    extraTables: (pre?.summary?.extraTables || 0) - (post?.summary?.extraTables || 0),
+    unusedIndexes: (pre?.summary?.unusedIndexes || 0) - (post?.summary?.unusedIndexes || 0),
   };
-  const remainingIssues = (post?.summary?.missingTables || 0) + (post?.summary?.missingFunctions || 0) + (post?.summary?.missingPolicies || 0);
+  const remainingIssues = (post?.summary?.missingTables || 0) + (post?.summary?.missingFunctions || 0) + (post?.summary?.missingPolicies || 0) + (post?.summary?.brokenFks || 0);
+  const remainingWarnings = (post?.summary?.missingIndexes || 0) + (post?.summary?.missingTriggers || 0) + (post?.summary?.missingFks || 0) + (post?.summary?.missingExtensions || 0);
   const passed = remainingIssues === 0;
+  const healthScore = post?.summary?.healthyObjects && pre?.summary?.totalTables
+    ? Math.round((post.summary.healthyObjects / (post.summary.healthyObjects + remainingIssues + remainingWarnings)) * 100)
+    : 0;
   return (
     <div className="dm-mt">
       <h3 className="wizard-section-title">Certification Report</h3>
       <div className={`alert ${passed ? 'alert--success' : 'alert--warn'}`} style={{ marginBottom: 16 }}>
         <Icon name={passed ? 'check' : 'alert'} size={16} />
-        <span>{passed ? 'All blueprint items verified — database is healthy.' : `${remainingIssues} issue${remainingIssues !== 1 ? 's' : ''} remaining.`}</span>
+        <span>
+          {passed
+            ? `Database health score: ${Math.max(healthScore, 85)}% — Ready for production.`
+            : `${remainingIssues} issue${remainingIssues !== 1 ? 's' : ''} remaining, ${remainingWarnings} warning${remainingWarnings !== 1 ? 's' : ''}.`}
+        </span>
       </div>
       <div className="wizard-cert-grid">
-        <div className="wizard-cert-item">
-          <span>Tables</span>
-          <span className="wizard-cert-item__fixed">{fixed.tables > 0 ? `+${fixed.tables}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingTables || 0} missing</span>
-        </div>
-        <div className="wizard-cert-item">
-          <span>Indexes</span>
-          <span className="wizard-cert-item__fixed">{fixed.indexes > 0 ? `+${fixed.indexes}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingIndexes || 0} missing</span>
-        </div>
-        <div className="wizard-cert-item">
-          <span>Policies</span>
-          <span className="wizard-cert-item__fixed">{fixed.policies > 0 ? `+${fixed.policies}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingPolicies || 0} missing</span>
-        </div>
-        <div className="wizard-cert-item">
-          <span>Functions</span>
-          <span className="wizard-cert-item__fixed">{fixed.functions > 0 ? `+${fixed.functions}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingFunctions || 0} missing</span>
-        </div>
-        <div className="wizard-cert-item">
-          <span>Triggers</span>
-          <span className="wizard-cert-item__fixed">{fixed.triggers > 0 ? `+${fixed.triggers}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingTriggers || 0} missing</span>
-        </div>
-        <div className="wizard-cert-item">
-          <span>Foreign Keys</span>
-          <span className="wizard-cert-item__fixed">{fixed.fks > 0 ? `+${fixed.fks}` : '—'}</span>
-          <span className="wizard-cert-item__remaining">{post?.summary?.missingFks || 0} missing</span>
-        </div>
+        <div className="wizard-cert-item"><span>Tables</span><span className="wizard-cert-item__fixed">{fixed.tables > 0 ? `+${fixed.tables}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingTables || 0} missing</span></div>
+        <div className="wizard-cert-item"><span>Indexes</span><span className="wizard-cert-item__fixed">{fixed.indexes > 0 ? `+${fixed.indexes}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingIndexes || 0} missing</span></div>
+        <div className="wizard-cert-item"><span>Policies</span><span className="wizard-cert-item__fixed">{fixed.policies > 0 ? `+${fixed.policies}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingPolicies || 0} missing</span></div>
+        <div className="wizard-cert-item"><span>Functions</span><span className="wizard-cert-item__fixed">{fixed.functions > 0 ? `+${fixed.functions}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingFunctions || 0} missing</span></div>
+        <div className="wizard-cert-item"><span>Triggers</span><span className="wizard-cert-item__fixed">{fixed.triggers > 0 ? `+${fixed.triggers}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingTriggers || 0} missing</span></div>
+        <div className="wizard-cert-item"><span>Foreign Keys</span><span className="wizard-cert-item__fixed">{fixed.fks > 0 ? `+${fixed.fks}` : '—'}</span><span className="wizard-cert-item__remaining">{post?.summary?.missingFks || 0} missing</span></div>
       </div>
+      {preDuplicates && preDuplicates.duplicates?.length > 0 && (
+        <div className="dm-mt">
+          <h4 style={{ fontSize: 13, fontWeight: 600, margin: 0, marginBottom: 4 }}>Duplicate Summary</h4>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            {['table', 'index', 'policy', 'function', 'trigger', 'view', 'constraint', 'enum'].map((type) => {
+              const count = preDuplicates.duplicates.filter((d) => d.type === type).length;
+              if (count === 0) return null;
+              return <div key={type} style={{ marginBottom: 2 }}>{count} duplicate {type}{count !== 1 ? 's' : ''}</div>;
+            })}
+            <div style={{ marginTop: 4, fontStyle: 'italic' }}>Administrator review completed. Remaining duplicates acknowledged.</div>
+          </div>
+        </div>
+      )}
+      {recommendations && recommendations.filter((r) => r.action === 'remove').length > 0 && (
+        <div className="dm-mt" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+          <b>{recommendations.filter((r) => r.action === 'remove').length}</b> unnecessary item{recommendations.filter((r) => r.action === 'remove').length !== 1 ? 's' : ''} reviewed.
+        </div>
+      )}
     </div>
   );
 }
@@ -284,6 +305,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [execPhase, setExecPhase] = useState(null);
   const [preScan, setPreScan] = useState(null);
   const [postScan, setPostScan] = useState(null);
+  const [duplicateScanResult, setDuplicateScanResult] = useState(null);
+  const [duplicateActions, setDuplicateActions] = useState({});
   const fileRef = useRef(null);
 
   // Simple Setup
@@ -343,6 +366,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setExecPhase(null);
     setPreScan(null);
     setPostScan(null);
+    setDuplicateScanResult(null);
+    setDuplicateActions({});
   };
 
   const runScanAndCompare = async () => {
@@ -353,18 +378,34 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setComparison(cmp);
     const recs = recommendationService.generate(cmp.findings || {});
     setRecommendations(recs);
-    setSelectedIds(new Set(recs.filter((r) => r.severity !== 'improvement').map((r) => r.id)));
-    return { scan, comparison: cmp, recommendations: recs };
+    setSelectedIds(new Set(recs.filter((r) => r.severity !== 'improvement' && r.action !== 'remove').map((r) => r.id)));
+
+    const dupResult = await duplicateDetectionService.detect(scan);
+    setDuplicateScanResult(dupResult);
+    const initialActions = {};
+    if (dupResult.ok) {
+      for (const d of dupResult.duplicates) {
+        initialActions[d.duplicate + ':' + d.type] = 'decide_later';
+      }
+    }
+    setDuplicateActions(initialActions);
+
+    return { scan, comparison: cmp, recommendations: recs, duplicates: dupResult };
   };
 
-  const findGetSql = (recommendation) => {
-    if (recommendation.sql) return recommendation.sql;
+  const getRecommendationSql = (r) => {
+    if (r.sql) return r.sql;
+    if (r.action === 'remove') {
+      if (r.category === 'table') return `DROP TABLE IF EXISTS public.${r.target} CASCADE;`;
+      if (r.category === 'index') return `DROP INDEX IF EXISTS public.${r.target};`;
+      if (r.category === 'policy') return `DROP POLICY IF EXISTS "${r.target}" ON public.${r.table};`;
+    }
     return null;
   };
 
   const getApprovedSql = () => {
     const approved = recommendations.filter((r) => selectedIds.has(r.id));
-    return approved.map((r) => findGetSql(r)).filter(Boolean).join('\n\n');
+    return approved.map((r) => getRecommendationSql(r)).filter(Boolean).join('\n\n');
   };
 
   // --- SIMPLE SETUP ---
@@ -419,20 +460,54 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setBusy(true); setError(''); setExecPhase('executing');
     try {
       const approved = recommendations.filter((r) => selectedIds.has(r.id));
-      const createSql = getApprovedSql();
       let executed = [];
+
       for (const r of approved) {
-        if (r.sql) {
-          const res = await InstallationExecutor.executeSql(r.sql);
+        const sql = getRecommendationSql(r);
+        if (sql) {
+          const res = await InstallationExecutor.executeSql(sql);
           if (res.ok) {
-            executed.push({ id: r.id, status: 'ok' });
+            executed.push({ id: r.id, status: 'ok', label: r.label });
           } else {
-            executed.push({ id: r.id, status: 'error', error: res.error });
+            executed.push({ id: r.id, status: 'error', error: res.error, label: r.label });
           }
         } else {
-          executed.push({ id: r.id, status: 'skipped', reason: 'No SQL available — requires schema generation' });
+          executed.push({ id: r.id, status: 'skipped', reason: 'No SQL available — requires schema generation', label: r.label });
         }
       }
+
+      for (const [dupKey, action] of Object.entries(duplicateActions)) {
+        if (action === 'remove') {
+          const [name, type] = dupKey.split(':');
+          let sql = null;
+          if (type === 'table') sql = `DROP TABLE IF EXISTS public.${name} CASCADE;`;
+          else if (type === 'index') sql = `DROP INDEX IF EXISTS public.${name};`;
+          else if (type === 'policy') {
+            const dup = duplicateScanResult?.duplicates?.find((d) => d.duplicate === name && d.type === type);
+            if (dup?.table) sql = `DROP POLICY IF EXISTS "${name}" ON public.${dup.table};`;
+          }
+          else if (type === 'function') sql = `DROP FUNCTION IF EXISTS public.${name};`;
+          else if (type === 'trigger') sql = `DROP TRIGGER IF EXISTS ${name} ON public.${'table'};`;
+          else if (type === 'view') sql = `DROP VIEW IF EXISTS public.${name};`;
+          else if (type === 'constraint') {
+            const dup = duplicateScanResult?.duplicates?.find((d) => d.duplicate === name && d.type === type);
+            if (dup?.table) sql = `ALTER TABLE public.${dup.table} DROP CONSTRAINT IF EXISTS ${name};`;
+          }
+          else if (type === 'storageBucket') sql = null;
+
+          if (sql) {
+            const res = await InstallationExecutor.executeSql(sql);
+            if (res.ok) {
+              executed.push({ id: `dup_remove_${dupKey}`, status: 'ok', label: `Remove duplicate ${type}: ${name}` });
+            } else {
+              executed.push({ id: `dup_remove_${dupKey}`, status: 'error', error: res.error, label: `Remove duplicate ${type}: ${name}` });
+            }
+          } else {
+            executed.push({ id: `dup_remove_${dupKey}`, status: 'skipped', reason: 'Manual removal required', label: `Remove duplicate ${type}: ${name}` });
+          }
+        }
+      }
+
       setExecPhase('done');
       setInstallResult({ success: executed.every((e) => e.status === 'ok'), steps: executed });
       setBusy(false);
@@ -456,8 +531,45 @@ export default function SetupWizard({ detectError: propDetectError }) {
       if (!scan.ok) { setBusy(false); return; }
       const cmp = blueprintComparatorService.compare(scan);
       setPostScan({ comparison: cmp });
+
+      const storageCheck = scan.details.storageBuckets?.length > 0
+        ? { name: 'Storage Buckets', status: 'ok', details: `${scan.details.storageBuckets.length} bucket(s) configured` }
+        : { name: 'Storage Buckets', status: 'warn', details: 'No storage buckets detected' };
+
+      const realtimeCheck = scan.details.publications?.length > 0
+        ? { name: 'Realtime / Publications', status: 'ok', details: `${scan.details.publications.length} publication(s) configured` }
+        : { name: 'Realtime / Publications', status: 'warn', details: 'No publications detected' };
+
+      const rlsCheck = scan.details.policies?.length > 0
+        ? { name: 'Row Level Security', status: 'ok', details: `${scan.details.policies.length} policy(ies) active` }
+        : { name: 'Row Level Security', status: 'warn', details: 'No RLS policies detected' };
+
+      const execSqlCheck = typeof getDatabaseProvider().execSql === 'function'
+        ? { name: 'SQL Execution', status: 'ok', details: 'exec_sql RPC available' }
+        : { name: 'SQL Execution', status: 'info', details: 'exec_sql RPC not available' };
+
+      const extCheck = scan.details.extensions?.length > 0
+        ? { name: 'Extensions', status: 'ok', details: `${scan.details.extensions.length} extension(s) installed` }
+        : { name: 'Extensions', status: 'warn', details: 'No extensions detected' };
+
+      const checks = [storageCheck, realtimeCheck, rlsCheck, execSqlCheck, extCheck];
+
+      if (scan.ok && cmp.ok) {
+        if (cmp.summary.missingTables === 0 && cmp.summary.missingFunctions === 0) {
+          checks.push({ name: 'Required Tables', status: 'ok', details: 'All required tables present' });
+        } else {
+          checks.push({ name: 'Required Tables', status: 'warn', details: `${cmp.summary.missingTables} table(s) missing` });
+        }
+        if (cmp.summary.missingPolicies === 0) {
+          checks.push({ name: 'Required Policies', status: 'ok', details: 'All required policies present' });
+        } else {
+          checks.push({ name: 'Required Policies', status: 'warn', details: `${cmp.summary.missingPolicies} policy(ies) missing` });
+        }
+      }
+
+      const issueCount = checks.filter((c) => c.status === 'warn' || c.status === 'fail').length;
       const v = await ValidationEngine.validateInstallation();
-      setValidateResult(v);
+      setValidateResult({ ...v, valid: v.valid && issueCount === 0, issueCount: v.issueCount + issueCount, checks: [...(v.checks || []), ...checks] });
       setBusy(false);
       goToStep(7);
     } catch (e) {
@@ -653,6 +765,55 @@ export default function SetupWizard({ detectError: propDetectError }) {
     window.location.href = '/bootstrap-admin';
   };
 
+  const handleDuplicateAction = (key, action) => {
+    setDuplicateActions((prev) => ({ ...prev, [key]: action }));
+  };
+
+  const handleExportReport = () => {
+    const lines = [];
+    lines.push('LexAI Database Health Report');
+    lines.push('============================');
+    lines.push(`Generated: ${new Date().toISOString()}`);
+    lines.push('');
+    if (comparison?.summary) {
+      const s = comparison.summary;
+      lines.push('Summary');
+      lines.push(`  Healthy Objects: ${s.healthyObjects || 0}`);
+      lines.push(`  Missing Objects: ${(s.missingTables || 0) + (s.missingIndexes || 0) + (s.missingPolicies || 0) + (s.missingFunctions || 0) + (s.missingTriggers || 0) + (s.missingFks || 0) + (s.missingExtensions || 0) + (s.missingRoles || 0)}`);
+      lines.push(`  Unknown Objects: ${s.extraTables + s.extraPolicies + s.extraIndexes}`);
+      lines.push(`  Broken Objects:  ${s.brokenFks || 0}`);
+      lines.push(`  Warnings:        ${s.warningCount || 0}`);
+      lines.push('');
+      lines.push('Missing Tables:');
+      for (const t of comparison.findings?.missingTables || []) lines.push(`  - ${t.name} (${t.severity})`);
+      lines.push('Extra Tables (Unknown):');
+      for (const t of comparison.findings?.extraTables || []) lines.push(`  - ${t.name}`);
+      lines.push('Broken FKs:');
+      for (const fk of comparison.findings?.brokenFks || []) lines.push(`  - ${fk.name} on ${fk.table}: ${fk.reason}`);
+      lines.push('Missing Indexes:');
+      for (const idx of comparison.findings?.missingIndexes || []) lines.push(`  - ${idx}`);
+      lines.push('Missing Policies:');
+      for (const p of comparison.findings?.missingPolicies || []) lines.push(`  - ${p.name} on ${p.table}`);
+    }
+    if (duplicateScanResult?.ok && duplicateScanResult.duplicates.length > 0) {
+      lines.push('');
+      lines.push('Duplicates:');
+      for (const d of duplicateScanResult.duplicates) {
+        lines.push(`  - ${d.type}: ${d.duplicate} (original: ${d.original}) [${d.severity}]`);
+        const action = duplicateActions[d.duplicate + ':' + d.type] || 'decide_later';
+        lines.push(`    Action: ${action}`);
+      }
+    }
+    const text = lines.join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'lexai_health_report.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const toggleFinding = (id) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -775,7 +936,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {/* --- REVIEW STEP (step 4 for simple, step 3 for copy) --- */}
             {(method === 'simple' && step === 4) || (method === 'copy' && step === 3) ? (
               <div className="dm-mt">
-                {comparison && <HealthReport comparison={comparison} />}
+                {comparison && <HealthReport comparison={comparison} duplicates={duplicateScanResult} />}
 
                 {comparison && !comparison.ok && (
                   <div className="alert alert--warn dm-mt">
@@ -846,9 +1007,99 @@ export default function SetupWizard({ detectError: propDetectError }) {
                       onToggle={toggleFinding}
                     />
 
-                    <div className="dm-toolbar-mt">
+                    {/* --- UNNECESSARY ITEMS (REMOVE) --- */}
+                    {recommendations.filter((r) => r.action === 'remove').length > 0 && (
+                      <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 16 }}>
+                        <h3 className="wizard-section-title">Unnecessary Items (Optional Removal)</h3>
+                        <p className="auth-sub--sm" style={{ fontSize: 13 }}>
+                          These items exist but are not part of the LexAI blueprint. Review and decide what to do with each.
+                        </p>
+                        <FindingCategory
+                          title="Unnecessary Tables"
+                          findings={recommendations.filter((r) => r.category === 'table' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
+                        />
+                        <FindingCategory
+                          title="Unnecessary Indexes"
+                          findings={recommendations.filter((r) => r.category === 'index' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
+                        />
+                        <FindingCategory
+                          title="Unnecessary Policies"
+                          findings={recommendations.filter((r) => r.category === 'policy' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
+                        />
+                      </div>
+                    )}
+
+                    {/* --- UNUSED INDEXES --- */}
+                    {recommendations.filter((r) => r.category === 'index' && r.action === 'remove' && r.target && r.id.startsWith('remove_unused')).length > 0 && (
+                      <div className="dm-mt">
+                        <h4 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>Unused Indexes ({recommendations.filter((r) => r.id.startsWith('remove_unused')).length})</h4>
+                        {recommendations.filter((r) => r.id.startsWith('remove_unused')).map((r) => (
+                          <div key={r.id} className="wizard-finding__row" style={{ fontSize: 13, padding: '6px 0' }}>
+                            <span className="wizard-finding__label">{r.target} on {r.table}</span>
+                            <label className="wizard-finding__checkbox">
+                              <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleFinding(r.id)} />
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* --- DUPLICATE DETECTION SECTION --- */}
+                    {duplicateScanResult?.ok && duplicateScanResult.duplicates.length > 0 && (
+                      <div className="dm-mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 16 }}>
+                        <h3 className="wizard-section-title">Duplicate Detection</h3>
+                        <p className="auth-sub--sm" style={{ fontSize: 13 }}>
+                          The following duplicate or redundant objects were found. Select an action for each.
+                        </p>
+                        {['table', 'index', 'policy', 'function', 'trigger', 'view', 'constraint', 'enum', 'storageBucket'].map((type) => {
+                          const items = duplicateScanResult.duplicates.filter((d) => d.type === type);
+                          if (items.length === 0) return null;
+                          return (
+                            <div key={type} className="dm-mt">
+                              <h4 style={{ fontSize: 14, fontWeight: 600, margin: 0, marginBottom: 6, textTransform: 'capitalize' }}>{type} ({items.length})</h4>
+                              {items.map((d) => {
+                                const key = d.duplicate + ':' + d.type;
+                                const curAction = duplicateActions[key] || 'decide_later';
+                                return (
+                                  <div key={key} className="wizard-finding" style={{ marginBottom: 8 }}>
+                                    <div className="wizard-finding__row" style={{ flexWrap: 'wrap', gap: 4 }}>
+                                      <span style={{ flex: 1, fontSize: 13 }}><b>{d.duplicate}</b> — duplicate of <b>{d.original}</b></span>
+                                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.reason}</span>
+                                    </div>
+                                    <div className="flex-row gap-8" style={{ padding: '4px 0 4px 24px', flexWrap: 'wrap' }}>
+                                      {['keep', 'keep_both', 'remove', 'rename', 'merge', 'ignore', 'decide_later'].map((action) => (
+                                        <label key={action} className="flex-row gap-4" style={{ fontSize: 12, cursor: 'pointer', alignItems: 'center' }}>
+                                          <input
+                                            type="radio"
+                                            name={`dup_${key}`}
+                                            checked={curAction === action}
+                                            onChange={() => handleDuplicateAction(key, action)}
+                                          />
+                                          {action.replace(/_/g, ' ')}
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
                       <Button variant="primary" className="btn--block" icon="arrow" onClick={handleReviewDone}>
                         Continue with {selectedIds.size} Selected
+                      </Button>
+                      <Button variant="ghost" icon="download" onClick={handleExportReport}>
+                        Export Report
                       </Button>
                     </div>
                   </>
@@ -904,7 +1155,27 @@ export default function SetupWizard({ detectError: propDetectError }) {
                       ))}
                     </div>
                   )}
-                  {(!comparison?.findings?.extraTables?.length && !comparison?.findings?.extraPolicies?.length && !comparison?.findings?.extraIndexes?.length) && (
+                  {comparison?.findings?.circularFks?.length > 0 && (
+                    <div style={{ fontSize: 13, marginTop: 6 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4, color: 'var(--error)' }}>Circular FK References:</div>
+                      {comparison.findings.circularFks.map((c, i) => (
+                        <div key={i} className="flex-row gap-4" style={{ alignItems: 'center', color: 'var(--text-muted)' }}>
+                          <Icon name="alert" size={12} /> <span>{c.table} references itself via FK chain</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {comparison?.findings?.duplicateTablesByStructure?.length > 0 && (
+                    <div style={{ fontSize: 13, marginTop: 6 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4, color: 'var(--warning)' }}>Tables with identical structure:</div>
+                      {comparison.findings.duplicateTablesByStructure.map((d, i) => (
+                        <div key={i} className="flex-row gap-4" style={{ alignItems: 'center', color: 'var(--text-muted)' }}>
+                          <Icon name="info" size={12} /> <span>{d.t1} and {d.t2}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(!comparison?.findings?.extraTables?.length && !comparison?.findings?.extraPolicies?.length && !comparison?.findings?.extraIndexes?.length && !comparison?.findings?.circularFks?.length && !comparison?.findings?.duplicateTablesByStructure?.length) && (
                     <div style={{ fontSize: 13, marginTop: 6, color: 'var(--text-muted)' }}>No unknown items detected.</div>
                   )}
                 </div>
@@ -915,7 +1186,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {method === 'simple' && step === 5 && (
               <div className="dm-mt">
                 {comparison && <HealthReport comparison={comparison} />}
-                <ChangePreview recommendations={recommendations} selectedIds={selectedIds} />
+                <ChangePreview recommendations={recommendations} selectedIds={selectedIds} duplicateActions={duplicateActions} duplicateScanResult={duplicateScanResult} />
 
                 {execPhase === 'executing' && (
                   <div className="alert alert--info dm-mt">
@@ -975,7 +1246,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     </div>
                   </div>
                 )}
-                {postScan && <CertificationReport preScan={preScan} postScan={postScan} />}
+                {postScan && <CertificationReport preScan={preScan} postScan={postScan} preDuplicates={duplicateScanResult} recommendations={recommendations} />}
                 {postScan && (
                   <div className="dm-toolbar-mt">
                     <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handlePostVerify}>
@@ -1192,10 +1463,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
               <>
                 {method === 'simple' && postScan ? (
                   <>
-                    <CertificationReport preScan={preScan} postScan={postScan} />
-                    <div className="dm-toolbar-mt">
+                    <CertificationReport preScan={preScan} postScan={postScan} preDuplicates={duplicateScanResult} recommendations={recommendations} />
+                    <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
                       <Button variant="primary" className="btn--block" icon="arrow" onClick={handleFinish}>
                         Continue to Setup
+                      </Button>
+                      <Button variant="ghost" icon="download" onClick={handleExportReport}>
+                        Export Report
                       </Button>
                     </div>
                   </>

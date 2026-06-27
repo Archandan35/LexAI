@@ -1,3 +1,5 @@
+const ACTIONS = ['create', 'remove', 'repair', 'rename', 'merge', 'ignore'];
+
 export const recommendationService = {
   generate(findings) {
     if (!findings) return [];
@@ -115,7 +117,110 @@ export const recommendationService = {
       });
     }
 
+    for (const col of findings.missingColumns || []) {
+      recommendations.push({
+        id: `add_column_${col.table}_${col.column}`,
+        category: 'column',
+        action: 'create',
+        target: `${col.table}.${col.column}`,
+        label: `Add column "${col.column}" to "${col.table}"`,
+        description: `Required column "${col.column}" (${col.expectedType}) is missing.`,
+        severity: 'warning',
+        sql: `ALTER TABLE public.${col.table} ADD COLUMN ${col.column} ${col.expectedType};`,
+      });
+    }
+
+    for (const table of findings.unnecessaryTables || []) {
+      recommendations.push({
+        id: `remove_table_${table.name}`,
+        category: 'table',
+        action: 'remove',
+        target: table.name,
+        label: `Remove unnecessary table "${table.name}"`,
+        description: `${table.name} exists but is not part of the LexAI blueprint.`,
+        severity: 'info',
+        canRemove: true,
+        sql: `DROP TABLE IF EXISTS public.${table.name} CASCADE;`,
+      });
+    }
+
+    for (const idx of findings.unnecessaryIndexes || []) {
+      recommendations.push({
+        id: `remove_index_${idx}`,
+        category: 'index',
+        action: 'remove',
+        target: idx,
+        label: `Remove unnecessary index "${idx}"`,
+        description: `Index exists but is not part of the LexAI blueprint.`,
+        severity: 'info',
+        canRemove: true,
+        sql: `DROP INDEX IF EXISTS public.${idx};`,
+      });
+    }
+
+    for (const pol of findings.unnecessaryPolicies || []) {
+      recommendations.push({
+        id: `remove_policy_${pol.name}`,
+        category: 'policy',
+        action: 'remove',
+        target: pol.name,
+        table: pol.table,
+        label: `Remove unnecessary policy "${pol.name}" on "${pol.table}"`,
+        description: `Policy exists but is not part of the LexAI blueprint.`,
+        severity: 'info',
+        canRemove: true,
+        sql: `DROP POLICY IF EXISTS "${pol.name}" ON public.${pol.table};`,
+      });
+    }
+
+    for (const idx of findings.unusedIndexes || []) {
+      recommendations.push({
+        id: `remove_unused_index_${idx.name}`,
+        category: 'index',
+        action: 'remove',
+        target: idx.name,
+        table: idx.table,
+        label: `Remove unused index "${idx.name}"`,
+        description: `Index has never been scanned (0 scans) on table "${idx.table}".`,
+        severity: 'improvement',
+        canRemove: true,
+        sql: `DROP INDEX IF EXISTS public.${idx.name};`,
+      });
+    }
+
+    for (const fk of findings.circularFks || []) {
+      recommendations.push({
+        id: `repair_circular_fk_${fk.table}_${fk.references}`,
+        category: 'foreignKey',
+        action: 'repair',
+        target: `${fk.table} -> ${fk.references}`,
+        label: `Fix circular FK reference: "${fk.table}" references itself`,
+        description: `Foreign key creates a circular reference.`,
+        severity: 'critical',
+      });
+    }
+
     return recommendations;
+  },
+
+  evaluateAction(recommendation, selectedAction) {
+    if (!recommendation) return null;
+    const valid = ACTIONS.includes(selectedAction);
+    if (recommendation.action === 'create' && selectedAction === 'create') return 'execute';
+    if (recommendation.action === 'remove' && selectedAction === 'remove') return 'execute';
+    if (recommendation.action === 'repair' && selectedAction === 'repair') return 'execute';
+    if (selectedAction === 'rename') return 'rename';
+    if (selectedAction === 'merge') return 'merge';
+    if (selectedAction === 'ignore') return 'skip';
+    if (selectedAction === 'keep') return 'skip';
+    return valid ? 'execute' : 'skip';
+  },
+
+  getValidActions(recommendation) {
+    if (!recommendation) return ['ignore'];
+    if (recommendation.action === 'create' || recommendation.action === 'repair') return ['execute', 'ignore'];
+    if (recommendation.canRemove) return ['remove', 'keep', 'rename', 'ignore', 'decide_later'];
+    return ['keep', 'ignore', 'decide_later'];
   },
 };
 

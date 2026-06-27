@@ -340,20 +340,106 @@ export const blueprintComparatorService = {
 
     const { brokenFks } = detectBroken(details);
 
+    const unusedIndexes = (details.unusedIndexes || []).map((r) => ({
+      name: r.index_name,
+      table: r.table_name,
+      scans: Number(r.scans),
+      severity: 'improvement',
+    }));
+
+    const circularFks = (details.circularForeignKeys || []).map((r) => ({
+      table: r.src,
+      references: r.dst,
+      severity: 'critical',
+    }));
+
+    const duplicateTablesByStructure = (details.duplicateTablesByStructure || []).map((r) => ({
+      t1: r.t1,
+      t2: r.t2,
+      severity: 'warning',
+    }));
+
+    const unnecessaryTables = extraTables.filter((t) => {
+      const lower = t.name.toLowerCase();
+      const patterns = [/^test_/, /^temp_/, /^old_/, /^backup_/, /^legacy_/, /_copy$/, /_old$/, /_backup$/, /_test$/, /_dup$/];
+      return patterns.some((p) => p.test(lower));
+    });
+
+    const unnecessaryIndexes = (indexesResult.extra || []).filter((name) => {
+      const lower = name.toLowerCase();
+      return /_copy$|_old$|_backup$|_test$|_dup$/i.test(lower);
+    });
+
+    const unnecessaryPolicies = (unknownPolicies || []).filter((p) => {
+      const lower = p.name.toLowerCase();
+      return /_copy$|_old$|_backup$|_test$|_dup$/i.test(lower);
+    });
+
+    const missingColumns = [];
+    const columnIssues = [];
+    for (const [tableName, bpTable] of Object.entries(BLUEPRINT.tables)) {
+      if (bpTable.columns && dbTableNames.has(tableName)) {
+        const dbCols = new Set((details.columns || [])
+          .filter((c) => c.table_name === tableName)
+          .map((c) => c.column_name));
+        for (const [colName, colType] of Object.entries(bpTable.columns)) {
+          if (!dbCols.has(colName)) {
+            missingColumns.push({ table: tableName, column: colName, expectedType: colType });
+          }
+        }
+      }
+    }
+
+    const emptyTables = (details.emptyTables || []).map((t) => ({
+      name: typeof t === 'string' ? t : t.name,
+      severity: 'info',
+    }));
+
+    const emptySchemas = (details.emptySchemas || []).map((s) => ({
+      name: typeof s === 'string' ? s : s.schema_name,
+      severity: 'info',
+    }));
+
+    const exclusionConstrains = (details.exclusionConstraints || []).map((c) => ({
+      table: c.table_name,
+      name: c.constraint_name,
+      definition: c.definition,
+      severity: 'info',
+    }));
+
+    const compositeConstrains = (details.compositeConstraints || []).map((c) => ({
+      table: c.table_name,
+      name: c.constraint_name,
+      type: c.contype,
+      definition: c.definition,
+      severity: 'info',
+    }));
+
+    const largeTables = (details.tableSizes || []).filter((t) => Number(t.bytes) > 104857600).map((t) => ({
+      name: t.name,
+      size: t.size,
+      bytes: Number(t.bytes),
+      severity: 'info',
+    }));
+
     return {
       ok: true,
       blueprint: BLUEPRINT,
       summary: {
+        healthyObjects: healthyTables.length + indexesResult.healthy.length + policiesResult.healthy.length + fksResult.healthy.length + functionsResult.healthy.length + triggersResult.healthy.length + extensionsResult.healthy.length + rolesResult.healthy.length,
         totalTables: bpTableNames.length,
         healthyTables: healthyTables.length,
         missingTables: missingTables.length,
         extraTables: extraTables.length,
+        unnecessaryTables: unnecessaryTables.length,
         healthyIndexes: indexesResult.healthy.length,
         missingIndexes: indexesResult.missing.length,
         extraIndexes: indexesResult.extra.length,
+        unnecessaryIndexes: unnecessaryIndexes.length,
         healthyPolicies: policiesResult.healthy.length,
         missingPolicies: policiesResult.missing.length,
         extraPolicies: policiesResult.extra.length,
+        unnecessaryPolicies: unnecessaryPolicies.length,
         healthyFunctions: functionsResult.healthy.length,
         missingFunctions: functionsResult.missing.length,
         healthyTriggers: triggersResult.healthy.length,
@@ -367,15 +453,27 @@ export const blueprintComparatorService = {
         missingRoles: rolesResult.missing.length,
         totalPolicies: allBpPolicies.length,
         totalIndexes: allBpIndexes.length,
+        unusedIndexes: unusedIndexes.length,
+        circularFks: circularFks.length,
+        missingColumns: missingColumns.length,
+        emptyTables: emptyTables.length,
+        emptySchemas: emptySchemas.length,
+        exclusionConstraints: exclusionConstrains.length,
+        compositeConstraints: compositeConstrains.length,
+        largeTables: largeTables.length,
+        warningCount: missingTables.length + missingPolicies.length + missingFks.length + missingExtensions.length + missingTriggers.length + unnecessaryTables.length + unusedIndexes.length + (indexesResult.extra || []).length + (unknownPolicies || []).length + missingColumns.length,
       },
       findings: {
         missingTables,
         extraTables,
+        unnecessaryTables,
         healthyTables,
         missingIndexes: indexesResult.missing,
         extraIndexes: indexesResult.extra,
+        unnecessaryIndexes,
         missingPolicies,
         extraPolicies: unknownPolicies,
+        unnecessaryPolicies,
         missingFunctions: functionsResult.missing,
         missingTriggers: triggersResult.missing,
         missingFks,
@@ -387,6 +485,16 @@ export const blueprintComparatorService = {
           table: d.tablename,
           severity: 'warning',
         })),
+        unusedIndexes,
+        circularFks,
+        duplicateTablesByStructure,
+        missingColumns,
+        columnIssues,
+        emptyTables,
+        emptySchemas,
+        exclusionConstraints: exclusionConstrains,
+        compositeConstraints: compositeConstrains,
+        largeTables,
       },
       dbScan: details,
     };
