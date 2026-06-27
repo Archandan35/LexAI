@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 
 export default function Modal({ open, title, subtitle, onClose, children, footer, size, className = '', disableBackdrop, disableEscape }) {
@@ -11,7 +12,7 @@ export default function Modal({ open, title, subtitle, onClose, children, footer
   }, [open, onClose, disableEscape]);
 
   if (!open) return null;
-  return (
+  const el = (
     <div className="modal-overlay" onMouseDown={disableBackdrop ? undefined : (e) => e.target === e.currentTarget && onClose?.()}>
       <div className={`modal ${size === 'lg' ? 'modal--lg' : ''} ${className}`}>
         {title ? (
@@ -28,4 +29,5 @@ export default function Modal({ open, title, subtitle, onClose, children, footer
       </div>
     </div>
   );
+  return createPortal(el, document.body);
 }

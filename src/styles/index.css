@@ -9671,7 +9671,7 @@ kbd.cmd__kbd {
 }
 
 /* ---- Crud Manager Modal ---- */
-.crud-modal .modal {
+.crud-modal {
   max-width: min(820px, 92vw);
 }
 
