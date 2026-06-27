@@ -77,7 +77,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
     <Card
       title={`Reminders (${items.length})`}
       sub="Hearing, filing, evidence & compliance deadlines"
-      actions={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setOpen(true)}>Add</Button></PermissionGate>}
+      actions={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setOpen(true)}>Add</Button></PermissionGate>}
     >
       {items.length === 0 ? <EmptyState icon="clock" title="No reminders." /> : (
         <div className="reminder-list">
@@ -95,7 +95,7 @@ export default function RemindersPanel({ caseId, onChanged }) {
                   <div className="list-row__meta">{r.type} · {formatDate(r.date)}</div>
                 </div>
                 <Badge tone={tone}>{when}</Badge>
-                <PermissionGate perm="casevault.edit"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(r)}><Icon name="trash" size={14} /></button></PermissionGate>
+                <PermissionGate perm="manageCase.edit"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(r)}><Icon name="trash" size={14} /></button></PermissionGate>
               </div>
             );
           })}

@@ -5,7 +5,7 @@ import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 
 // caseHistoryLogic — the case's legal-proceedings history. Entries hold the full
-// untruncated text; importable directly from the cause list (hearings).
+// untruncated text; importable directly from the order sheet (hearings).
 export const caseHistoryLogic = {
   async list(caseId, { order = 'desc' } = {}) {
     const rows = await caseHistoryService.list(caseId);
@@ -27,9 +27,9 @@ export const caseHistoryLogic = {
   async update(id, patch) { return ok(await caseHistoryService.update(id, patch)); },
   async remove(id) { return ok(await caseHistoryService.remove(id)); },
 
-  // Import hearings (the cause-list backing data) into history. Full text is
+  // Import hearings (the order-sheet backing data) into history. Full text is
   // assembled and never truncated; existing imported hearings are skipped.
-  async importFromCauseList(caseId, user) {
+  async importFromOrderSheet(caseId, user) {
     try {
       const [hearings, existing] = await Promise.all([
         caseService.listHearings(caseId),
@@ -45,11 +45,11 @@ export const caseHistoryLogic = {
         // eslint-disable-next-line no-await-in-loop
         await caseHistoryService.create({
           caseId, hearingId: h.id, date: h.date, status: h.status || '',
-          text: parts || h.purpose || 'Hearing', source: 'cause-list', createdAt: DateEngine.now(),
+          text: parts || h.purpose || 'Hearing', source: 'order-sheet', createdAt: DateEngine.now(),
         });
         count += 1;
       }
-      await caseActivityService.record(caseId, 'history.import', `Imported ${count} entr${count === 1 ? 'y' : 'ies'} from cause list`, user);
+      await caseActivityService.record(caseId, 'history.import', `Imported ${count} entr${count === 1 ? 'y' : 'ies'} from order sheet`, user);
       return ok({ count });
     } catch (e) {
       return fail(e);

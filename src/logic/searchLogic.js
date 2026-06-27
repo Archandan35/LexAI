@@ -6,7 +6,7 @@ import { notesRepository } from '@/data-layer/repositories/notesRepository.js';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 
 const SOURCES = [
-  { repo: casesRepository, type: 'Case', icon: 'vault', module: 'casevault',
+  { repo: casesRepository, type: 'Case', icon: 'vault', module: 'manageCase',
     title: (r) => r.caseNumber || r.title, subtitle: (r) => r.title, route: (r) => `/cases/${r.id}`,
     fields: (r) => [r.caseNumber, r.title, r.court, r.stage, (r.tags || []).join(' '), r.description] },
   { repo: draftsRepository, type: 'Draft', icon: 'pen', module: 'drafting',
@@ -18,8 +18,8 @@ const SOURCES = [
   { repo: notesRepository, type: 'Note', icon: 'notes', module: 'hearingNotes',
     title: (r) => r.title, subtitle: (r) => r.body, route: () => '/hearing-notes',
     fields: (r) => [r.title, r.body] },
-  { repo: hearingsRepository, type: 'Hearing', icon: 'calendar', module: 'causeList',
-    title: (r) => r.purpose || 'Hearing', subtitle: (r) => r.status, route: () => '/cause-list',
+  { repo: hearingsRepository, type: 'Hearing', icon: 'calendar', module: 'orderSheet',
+    title: (r) => r.purpose || 'Hearing', subtitle: (r) => r.status, route: () => '/order-sheet',
     fields: (r) => [r.purpose, r.status, r.notes] },
 ];
 

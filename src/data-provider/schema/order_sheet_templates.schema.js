@@ -1,7 +1,7 @@
-// Universal schema — causeListTemplates (cause-list rendering definitions).
-export const CauseListTemplatesSchema = {
-  collection: 'cause_list_templates',
-  label: 'Cause List Templates',
+// Universal schema — orderSheetTemplates (order-sheet rendering definitions).
+export const OrderSheetTemplatesSchema = {
+  collection: 'order_sheet_templates',
+  label: 'Order Sheet Templates',
   primaryKey: 'id',
   core: false,
   fields: {
@@ -17,4 +17,4 @@ export const CauseListTemplatesSchema = {
   indexes: [],
 };
 
-export default CauseListTemplatesSchema;
+export default OrderSheetTemplatesSchema;

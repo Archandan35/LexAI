@@ -44,7 +44,7 @@ export default function NotesPanel({ caseId, notes, onChanged }) {
   };
 
   return (
-    <Card title={`Case Notes (${notes.length})`} actions={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={openNew}>Add Note</Button></PermissionGate>}>
+    <Card title={`Case Notes (${notes.length})`} actions={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={openNew}>Add Note</Button></PermissionGate>}>
       {notes.length === 0 ? <EmptyState icon="notes" title="No notes." /> : notes.map((n) => (
         <div key={n.id} className="qa-card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -52,8 +52,8 @@ export default function NotesPanel({ caseId, notes, onChanged }) {
             <span className="muted">{formatDate(n.createdAt)}</span>
             <div className="row-actions">
               <button className="iconbtn" title="View" onClick={() => setViewing(n)}><Icon name="eye" size={14} /></button>
-              <PermissionGate perm="casevault.edit"><button className="iconbtn" title="Edit" onClick={() => openEdit(n)}><Icon name="edit" size={14} /></button></PermissionGate>
-              <PermissionGate perm="casevault.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(n)}><Icon name="trash" size={14} /></button></PermissionGate>
+              <PermissionGate perm="manageCase.edit"><button className="iconbtn" title="Edit" onClick={() => openEdit(n)}><Icon name="edit" size={14} /></button></PermissionGate>
+              <PermissionGate perm="manageCase.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(n)}><Icon name="trash" size={14} /></button></PermissionGate>
             </div>
           </div>
           <div style={{ fontSize: 13, marginTop: 6, color: 'var(--text-soft)', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' }}>{n.body}</div>

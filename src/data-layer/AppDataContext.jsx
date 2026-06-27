@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
 
-// AppDataContext — shares the case list app-wide so dropdowns (cause list, case
+// AppDataContext — shares the case list app-wide so dropdowns (order sheet, case
 // manager, drafting) stay in sync without each page re-fetching. Still routes
 // exclusively through the logic layer.
 const AppDataContext = createContext(null);

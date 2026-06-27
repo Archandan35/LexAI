@@ -1,5 +1,5 @@
 import { caseService } from '@/services/caseService.js';
-import { causeListTemplatesRepository } from '@/data-layer/repositories/causeListTemplatesRepository.js';
+import { orderSheetTemplatesRepository } from '@/data-layer/repositories/orderSheetTemplatesRepository.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
@@ -14,10 +14,10 @@ function fmtCaseNumber(c) {
   return c.case_display_number || c.caseNumber || String(cn || '') || '—';
 }
 
-// causeListLogic — daily/period cause list + per-case hearing history rendered
+// orderSheetLogic — daily/period order sheet + per-case hearing history rendered
 // through a user-chosen template. Templates are CRUD-managed by the user.
-export const causeListLogic = {
-  async causeList({ from, to } = {}) {
+export const orderSheetLogic = {
+  async orderSheet({ from, to } = {}) {
     try {
       const [cases, hearings] = await Promise.all([
         caseService.listCases(),
@@ -88,10 +88,10 @@ export const causeListLogic = {
   },
 
   // Template CRUD
-  listTemplates: () => causeListTemplatesRepository.getAll(),
-  addTemplate: (data) => causeListTemplatesRepository.create(data),
-  updateTemplate: (id, patch) => causeListTemplatesRepository.update(id, patch),
-  deleteTemplate: (id) => causeListTemplatesRepository.delete(id),
+  listTemplates: () => orderSheetTemplatesRepository.getAll(),
+  addTemplate: (data) => orderSheetTemplatesRepository.create(data),
+  updateTemplate: (id, patch) => orderSheetTemplatesRepository.update(id, patch),
+  deleteTemplate: (id) => orderSheetTemplatesRepository.delete(id),
 };
 
 function inRange(date, from, to) {
@@ -102,4 +102,4 @@ function inRange(date, from, to) {
   return true;
 }
 
-export default causeListLogic;
+export default orderSheetLogic;

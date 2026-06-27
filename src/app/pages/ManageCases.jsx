@@ -127,7 +127,7 @@ export default function ManageCases() {
             icon="vault"
             title="Manage Cases"
             subtitle="Every matter with its documents, drafts, history, timeline and hearings in one secure place."
-            actions={<PermissionGate perm="casevault.create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>}
+            actions={<PermissionGate perm="manageCase.create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>}
           />
 
           <div className="toolbar-row">
@@ -158,27 +158,27 @@ export default function ManageCases() {
             <div className="bulk-bar">
               <span><b>{selected.length}</b> selected</span>
               <div className="bulk-bar__spacer" />
-              <PermissionGate perm="casevault.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('cases_export', cases.filter((c) => selected.includes(c.id)))}>Export</Button></PermissionGate>
-              <PermissionGate perm="casevault.archive"><Button variant="ghost" size="sm" icon="vault" onClick={() => { selected.forEach((id) => caseLogic.setArchived(id, filters.view !== 'archived', user)); setSelected([]); setTimeout(reload, 200); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
-              <PermissionGate perm="casevault.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={bulkRemove}>Delete</Button></PermissionGate>
+              <PermissionGate perm="manageCase.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('cases_export', cases.filter((c) => selected.includes(c.id)))}>Export</Button></PermissionGate>
+              <PermissionGate perm="manageCase.archive"><Button variant="ghost" size="sm" icon="vault" onClick={() => { selected.forEach((id) => caseLogic.setArchived(id, filters.view !== 'archived', user)); setSelected([]); setTimeout(reload, 200); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
+              <PermissionGate perm="manageCase.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={bulkRemove}>Delete</Button></PermissionGate>
             </div>
           )}
 
           <Card bodyClass="card__body--flush">
             {loading ? <div className="loading-block"><span className="spinner" /> Loading…</div> : filtered.length === 0 ? (
-              <EmptyState icon="vault" title="No cases found." hint="Create your first case." action={can('casevault.create') && <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>} />
+              <EmptyState icon="vault" title="No cases found." hint="Create your first case." action={can('manageCase.create') && <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>} />
             ) : (
               <div className="table-scroll">
                 <table className="table">
                   <thead><tr>
-                    <th className="manage-cases__th-check">{can('casevault.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
+                    <th className="manage-cases__th-check">{can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
                     <th className="manage-cases__th-check" />
                     <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
                   </tr></thead>
                   <tbody>
                     {filtered.map((c) => (
                       <tr key={c.id} className={selected.includes(c.id) ? 'row--selected' : ''}>
-                        <td>{can('casevault.bulkDelete') && <input type="checkbox" checked={selected.includes(c.id)} onChange={() => toggleOne(c.id)} />}</td>
+                        <td>{can('manageCase.bulkDelete') && <input type="checkbox" checked={selected.includes(c.id)} onChange={() => toggleOne(c.id)} />}</td>
                         <td>
                           <button className="iconbtn" title={c.watch ? 'Unwatch' : 'Add to watchlist'} onClick={() => act(() => caseLogic.toggleWatch(c.id, !c.watch))}>
                             <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
@@ -193,11 +193,11 @@ export default function ManageCases() {
                         <td>
                           <div className="row-actions">
                             <button className="iconbtn" title="View" onClick={() => nav(`/cases/${c.id}`)}><Icon name="eye" size={15} /></button>
-                            <PermissionGate perm="casevault.edit"><button className="iconbtn" title="Edit" onClick={() => nav(`/cases/${c.id}?edit=1`)}><Icon name="edit" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="casevault.create"><button className="iconbtn" title="Duplicate" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')}><Icon name="layers" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="casevault.export"><button className="iconbtn" title="Export" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))}><Icon name="download" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="casevault.archive"><button className="iconbtn" title={c.archived ? 'Restore' : 'Archive'} onClick={() => act(() => caseLogic.setArchived(c.id, !c.archived, user), c.archived ? 'Restored.' : 'Archived.')}><Icon name={c.archived ? 'history' : 'vault'} size={15} /></button></PermissionGate>
-                            <PermissionGate perm="casevault.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(c)}><Icon name="trash" size={15} /></button></PermissionGate>
+                            <PermissionGate perm="manageCase.edit"><button className="iconbtn" title="Edit" onClick={() => nav(`/cases/${c.id}?edit=1`)}><Icon name="edit" size={15} /></button></PermissionGate>
+                            <PermissionGate perm="manageCase.create"><button className="iconbtn" title="Duplicate" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')}><Icon name="layers" size={15} /></button></PermissionGate>
+                            <PermissionGate perm="manageCase.export"><button className="iconbtn" title="Export" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))}><Icon name="download" size={15} /></button></PermissionGate>
+                            <PermissionGate perm="manageCase.archive"><button className="iconbtn" title={c.archived ? 'Restore' : 'Archive'} onClick={() => act(() => caseLogic.setArchived(c.id, !c.archived, user), c.archived ? 'Restored.' : 'Archived.')}><Icon name={c.archived ? 'history' : 'vault'} size={15} /></button></PermissionGate>
+                            <PermissionGate perm="manageCase.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(c)}><Icon name="trash" size={15} /></button></PermissionGate>
                           </div>
                         </td>
                       </tr>
@@ -229,7 +229,7 @@ export default function ManageCases() {
                 </p>
               </div>
             </div>
-            <PermissionGate perm="casevault.create">
+            <PermissionGate perm="manageCase.create">
               <button className="cv-banner__btn" onClick={() => setOpen(true)}>
                 <Icon name="plus" size={20} />New Case
               </button>
@@ -330,7 +330,7 @@ export default function ManageCases() {
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="View case">
                     <Icon name="eye" size={17} /><span>View</span>
                   </button>
-                  <PermissionGate perm="casevault.edit">
+                  <PermissionGate perm="manageCase.edit">
                     <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?edit=1`)} aria-label="Edit case">
                       <Icon name="edit" size={17} /><span>Edit</span>
                     </button>
@@ -338,7 +338,7 @@ export default function ManageCases() {
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="Documents">
                     <Icon name="documents" size={17} /><span>Documents</span>
                   </button>
-                  <PermissionGate perm="casevault.export">
+                  <PermissionGate perm="manageCase.export">
                     <button className="cv-action-btn" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))} aria-label="Download case">
                       <Icon name="download" size={17} /><span>Download</span>
                     </button>
@@ -346,7 +346,7 @@ export default function ManageCases() {
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="Hearings">
                     <Icon name="video" size={17} /><span>Hearing</span>
                   </button>
-                  <PermissionGate perm="casevault.delete">
+                  <PermissionGate perm="manageCase.delete">
                     <button className="cv-action-btn" onClick={() => remove(c)} aria-label="Delete case">
                       <Icon name="trash" size={17} /><span>Delete</span>
                     </button>

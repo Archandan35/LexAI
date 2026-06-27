@@ -12,7 +12,7 @@ import { draftsRepository } from './draftsRepository.js';
 import { hearingsRepository } from './hearingsRepository.js';
 import { notesRepository } from './notesRepository.js';
 import { judgmentsRepository } from './judgmentsRepository.js';
-import { causeListTemplatesRepository } from './causeListTemplatesRepository.js';
+import { orderSheetTemplatesRepository } from './orderSheetTemplatesRepository.js';
 import { caseFoldersRepository } from './caseFoldersRepository.js';
 import { caseHistoryRepository } from './caseHistoryRepository.js';
 import { caseActivityRepository } from './caseActivityRepository.js';
@@ -37,7 +37,7 @@ export const repositories = {
   hearings: hearingsRepository,
   notes: notesRepository,
   judgments: judgmentsRepository,
-  cause_list_templates: causeListTemplatesRepository,
+  order_sheet_templates: orderSheetTemplatesRepository,
   case_folders: caseFoldersRepository,
   case_history: caseHistoryRepository,
   case_activity: caseActivityRepository,
@@ -58,7 +58,7 @@ export {
   createRepository,
   usersRepository, rolesRepository, permissionsRepository, casesRepository,
   documentsRepository, settingsRepository, auditLogsRepository, draftsRepository,
-  hearingsRepository, notesRepository, judgmentsRepository, causeListTemplatesRepository,
+  hearingsRepository, notesRepository, judgmentsRepository, orderSheetTemplatesRepository,
   caseFoldersRepository, caseHistoryRepository, caseActivityRepository, caseStagesRepository,
   remindersRepository, envVarsRepository, configHistoryRepository, schemaMetaRepository, caseTypesRepository, courtsRepository,
 };

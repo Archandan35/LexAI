@@ -1,7 +1,7 @@
 import { caseHistoryRepository } from '@/data-layer/repositories/caseHistoryRepository.js';
 
 // caseHistoryService — façade over the `caseHistory` collection (legal
-// proceedings history; full untruncated text, imported from cause list or added).
+// proceedings history; full untruncated text, imported from order sheet or added).
 // A row: { id, caseId, date, status, text, source, createdAt }
 export const caseHistoryService = {
   list: (caseId) => caseHistoryRepository.getAll(caseId ? { caseId } : {}),

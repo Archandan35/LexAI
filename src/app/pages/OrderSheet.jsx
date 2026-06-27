@@ -14,7 +14,7 @@ import CrudManager from '@/components/CrudManager.jsx';
 import HearingPreviewModal from '@/components/HearingPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
-import { causeListLogic } from '@/logic/causeListLogic.js';
+import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
 import SmartOrderSheetBuilder from '@/components/SmartOrderSheetBuilder.jsx';
 import { templateLogic } from '@/logic/templateLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
@@ -30,7 +30,7 @@ import { FieldMapper } from '@/core/FieldMapper.js';
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
 
-export default function CauseList() {
+export default function OrderSheet() {
   const toast = useToast();
   const { user } = useAuth();
   const { cases } = useAppData();
@@ -41,7 +41,7 @@ export default function CauseList() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_HEARING);
 
-  // Advanced filters state for Cause List Tab
+  // Advanced filters state for Order Sheet Tab
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCourt, setFilterCourt] = useState('');
   const [filterCourtLocation, setFilterCourtLocation] = useState('');
@@ -55,7 +55,7 @@ export default function CauseList() {
   const [smartMode, setSmartMode] = useState(false);
   const { partyTypes, refresh: refreshPartyTypes } = usePartyTypes();
 
-  // Sorting & Pagination for Cause List Tab
+  // Sorting & Pagination for Order Sheet Tab
   const [sortDir, setSortDir] = useState('asc'); // asc | desc
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -109,7 +109,7 @@ export default function CauseList() {
   const [previewDoc, setPreviewDoc] = useState(null);
 
   const loadList = useCallback(async () => {
-    const res = await causeListLogic.causeList();
+    const res = await orderSheetLogic.orderSheet();
     setRows(res.ok ? res.data.rows : []);
   }, []);
 
@@ -129,7 +129,7 @@ export default function CauseList() {
   const loadHistory = useCallback(async (caseId) => {
     setHistCaseId(caseId);
     if (!caseId) { setHistory(null); return; }
-    const res = await causeListLogic.caseHistory(caseId);
+    const res = await orderSheetLogic.caseHistory(caseId);
     setHistory(res.ok ? res.data : null);
   }, []);
 
@@ -156,7 +156,7 @@ export default function CauseList() {
   };
 
   const openEdit = async (h) => {
-    const res = await causeListLogic.getHearing(h.id);
+    const res = await orderSheetLogic.getHearing(h.id);
     const record = res.ok ? res.data : FieldMapper.toLexAI('hearings', h);
     setEditing(record);
     setForm({
@@ -186,7 +186,7 @@ export default function CauseList() {
     if (!form.caseId || !form.date) { toast.push('Case and date are required.', 'error'); return; }
     const payload = { ...form, notes: editorContent || form.notes || '' };
     try {
-      const r = editing ? await causeListLogic.updateHearing(editing.id, payload) : await causeListLogic.addHearing(payload);
+      const r = editing ? await orderSheetLogic.updateHearing(editing.id, payload) : await orderSheetLogic.addHearing(payload);
       if (r && !r.ok) { toast.push(r.error || 'Failed to save hearing.', 'error'); return; }
       // Sync next hearing date to the case record
       if (form.nextHearingDate) {
@@ -202,8 +202,8 @@ export default function CauseList() {
   };
 
   const deleteHearing = async (id) => {
-    if (!window.confirm('Delete this cause list entry?')) return;
-    await causeListLogic.deleteHearing(id);
+    if (!window.confirm('Delete this order sheet entry?')) return;
+    await orderSheetLogic.deleteHearing(id);
     await loadList();
     if (histCaseId) await loadHistory(histCaseId);
     toast.push('Cause list entry deleted.', 'info');
@@ -212,7 +212,7 @@ export default function CauseList() {
   const deleteSelected = async () => {
     if (!window.confirm(`Delete ${selectedIds.size} selected entries?`)) return;
     for (const id of selectedIds) {
-      await causeListLogic.deleteHearing(id);
+      await orderSheetLogic.deleteHearing(id);
     }
     setSelectedIds(new Set());
     await loadList();
@@ -453,7 +453,7 @@ export default function CauseList() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `cause_list_hearings_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `order_sheet_hearings_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -573,7 +573,7 @@ export default function CauseList() {
 
           {/* Tabs */}
           <div className="tabs">
-            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cause List</div>
+            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
             <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
             <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
             <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
@@ -675,7 +675,7 @@ export default function CauseList() {
 
                 {paginatedRows.length === 0 ? (
                   <Card bodyClass="card__body--flush">
-                    <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Cause List</Button>} />
+                    <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Order Sheet</Button>} />
                   </Card>
                 ) : (
                   <>
@@ -732,7 +732,7 @@ export default function CauseList() {
                                   {h.caseNumber}
                                 </a>
                               </div>
-                              <span className="cause-list__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                              <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
                                 <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
                                 {h.status}
                               </span>
@@ -773,25 +773,25 @@ export default function CauseList() {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                      <div className="cause-list__footer-pagination">
-                        <div className="cause-list__pagination-info">
+                      <div className="order-sheet__footer-pagination">
+                        <div className="order-sheet__pagination-info">
                           Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
                         </div>
-                        <div className="cause-list__pagination-controls">
-                          <select className="cause-list__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                        <div className="order-sheet__pagination-controls">
+                          <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
                             <option value={5}>5 per page</option>
                             <option value={10}>10 per page</option>
                             <option value={20}>20 per page</option>
                             <option value={50}>50 per page</option>
                           </select>
-                          <div className="cause-list__page-buttons">
-                            <button className="cause-list__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                          <div className="order-sheet__page-buttons">
+                            <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
                             {Array.from({ length: totalPages }).map((_, i) => (
-                              <button key={i} className={`cause-list__page-btn ${page === i + 1 ? 'cause-list__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
+                              <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
                                 {i + 1}
                               </button>
                             ))}
-                            <button className="cause-list__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                            <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
                           </div>
                         </div>
                       </div>
@@ -816,20 +816,20 @@ export default function CauseList() {
                     <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
                   ) : (
                     <>
-                      <div className="cause-list__case-info-card">
-                        <div className="cause-list__case-info-header">
-                          <div className="cause-list__case-icon-box">
+                      <div className="order-sheet__case-info-card">
+                        <div className="order-sheet__case-info-header">
+                          <div className="order-sheet__case-icon-box">
                             <Icon name="balance" size={24} />
                           </div>
-                          <div className="cause-list__case-title-area">
-                            <div className="cause-list__case-title-row">
-                              <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                          <div className="order-sheet__case-title-area">
+                            <div className="order-sheet__case-title-row">
+                              <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
                               {history.case?.status && (
-                                <span className="cause-list__case-badge-active">{history.case.status}</span>
+                                <span className="order-sheet__case-badge-active">{history.case.status}</span>
                               )}
                             </div>
-                            <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                            <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                            <p className="order-sheet__case-subtitle">{history.case?.title}</p>
+                            <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                           </div>
                         </div>
                       </div>
@@ -884,17 +884,17 @@ export default function CauseList() {
         <div className="cl-desktop-view fade-in">
           <PageHeader
         icon="calendar"
-        title="Cause List"
+        title="Order Sheet"
         subtitle="View and manage all hearings across your matters."
         actions={
-          <div className="cause-list__header-actions">
-            <Button icon="plus" onClick={openNew}>Add Cause List</Button>
+          <div className="order-sheet__header-actions">
+            <Button icon="plus" onClick={openNew}>Add Order Sheet</Button>
           </div>
         }
       />
 
       <div className="tabs">
-        <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cause List</div>
+        <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
         <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
         <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
         <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
@@ -906,16 +906,16 @@ export default function CauseList() {
       {tab === 'list' && (
         <>
           {/* Filters Bar */}
-          <div className="cause-list__filters-bar">
+          <div className="order-sheet__filters-bar">
             {/* Custom Range Picker */}
-            <div className="cause-list__datepicker-wrapper" onClick={() => setShowDatePicker(!showDatePicker)}>
+            <div className="order-sheet__datepicker-wrapper" onClick={() => setShowDatePicker(!showDatePicker)}>
               <Icon name="calendar" size={14} />
               <span>
                 {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : '01 Jun 2026 - 30 Jun 2026'}
               </span>
               <Icon name="chevronDown" size={12} className="ml-10" />
               {showDatePicker && (
-                <div className="cause-list__datepicker-popover" onClick={(e) => e.stopPropagation()}>
+                <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
                   <Field label="From Date">
                     <Input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
                   </Field>
@@ -931,7 +931,7 @@ export default function CauseList() {
             </div>
 
             {/* Court dropdown */}
-            <select className="cause-list__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
+            <select className="order-sheet__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
               <option value="">All Courts</option>
               {uniqueCourtNames.map(c => (
                 <option key={c} value={c}>{c}</option>
@@ -939,7 +939,7 @@ export default function CauseList() {
             </select>
 
             {/* Jurisdiction dropdown */}
-            <select className="cause-list__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
+            <select className="order-sheet__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
               <option value="">All Jurisdictions</option>
               {uniqueCourtLocations.map(l => (
                 <option key={l} value={l}>{l}</option>
@@ -947,13 +947,13 @@ export default function CauseList() {
             </select>
 
             {/* Search Input */}
-            <div className="cause-list__search-wrapper">
+            <div className="order-sheet__search-wrapper">
               <Icon name="search" size={14} className="search-icon" />
               <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
 
             {/* Status dropdown */}
-            <select className="cause-list__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <select className="order-sheet__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="">All Status</option>
               {caseStatuses.map(st => (
                 <option key={st} value={st}>{st}</option>
@@ -961,28 +961,28 @@ export default function CauseList() {
             </select>
 
             {/* Filter buttons */}
-            <button className="cause-list__btn-reset" onClick={resetFilters}>Reset</button>
-            <button className="cause-list__btn-apply" onClick={loadList}>
+            <button className="order-sheet__btn-reset" onClick={resetFilters}>Reset</button>
+            <button className="order-sheet__btn-apply" onClick={loadList}>
               <Icon name="gear" size={13} /> Filters
             </button>
           </div>
 
           {/* Table Header controls */}
-          <div className="cause-list__card-header">
-            <div className="cause-list__card-header-title">Hearings ({sortedRows.length})</div>
-            <div className="cause-list__actions-group" style={{ position: 'relative' }}>
-              <button className="cause-list__action-btn" onClick={exportToCsv}>
+          <div className="order-sheet__card-header">
+            <div className="cases__card-header-title">Hearings ({sortedRows.length})</div>
+            <div className="order-sheet__actions-group" style={{ position: 'relative' }}>
+              <button className="order-sheet__action-btn" onClick={exportToCsv}>
                 <Icon name="download" size={13} /> Export
               </button>
-              <button className="cause-list__action-btn" onClick={handlePrint}>
+              <button className="order-sheet__action-btn" onClick={handlePrint}>
                 <Icon name="print" size={13} /> Print
               </button>
-              <button className="cause-list__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
+              <button className="order-sheet__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
                 <Icon name="grid" size={13} /> Columns
               </button>
 
               {showColumnsMenu && (
-                <div className="cause-list__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
+                <div className="order-sheet__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
                   {Object.keys(visibleColumns).map(col => (
                     <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
                       <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
@@ -999,40 +999,40 @@ export default function CauseList() {
             const selCase = cases.find(c => c.id === selectedCaseId);
             if (!selCase) return null;
             return (
-              <div className="cause-list__case-info-card" style={{ marginBottom: '14px' }}>
-                <div className="cause-list__case-info-header">
-                  <div className="cause-list__case-icon-box">
+              <div className="order-sheet__case-info-card" style={{ marginBottom: '14px' }}>
+                <div className="order-sheet__case-info-header">
+                  <div className="order-sheet__case-icon-box">
                     <Icon name="balance" size={24} />
                   </div>
-                  <div className="cause-list__case-title-area">
-                    <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{formatCaseNumber(selCase) || selCase.caseNumber || selCase.case_display_number}</h2>
-                      <span className="cause-list__case-badge-active">{selCase.status || 'Active'}</span>
+                  <div className="order-sheet__case-title-area">
+                    <div className="order-sheet__case-title-row">
+                      <h2 className="order-sheet__case-title">{formatCaseNumber(selCase) || selCase.caseNumber || selCase.case_display_number}</h2>
+                      <span className="order-sheet__case-badge-active">{selCase.status || 'Active'}</span>
                     </div>
-                    <p className="cause-list__case-subtitle">{selCase.title}</p>
-                    <div className="cause-list__header-court">{selCase.court || ''}{selCase.court && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
+                    <p className="order-sheet__case-subtitle">{selCase.title}</p>
+                    <div className="order-sheet__header-court">{selCase.court || ''}{selCase.court && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
                   </div>
                 </div>
-                <div className="cause-list__details-grid">
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Case Type</span>
-                    <span className="cause-list__details-value">{selCase.case_type || '—'}</span>
+                <div className="order-sheet__details-grid">
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Case Type</span>
+                    <span className="order-sheet__details-value">{selCase.case_type || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Filing Date</span>
-                    <span className="cause-list__details-value">{formatDate(selCase.filing_date) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Filing Date</span>
+                    <span className="order-sheet__details-value">{formatDate(selCase.filing_date) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Current Stage</span>
-                    <span className="cause-list__details-value">{selCase.stage || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Current Stage</span>
+                    <span className="order-sheet__details-value">{selCase.stage || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Next Hearing</span>
-                    <span className="cause-list__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Next Hearing</span>
+                    <span className="order-sheet__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Judge</span>
-                    <span className="cause-list__details-value">{selCase.judge || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Judge</span>
+                    <span className="order-sheet__details-value">{selCase.judge || '—'}</span>
                   </div>
                 </div>
               </div>
@@ -1043,7 +1043,7 @@ export default function CauseList() {
           <Card bodyClass="card__body--flush">
             {paginatedRows.length === 0 ? (
               <div style={{ padding: '40px' }}>
-                <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Cause List</Button>} />
+                <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Order Sheet</Button>} />
               </div>
             ) : (
               <table className="table">
@@ -1065,10 +1065,10 @@ export default function CauseList() {
                 <tbody>
                   {paginatedRows.map((h) => {
                     return (
-                      <tr key={h.id} className={`cause-list__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
+                      <tr key={h.id} className={`order-sheet__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
                         <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
                         {visibleColumns.date && (
-                          <td className="cause-list__cell-date">
+                          <td className="order-sheet__cell-date">
                             <span>{formatDate(h.date)}</span>
                           </td>
                         )}
@@ -1097,14 +1097,14 @@ export default function CauseList() {
                         {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                         {visibleColumns.status && (
                           <td>
-                            <span className="cause-list__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                            <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
                               <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
                               {h.status}
                             </span>
                           </td>
                         )}
                         {visibleColumns.actions && (
-                          <td className="cause-list__cell-actions" style={{ textAlign: 'right' }}>
+                          <td className="order-sheet__cell-actions" style={{ textAlign: 'right' }}>
                             <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
                               <Icon name="eye" size={13} />
                             </button>
@@ -1129,25 +1129,25 @@ export default function CauseList() {
 
           {/* Pagination Footer */}
           {totalPages > 1 && (
-            <div className="cause-list__footer-pagination">
-              <div className="cause-list__pagination-info">
+            <div className="order-sheet__footer-pagination">
+              <div className="order-sheet__pagination-info">
                 Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
               </div>
-              <div className="cause-list__pagination-controls">
-                <select className="cause-list__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+              <div className="order-sheet__pagination-controls">
+                <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
                   <option value={5}>5 per page</option>
                   <option value={10}>10 per page</option>
                   <option value={20}>20 per page</option>
                   <option value={50}>50 per page</option>
                 </select>
-                <div className="cause-list__page-buttons">
-                  <button className="cause-list__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                <div className="order-sheet__page-buttons">
+                  <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
                   {Array.from({ length: totalPages }).map((_, i) => (
-                    <button key={i} className={`cause-list__page-btn ${page === i + 1 ? 'cause-list__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
+                    <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
                       {i + 1}
                     </button>
                   ))}
-                  <button className="cause-list__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                  <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
                 </div>
               </div>
             </div>
@@ -1169,43 +1169,43 @@ export default function CauseList() {
           ) : (
             <>
               {/* Case Info Header Card */}
-              <div className="cause-list__case-info-card">
-                <div className="cause-list__case-info-header">
-                  <div className="cause-list__case-icon-box">
+              <div className="order-sheet__case-info-card">
+                <div className="order-sheet__case-info-header">
+                  <div className="order-sheet__case-icon-box">
                     <Icon name="balance" size={24} />
                   </div>
-                  <div className="cause-list__case-title-area">
-                    <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                  <div className="order-sheet__case-title-area">
+                    <div className="order-sheet__case-title-row">
+                      <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
                       {history.case?.status && (
-                        <span className="cause-list__case-badge-active">{history.case.status}</span>
+                        <span className="order-sheet__case-badge-active">{history.case.status}</span>
                       )}
                     </div>
-                    <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                    <p className="order-sheet__case-subtitle">{history.case?.title}</p>
+                    <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 
-                <div className="cause-list__details-grid">
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Case Type</span>
-                    <span className="cause-list__details-value">{history.case?.case_type || '—'}</span>
+                <div className="order-sheet__details-grid">
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Case Type</span>
+                    <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Filing Date</span>
-                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Filing Date</span>
+                    <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Current Stage</span>
-                    <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Current Stage</span>
+                    <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Next Hearing</span>
-                    <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Next Hearing</span>
+                    <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Judge</span>
-                    <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Judge</span>
+                    <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
                   </div>
                 </div>
               </div>
@@ -1215,27 +1215,27 @@ export default function CauseList() {
                 {history.hearings.length === 0 ? (
                   <EmptyState icon="history" title="No history logs recorded." />
                 ) : (
-                  <div className="cause-list__timeline-v-container">
-                    <div className="cause-list__timeline-v-line-path" />
+                  <div className="order-sheet__timeline-v-container">
+                    <div className="order-sheet__timeline-v-line-path" />
                     {history.hearings.map((h, i) => {
                       const markerClass = h.status?.toLowerCase() || 'default';
                       return (
-                        <div className="cause-list__timeline-v-row" key={h.id || i}>
-                          <div className="cause-list__timeline-v-node-col">
-                            <div className={`cause-list__timeline-v-circle cause-list__timeline-v-circle--${markerClass}`}>
+                        <div className="order-sheet__timeline-v-row" key={h.id || i}>
+                          <div className="order-sheet__timeline-v-node-col">
+                            <div className={`order-sheet__timeline-v-circle order-sheet__timeline-v-circle--${markerClass}`}>
                               {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
                             </div>
                           </div>
-                          <div className="cause-list__timeline-v-connector" />
-                          <div className="cause-list__timeline-v-title-col">
-                            <h4 className="cause-list__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
-                            <span className="cause-list__timeline-v-event-date">{formatDate(h.date)}</span>
+                          <div className="order-sheet__timeline-v-connector" />
+                          <div className="order-sheet__timeline-v-title-col">
+                            <h4 className="order-sheet__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
+                            <span className="order-sheet__timeline-v-event-date">{formatDate(h.date)}</span>
                           </div>
-                          <div className="cause-list__timeline-v-desc-col">
-                            <div className="cause-list__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
+                          <div className="order-sheet__timeline-v-desc-col">
+                            <div className="order-sheet__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
                           </div>
-                          <div className="cause-list__timeline-v-action-col">
-                            <button className="cause-list__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
+                          <div className="order-sheet__timeline-v-action-col">
+                            <button className="order-sheet__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
                               View Details
                             </button>
                           </div>
@@ -1254,35 +1254,35 @@ export default function CauseList() {
       {tab === 'templates' && (
         <>
           {/* Templates Filters bar */}
-          <div className="cause-list__templates-bar">
+          <div className="order-sheet__templates-bar">
             {/* Search */}
-            <div className="cause-list__search-wrapper">
+            <div className="order-sheet__search-wrapper">
               <Icon name="search" size={14} className="search-icon" />
               <input type="text" placeholder="Search templates..." value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} />
             </div>
 
             {/* Categories select */}
-            <select className="cause-list__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
+            <select className="order-sheet__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
               <option value="">All Categories</option>
               <option value="Hearing">Hearing</option>
             </select>
 
-            <button className="cause-list__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
-            <button className="cause-list__btn-apply" onClick={openTplNew}>
+            <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
+            <button className="order-sheet__btn-apply" onClick={openTplNew}>
               <Icon name="plus" size={13} /> New Template
             </button>
           </div>
 
           {/* Templates list heading */}
-          <div className="cause-list__card-header">
-            <div className="cause-list__card-header-title">Templates ({filteredTpls.length})</div>
+          <div className="order-sheet__card-header">
+            <div className="cases__card-header-title">Templates ({filteredTpls.length})</div>
           </div>
 
           {/* Templates Flex Grid */}
           {paginatedTpls.length === 0 ? (
             <Card><EmptyState icon="file" title="No templates match the criteria." /></Card>
           ) : (
-            <div className="cause-list__templates-grid">
+            <div className="order-sheet__templates-grid">
               {paginatedTpls.map((t) => {
                 let iconColor = 'blue';
                 const catLower = t.category?.toLowerCase() || '';
@@ -1296,15 +1296,15 @@ export default function CauseList() {
                 else iconColor = 'orange';
 
                 return (
-                  <div className="cause-list__tpl-card" key={t.id}>
-                    <div className={`cause-list__tpl-icon-wrapper cause-list__tpl-icon-wrapper--${iconColor}`}>
+                  <div className="order-sheet__tpl-card" key={t.id}>
+                    <div className={`order-sheet__tpl-icon-wrapper order-sheet__tpl-icon-wrapper--${iconColor}`}>
                       <Icon name="file" size={20} />
                     </div>
-                    <div className="cause-list__tpl-card-content">
-                      <h3 className="cause-list__tpl-card-title">{t.name}</h3>
-                      <p className="cause-list__tpl-card-desc">{t.description || t.content || 'Drafting formatting guidelines.'}</p>
-                      <div className="cause-list__tpl-card-footer">
-                        <span className={`cause-list__tpl-tag cause-list__tpl-tag--${catLower}`}>
+                    <div className="order-sheet__tpl-card-content">
+                      <h3 className="order-sheet__tpl-card-title">{t.name}</h3>
+                      <p className="order-sheet__tpl-card-desc">{t.description || t.content || 'Drafting formatting guidelines.'}</p>
+                      <div className="order-sheet__tpl-card-footer">
+                        <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
                           {t.category}
                         </span>
                       </div>
@@ -1317,19 +1317,19 @@ export default function CauseList() {
 
           {/* Templates Pagination */}
           {tplTotalPages > 1 && (
-            <div className="cause-list__footer-pagination">
-              <div className="cause-list__pagination-info">
+            <div className="order-sheet__footer-pagination">
+              <div className="order-sheet__pagination-info">
                 Showing {((tplPage - 1) * tplPageSize) + 1} to {Math.min(tplPage * tplPageSize, filteredTpls.length)} of {filteredTpls.length} templates
               </div>
-              <div className="cause-list__pagination-controls">
-                <div className="cause-list__page-buttons">
-                  <button className="cause-list__page-btn" onClick={() => setTplPage(p => Math.max(p - 1, 1))} disabled={tplPage === 1}>«</button>
+              <div className="order-sheet__pagination-controls">
+                <div className="order-sheet__page-buttons">
+                  <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.max(p - 1, 1))} disabled={tplPage === 1}>«</button>
                   {Array.from({ length: tplTotalPages }).map((_, i) => (
-                    <button key={i} className={`cause-list__page-btn ${tplPage === i + 1 ? 'cause-list__page-btn--active' : ''}`} onClick={() => setTplPage(i + 1)}>
+                    <button key={i} className={`order-sheet__page-btn ${tplPage === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setTplPage(i + 1)}>
                       {i + 1}
                     </button>
                   ))}
-                  <button className="cause-list__page-btn" onClick={() => setTplPage(p => Math.min(p + 1, tplTotalPages))} disabled={tplPage === tplTotalPages}>»</button>
+                  <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.min(p + 1, tplTotalPages))} disabled={tplPage === tplTotalPages}>»</button>
                 </div>
               </div>
             </div>
@@ -1339,14 +1339,14 @@ export default function CauseList() {
 
       {/* 4. TIMELINE TAB */}
       {tab === 'timeline' && (
-        <div className="cause-list__timeline-tab">
+        <div className="order-sheet__timeline-tab">
           {/* Case selector bar */}
-          <div className="cause-list__timeline-selector-bar">
-            <div className="cause-list__timeline-selector-label">
+          <div className="order-sheet__timeline-selector-bar">
+            <div className="order-sheet__timeline-selector-label">
               <Icon name="vault" size={15} />
               <span>Case</span>
             </div>
-            <div className="cause-list__timeline-selector-field">
+            <div className="order-sheet__timeline-selector-field">
               <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
             </div>
           </div>
@@ -1356,65 +1356,65 @@ export default function CauseList() {
           ) : (
             <>
               {/* Case Info Header Card */}
-              <div className="cause-list__case-info-card">
-                <div className="cause-list__case-info-header">
-                  <div className="cause-list__case-icon-box">
+              <div className="order-sheet__case-info-card">
+                <div className="order-sheet__case-info-header">
+                  <div className="order-sheet__case-icon-box">
                     <Icon name="balance" size={24} />
                   </div>
-                  <div className="cause-list__case-title-area">
-                    <div className="cause-list__case-title-row">
-                      <h2 className="cause-list__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
-                      <span className="cause-list__case-badge-active">{history.case?.status || 'Active'}</span>
+                  <div className="order-sheet__case-title-area">
+                    <div className="order-sheet__case-title-row">
+                      <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                      <span className="order-sheet__case-badge-active">{history.case?.status || 'Active'}</span>
                     </div>
-                    <p className="cause-list__case-subtitle">{history.case?.title}</p>
-                    <div className="cause-list__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                    <p className="order-sheet__case-subtitle">{history.case?.title}</p>
+                    <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
                   </div>
                 </div>
 
-                <div className="cause-list__details-grid">
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Case Type</span>
-                    <span className="cause-list__details-value">{history.case?.case_type || '—'}</span>
+                <div className="order-sheet__details-grid">
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Case Type</span>
+                    <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Filing Date</span>
-                    <span className="cause-list__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Filing Date</span>
+                    <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Current Stage</span>
-                    <span className="cause-list__details-value">{history.case?.stage || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Current Stage</span>
+                    <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Next Hearing</span>
-                    <span className="cause-list__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Next Hearing</span>
+                    <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
                   </div>
-                  <div className="cause-list__details-item">
-                    <span className="cause-list__details-label">Judge</span>
-                    <span className="cause-list__details-value">{history.case?.judge || '—'}</span>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Judge</span>
+                    <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Horizontal Scrollable node timeline */}
               {history.hearings.length > 0 && (
-                <div className="cause-list__timeline-h-container">
-                  <div className="cause-list__timeline-h">
-                    <div className="cause-list__timeline-h-track" />
+                <div className="order-sheet__timeline-h-container">
+                  <div className="order-sheet__timeline-h">
+                    <div className="order-sheet__timeline-h-track" />
                     {history.hearings.map((h, i) => {
                       const markerClass = h.status?.toLowerCase() || 'default';
                       const isScheduled = h.status === 'Scheduled';
                       return (
-                        <div className="cause-list__timeline-h-node" key={h.id || i}>
-                          <div className={`cause-list__timeline-h-circle cause-list__timeline-h-circle--${markerClass}`}>
+                        <div className="order-sheet__timeline-h-node" key={h.id || i}>
+                          <div className={`order-sheet__timeline-h-circle order-sheet__timeline-h-circle--${markerClass}`}>
                             {isScheduled ? (
                               <Icon name="clock" size={14} />
                             ) : (
                               <Icon name="check" size={14} />
                             )}
                           </div>
-                          <div className="cause-list__timeline-h-text">
-                            <span className="cause-list__timeline-h-name">{h.purpose || 'Hearing'}</span>
-                            <span className="cause-list__timeline-h-date">{formatDate(h.date)}</span>
+                          <div className="order-sheet__timeline-h-text">
+                            <span className="order-sheet__timeline-h-name">{h.purpose || 'Hearing'}</span>
+                            <span className="order-sheet__timeline-h-date">{formatDate(h.date)}</span>
                           </div>
                         </div>
                       );
@@ -1441,21 +1441,21 @@ export default function CauseList() {
                       {history.hearings.map((h, i) => {
                         return (
                           <tr key={h.id || i}>
-                            <td style={{ whiteSpace: 'nowrap' }} className="cause-list__timeline-event-date-cell">{formatDate(h.date)}</td>
+                            <td style={{ whiteSpace: 'nowrap' }} className="order-sheet__timeline-event-date-cell">{formatDate(h.date)}</td>
                             <td>
                               <div className="flex align-center gap-8">
-                                <span className="cause-list__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
-                                <span className="cause-list__timeline-event-name">{h.purpose || 'Hearing'}</span>
+                                <span className="order-sheet__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                                <span className="order-sheet__timeline-event-name">{h.purpose || 'Hearing'}</span>
                               </div>
                             </td>
-                            <td className="cause-list__timeline-event-detail"><div className="cause-list__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
+                            <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
                             <td style={{ textAlign: 'right' }}>
                               {h.docRef ? (
                                 <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
                                   View
                                 </Button>
                               ) : (
-                                <button className="cause-list__timeline-doc-icon" title="View hearing details" onClick={() => setPreviewHearing(h)}>
+                                <button className="order-sheet__timeline-doc-icon" title="View hearing details" onClick={() => setPreviewHearing(h)}>
                                   <Icon name="file" size={15} />
                                 </button>
                               )}
@@ -1478,7 +1478,7 @@ export default function CauseList() {
       {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
       <Modal
         open={open}
-        title={smartMode ? 'Smart Order Builder' : (editing ? 'Edit Cause List' : 'Add Cause List')}
+        title={smartMode ? 'Smart Order Builder' : (editing ? 'Edit Order Sheet' : 'Add Order Sheet')}
         size="lg"
         className={smartMode ? 'hearing-preview-modal smart-mode' : ''}
         onClose={() => { setOpen(false); setSmartMode(false); }}
@@ -1657,9 +1657,9 @@ export default function CauseList() {
               <span>Attachment</span>
             </div>
             {form.docName ? (
-              <div className="list-row cause-list__file-row">
+              <div className="list-row order-sheet__file-row">
                 <div className="list-row__icon"><Icon name="file" size={15} /></div>
-                <div className="cause-list__file-name">{form.docName}</div>
+                <div className="order-sheet__file-name">{form.docName}</div>
                 <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
                 <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}>
                   <Icon name="close" size={13} />

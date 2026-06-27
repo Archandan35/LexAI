@@ -52,7 +52,7 @@ const QUICK_ACTIONS = [
   { icon: 'calendar', color: 'blue', title: 'Add New Case', sub: 'Create a new case', route: '/cases/create' },
   { icon: 'users', color: 'green', title: 'Add New Client', sub: 'Register a new client', route: '/clients' },
   { icon: 'upload', color: 'amber', title: 'Upload Document', sub: 'Add documents to case', route: '/documents' },
-  { icon: 'calendar', color: 'red', title: 'Schedule Hearing', sub: 'Add new hearing date', route: '/cause-list' },
+  { icon: 'calendar', color: 'red', title: 'Schedule Hearing', sub: 'Add new hearing date', route: '/cases/order-sheet' },
 ];
 
 const DOC_COLORS = { pdf: 'pdf', docx: 'doc', doc: 'doc' };
@@ -203,14 +203,14 @@ export default function Dashboard() {
         <div className="card">
           <div className="dash-card-head">
             <span className="dash-card-head__title">Upcoming Hearings</span>
-            <span className="dash-card-head__link" onClick={() => nav('/cause-list')}>View All <Icon name="arrow" size={13} /></span>
+            <span className="dash-card-head__link" onClick={() => nav('/cases/order-sheet')}>View All <Icon name="arrow" size={13} /></span>
           </div>
           {upcomingHearings.length === 0 ? (
             <div style={{ padding: '20px 18px' }}>
               <EmptyState icon="calendar" title="No upcoming hearings." />
             </div>
           ) : upcomingHearings.slice(0, 5).map((h, i) => (
-            <div className="dash-hearing-row" key={h.id} onClick={() => nav('/cause-list')}>
+            <div className="dash-hearing-row" key={h.id} onClick={() => nav('/cases/order-sheet')}>
               <div className={`dash-hearing-icon dash-hearing-icon--${HEARING_ICONS[i % HEARING_ICONS.length]}`}>
                 <Icon name="calendar" size={16} />
               </div>
@@ -422,7 +422,7 @@ export default function Dashboard() {
         <div className="lexm-card">
           <div className="lexm-card-head">
             <span className="lexm-card-head__title">Upcoming Hearings</span>
-            <span className="lexm-card-head__link" onClick={() => nav('/cause-list')}>View All</span>
+            <span className="lexm-card-head__link" onClick={() => nav('/cases/order-sheet')}>View All</span>
           </div>
           {upcomingHearings.length === 0 ? (
             <div className="lexm-empty">
@@ -431,7 +431,7 @@ export default function Dashboard() {
               <p className="lexm-empty-sub">You&apos;re all caught up!</p>
             </div>
           ) : upcomingHearings.slice(0, 3).map((h) => (
-            <div className="lexm-case-row" key={h.id} onClick={() => nav('/cause-list')}>
+            <div className="lexm-case-row" key={h.id} onClick={() => nav('/cases/order-sheet')}>
               <div className="lexm-case-icon" style={{ background: 'var(--red-soft)', color: 'var(--red)' }}>
                 <Icon name="calendar" size={16} />
               </div>
@@ -481,7 +481,7 @@ export default function Dashboard() {
               { icon: 'briefcase', label: 'Add New Case', tone: 'blue', route: '/cases/create' },
               { icon: 'user-plus', label: 'Add New Client', tone: 'green', route: '/clients' },
               { icon: 'doc', label: 'Upload Document', tone: 'amber', route: '/documents' },
-              { icon: 'calendar', label: 'Schedule Hearing', tone: 'red', route: '/cause-list' },
+              { icon: 'calendar', label: 'Schedule Hearing', tone: 'red', route: '/cases/order-sheet' },
             ].map((a) => (
               <button className={`lexm-qa-tile tone-${a.tone}`} key={a.label} onClick={() => nav(a.route)}>
                 <span className="lexm-qa-icon"><Icon name={a.icon} size={19} /></span>

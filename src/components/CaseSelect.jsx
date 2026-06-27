@@ -11,7 +11,7 @@ function fmtCaseNum(c) {
   return c.case_display_number || c.caseNumber || String(cn || '');
 }
 
-// Shared case-number dropdown reused across cause list, case manager, drafting,
+// Shared case-number dropdown reused across order sheet, case manager, drafting,
 // hearing notes. Reads the shared case list from AppDataContext.
 export default function CaseSelect({ value, onChange, placeholder = 'Select case…', allowEmpty = true }) {
   const { cases } = useAppData();

@@ -20,7 +20,7 @@ import { DraftsSchema } from './drafts.schema.js';
 import { HearingsSchema } from './hearings.schema.js';
 import { NotesSchema } from './notes.schema.js';
 import { JudgmentsSchema } from './judgments.schema.js';
-import { CauseListTemplatesSchema } from './cause_list_templates.schema.js';
+import { OrderSheetTemplatesSchema } from './order_sheet_templates.schema.js';
 import { CaseFoldersSchema } from './case_folders.schema.js';
 import { CaseHistorySchema } from './case_history.schema.js';
 import { CaseActivitySchema } from './case_activity.schema.js';
@@ -68,7 +68,7 @@ export const schemas = {
   hearings: HearingsSchema,
   notes: NotesSchema,
   judgments: JudgmentsSchema,
-  cause_list_templates: CauseListTemplatesSchema,
+  order_sheet_templates: OrderSheetTemplatesSchema,
   case_folders: CaseFoldersSchema,
   case_history: CaseHistorySchema,
   case_activity: CaseActivitySchema,

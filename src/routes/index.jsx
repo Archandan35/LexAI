@@ -36,7 +36,7 @@ import CaseTimeline from '@/app/pages/CaseTimeline.jsx';
 import HearingNotes from '@/app/pages/HearingNotes.jsx';
 import ManageCases from '@/app/pages/ManageCases.jsx';
 import ManageCase from '@/app/pages/ManageCase.jsx';
-import CauseList from '@/app/pages/CauseList.jsx';
+import OrderSheet from '@/app/pages/OrderSheet.jsx';
 
 import NotFound from '@/app/pages/NotFound.jsx';
 
@@ -101,12 +101,12 @@ export default function AppRoutes() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* ── Case Management ── */}
-        <Route path="/cases/create" element={G('casevault', <CreateCase />)} />
-        <Route path="/cases/cause-list" element={G('causeList', <CauseList />)} />
+        <Route path="/cases/create" element={G('manageCase', <CreateCase />)} />
+        <Route path="/cases/order-sheet" element={G('orderSheet', <OrderSheet />)} />
         <Route path="/cases/hearings" element={G('hearingNotes', <HearingNotes />)} />
         <Route path="/cases/case-timeline" element={G('timeline', <CaseTimeline />)} />
-        <Route path="/cases" element={G('casevault', <ManageCases />)} />
-        <Route path="/cases/:id" element={G('casevault', <ManageCase />)} />
+        <Route path="/cases" element={G('manageCase', <ManageCases />)} />
+        <Route path="/cases/:id" element={G('manageCase', <ManageCase />)} />
 
         {/* ── Calendar / Clients / Contacts ── */}
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
@@ -182,7 +182,6 @@ export default function AppRoutes() {
         <Route path="/settings" element={G('settings', <SystemSettings />)} />
 
         {/* ── Redirects (old paths → new paths) ── */}
-        <Route path="/cause-list" element={<Navigate to="/cases/cause-list" replace />} />
         <Route path="/case-manage" element={<Navigate to="/cases" replace />} />
         <Route path="/hearing-notes" element={<Navigate to="/cases/hearings" replace />} />
         <Route path="/timeline" element={<Navigate to="/cases/case-timeline" replace />} />

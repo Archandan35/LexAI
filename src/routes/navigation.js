@@ -12,9 +12,9 @@ export const NAV_GROUPS = [
       {
         label: 'Cases', icon: 'folder',
         children: [
-          { to: '/cases/create', label: 'Create Cases', icon: 'plus', module: 'casevault' },
-          { to: '/cases', label: 'Manage Cases', icon: 'file', end: true, module: 'casevault' },
-          { to: '/cases/cause-list', label: 'Cause List', icon: 'calendar', module: 'causeList' },
+          { to: '/cases/create', label: 'Create Cases', icon: 'plus', module: 'manageCase' },
+          { to: '/cases', label: 'Manage Cases', icon: 'file', end: true, module: 'manageCase' },
+          { to: '/cases/order-sheet', label: 'Order Sheet', icon: 'calendar', module: 'orderSheet' },
           { to: '/cases/case-timeline', label: 'Case Timeline', icon: 'clock', module: 'timeline' },
         ],
       },

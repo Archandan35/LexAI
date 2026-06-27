@@ -124,11 +124,11 @@ export default function ManageCase() {
           </div>
 
           <div className="mc-detail-actions">
-            <PermissionGate perm="casevault.edit"><button className="mc-detail-actions__btn" onClick={() => setEditing(true)}><Icon name="edit" size={16} /><span>Edit</span></button></PermissionGate>
-            <PermissionGate perm="casevault.create"><button className="mc-detail-actions__btn" onClick={duplicate}><Icon name="layers" size={16} /><span>Duplicate</span></button></PermissionGate>
-            <PermissionGate perm="casevault.export"><button className="mc-detail-actions__btn" onClick={exportCase}><Icon name="download" size={16} /><span>Export</span></button></PermissionGate>
-            <PermissionGate perm="casevault.archive"><button className="mc-detail-actions__btn" onClick={archive}><Icon name={c.archived ? 'history' : 'vault'} size={16} /><span>{c.archived ? 'Restore' : 'Archive'}</span></button></PermissionGate>
-            <PermissionGate perm="casevault.delete"><button className="mc-detail-actions__btn mc-detail-actions__btn--danger" onClick={() => setShowDeleteDlg(true)}><Icon name="trash" size={16} /><span>Delete</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.edit"><button className="mc-detail-actions__btn" onClick={() => setEditing(true)}><Icon name="edit" size={16} /><span>Edit</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.create"><button className="mc-detail-actions__btn" onClick={duplicate}><Icon name="layers" size={16} /><span>Duplicate</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.export"><button className="mc-detail-actions__btn" onClick={exportCase}><Icon name="download" size={16} /><span>Export</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.archive"><button className="mc-detail-actions__btn" onClick={archive}><Icon name={c.archived ? 'history' : 'vault'} size={16} /><span>{c.archived ? 'Restore' : 'Archive'}</span></button></PermissionGate>
+            <PermissionGate perm="manageCase.delete"><button className="mc-detail-actions__btn mc-detail-actions__btn--danger" onClick={() => setShowDeleteDlg(true)}><Icon name="trash" size={16} /><span>Delete</span></button></PermissionGate>
           </div>
 
           <div className="mc-detail-metrics">
@@ -280,7 +280,7 @@ export default function ManageCase() {
 
               <Card
                 title="Description & Summary"
-                actions={<PermissionGate perm="casevault.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
+                actions={<PermissionGate perm="manageCase.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
               >
                 <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
                 <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
@@ -291,7 +291,7 @@ export default function ManageCase() {
                   {c.status && <span className="tag tag--green">{c.status}</span>}
                   {c.priority && <span className="tag tag--amber">{c.priority}</span>}
                   {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
-                  <PermissionGate perm="casevault.edit">
+                  <PermissionGate perm="manageCase.edit">
                     <button className="case-detail__add-tag-btn" onClick={() => setEditing(true)}><Icon name="plus" size={12} /> Add Tag</button>
                   </PermissionGate>
                 </div>
@@ -366,7 +366,7 @@ export default function ManageCase() {
                     icon="folder"
                     title="No documents uploaded."
                     hint="Upload or add documents related to this case."
-                    action={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                    action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
                   />
                 ) : (
                   folders.filter((f) => f.kind === 'document').map((f) => {
@@ -496,11 +496,11 @@ export default function ManageCase() {
               </div>
             </div>
             <div className="page-header__actions row-actions row-actions--wide">
-              <PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button></PermissionGate>
-              <PermissionGate perm="casevault.create"><Button size="sm" variant="ghost" icon="layers" onClick={duplicate}>Duplicate</Button></PermissionGate>
-              <PermissionGate perm="casevault.export"><Button size="sm" variant="ghost" icon="download" onClick={exportCase}>Export</Button></PermissionGate>
-              <PermissionGate perm="casevault.archive"><Button size="sm" variant="ghost" icon={c.archived ? 'history' : 'vault'} onClick={archive}>{c.archived ? 'Restore' : 'Archive'}</Button></PermissionGate>
-              <PermissionGate perm="casevault.delete"><Button size="sm" variant="danger" icon="trash" onClick={() => setShowDeleteDlg(true)}>Delete</Button></PermissionGate>
+              <PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="edit" onClick={() => setEditing(true)}>Edit</Button></PermissionGate>
+              <PermissionGate perm="manageCase.create"><Button size="sm" variant="ghost" icon="layers" onClick={duplicate}>Duplicate</Button></PermissionGate>
+              <PermissionGate perm="manageCase.export"><Button size="sm" variant="ghost" icon="download" onClick={exportCase}>Export</Button></PermissionGate>
+              <PermissionGate perm="manageCase.archive"><Button size="sm" variant="ghost" icon={c.archived ? 'history' : 'vault'} onClick={archive}>{c.archived ? 'Restore' : 'Archive'}</Button></PermissionGate>
+              <PermissionGate perm="manageCase.delete"><Button size="sm" variant="danger" icon="trash" onClick={() => setShowDeleteDlg(true)}>Delete</Button></PermissionGate>
             </div>
           </div>
 
@@ -550,7 +550,7 @@ export default function ManageCase() {
                 <div className="case-detail__right-column">
                   <Card
                     title="Description & Summary"
-                    actions={<PermissionGate perm="casevault.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
+                    actions={<PermissionGate perm="manageCase.edit"><button className="linkbtn" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button></PermissionGate>}
                   >
                     <div className="card__sub" style={{ marginBottom: 4 }}>Case Summary</div>
                     <p className="case-detail__description">{c.case_summary || c.description || '—'}</p>
@@ -561,7 +561,7 @@ export default function ManageCase() {
                       {c.status && <span className="tag tag--green">{c.status}</span>}
                       {c.priority && <span className="tag tag--amber">{c.priority}</span>}
                       {(c.tags || []).map((t) => <span key={t} className="tag tag--key">{t}</span>)}
-                      <PermissionGate perm="casevault.edit">
+                      <PermissionGate perm="manageCase.edit">
                         <button className="case-detail__add-tag-btn" onClick={() => setEditing(true)}><Icon name="plus" size={12} /> Add Tag</button>
                       </PermissionGate>
                     </div>
@@ -627,7 +627,7 @@ export default function ManageCase() {
                       icon="folder"
                       title="No documents uploaded."
                       hint="Upload or add documents related to this case."
-                      action={<PermissionGate perm="casevault.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
+                      action={<PermissionGate perm="manageCase.edit"><Button size="sm" variant="ghost" icon="plus" onClick={() => setTab('Documents')}>Add Document</Button></PermissionGate>}
                     />
                   ) : (
                     folders.filter((f) => f.kind === 'document').map((f) => {

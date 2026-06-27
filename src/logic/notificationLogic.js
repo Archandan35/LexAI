@@ -64,7 +64,7 @@ export const notificationLogic = {
         id, level, type: 'Hearing',
         title: h.purpose || 'Hearing',
         message: `${h.purpose || 'Hearing'} — ${when}`,
-        date: h.date, route: '/cause-list', icon: 'calendar',
+        date: h.date, route: '/order-sheet', icon: 'calendar',
         read: dismissed.has(id),
         sortKey: diff,
       });

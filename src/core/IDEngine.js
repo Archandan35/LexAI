@@ -34,7 +34,7 @@ let _prefixMap = {
   caseHistory: { prefix: 'CHIST', padding: 5 },
   caseActivity: { prefix: 'CACT', padding: 5 },
   caseFolders: { prefix: 'CFOLD', padding: 5 },
-  causeListTemplates: { prefix: 'CLTMP', padding: 5 },
+  orderSheetTemplates: { prefix: 'OSHT', padding: 5 },
   auditLogs: { prefix: 'AUDIT', padding: 5 },
   settings: { prefix: 'SET', padding: 5 },
   envVars: { prefix: 'ENV', padding: 5 },

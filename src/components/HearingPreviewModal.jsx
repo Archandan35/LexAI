@@ -23,7 +23,7 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
     ? [linkedCase.court, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
     : null;
 
-  const displayTitle = isDoc ? doc.name || 'Document' : data.caseNumber || data.case?.caseNumber || 'Cause List Entry';
+  const displayTitle = isDoc ? doc.name || 'Document' : data.caseNumber || data.case?.caseNumber || 'Order Sheet Entry';
   const displaySubtitle = !isDoc && data.parties ? data.parties : null;
 
   return (

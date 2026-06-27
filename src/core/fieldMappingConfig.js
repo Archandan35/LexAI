@@ -25,7 +25,7 @@ const SCHEMAS = {
   case_types: { ...COMMON },
   case_stages: { createdAt: 'created_at' },
   env_vars: { ...COMMON, updatedBy: 'updated_by' },
-  cause_list_templates: {},
+  order_sheet_templates: {},
   settings: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
   envVars: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
   schema_meta: { ...COMMON, appVersion: 'app_version', installedAt: 'installed_at' },
