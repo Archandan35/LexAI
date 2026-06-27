@@ -157,7 +157,7 @@ export const InstallationExecutor = {
     );
     if (allTableRes.ok && Array.isArray(allTableRes.data)) {
       for (const row of allTableRes.data) {
-        const n = row.name.toLowerCase();
+        const n = (row.name || '').toLowerCase();
         if (sourceTables.includes(n)) {
           conflicts.push({ type: 'table', name: row.name });
           existingNames.tables.push(n);
@@ -173,7 +173,7 @@ export const InstallationExecutor = {
     );
     if (allIdxRes.ok && Array.isArray(allIdxRes.data)) {
       for (const row of allIdxRes.data) {
-        const n = row.name.toLowerCase();
+        const n = (row.name || '').toLowerCase();
         if (sourceIndexes.includes(n)) {
           conflicts.push({ type: 'index', name: row.name });
           existingNames.indexes.push(n);
@@ -189,7 +189,7 @@ export const InstallationExecutor = {
     );
     if (allFuncRes.ok && Array.isArray(allFuncRes.data)) {
       for (const row of allFuncRes.data) {
-        const n = row.name.toLowerCase();
+        const n = (row.name || '').toLowerCase();
         if (sourceFunctions.includes(n)) {
           conflicts.push({ type: 'function', name: row.name });
           existingNames.functions.push(n);
@@ -205,10 +205,12 @@ export const InstallationExecutor = {
     );
     if (allPolRes.ok && Array.isArray(allPolRes.data)) {
       for (const row of allPolRes.data) {
-        const match = sourcePolicies.find((p) => p.name.toLowerCase() === row.name.toLowerCase() && p.table.toLowerCase() === row.tablename.toLowerCase());
+        const rowName = (row.name || '').toLowerCase();
+        const rowTable = (row.tablename || '').toLowerCase();
+        const match = sourcePolicies.find((p) => (p.name || '').toLowerCase() === rowName && (p.table || '').toLowerCase() === rowTable);
         if (match) {
           conflicts.push({ type: 'policy', name: row.name, table: row.tablename });
-          existingNames.policies.push(row.name.toLowerCase());
+          existingNames.policies.push(rowName);
         } else {
           extras.push({ type: 'policy', name: row.name, table: row.tablename });
         }
@@ -221,7 +223,7 @@ export const InstallationExecutor = {
     );
     if (allConRes.ok && Array.isArray(allConRes.data)) {
       for (const row of allConRes.data) {
-        const n = row.name.toLowerCase();
+        const n = (row.name || '').toLowerCase();
         if (sourceConstraints.includes(n)) {
           conflicts.push({ type: 'constraint', name: row.name, table: row.relname });
           existingNames.constraints.push(n);

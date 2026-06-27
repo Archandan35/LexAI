@@ -302,6 +302,7 @@ function deduplicateByName(scanResult) {
   const seenNames = new Set();
 
   const checkName = (category, name, table, kind) => {
+    if (!name) return;
     const lower = name.toLowerCase();
     const patterns = [/[_ ](copy|dup|l?backup|old|test|temp|legacy|archive)(_?\d*)?$/i, /^test[_ ]/, /^temp[_ ]/, /^old[_ ]/, /^backup[_ ]/, /^legacy[_ ]/];
     for (const pat of patterns) {

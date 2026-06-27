@@ -17,7 +17,7 @@ const CATALOG_QUERIES = {
 
   indexes: `select indexname as name, tablename, indexdef, tablespace, indexdef from pg_indexes where schemaname = 'public' order by tablename, indexname`,
 
-  duplicateIndexes: `select indexname, tablename, indexdef from pg_indexes where schemaname = 'public' and indexname like '%copy%' or indexname like '%dup%' or indexname like '%backup%' or indexname like '%old%' order by tablename`,
+  duplicateIndexes: `select indexname, tablename, indexdef from pg_indexes where schemaname = 'public' and (indexname like '%copy%' or indexname like '%dup%' or indexname like '%backup%' or indexname like '%old%') order by tablename`,
 
   views: `select table_name as name, view_definition from information_schema.views where table_schema = 'public' order by table_name`,
 

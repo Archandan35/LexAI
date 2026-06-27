@@ -380,18 +380,18 @@ export const blueprintComparatorService = {
     }));
 
     const unnecessaryTables = extraTables.filter((t) => {
-      const lower = t.name.toLowerCase();
+      const lower = (t.name || '').toLowerCase();
       const patterns = [/^test_/, /^temp_/, /^old_/, /^backup_/, /^legacy_/, /_copy$/, /_old$/, /_backup$/, /_test$/, /_dup$/];
       return patterns.some((p) => p.test(lower));
     });
 
     const unnecessaryIndexes = (indexesResult.extra || []).filter((name) => {
-      const lower = name.toLowerCase();
+      const lower = (name || '').toLowerCase();
       return /_copy$|_old$|_backup$|_test$|_dup$/i.test(lower);
     });
 
     const unnecessaryPolicies = (unknownPolicies || []).filter((p) => {
-      const lower = p.name.toLowerCase();
+      const lower = (p.name || '').toLowerCase();
       return /_copy$|_old$|_backup$|_test$|_dup$/i.test(lower);
     });
 
