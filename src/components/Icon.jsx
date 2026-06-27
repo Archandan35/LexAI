@@ -69,6 +69,10 @@ const PATHS = {
   filter: 'M22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3',
   building: 'M3 22h18M6 18V9m12 9V9M2 9l10-7 10 7M9 22V12h6v10',
   video: 'M23 7l-7 5 7 5V7z M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z',
+  'people-two': 'M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 2.5-5 6-5s6 2 6 5M12 20c0-2.5 2-4.5 5-4.5s5 2 5 4.5',
+  compass: 'M3 11l18-8-8 18-2-8-8-2z',
+  'arrow-up': 'M12 19V5M5 12l7-7 7 7',
+  paperclip: 'M15 7l-7 7a3.5 3.5 0 0 0 5 5l7-7a5 5 0 0 0-7-7l-7 7a6.5 6.5 0 0 0 9 9l7-7',
 };
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */

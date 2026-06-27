@@ -13,7 +13,9 @@ import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import HearingPreviewModal from '@/components/HearingPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
+import { useParties } from '@/hooks/useParties.js';
 import { causeListLogic } from '@/logic/causeListLogic.js';
+import SmartOrderSheetBuilder from '@/components/SmartOrderSheetBuilder.jsx';
 import { templateLogic } from '@/logic/templateLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { caseLogic } from '@/logic/caseLogic.js';
@@ -50,6 +52,8 @@ export default function CauseList() {
   const [tempDateTo, setTempDateTo] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStatusCrud, setShowStatusCrud] = useState(false);
+  const [smartMode, setSmartMode] = useState(false);
+  const { parties } = useParties();
 
   // Sorting & Pagination for Cause List Tab
   const [sortDir, setSortDir] = useState('asc'); // asc | desc
@@ -1474,11 +1478,21 @@ export default function CauseList() {
       {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
       <Modal
         open={open}
-        title={editing ? 'Edit Cause List' : 'Add Cause List'}
+        title={smartMode ? 'Smart Order Builder' : (editing ? 'Edit Cause List' : 'Add Cause List')}
         size="lg"
-        onClose={() => setOpen(false)}
-        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
+        className={smartMode ? 'hearing-preview-modal smart-mode' : ''}
+        onClose={() => { setOpen(false); setSmartMode(false); }}
+        footer={smartMode ? undefined : <><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
       >
+        {smartMode ? (
+          <SmartOrderSheetBuilder
+            hearing={form}
+            parties={parties}
+            caseStatuses={caseStatuses}
+            onSave={saveHearing}
+            onClose={() => { setOpen(false); setSmartMode(false); }}
+          />
+        ) : (
         <div className="hearing-modal">
           {/* Import / Export toolbar */}
           <div className="hearing-modal__import-export-bar">
@@ -1494,6 +1508,9 @@ export default function CauseList() {
                   <option value="csv">CSV</option>
                 </select>
               </label>
+              <button className={`btn btn--sm ${smartMode ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setSmartMode((v) => !v)}>
+                <Icon name="compass" size={13} /> Smart Mode
+              </button>
             </div>
             {showImport && (
               <div className="hearing-modal__ie-right">
@@ -1651,6 +1668,8 @@ export default function CauseList() {
             )}
           </div>
         </div>
+        )}
+
       </Modal>
 
       {/* Case Status Crud Manager */}

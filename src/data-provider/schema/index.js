@@ -50,6 +50,7 @@ import { DraftTypesSchema } from './draft_types.schema.js';
 import { CaseTagsSchema } from './case_tags.schema.js';
 import { JudgesSchema } from './judges.schema.js';
 import { ReminderTypesSchema } from './reminder_types.schema.js';
+import { PartiesSchema } from './parties.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -99,11 +100,12 @@ export const schemas = {
   case_tags: CaseTagsSchema,
   judges: JudgesSchema,
   reminder_types: ReminderTypesSchema,
+  parties: PartiesSchema,
 };
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 30;
+export const SCHEMA_VERSION = 31;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);

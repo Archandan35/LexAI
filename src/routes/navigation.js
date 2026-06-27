@@ -67,6 +67,7 @@ export const NAV_GROUPS = [
       { to: '/court-management/priorities', label: 'Priorities', icon: 'flag', module: 'courtTypes' },
       { to: '/court-management/case-statuses', label: 'Case Statuses', icon: 'toggle', module: 'courtTypes' },
       { to: '/court-management/judges', label: 'Judges', icon: 'users', module: 'courtTypes' },
+      { to: '/court-management/parties', label: 'Parties', icon: 'users', module: 'courtTypes' },
     ],
   },
   { type: 'heading', label: 'ADMINISTRATION' },
