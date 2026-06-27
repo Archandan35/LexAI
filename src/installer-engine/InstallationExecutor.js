@@ -115,100 +115,151 @@ export const InstallationExecutor = {
     return result;
   },
 
-  // Pre-validate SQL by checking for existing objects that would conflict.
-  // Parses all DDL statements from the SQL text and queries catalog tables
-  // (pg_tables, pg_indexes, pg_policies, pg_constraint, pg_proc) to detect
-  // existing objects before execution.
+  // Pre-validate SQL by checking for existing objects in the database.
+  // Returns:
+  //   conflicts — objects that exist in BOTH source SQL and database (remove from source)
+  //   extras   — objects that exist in database but are NOT in source (unnecessary, alert to drop)
+  //   filteredSql — source SQL with statements for existing objects removed
   async preValidateSql(sql) {
     const provider = getDatabaseProvider();
     if (typeof provider.execSql !== 'function') {
-      return { ok: true, conflicts: [], error: null };
+      return { ok: true, conflicts: [], extras: [], filteredSql: sql, error: null };
     }
 
-    const conflicts = [];
-
-    // Tables — match both CREATE TABLE name and CREATE TABLE IF NOT EXISTS name
-    const tableNames = [...new Set(
+    // 1. Parse all expected object names from the source SQL
+    const sourceTables = [...new Set(
       [...sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?["']?(\w+)["']?\s*/ig)]
         .map((m) => m[1].toLowerCase())
     )];
-    if (tableNames.length > 0) {
-      const checks = tableNames.map((n) =>
-        `select tablename as name from pg_tables where tablename = '${n}' and schemaname = 'public'`
-      ).join('\nunion all\n');
-      const res = await provider.execSql(checks);
-      if (res.ok && Array.isArray(res.data)) {
-        for (const row of res.data) {
-          conflicts.push({ type: 'table', name: row.name });
-        }
-      }
-    }
-
-    // Indexes — match both CREATE INDEX name and CREATE INDEX IF NOT EXISTS name
-    const indexNames = [...new Set(
+    const sourceIndexes = [...new Set(
       [...sql.matchAll(/create\s+index\s+(?:if\s+not\s+exists\s+)?["']?(\w+)["']?\s+on/ig)]
         .map((m) => m[1].toLowerCase())
     )];
-    if (indexNames.length > 0) {
-      const checks = indexNames.map((n) =>
-        `select indexname as name from pg_indexes where indexname = '${n}' and schemaname = 'public'`
-      ).join('\nunion all\n');
-      const res = await provider.execSql(checks);
-      if (res.ok && Array.isArray(res.data)) {
-        for (const row of res.data) {
-          conflicts.push({ type: 'index', name: row.name });
-        }
-      }
-    }
-
-    // Functions — match CREATE OR REPLACE FUNCTION name / CREATE FUNCTION name
-    const funcNames = [...new Set(
+    const sourceFunctions = [...new Set(
       [...sql.matchAll(/create\s+(?:or\s+replace\s+)?function\s+(\w+)\s*/ig)]
         .map((m) => m[1].toLowerCase())
     )];
-    if (funcNames.length > 0) {
-      const checks = funcNames.map((n) =>
-        `select proname as name from pg_proc where proname = '${n}' and pronamespace = (select oid from pg_namespace where nspname = 'public')`
-      ).join('\nunion all\n');
-      const res = await provider.execSql(checks);
-      if (res.ok && Array.isArray(res.data)) {
-        for (const row of res.data) {
-          conflicts.push({ type: 'function', name: row.name });
-        }
-      }
-    }
-
-    // Policies
-    const policyNames = [...sql.matchAll(/create\s+policy\s+(\w+)\s+on\s+(\w+)\s+for/ig)]
+    const sourcePolicies = [...sql.matchAll(/create\s+policy\s+(\w+)\s+on\s+(\w+)\s+for/ig)]
       .map((m) => ({ name: m[1], table: m[2] }));
-    if (policyNames.length > 0) {
-      const checks = policyNames.map((p) =>
-        `select policyname as name, tablename from pg_policies where policyname = '${p.name}' and tablename = '${p.table}'`
-      ).join('\nunion all\n');
-      const res = await provider.execSql(checks);
-      if (res.ok && Array.isArray(res.data)) {
-        for (const row of res.data) {
-          conflicts.push({ type: 'policy', name: row.name, table: row.tablename });
-        }
-      }
-    }
-
-    // Constraints
-    const constraintNames = [...sql.matchAll(/add\s+constraint\s+(\w+)/ig)]
+    const sourceConstraints = [...sql.matchAll(/add\s+constraint\s+(\w+)/ig)]
       .map((m) => m[1]);
-    if (constraintNames.length > 0) {
-      const checks = constraintNames.map((n) =>
-        `select c.conname as name, t.relname from pg_constraint c join pg_class t on t.oid = c.conrelid where c.conname = '${n}'`
-      ).join('\nunion all\n');
-      const res = await provider.execSql(checks);
-      if (res.ok && Array.isArray(res.data)) {
-        for (const row of res.data) {
-          conflicts.push({ type: 'constraint', name: row.name, table: row.relname });
+
+    const conflicts = [];
+    const extras = [];
+    const existingNames = { tables: [], indexes: [], functions: [], policies: [], constraints: [] };
+
+    // 2. Query DB catalog for ALL objects matching these categories,
+    //    then classify into conflicts (in both) and extras (in DB only)
+
+    // -- Tables --
+    const allTableRes = await provider.execSql(
+      `select tablename as name from pg_tables where schemaname = 'public'`
+    );
+    if (allTableRes.ok && Array.isArray(allTableRes.data)) {
+      for (const row of allTableRes.data) {
+        const n = row.name.toLowerCase();
+        if (sourceTables.includes(n)) {
+          conflicts.push({ type: 'table', name: row.name });
+          existingNames.tables.push(n);
+        } else {
+          extras.push({ type: 'table', name: row.name });
         }
       }
     }
 
-    return { ok: true, conflicts };
+    // -- Indexes --
+    const allIdxRes = await provider.execSql(
+      `select indexname as name from pg_indexes where schemaname = 'public'`
+    );
+    if (allIdxRes.ok && Array.isArray(allIdxRes.data)) {
+      for (const row of allIdxRes.data) {
+        const n = row.name.toLowerCase();
+        if (sourceIndexes.includes(n)) {
+          conflicts.push({ type: 'index', name: row.name });
+          existingNames.indexes.push(n);
+        } else {
+          extras.push({ type: 'index', name: row.name });
+        }
+      }
+    }
+
+    // -- Functions --
+    const allFuncRes = await provider.execSql(
+      `select proname as name from pg_proc where pronamespace = (select oid from pg_namespace where nspname = 'public')`
+    );
+    if (allFuncRes.ok && Array.isArray(allFuncRes.data)) {
+      for (const row of allFuncRes.data) {
+        const n = row.name.toLowerCase();
+        if (sourceFunctions.includes(n)) {
+          conflicts.push({ type: 'function', name: row.name });
+          existingNames.functions.push(n);
+        } else {
+          extras.push({ type: 'function', name: row.name });
+        }
+      }
+    }
+
+    // -- Policies --
+    const allPolRes = await provider.execSql(
+      `select policyname as name, tablename from pg_policies`
+    );
+    if (allPolRes.ok && Array.isArray(allPolRes.data)) {
+      for (const row of allPolRes.data) {
+        const match = sourcePolicies.find((p) => p.name.toLowerCase() === row.name.toLowerCase() && p.table.toLowerCase() === row.tablename.toLowerCase());
+        if (match) {
+          conflicts.push({ type: 'policy', name: row.name, table: row.tablename });
+          existingNames.policies.push(row.name.toLowerCase());
+        } else {
+          extras.push({ type: 'policy', name: row.name, table: row.tablename });
+        }
+      }
+    }
+
+    // -- Constraints --
+    const allConRes = await provider.execSql(
+      `select c.conname as name, t.relname from pg_constraint c join pg_class t on t.oid = c.conrelid`
+    );
+    if (allConRes.ok && Array.isArray(allConRes.data)) {
+      for (const row of allConRes.data) {
+        const n = row.name.toLowerCase();
+        if (sourceConstraints.includes(n)) {
+          conflicts.push({ type: 'constraint', name: row.name, table: row.relname });
+          existingNames.constraints.push(n);
+        } else {
+          extras.push({ type: 'constraint', name: row.name, table: row.relname });
+        }
+      }
+    }
+
+    // 3. Build filtered SQL with statements for existing objects removed
+    let filteredSql = sql;
+    for (const c of conflicts) {
+      if (c.type === 'table') {
+        filteredSql = filteredSql.replace(
+          new RegExp(`create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?["']?${c.name}["']?\\s*\\([^;]+;`, 'is'), ''
+        );
+      } else if (c.type === 'policy') {
+        filteredSql = filteredSql.replace(
+          new RegExp(`create\\s+policy\\s+${c.name}\\s+on\\s+${c.table}\\s+for[^;]+;`, 'is'), ''
+        );
+      } else if (c.type === 'constraint') {
+        filteredSql = filteredSql.replace(
+          new RegExp(`add\\s+constraint\\s+${c.name}[^;]+;`, 'is'), ''
+        );
+      } else if (c.type === 'index') {
+        filteredSql = filteredSql.replace(
+          new RegExp(`create\\s+index\\s+(?:if\\s+not\\s+exists\\s+)?${c.name}\\s+on[^;]+;`, 'is'), ''
+        );
+      } else if (c.type === 'function') {
+        filteredSql = filteredSql.replace(
+          new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+${c.name}[^$]+?(?:\\$\\$|language)`, 'is'), ''
+        );
+      }
+    }
+    // Clean up extra blank lines left by removals
+    filteredSql = filteredSql.replace(/\n{3,}/g, '\n\n').trim();
+
+    return { ok: true, conflicts, extras, filteredSql };
   },
 
   async executeSql(sql) {
