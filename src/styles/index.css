@@ -14858,6 +14858,46 @@ kbd.cmd__kbd {
 .sosb-right-stats { display: flex; gap: 16px; }
 .sosb-right-stats b { color: var(--text-dark); }
 
+/* ── Smart Order Sheet Builder — Mobile / Tablet ── */
+@media (max-width: 991px) {
+  .sosb .sosb-topbar {
+    background: linear-gradient(95deg, #dceaf9 0%, #e8f1fb 50%, #dceaf9 100%);
+    flex-wrap: wrap; row-gap: 10px;
+    border-bottom: 1px solid #c5dcf2;
+  }
+  .sosb .sosb-topbar__title { flex: 1 1 100%; margin-top: 2px; }
+  .sosb .sosb-topbar__actions { order: 3; flex: 1 1 100%; display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap; }
+  .sosb .sosb-topbar__t1 { font-size: 15px; }
+  .sosb .sosb-topbar__t2 { font-size: 11px; }
+  .sosb .sosb-btn { flex: 1 1 auto; justify-content: center; font-size: 12px; padding: 9px 10px; }
+
+  .sosb .sosb-layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+  .sosb .sosb-preview { display: none; }
+
+  .sosb .sosb-sidebar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex-direction: unset; }
+  .sosb .sosb-step {
+    padding: 10px 6px; border-radius: 10px; border: 1px solid var(--border);
+    border-top: 3px solid transparent; flex-direction: column; align-items: center; text-align: center;
+    background: #fff; gap: 6px; min-width: 0;
+  }
+  .sosb .sosb-step--active { background: #eef0ff; border-top: 3px solid #6d4ce6; border-left: none; }
+  .sosb .sosb-step__num { width: 24px; height: 24px; font-size: 11px; }
+  .sosb .sosb-step__text { align-items: center; }
+  .sosb .sosb-step__title { font-size: 10.5px; letter-spacing: .2px; }
+  .sosb .sosb-step__sub { display: none; }
+
+  .sosb .sosb-panel { gap: 14px; }
+  .sosb .sosb-card { padding: 13px; border-top: 3px solid transparent; }
+  .sosb .sosb-card--active { border-top: 3px solid #6d4ce6; box-shadow: 0 4px 18px rgba(109, 76, 230, 0.13); }
+  .sosb .sosb-card__head h3 { font-size: 13px; }
+  .sosb .sosb-icon-badge { width: 30px; height: 30px; border-radius: 8px; }
+  .sosb .sosb-row2 { grid-template-columns: 1fr; }
+
+  .sosb .sosb-instruction { font-size: 12.5px; padding: 12px 14px; }
+
+  .sosb .sosb-highlight-box { font-size: 13px; padding: 12px 14px; }
+}
+
 /* ── Smart mode modal override ── */
 .order-sheet-preview-modal.smart-mode { max-width: 98vw !important; width: 98vw; }
 .order-sheet-preview-modal.smart-mode .modal__body { padding: 0; display: flex; flex-direction: column; height: 88vh; }

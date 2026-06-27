@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Icon from './Icon.jsx';
 import CrudManager from './CrudManager.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
@@ -17,10 +17,197 @@ const STEPS = [
 
 const OBJECTION_STATUSES = ['Pending', 'No Objection Filed', 'Objection Filed'];
 
+function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearParty, onGearStatus, isActive, onCardClick }) {
+  return (
+    <div id={`sosb-card-${step.num}`} className={`sosb-card${isActive ? ' sosb-card--active' : ''}`} onClick={() => onCardClick(step.num)}>
+      {step.num === 1 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--purple"><Icon name="people-two" size={17} strokeWidth={1.8} /></div>
+            <h3>1. HAZIRA (Who is Present) <span className="sosb-req">*</span></h3>
+          </div>
+          <div className="sosb-dropdown-row">
+            <select className="sosb-select sosb-select--grow" value={form.hazira} onChange={(e) => set('hazira', e.target.value)}>
+              <option value="">Select party type...</option>
+              {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
+              <Icon name="gear" size={16} strokeWidth={1.7} />
+            </button>
+          </div>
+        </>
+      )}
+      {step.num === 2 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--blue"><Icon name="doc" size={16} strokeWidth={1.8} /></div>
+            <h3>2. PETITION / APPLICATION DETAILS</h3>
+          </div>
+          <div className="sosb-field" style={{ marginBottom: 14 }}>
+            <label className="sosb-lbl">Filed By <span className="sosb-req">*</span></label>
+            <div className="sosb-dropdown-row">
+              <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
+                <option value="">Select...</option>
+                {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
+                <Icon name="gear" size={16} strokeWidth={1.7} />
+              </button>
+            </div>
+          </div>
+          <div className="sosb-field" style={{ marginBottom: 8 }}>
+            <div className="sosb-field-title-row">
+              <label className="sosb-lbl">Petition Name / Title <span className="sosb-req">*</span></label>
+              <div className="sosb-clear-action" onClick={(e) => { e.stopPropagation(); set('petitionName', ''); }}>
+                <Icon name="trash" size={13} strokeWidth={1.8} /> Clear
+              </div>
+            </div>
+          </div>
+          <div className="sosb-field" style={{ marginBottom: 14 }}>
+            <textarea className="sosb-textarea" style={{ minHeight: 60 }} value={form.petitionDetails} onChange={(e) => set('petitionDetails', e.target.value)} placeholder="Enter petition details..." />
+            <span className="sosb-charcount">{charCount(form.petitionDetails)}</span>
+          </div>
+          <div className="sosb-row2">
+            <div className="sosb-field">
+              <label className="sosb-lbl">Filed On <span className="sosb-req">*</span></label>
+              <input className="sosb-input" type="date" value={form.filedOn} onChange={(e) => set('filedOn', e.target.value)} />
+            </div>
+            <div className="sosb-field">
+              <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
+              <div className="sosb-dropdown-row">
+                <select className="sosb-select sosb-select--grow" value={form.status} onChange={(e) => set('status', e.target.value)}>
+                  <option value="">Select status...</option>
+                  {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button className="sosb-gear-btn" title="Manage statuses" onClick={(e) => { e.stopPropagation(); onGearStatus(); }}>
+                  <Icon name="gear" size={16} strokeWidth={1.7} />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="sosb-field" style={{ marginBottom: 14 }}>
+            <label className="sosb-lbl">Description / Details (Optional)</label>
+            <textarea className="sosb-textarea" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Enter description or details here..." />
+            <span className="sosb-charcount">{charCount(form.description)}</span>
+          </div>
+          <div className="sosb-add-link">
+            <Icon name="plus" size={14} strokeWidth={2} /> Add Another Petition / Application
+          </div>
+        </>
+      )}
+      {step.num === 3 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--green"><Icon name="shield" size={16} strokeWidth={1.8} /></div>
+            <h3>3. OBJECTION</h3>
+          </div>
+          <label className="sosb-lbl">Objection Status <span className="sosb-req">*</span></label>
+          <div className="sosb-dropdown-row" style={{ marginBottom: 14 }}>
+            <select className="sosb-select sosb-select--grow" value={form.objectionStatus} onChange={(e) => set('objectionStatus', e.target.value)}>
+              {OBJECTION_STATUSES.map((o) => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+          <label className="sosb-lbl">Objection Filed By <span className="sosb-req">*</span></label>
+          <div className="sosb-dropdown-row">
+            <select className="sosb-select sosb-select--grow" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
+              <option value="">Select...</option>
+              {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
+              <Icon name="gear" size={16} strokeWidth={1.7} />
+            </button>
+          </div>
+        </>
+      )}
+      {step.num === 4 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--orange"><Icon name="compass" size={16} strokeWidth={1.8} /></div>
+            <h3>4. TODAY'S MATTER / HEARING</h3>
+          </div>
+          <textarea className="sosb-textarea" style={{ minHeight: 54 }} value={form.todaysMatter} onChange={(e) => set('todaysMatter', e.target.value)} placeholder="Describe today's hearing matter..." />
+          <span className="sosb-charcount sosb-charcount--static">{charCount(form.todaysMatter)}</span>
+        </>
+      )}
+      {step.num === 5 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--teal"><Icon name="building" size={16} strokeWidth={1.8} /></div>
+            <h3>5. COURT OBSERVATION <span className="sosb-opt">(Optional)</span></h3>
+          </div>
+          <textarea className="sosb-textarea" style={{ minHeight: 44 }} value={form.courtObservation} onChange={(e) => set('courtObservation', e.target.value)} placeholder="Enter court observation if any..." />
+          <span className="sosb-charcount sosb-charcount--static">{charCount(form.courtObservation)}</span>
+        </>
+      )}
+      {step.num === 6 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--yellow"><Icon name="star" size={16} strokeWidth={1.6} /></div>
+            <h3>6. STATUS <span className="sosb-opt">(Order Status)</span></h3>
+          </div>
+          <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
+          <div className="sosb-dropdown-row">
+            <select className="sosb-select sosb-select--grow" value={form.orderStatus} onChange={(e) => set('orderStatus', e.target.value)}>
+              <option value="">Select status...</option>
+              {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button className="sosb-gear-btn" title="Manage statuses" onClick={(e) => { e.stopPropagation(); onGearStatus(); }}>
+              <Icon name="gear" size={16} strokeWidth={1.7} />
+            </button>
+          </div>
+        </>
+      )}
+      {step.num === 7 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--red"><Icon name="calendar" size={16} strokeWidth={1.8} /></div>
+            <h3>7. NEXT DATE</h3>
+          </div>
+          <div className="sosb-row2">
+            <div className="sosb-field">
+              <label className="sosb-lbl">Next Date <span className="sosb-req">*</span></label>
+              <input className="sosb-input" type="date" value={form.nextDate} onChange={(e) => set('nextDate', e.target.value)} />
+            </div>
+            <div className="sosb-field">
+              <label className="sosb-lbl">Purpose <span className="sosb-req">*</span></label>
+              <input className="sosb-input" type="text" value={form.nextPurpose} onChange={(e) => set('nextPurpose', e.target.value)} placeholder="Enter purpose..." />
+            </div>
+          </div>
+        </>
+      )}
+      {step.num === 8 && (
+        <>
+          <div className="sosb-card__head">
+            <div className="sosb-icon-badge sosb-icon-badge--purple"><Icon name="arrow-up" size={16} strokeWidth={1.9} /></div>
+            <h3>8. PUT UP FOR <span className="sosb-opt">(This will be the last line in the order)</span></h3>
+          </div>
+          <div className="sosb-highlight-box">
+            {form.putUpFor || 'Put up for order and any requisite notice to the respondent party of petition dated...'}
+            <span className="sosb-charcount">{charCount(form.putUpFor)}</span>
+          </div>
+          <textarea className="sosb-textarea" style={{ marginTop: 12, minHeight: 44 }} value={form.putUpFor} onChange={(e) => set('putUpFor', e.target.value)} placeholder="Enter final order line..." />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseStatuses = [], onSave, onClose, onRefreshPartyTypes, onRefreshStatuses }) {
   const [activeStep, setActiveStep] = useState(1);
   const [showPartyTypeCrud, setShowPartyTypeCrud] = useState(false);
   const [showStatusCrud, setShowStatusCrud] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
   const [form, setForm] = useState({
     hazira: '',
     filedBy: '',
@@ -40,8 +227,19 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
   });
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
-
   const charCount = (str) => `${(str || '').length}/250`;
+
+  const handleStepClick = useCallback((num) => {
+    setActiveStep(num);
+    if (isMobile) {
+      const el = document.getElementById(`sosb-card-${num}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [isMobile]);
+
+  const handleCardClick = useCallback((num) => {
+    setActiveStep(num);
+  }, []);
 
   return (
     <div className="sosb">
@@ -69,7 +267,7 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
             <div
               key={step.num}
               className={`sosb-step ${activeStep === step.num ? 'sosb-step--active' : ''}`}
-              onClick={() => setActiveStep(step.num)}
+              onClick={() => handleStepClick(step.num)}
             >
               <div className="sosb-step__num">{step.num}</div>
               <div className="sosb-step__text">
@@ -86,182 +284,57 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
             <div>Select the applicable option from each dropdown below. Use the gear icon to adjust field options.</div>
           </div>
 
-          {activeStep === 1 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--purple"><Icon name="people-two" size={17} strokeWidth={1.8} /></div>
-                <h3>1. HAZIRA (Who is Present) <span className="sosb-req">*</span></h3>
-              </div>
-              <div className="sosb-dropdown-row">
-                <select className="sosb-select sosb-select--grow" value={form.hazira} onChange={(e) => set('hazira', e.target.value)}>
-                  <option value="">Select party type...</option>
-                  {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
-                <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
-                  <Icon name="gear" size={16} strokeWidth={1.7} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeStep === 2 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--blue"><Icon name="doc" size={16} strokeWidth={1.8} /></div>
-                <h3>2. PETITION / APPLICATION DETAILS</h3>
-              </div>
-              <div className="sosb-field" style={{ marginBottom: 14 }}>
-                <label className="sosb-lbl">Filed By <span className="sosb-req">*</span></label>
-                <div className="sosb-dropdown-row">
-                  <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
-                    <option value="">Select...</option>
-                    {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                  <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
-                    <Icon name="gear" size={16} strokeWidth={1.7} />
-                  </button>
-                </div>
-              </div>
-              <div className="sosb-field" style={{ marginBottom: 8 }}>
-                <div className="sosb-field-title-row">
-                  <label className="sosb-lbl">Petition Name / Title <span className="sosb-req">*</span></label>
-                  <div className="sosb-clear-action" onClick={() => set('petitionName', '')}>
-                    <Icon name="trash" size={13} strokeWidth={1.8} /> Clear
-                  </div>
-                </div>
-              </div>
-              <div className="sosb-field" style={{ marginBottom: 14 }}>
-                <textarea className="sosb-textarea" style={{ minHeight: 60 }} value={form.petitionDetails} onChange={(e) => set('petitionDetails', e.target.value)} placeholder="Enter petition details..." />
-                <span className="sosb-charcount">{charCount(form.petitionDetails)}</span>
-              </div>
-              <div className="sosb-row2">
-                <div className="sosb-field">
-                  <label className="sosb-lbl">Filed On <span className="sosb-req">*</span></label>
-                  <input className="sosb-input" type="date" value={form.filedOn} onChange={(e) => set('filedOn', e.target.value)} />
-                </div>
-                <div className="sosb-field">
-                  <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
-                  <div className="sosb-dropdown-row">
-                    <select className="sosb-select sosb-select--grow" value={form.status} onChange={(e) => set('status', e.target.value)}>
-                      <option value="">Select status...</option>
-                      {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    <button className="sosb-gear-btn" title="Manage statuses" onClick={() => setShowStatusCrud(true)}>
-                      <Icon name="gear" size={16} strokeWidth={1.7} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="sosb-field" style={{ marginBottom: 14 }}>
-                <label className="sosb-lbl">Description / Details (Optional)</label>
-                <textarea className="sosb-textarea" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Enter description or details here..." />
-                <span className="sosb-charcount">{charCount(form.description)}</span>
-              </div>
-              <div className="sosb-add-link">
-                <Icon name="plus" size={14} strokeWidth={2} /> Add Another Petition / Application
-              </div>
-            </div>
-          )}
-
-          {activeStep === 3 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--green"><Icon name="shield" size={16} strokeWidth={1.8} /></div>
-                <h3>3. OBJECTION</h3>
-              </div>
-              <label className="sosb-lbl">Objection Status <span className="sosb-req">*</span></label>
-              <div className="sosb-dropdown-row" style={{ marginBottom: 14 }}>
-                <select className="sosb-select sosb-select--grow" value={form.objectionStatus} onChange={(e) => set('objectionStatus', e.target.value)}>
-                  {OBJECTION_STATUSES.map((o) => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
-              <label className="sosb-lbl">Objection Filed By <span className="sosb-req">*</span></label>
-              <div className="sosb-dropdown-row">
-                <select className="sosb-select sosb-select--grow" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
-                  <option value="">Select...</option>
-                  {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
-                <button className="sosb-gear-btn" title="Manage party types" onClick={() => setShowPartyTypeCrud(true)}>
-                  <Icon name="gear" size={16} strokeWidth={1.7} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeStep === 4 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--orange"><Icon name="compass" size={16} strokeWidth={1.8} /></div>
-                <h3>4. TODAY'S MATTER / HEARING</h3>
-              </div>
-              <textarea className="sosb-textarea" style={{ minHeight: 54 }} value={form.todaysMatter} onChange={(e) => set('todaysMatter', e.target.value)} placeholder="Describe today's hearing matter..." />
-              <span className="sosb-charcount sosb-charcount--static">{charCount(form.todaysMatter)}</span>
-            </div>
-          )}
-
-          {activeStep === 5 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--teal"><Icon name="building" size={16} strokeWidth={1.8} /></div>
-                <h3>5. COURT OBSERVATION <span className="sosb-opt">(Optional)</span></h3>
-              </div>
-              <textarea className="sosb-textarea" style={{ minHeight: 44 }} value={form.courtObservation} onChange={(e) => set('courtObservation', e.target.value)} placeholder="Enter court observation if any..." />
-              <span className="sosb-charcount sosb-charcount--static">{charCount(form.courtObservation)}</span>
-            </div>
-          )}
-
-          {activeStep === 6 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--yellow"><Icon name="star" size={16} strokeWidth={1.6} /></div>
-                <h3>6. STATUS <span className="sosb-opt">(Order Status)</span></h3>
-              </div>
-              <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
-              <div className="sosb-dropdown-row">
-                <select className="sosb-select sosb-select--grow" value={form.orderStatus} onChange={(e) => set('orderStatus', e.target.value)}>
-                  <option value="">Select status...</option>
-                  {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <button className="sosb-gear-btn" title="Manage statuses" onClick={() => setShowStatusCrud(true)}>
-                  <Icon name="gear" size={16} strokeWidth={1.7} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeStep === 7 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--red"><Icon name="calendar" size={16} strokeWidth={1.8} /></div>
-                <h3>7. NEXT DATE</h3>
-              </div>
-              <div className="sosb-row2">
-                <div className="sosb-field">
-                  <label className="sosb-lbl">Next Date <span className="sosb-req">*</span></label>
-                  <input className="sosb-input" type="date" value={form.nextDate} onChange={(e) => set('nextDate', e.target.value)} />
-                </div>
-                <div className="sosb-field">
-                  <label className="sosb-lbl">Purpose <span className="sosb-req">*</span></label>
-                  <input className="sosb-input" type="text" value={form.nextPurpose} onChange={(e) => set('nextPurpose', e.target.value)} placeholder="Enter purpose..." />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeStep === 8 && (
-            <div className="sosb-card">
-              <div className="sosb-card__head">
-                <div className="sosb-icon-badge sosb-icon-badge--purple"><Icon name="arrow-up" size={16} strokeWidth={1.9} /></div>
-                <h3>8. PUT UP FOR <span className="sosb-opt">(This will be the last line in the order)</span></h3>
-              </div>
-              <div className="sosb-highlight-box">
-                {form.putUpFor || 'Put up for order and any requisite notice to the respondent party of petition dated...'}
-                <span className="sosb-charcount">{charCount(form.putUpFor)}</span>
-              </div>
-              <textarea className="sosb-textarea" style={{ marginTop: 12, minHeight: 44 }} value={form.putUpFor} onChange={(e) => set('putUpFor', e.target.value)} placeholder="Enter final order line..." />
-            </div>
+          {isMobile ? (
+            STEPS.map((step) => (
+              <Card
+                key={step.num}
+                step={step}
+                form={form}
+                set={set}
+                charCount={charCount}
+                partyTypes={partyTypes}
+                caseStatuses={caseStatuses}
+                onGearParty={() => setShowPartyTypeCrud(true)}
+                onGearStatus={() => setShowStatusCrud(true)}
+                isActive={activeStep === step.num}
+                onCardClick={handleCardClick}
+              />
+            ))
+          ) : (
+            <>
+              {activeStep === 1 && (
+                <Card step={STEPS[0]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 2 && (
+                <Card step={STEPS[1]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 3 && (
+                <Card step={STEPS[2]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 4 && (
+                <Card step={STEPS[3]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 5 && (
+                <Card step={STEPS[4]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 6 && (
+                <Card step={STEPS[5]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 7 && (
+                <Card step={STEPS[6]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+              {activeStep === 8 && (
+                <Card step={STEPS[7]} form={form} set={set} charCount={charCount} partyTypes={partyTypes} caseStatuses={caseStatuses}
+                  onGearParty={() => setShowPartyTypeCrud(true)} onGearStatus={() => setShowStatusCrud(true)} isActive onCardClick={() => {}} />
+              )}
+            </>
           )}
         </div>
 
