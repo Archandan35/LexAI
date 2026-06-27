@@ -210,21 +210,7 @@ export const DateEngine = {
 
   // Get a human-readable placeholder string for the configured date format.
   getDatePlaceholder() {
-    const fmt = this.getDateFormat();
-    const map = {
-      'june23': 'dd Month yyyy',
-      '23june': 'dd Month yyyy',
-      '23rdjune': 'dd Month yyyy',
-      '23.06.2026': 'dd.mm.yyyy',
-      '2026-06-23': 'yyyy-mm-dd',
-      'iso': 'yyyy-mm-dd',
-      '23-06-2026': 'dd-mm-yyyy',
-      '23/06/2026': 'dd/mm/yyyy',
-      'dmy': 'dd/mm/yyyy',
-      '06/23/2026': 'mm/dd/yyyy',
-      'mdy': 'mm/dd/yyyy',
-    };
-    return map[fmt] || fmt || 'dd-mm-yyyy';
+    return 'dd-mm-yyyy';
   },
 
   // Convert a date value to a YYYY-MM-DD string suitable for `<input type="date">` value.

@@ -14902,6 +14902,20 @@ kbd.cmd__kbd {
 .order-sheet-preview-modal.smart-mode { max-width: 98vw !important; width: 98vw; }
 .order-sheet-preview-modal.smart-mode .modal__body { padding: 0; display: flex; flex-direction: column; height: 88vh; }
 
+@media (max-width: 991px) {
+  .order-sheet-preview-modal.smart-mode {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 24px 24px 0 0;
+    max-height: 92vh;
+    align-self: end;
+    margin-bottom: 0;
+  }
+  .order-sheet-preview-modal.smart-mode .modal__body {
+    height: 85vh;
+  }
+}
+
 /* ============================================================
    COMPREHENSIVE RESPONSIVE SYSTEM
    Breakpoints:
