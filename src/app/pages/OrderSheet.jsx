@@ -573,7 +573,7 @@ export default function OrderSheet() {
 
           {/* Tabs */}
           <div className="tabs">
-            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
+            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cases</div>
             <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
             <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
             <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
@@ -596,7 +596,7 @@ export default function OrderSheet() {
                 {showDatePicker && (
                   <>
                     {/* Date Range */}
-                    <div className="cl-filters__row" onClick={() => {}}>
+                    <div className="cl-filters__row" onClick={() => { }}>
                       <Icon name="calendar" size={16} color="var(--navy-600)" />
                       <div style={{ flex: 1 }}>
                         <div className="cl-filters__label">Date Range</div>
@@ -666,7 +666,7 @@ export default function OrderSheet() {
 
               {/* Hearings */}
               <div className="cl-hearings">
-                <div className="cl-hearings__title">Hearings ({sortedRows.length})</div>
+                <div className="cl-hearings__title">Cases ({sortedRows.length})</div>
                 <div className="cl-hearings__bar">
                   <button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button>
                   <button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button>
@@ -869,7 +869,7 @@ export default function OrderSheet() {
               )}
               {tab === 'timeline' && (
                 <Card bodyClass="card__body--flush">
-                  <HearingPreviewModal open={false} onClose={() => {}} hearing={null} />
+                  <HearingPreviewModal open={false} onClose={() => { }} hearing={null} />
                   {/* placeholder */}
                   <EmptyState icon="clock" title="Timeline coming soon." />
                 </Card>
@@ -883,583 +883,242 @@ export default function OrderSheet() {
       {!isMobile && (
         <div className="cl-desktop-view fade-in">
           <PageHeader
-        icon="calendar"
-        title="Order Sheet"
-        subtitle="View and manage all hearings across your matters."
-        actions={
-          <div className="order-sheet__header-actions">
-            <Button icon="plus" onClick={openNew}>Add Order Sheet</Button>
-          </div>
-        }
-      />
+            icon="calendar"
+            title="Order Sheet"
+            subtitle="View and manage all hearings across your matters."
+            actions={
+              <div className="order-sheet__header-actions">
+                <Button icon="plus" onClick={openNew}>Add Order Sheet</Button>
+              </div>
+            }
+          />
 
-      <div className="tabs">
-        <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
-        <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
-        <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
-        <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
-      </div>
-
-      {/* TABS CONTAINER */}
-
-      {/* 1. CAUSE LIST TAB */}
-      {tab === 'list' && (
-        <>
-          {/* Filters Bar */}
-          <div className="order-sheet__filters-bar">
-            {/* Custom Range Picker */}
-            <div className="order-sheet__datepicker-wrapper" onClick={() => setShowDatePicker(!showDatePicker)}>
-              <Icon name="calendar" size={14} />
-              <span>
-                {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : '01 Jun 2026 - 30 Jun 2026'}
-              </span>
-              <Icon name="chevronDown" size={12} className="ml-10" />
-              {showDatePicker && (
-                <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
-                  <Field label="From Date">
-                    <Input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
-                  </Field>
-                  <Field label="To Date">
-                    <Input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} />
-                  </Field>
-                  <div className="flex gap-8 mt-10">
-                    <Button size="sm" variant="ghost" onClick={() => { setTempDateFrom(''); setTempDateTo(''); setDateFrom(''); setDateTo(''); setShowDatePicker(false); }}>Clear</Button>
-                    <Button size="sm" onClick={() => { setDateFrom(tempDateFrom); setDateTo(tempDateTo); setShowDatePicker(false); }}>Apply</Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Court dropdown */}
-            <select className="order-sheet__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
-              <option value="">All Courts</option>
-              {uniqueCourtNames.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-
-            {/* Jurisdiction dropdown */}
-            <select className="order-sheet__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
-              <option value="">All Jurisdictions</option>
-              {uniqueCourtLocations.map(l => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-
-            {/* Search Input */}
-            <div className="order-sheet__search-wrapper">
-              <Icon name="search" size={14} className="search-icon" />
-              <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            </div>
-
-            {/* Status dropdown */}
-            <select className="order-sheet__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="">All Status</option>
-              {caseStatuses.map(st => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
-
-            {/* Filter buttons */}
-            <button className="order-sheet__btn-reset" onClick={resetFilters}>Reset</button>
-            <button className="order-sheet__btn-apply" onClick={loadList}>
-              <Icon name="gear" size={13} /> Filters
-            </button>
+          <div className="tabs">
+            <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Order Sheet</div>
+            <div className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>Case History</div>
+            <div className={`tab ${tab === 'templates' ? 'active' : ''}`} onClick={() => setTab('templates')}>Templates</div>
+            <div className={`tab ${tab === 'timeline' ? 'active' : ''}`} onClick={() => setTab('timeline')}>Timeline</div>
           </div>
 
-          {/* Table Header controls */}
-          <div className="order-sheet__card-header">
-            <div className="cases__card-header-title">Hearings ({sortedRows.length})</div>
-            <div className="order-sheet__actions-group" style={{ position: 'relative' }}>
-              <button className="order-sheet__action-btn" onClick={exportToCsv}>
-                <Icon name="download" size={13} /> Export
-              </button>
-              <button className="order-sheet__action-btn" onClick={handlePrint}>
-                <Icon name="print" size={13} /> Print
-              </button>
-              <button className="order-sheet__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
-                <Icon name="grid" size={13} /> Columns
-              </button>
+          {/* TABS CONTAINER */}
 
-              {showColumnsMenu && (
-                <div className="order-sheet__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
-                  {Object.keys(visibleColumns).map(col => (
-                    <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
-                      <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
-                      {col === 'date' ? 'Date' : col.charAt(0).toUpperCase() + col.slice(1)}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Selected Case Info Card */}
-          {selectedCaseId && (() => {
-            const selCase = cases.find(c => c.id === selectedCaseId);
-            if (!selCase) return null;
-            return (
-              <div className="order-sheet__case-info-card" style={{ marginBottom: '14px' }}>
-                <div className="order-sheet__case-info-header">
-                  <div className="order-sheet__case-icon-box">
-                    <Icon name="balance" size={24} />
-                  </div>
-                  <div className="order-sheet__case-title-area">
-                    <div className="order-sheet__case-title-row">
-                      <h2 className="order-sheet__case-title">{formatCaseNumber(selCase) || selCase.caseNumber || selCase.case_display_number}</h2>
-                      <span className="order-sheet__case-badge-active">{selCase.status || 'Active'}</span>
-                    </div>
-                    <p className="order-sheet__case-subtitle">{selCase.title}</p>
-                    <div className="order-sheet__header-court">{selCase.court || ''}{selCase.court && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
-                  </div>
-                </div>
-                <div className="order-sheet__details-grid">
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Case Type</span>
-                    <span className="order-sheet__details-value">{selCase.case_type || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Filing Date</span>
-                    <span className="order-sheet__details-value">{formatDate(selCase.filing_date) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Current Stage</span>
-                    <span className="order-sheet__details-value">{selCase.stage || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Next Hearing</span>
-                    <span className="order-sheet__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Judge</span>
-                    <span className="order-sheet__details-value">{selCase.judge || '—'}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Hearings Table Card */}
-          <Card bodyClass="card__body--flush">
-            {paginatedRows.length === 0 ? (
-              <div style={{ padding: '40px' }}>
-                <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Order Sheet</Button>} />
-              </div>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '40px' }}><input type="checkbox" /></th>
-                    {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
-                    {visibleColumns.case && <th>Case Number & Title</th>}
-                    {visibleColumns.court && <th>Court</th>}
-                    {visibleColumns.bench && <th>Bench</th>}
-                    {visibleColumns.purpose && <th>Purpose</th>}
-                    {visibleColumns.nextHearingDate && <th>Next Hearing</th>}
-                    {visibleColumns.postedFor && <th>Posted For</th>}
-                    {visibleColumns.judge && <th>Judge</th>}
-                    {visibleColumns.status && <th>Status</th>}
-                    {visibleColumns.actions && <th style={{ textAlign: 'right' }}>Actions</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedRows.map((h) => {
-                    return (
-                      <tr key={h.id} className={`order-sheet__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
-                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
-                        {visibleColumns.date && (
-                          <td className="order-sheet__cell-date">
-                            <span>{formatDate(h.date)}</span>
-                          </td>
-                        )}
-                        {visibleColumns.case && (
-                          <td>
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setHistCaseId(h.caseId);
-                                loadHistory(h.caseId);
-                                setTab('history');
-                              }}
-                              className="text-bold text-brand"
-                            >
-                              {h.caseNumber}
-                            </a>
-                            <div className="text-xs text-muted mt-4">{h.parties}</div>
-                          </td>
-                        )}
-                        {visibleColumns.court && <td>{h.court}</td>}
-                        {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
-                        {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
-                        {visibleColumns.nextHearingDate && <td>{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
-                        {visibleColumns.postedFor && <td>{h.postedFor || h.posted_for || '—'}</td>}
-                        {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
-                        {visibleColumns.status && (
-                          <td>
-                            <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
-                              <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
-                              {h.status}
-                            </span>
-                          </td>
-                        )}
-                        {visibleColumns.actions && (
-                          <td className="order-sheet__cell-actions" style={{ textAlign: 'right' }}>
-                            <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
-                              <Icon name="eye" size={13} />
-                            </button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit">
-                              <Icon name="edit" size={13} />
-                            </button>
-                            <button className="btn btn--ghost btn--sm" onClick={() => duplicateHearing(h)} title="Duplicate">
-                              <Icon name="copy" size={13} />
-                            </button>
-                            <button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete">
-                              <Icon name="trash" size={13} />
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </Card>
-
-          {/* Pagination Footer */}
-          {totalPages > 1 && (
-            <div className="order-sheet__footer-pagination">
-              <div className="order-sheet__pagination-info">
-                Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
-              </div>
-              <div className="order-sheet__pagination-controls">
-                <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={20}>20 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-                <div className="order-sheet__page-buttons">
-                  <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* 2. CASE HISTORY TAB */}
-      {tab === 'history' && (
-        <div className="flex-col gap-16">
-          {/* Case Select bar inline */}
-          <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
-            <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
-            <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
-          </div>
-
-          {!history ? (
-            <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
-          ) : (
+          {/* 1. CAUSE LIST TAB */}
+          {tab === 'list' && (
             <>
-              {/* Case Info Header Card */}
-              <div className="order-sheet__case-info-card">
-                <div className="order-sheet__case-info-header">
-                  <div className="order-sheet__case-icon-box">
-                    <Icon name="balance" size={24} />
-                  </div>
-                  <div className="order-sheet__case-title-area">
-                    <div className="order-sheet__case-title-row">
-                      <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
-                      {history.case?.status && (
-                        <span className="order-sheet__case-badge-active">{history.case.status}</span>
-                      )}
+              {/* Filters Bar */}
+              <div className="order-sheet__filters-bar">
+                {/* Custom Range Picker */}
+                <div className="order-sheet__datepicker-wrapper" onClick={() => setShowDatePicker(!showDatePicker)}>
+                  <Icon name="calendar" size={14} />
+                  <span>
+                    {dateFrom && dateTo ? `${formatDate(dateFrom)} - ${formatDate(dateTo)}` : '01 Jun 2026 - 30 Jun 2026'}
+                  </span>
+                  <Icon name="chevronDown" size={12} className="ml-10" />
+                  {showDatePicker && (
+                    <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
+                      <Field label="From Date">
+                        <Input type="date" value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
+                      </Field>
+                      <Field label="To Date">
+                        <Input type="date" value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} />
+                      </Field>
+                      <div className="flex gap-8 mt-10">
+                        <Button size="sm" variant="ghost" onClick={() => { setTempDateFrom(''); setTempDateTo(''); setDateFrom(''); setDateTo(''); setShowDatePicker(false); }}>Clear</Button>
+                        <Button size="sm" onClick={() => { setDateFrom(tempDateFrom); setDateTo(tempDateTo); setShowDatePicker(false); }}>Apply</Button>
+                      </div>
                     </div>
-                    <p className="order-sheet__case-subtitle">{history.case?.title}</p>
-                    <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
-                  </div>
+                  )}
                 </div>
 
-                <div className="order-sheet__details-grid">
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Case Type</span>
-                    <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Filing Date</span>
-                    <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Current Stage</span>
-                    <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Next Hearing</span>
-                    <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Judge</span>
-                    <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
-                  </div>
+                {/* Court dropdown */}
+                <select className="order-sheet__select-input" value={filterCourt} onChange={(e) => setFilterCourt(e.target.value)}>
+                  <option value="">All Courts</option>
+                  {uniqueCourtNames.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+
+                {/* Jurisdiction dropdown */}
+                <select className="order-sheet__select-input" value={filterCourtLocation} onChange={(e) => setFilterCourtLocation(e.target.value)}>
+                  <option value="">All Jurisdictions</option>
+                  {uniqueCourtLocations.map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+
+                {/* Search Input */}
+                <div className="order-sheet__search-wrapper">
+                  <Icon name="search" size={14} className="search-icon" />
+                  <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                </div>
+
+                {/* Status dropdown */}
+                <select className="order-sheet__select-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="">All Status</option>
+                  {caseStatuses.map(st => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+
+                {/* Filter buttons */}
+                <button className="order-sheet__btn-reset" onClick={resetFilters}>Reset</button>
+                <button className="order-sheet__btn-apply" onClick={loadList}>
+                  <Icon name="gear" size={13} /> Filters
+                </button>
+              </div>
+
+              {/* Table Header controls */}
+              <div className="order-sheet__card-header">
+                <div className="cases__card-header-title">Hearings ({sortedRows.length})</div>
+                <div className="order-sheet__actions-group" style={{ position: 'relative' }}>
+                  <button className="order-sheet__action-btn" onClick={exportToCsv}>
+                    <Icon name="download" size={13} /> Export
+                  </button>
+                  <button className="order-sheet__action-btn" onClick={handlePrint}>
+                    <Icon name="print" size={13} /> Print
+                  </button>
+                  <button className="order-sheet__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
+                    <Icon name="grid" size={13} /> Columns
+                  </button>
+
+                  {showColumnsMenu && (
+                    <div className="order-sheet__datepicker-popover" style={{ right: 0, left: 'auto', minWidth: '160px' }}>
+                      {Object.keys(visibleColumns).map(col => (
+                        <label key={col} className="flex align-center gap-8 font-medium pointer text-sm">
+                          <input type="checkbox" checked={visibleColumns[col]} onChange={() => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }))} />
+                          {col === 'date' ? 'Date' : col.charAt(0).toUpperCase() + col.slice(1)}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* History Timeline card */}
-              <Card title="History Timeline" sub="Chronological proceedings logs and order sheets">
-                {history.hearings.length === 0 ? (
-                  <EmptyState icon="history" title="No history logs recorded." />
-                ) : (
-                  <div className="order-sheet__timeline-v-container">
-                    <div className="order-sheet__timeline-v-line-path" />
-                    {history.hearings.map((h, i) => {
-                      const markerClass = h.status?.toLowerCase() || 'default';
-                      return (
-                        <div className="order-sheet__timeline-v-row" key={h.id || i}>
-                          <div className="order-sheet__timeline-v-node-col">
-                            <div className={`order-sheet__timeline-v-circle order-sheet__timeline-v-circle--${markerClass}`}>
-                              {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
-                            </div>
-                          </div>
-                          <div className="order-sheet__timeline-v-connector" />
-                          <div className="order-sheet__timeline-v-title-col">
-                            <h4 className="order-sheet__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
-                            <span className="order-sheet__timeline-v-event-date">{formatDate(h.date)}</span>
-                          </div>
-                          <div className="order-sheet__timeline-v-desc-col">
-                            <div className="order-sheet__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
-                          </div>
-                          <div className="order-sheet__timeline-v-action-col">
-                            <button className="order-sheet__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
-                              View Details
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* 3. TEMPLATES TAB */}
-      {tab === 'templates' && (
-        <>
-          {/* Templates Filters bar */}
-          <div className="order-sheet__templates-bar">
-            {/* Search */}
-            <div className="order-sheet__search-wrapper">
-              <Icon name="search" size={14} className="search-icon" />
-              <input type="text" placeholder="Search templates..." value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} />
-            </div>
-
-            {/* Categories select */}
-            <select className="order-sheet__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
-              <option value="">All Categories</option>
-              <option value="Hearing">Hearing</option>
-            </select>
-
-            <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
-            <button className="order-sheet__btn-apply" onClick={openTplNew}>
-              <Icon name="plus" size={13} /> New Template
-            </button>
-          </div>
-
-          {/* Templates list heading */}
-          <div className="order-sheet__card-header">
-            <div className="cases__card-header-title">Templates ({filteredTpls.length})</div>
-          </div>
-
-          {/* Templates Flex Grid */}
-          {paginatedTpls.length === 0 ? (
-            <Card><EmptyState icon="file" title="No templates match the criteria." /></Card>
-          ) : (
-            <div className="order-sheet__templates-grid">
-              {paginatedTpls.map((t) => {
-                let iconColor = 'blue';
-                const catLower = t.category?.toLowerCase() || '';
-                if (catLower === 'hearing') iconColor = 'blue';
-                else if (catLower.includes('plead')) iconColor = 'green';
-                else if (catLower.includes('evid')) iconColor = 'blue';
-                else if (catLower.includes('app')) iconColor = 'purple';
-                else if (catLower.includes('crim')) iconColor = 'green';
-                else if (catLower.includes('notic')) iconColor = 'blue';
-                else if (catLower.includes('affid')) iconColor = 'blue';
-                else iconColor = 'orange';
-
+              {/* Selected Case Info Card */}
+              {selectedCaseId && (() => {
+                const selCase = cases.find(c => c.id === selectedCaseId);
+                if (!selCase) return null;
                 return (
-                  <div className="order-sheet__tpl-card" key={t.id}>
-                    <div className={`order-sheet__tpl-icon-wrapper order-sheet__tpl-icon-wrapper--${iconColor}`}>
-                      <Icon name="file" size={20} />
+                  <div className="order-sheet__case-info-card" style={{ marginBottom: '14px' }}>
+                    <div className="order-sheet__case-info-header">
+                      <div className="order-sheet__case-icon-box">
+                        <Icon name="balance" size={24} />
+                      </div>
+                      <div className="order-sheet__case-title-area">
+                        <div className="order-sheet__case-title-row">
+                          <h2 className="order-sheet__case-title">{formatCaseNumber(selCase) || selCase.caseNumber || selCase.case_display_number}</h2>
+                          <span className="order-sheet__case-badge-active">{selCase.status || 'Active'}</span>
+                        </div>
+                        <p className="order-sheet__case-subtitle">{selCase.title}</p>
+                        <div className="order-sheet__header-court">{selCase.court || ''}{selCase.court && extractJurisdiction(selCase) ? ', ' : ''}{extractJurisdiction(selCase) || ''}</div>
+                      </div>
                     </div>
-                    <div className="order-sheet__tpl-card-content">
-                      <h3 className="order-sheet__tpl-card-title">{t.name}</h3>
-                      <p className="order-sheet__tpl-card-desc">{t.description || t.content || 'Drafting formatting guidelines.'}</p>
-                      <div className="order-sheet__tpl-card-footer">
-                        <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
-                          {t.category}
-                        </span>
+                    <div className="order-sheet__details-grid">
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Case Type</span>
+                        <span className="order-sheet__details-value">{selCase.case_type || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Filing Date</span>
+                        <span className="order-sheet__details-value">{formatDate(selCase.filing_date) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Current Stage</span>
+                        <span className="order-sheet__details-value">{selCase.stage || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Next Hearing</span>
+                        <span className="order-sheet__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Judge</span>
+                        <span className="order-sheet__details-value">{selCase.judge || '—'}</span>
                       </div>
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
+              })()}
 
-          {/* Templates Pagination */}
-          {tplTotalPages > 1 && (
-            <div className="order-sheet__footer-pagination">
-              <div className="order-sheet__pagination-info">
-                Showing {((tplPage - 1) * tplPageSize) + 1} to {Math.min(tplPage * tplPageSize, filteredTpls.length)} of {filteredTpls.length} templates
-              </div>
-              <div className="order-sheet__pagination-controls">
-                <div className="order-sheet__page-buttons">
-                  <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.max(p - 1, 1))} disabled={tplPage === 1}>«</button>
-                  {Array.from({ length: tplTotalPages }).map((_, i) => (
-                    <button key={i} className={`order-sheet__page-btn ${tplPage === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setTplPage(i + 1)}>
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.min(p + 1, tplTotalPages))} disabled={tplPage === tplTotalPages}>»</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* 4. TIMELINE TAB */}
-      {tab === 'timeline' && (
-        <div className="order-sheet__timeline-tab">
-          {/* Case selector bar */}
-          <div className="order-sheet__timeline-selector-bar">
-            <div className="order-sheet__timeline-selector-label">
-              <Icon name="vault" size={15} />
-              <span>Case</span>
-            </div>
-            <div className="order-sheet__timeline-selector-field">
-              <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
-            </div>
-          </div>
-
-          {!history ? (
-            <Card><EmptyState icon="clock" title="Select a case to view its visual timeline." /></Card>
-          ) : (
-            <>
-              {/* Case Info Header Card */}
-              <div className="order-sheet__case-info-card">
-                <div className="order-sheet__case-info-header">
-                  <div className="order-sheet__case-icon-box">
-                    <Icon name="balance" size={24} />
+              {/* Hearings Table Card */}
+              <Card bodyClass="card__body--flush">
+                {paginatedRows.length === 0 ? (
+                  <div style={{ padding: '40px' }}>
+                    <EmptyState icon="calendar" title="No hearings listed." action={<Button icon="plus" onClick={openNew}>Add Order Sheet</Button>} />
                   </div>
-                  <div className="order-sheet__case-title-area">
-                    <div className="order-sheet__case-title-row">
-                      <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
-                      <span className="order-sheet__case-badge-active">{history.case?.status || 'Active'}</span>
-                    </div>
-                    <p className="order-sheet__case-subtitle">{history.case?.title}</p>
-                    <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
-                  </div>
-                </div>
-
-                <div className="order-sheet__details-grid">
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Case Type</span>
-                    <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Filing Date</span>
-                    <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Current Stage</span>
-                    <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Next Hearing</span>
-                    <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
-                  </div>
-                  <div className="order-sheet__details-item">
-                    <span className="order-sheet__details-label">Judge</span>
-                    <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Horizontal Scrollable node timeline */}
-              {history.hearings.length > 0 && (
-                <div className="order-sheet__timeline-h-container">
-                  <div className="order-sheet__timeline-h">
-                    <div className="order-sheet__timeline-h-track" />
-                    {history.hearings.map((h, i) => {
-                      const markerClass = h.status?.toLowerCase() || 'default';
-                      const isScheduled = h.status === 'Scheduled';
-                      return (
-                        <div className="order-sheet__timeline-h-node" key={h.id || i}>
-                          <div className={`order-sheet__timeline-h-circle order-sheet__timeline-h-circle--${markerClass}`}>
-                            {isScheduled ? (
-                              <Icon name="clock" size={14} />
-                            ) : (
-                              <Icon name="check" size={14} />
-                            )}
-                          </div>
-                          <div className="order-sheet__timeline-h-text">
-                            <span className="order-sheet__timeline-h-name">{h.purpose || 'Hearing'}</span>
-                            <span className="order-sheet__timeline-h-date">{formatDate(h.date)}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* All Events table */}
-              <Card title="All Events">
-                {history.hearings.length === 0 ? (
-                  <EmptyState icon="clock" title="No events to display." />
                 ) : (
                   <table className="table">
                     <thead>
                       <tr>
-                        <th>Date</th>
-                        <th>Event</th>
-                        <th>Details</th>
-                        <th style={{ textAlign: 'right' }}>Document</th>
+                        <th style={{ width: '40px' }}><input type="checkbox" /></th>
+                        {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date {sortDir === 'asc' ? '▲' : '▼'}</th>}
+                        {visibleColumns.case && <th>Case Number & Title</th>}
+                        {visibleColumns.court && <th>Court</th>}
+                        {visibleColumns.bench && <th>Bench</th>}
+                        {visibleColumns.purpose && <th>Purpose</th>}
+                        {visibleColumns.nextHearingDate && <th>Next Hearing</th>}
+                        {visibleColumns.postedFor && <th>Posted For</th>}
+                        {visibleColumns.judge && <th>Judge</th>}
+                        {visibleColumns.status && <th>Status</th>}
+                        {visibleColumns.actions && <th style={{ textAlign: 'right' }}>Actions</th>}
                       </tr>
                     </thead>
                     <tbody>
-                      {history.hearings.map((h, i) => {
+                      {paginatedRows.map((h) => {
                         return (
-                          <tr key={h.id || i}>
-                            <td style={{ whiteSpace: 'nowrap' }} className="order-sheet__timeline-event-date-cell">{formatDate(h.date)}</td>
-                            <td>
-                              <div className="flex align-center gap-8">
-                                <span className="order-sheet__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
-                                <span className="order-sheet__timeline-event-name">{h.purpose || 'Hearing'}</span>
-                              </div>
-                            </td>
-                            <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
-                            <td style={{ textAlign: 'right' }}>
-                              {h.docRef ? (
-                                <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
-                                  View
-                                </Button>
-                              ) : (
-                                <button className="order-sheet__timeline-doc-icon" title="View hearing details" onClick={() => setPreviewHearing(h)}>
-                                  <Icon name="file" size={15} />
+                          <tr key={h.id} className={`order-sheet__hearing-row ${selectedCaseId === h.caseId ? 'selected' : ''}`} onClick={() => setSelectedCaseId(h.caseId)}>
+                            <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
+                            {visibleColumns.date && (
+                              <td className="order-sheet__cell-date">
+                                <span>{formatDate(h.date)}</span>
+                              </td>
+                            )}
+                            {visibleColumns.case && (
+                              <td>
+                                <a
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setHistCaseId(h.caseId);
+                                    loadHistory(h.caseId);
+                                    setTab('history');
+                                  }}
+                                  className="text-bold text-brand"
+                                >
+                                  {h.caseNumber}
+                                </a>
+                                <div className="text-xs text-muted mt-4">{h.parties}</div>
+                              </td>
+                            )}
+                            {visibleColumns.court && <td>{h.court}</td>}
+                            {visibleColumns.bench && <td>{h.case?.bench_type || '—'}</td>}
+                            {visibleColumns.purpose && <td>{h.purpose || '—'}</td>}
+                            {visibleColumns.nextHearingDate && <td>{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</td>}
+                            {visibleColumns.postedFor && <td>{h.postedFor || h.posted_for || '—'}</td>}
+                            {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
+                            {visibleColumns.status && (
+                              <td>
+                                <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                                  <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                                  {h.status}
+                                </span>
+                              </td>
+                            )}
+                            {visibleColumns.actions && (
+                              <td className="order-sheet__cell-actions" style={{ textAlign: 'right' }}>
+                                <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
+                                  <Icon name="eye" size={13} />
                                 </button>
-                              )}
-                            </td>
+                                <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit">
+                                  <Icon name="edit" size={13} />
+                                </button>
+                                <button className="btn btn--ghost btn--sm" onClick={() => duplicateHearing(h)} title="Duplicate">
+                                  <Icon name="copy" size={13} />
+                                </button>
+                                <button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete">
+                                  <Icon name="trash" size={13} />
+                                </button>
+                              </td>
+                            )}
                           </tr>
                         );
                       })}
@@ -1467,12 +1126,353 @@ export default function OrderSheet() {
                   </table>
                 )}
               </Card>
+
+              {/* Pagination Footer */}
+              {totalPages > 1 && (
+                <div className="order-sheet__footer-pagination">
+                  <div className="order-sheet__pagination-info">
+                    Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
+                  </div>
+                  <div className="order-sheet__pagination-controls">
+                    <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                      <option value={5}>5 per page</option>
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={50}>50 per page</option>
+                    </select>
+                    <div className="order-sheet__page-buttons">
+                      <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
+                          {i + 1}
+                        </button>
+                      ))}
+                      <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
-        </div>
-      )}
 
-      </div>
+          {/* 2. CASE HISTORY TAB */}
+          {tab === 'history' && (
+            <div className="flex-col gap-16">
+              {/* Case Select bar inline */}
+              <div className="flex align-center gap-12" style={{ marginBottom: '16px' }}>
+                <span className="text-bold text-sm text-soft" style={{ whiteSpace: 'nowrap' }}>Select Case:</span>
+                <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
+              </div>
+
+              {!history ? (
+                <Card><EmptyState icon="history" title="Select a case to view its history." /></Card>
+              ) : (
+                <>
+                  {/* Case Info Header Card */}
+                  <div className="order-sheet__case-info-card">
+                    <div className="order-sheet__case-info-header">
+                      <div className="order-sheet__case-icon-box">
+                        <Icon name="balance" size={24} />
+                      </div>
+                      <div className="order-sheet__case-title-area">
+                        <div className="order-sheet__case-title-row">
+                          <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                          {history.case?.status && (
+                            <span className="order-sheet__case-badge-active">{history.case.status}</span>
+                          )}
+                        </div>
+                        <p className="order-sheet__case-subtitle">{history.case?.title}</p>
+                        <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                      </div>
+                    </div>
+
+                    <div className="order-sheet__details-grid">
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Case Type</span>
+                        <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Filing Date</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Current Stage</span>
+                        <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Next Hearing</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Judge</span>
+                        <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* History Timeline card */}
+                  <Card title="History Timeline" sub="Chronological proceedings logs and order sheets">
+                    {history.hearings.length === 0 ? (
+                      <EmptyState icon="history" title="No history logs recorded." />
+                    ) : (
+                      <div className="order-sheet__timeline-v-container">
+                        <div className="order-sheet__timeline-v-line-path" />
+                        {history.hearings.map((h, i) => {
+                          const markerClass = h.status?.toLowerCase() || 'default';
+                          return (
+                            <div className="order-sheet__timeline-v-row" key={h.id || i}>
+                              <div className="order-sheet__timeline-v-node-col">
+                                <div className={`order-sheet__timeline-v-circle order-sheet__timeline-v-circle--${markerClass}`}>
+                                  {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
+                                </div>
+                              </div>
+                              <div className="order-sheet__timeline-v-connector" />
+                              <div className="order-sheet__timeline-v-title-col">
+                                <h4 className="order-sheet__timeline-v-event-title">{h.purpose || 'Hearing'}</h4>
+                                <span className="order-sheet__timeline-v-event-date">{formatDate(h.date)}</span>
+                              </div>
+                              <div className="order-sheet__timeline-v-desc-col">
+                                <div className="order-sheet__timeline-v-desc" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} />
+                              </div>
+                              <div className="order-sheet__timeline-v-action-col">
+                                <button className="order-sheet__timeline-v-btn" onClick={() => setPreviewHearing(h)}>
+                                  View Details
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Card>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 3. TEMPLATES TAB */}
+          {tab === 'templates' && (
+            <>
+              {/* Templates Filters bar */}
+              <div className="order-sheet__templates-bar">
+                {/* Search */}
+                <div className="order-sheet__search-wrapper">
+                  <Icon name="search" size={14} className="search-icon" />
+                  <input type="text" placeholder="Search templates..." value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} />
+                </div>
+
+                {/* Categories select */}
+                <select className="order-sheet__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
+                  <option value="">All Categories</option>
+                  <option value="Hearing">Hearing</option>
+                </select>
+
+                <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
+                <button className="order-sheet__btn-apply" onClick={openTplNew}>
+                  <Icon name="plus" size={13} /> New Template
+                </button>
+              </div>
+
+              {/* Templates list heading */}
+              <div className="order-sheet__card-header">
+                <div className="cases__card-header-title">Templates ({filteredTpls.length})</div>
+              </div>
+
+              {/* Templates Flex Grid */}
+              {paginatedTpls.length === 0 ? (
+                <Card><EmptyState icon="file" title="No templates match the criteria." /></Card>
+              ) : (
+                <div className="order-sheet__templates-grid">
+                  {paginatedTpls.map((t) => {
+                    let iconColor = 'blue';
+                    const catLower = t.category?.toLowerCase() || '';
+                    if (catLower === 'hearing') iconColor = 'blue';
+                    else if (catLower.includes('plead')) iconColor = 'green';
+                    else if (catLower.includes('evid')) iconColor = 'blue';
+                    else if (catLower.includes('app')) iconColor = 'purple';
+                    else if (catLower.includes('crim')) iconColor = 'green';
+                    else if (catLower.includes('notic')) iconColor = 'blue';
+                    else if (catLower.includes('affid')) iconColor = 'blue';
+                    else iconColor = 'orange';
+
+                    return (
+                      <div className="order-sheet__tpl-card" key={t.id}>
+                        <div className={`order-sheet__tpl-icon-wrapper order-sheet__tpl-icon-wrapper--${iconColor}`}>
+                          <Icon name="file" size={20} />
+                        </div>
+                        <div className="order-sheet__tpl-card-content">
+                          <h3 className="order-sheet__tpl-card-title">{t.name}</h3>
+                          <p className="order-sheet__tpl-card-desc">{t.description || t.content || 'Drafting formatting guidelines.'}</p>
+                          <div className="order-sheet__tpl-card-footer">
+                            <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
+                              {t.category}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Templates Pagination */}
+              {tplTotalPages > 1 && (
+                <div className="order-sheet__footer-pagination">
+                  <div className="order-sheet__pagination-info">
+                    Showing {((tplPage - 1) * tplPageSize) + 1} to {Math.min(tplPage * tplPageSize, filteredTpls.length)} of {filteredTpls.length} templates
+                  </div>
+                  <div className="order-sheet__pagination-controls">
+                    <div className="order-sheet__page-buttons">
+                      <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.max(p - 1, 1))} disabled={tplPage === 1}>«</button>
+                      {Array.from({ length: tplTotalPages }).map((_, i) => (
+                        <button key={i} className={`order-sheet__page-btn ${tplPage === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setTplPage(i + 1)}>
+                          {i + 1}
+                        </button>
+                      ))}
+                      <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.min(p + 1, tplTotalPages))} disabled={tplPage === tplTotalPages}>»</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* 4. TIMELINE TAB */}
+          {tab === 'timeline' && (
+            <div className="order-sheet__timeline-tab">
+              {/* Case selector bar */}
+              <div className="order-sheet__timeline-selector-bar">
+                <div className="order-sheet__timeline-selector-label">
+                  <Icon name="vault" size={15} />
+                  <span>Case</span>
+                </div>
+                <div className="order-sheet__timeline-selector-field">
+                  <CaseSelect value={histCaseId} onChange={(val) => loadHistory(val)} />
+                </div>
+              </div>
+
+              {!history ? (
+                <Card><EmptyState icon="clock" title="Select a case to view its visual timeline." /></Card>
+              ) : (
+                <>
+                  {/* Case Info Header Card */}
+                  <div className="order-sheet__case-info-card">
+                    <div className="order-sheet__case-info-header">
+                      <div className="order-sheet__case-icon-box">
+                        <Icon name="balance" size={24} />
+                      </div>
+                      <div className="order-sheet__case-title-area">
+                        <div className="order-sheet__case-title-row">
+                          <h2 className="order-sheet__case-title">{formatCaseNumber(history.case) || history.case?.caseNumber || history.case?.case_display_number}</h2>
+                          <span className="order-sheet__case-badge-active">{history.case?.status || 'Active'}</span>
+                        </div>
+                        <p className="order-sheet__case-subtitle">{history.case?.title}</p>
+                        <div className="order-sheet__header-court">{history.case?.court || ''}{history.case?.court && extractJurisdiction(history.case) ? ', ' : ''}{extractJurisdiction(history.case) || ''}</div>
+                      </div>
+                    </div>
+
+                    <div className="order-sheet__details-grid">
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Case Type</span>
+                        <span className="order-sheet__details-value">{history.case?.case_type || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Filing Date</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Current Stage</span>
+                        <span className="order-sheet__details-value">{history.case?.stage || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Next Hearing</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                      </div>
+                      <div className="order-sheet__details-item">
+                        <span className="order-sheet__details-label">Judge</span>
+                        <span className="order-sheet__details-value">{history.case?.judge || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Scrollable node timeline */}
+                  {history.hearings.length > 0 && (
+                    <div className="order-sheet__timeline-h-container">
+                      <div className="order-sheet__timeline-h">
+                        <div className="order-sheet__timeline-h-track" />
+                        {history.hearings.map((h, i) => {
+                          const markerClass = h.status?.toLowerCase() || 'default';
+                          const isScheduled = h.status === 'Scheduled';
+                          return (
+                            <div className="order-sheet__timeline-h-node" key={h.id || i}>
+                              <div className={`order-sheet__timeline-h-circle order-sheet__timeline-h-circle--${markerClass}`}>
+                                {isScheduled ? (
+                                  <Icon name="clock" size={14} />
+                                ) : (
+                                  <Icon name="check" size={14} />
+                                )}
+                              </div>
+                              <div className="order-sheet__timeline-h-text">
+                                <span className="order-sheet__timeline-h-name">{h.purpose || 'Hearing'}</span>
+                                <span className="order-sheet__timeline-h-date">{formatDate(h.date)}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All Events table */}
+                  <Card title="All Events">
+                    {history.hearings.length === 0 ? (
+                      <EmptyState icon="clock" title="No events to display." />
+                    ) : (
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Event</th>
+                            <th>Details</th>
+                            <th style={{ textAlign: 'right' }}>Document</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {history.hearings.map((h, i) => {
+                            return (
+                              <tr key={h.id || i}>
+                                <td style={{ whiteSpace: 'nowrap' }} className="order-sheet__timeline-event-date-cell">{formatDate(h.date)}</td>
+                                <td>
+                                  <div className="flex align-center gap-8">
+                                    <span className="order-sheet__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                                    <span className="order-sheet__timeline-event-name">{h.purpose || 'Hearing'}</span>
+                                  </div>
+                                </td>
+                                <td className="order-sheet__timeline-event-detail"><div className="order-sheet__timeline-event-detail-inner" dangerouslySetInnerHTML={{ __html: h.notes || '—' }} /></td>
+                                <td style={{ textAlign: 'right' }}>
+                                  {h.docRef ? (
+                                    <Button size="sm" variant="ghost" icon="eye" onClick={() => setPreviewDoc({ name: h.docName || 'Document', ref: h.docRef })}>
+                                      View
+                                    </Button>
+                                  ) : (
+                                    <button className="order-sheet__timeline-doc-icon" title="View hearing details" onClick={() => setPreviewHearing(h)}>
+                                      <Icon name="file" size={15} />
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </Card>
+                </>
+              )}
+            </div>
+          )}
+
+        </div>
       )}
 
       {/* Hearing add/edit modal — redesigned with sections, icons, rich text editor & template import */}
@@ -1495,181 +1495,181 @@ export default function OrderSheet() {
             onRefreshStatuses={refreshStatuses}
           />
         ) : (
-        <div className="hearing-modal">
-          {/* Import / Export toolbar */}
-          <div className="hearing-modal__import-export-bar">
-            <div className="hearing-modal__ie-left">
-              <button className={`btn btn--sm ${showImport ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setShowImport((v) => !v)}>
-                <Icon name="download" size={13} /> Import
-              </button>
-              <label className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}>
-                <Icon name="upload" size={13} /> Export
-                <select className="hearing-modal__ie-export-select" onChange={(e) => { const v = e.target.value; if (v === 'json') exportAsJson(); if (v === 'csv') exportAsCsv(); e.target.value = ''; }} onClick={(e) => e.stopPropagation()}>
-                  <option value="">—</option>
-                  <option value="json">JSON</option>
-                  <option value="csv">CSV</option>
-                </select>
-              </label>
-              <button className={`btn btn--sm ${smartMode ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setSmartMode((v) => !v)}>
-                <Icon name="compass" size={13} /> Smart Mode
-              </button>
-            </div>
-            {showImport && (
-              <div className="hearing-modal__ie-right">
-                <input type="file" accept=".json,.csv" onChange={handleImportFile} style={{ display: 'none' }} id="hearing-import-file" />
-                <label htmlFor="hearing-import-file" className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}><Icon name="file" size={13} /> Upload File</label>
-              </div>
-            )}
-          </div>
-
-          {showImport && (
-            <div className="hearing-modal__import-panel">
-              <textarea
-                className="hearing-modal__import-textarea"
-                placeholder="Paste JSON or CSV here...&#10;&#10;JSON example:&#10;{&quot;caseId&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-06-25&quot;, &quot;status&quot;: &quot;Active&quot;, &quot;purpose&quot;: &quot;Hearing&quot;, &quot;nextHearingDate&quot;: &quot;2026-07-10&quot;, &quot;postedFor&quot;: &quot;Defendant Evidence&quot;, &quot;judge&quot;: &quot;Judge name&quot; }&#10;&#10;CSV example:&#10;caseId,date,status,purpose,nextHearingDate,postedFor,judge&#10;abc123,2026-06-25,Active,Hearing,2026-07-10,Defendant Evidence,Judge name"
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                rows={4}
-              />
-              <div className="hearing-modal__import-actions">
-                <Button size="sm" variant="ghost" onClick={() => { setShowImport(false); setImportText(''); }}>Cancel</Button>
-                <Button size="sm" onClick={() => importData(importText)}><Icon name="check" size={13} /> Apply Import</Button>
-              </div>
-            </div>
-          )}
-
-          {/* Section 1: Case Detail */}
-          <div className="hearing-modal__section">
-            <div className="hearing-modal__section-title">
-              <Icon name="target" size={16} />
-              <span>Case Detail</span>
-            </div>
-            <div className="input-row">
-              <Field label="Case Number">
-                <CaseSelect value={form.caseId} onChange={(v) => { setForm({ ...form, caseId: v }); setEditorContent(''); setSelectedTemplate(''); }} />
-              </Field>
-              <Field label="Judge">
-                <Input
-                  value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
-                  onChange={(e) => setForm({ ...form, judge: e.target.value })}
-                  placeholder="Judge name"
-                />
-              </Field>
-            </div>
-            {form.caseId && (() => {
-              const cd = getCaseDetails(form.caseId);
-              return cd ? (
-                <div className="hearing-modal__case-preview">
-                  <Icon name="balance" size={13} />
-                  <div className="hearing-modal__case-preview-text">
-                    <span className="hearing-modal__case-preview-number">{formatCaseNumber(cd) || cd.caseNumber || cd.case_display_number}</span>
-                    <span className="hearing-modal__case-preview-title">{cd.title}</span>
-                  </div>
-                  <span className="hearing-modal__case-preview-badge">{cd.court || '—'}</span>
-                </div>
-              ) : null;
-            })()}
-          </div>
-
-          {/* Section 2: Hearing Details */}
-          <div className="hearing-modal__section">
-            <div className="hearing-modal__section-title">
-              <Icon name="settings" size={16} />
-              <span>Hearing Details</span>
-            </div>
-            <div className="input-row">
-              <Field label="Hearing Date">
-                <Input
-                  type="date"
-                  value={form.date || ''}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                />
-              </Field>
-              <Field label="Status">
-                <div className="hearing-modal__status-row">
-                  <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                    <option value="">Select status…</option>
-                    {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </Select>
-                  <button className="hearing-modal__gear-btn" title="Manage case statuses" onClick={() => setShowStatusCrud(true)}>
-                    <Icon name="gear" size={15} />
-                  </button>
-                </div>
-              </Field>
-            </div>
-            <div className="input-row">
-              <Field label="Purpose">
-                <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
-              </Field>
-              <Field label="Next Hearing Date">
-                <Input type="date" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
-              </Field>
-            </div>
-            <div className="input-row">
-              <Field label="Next Hearing Purpose">
-                <Input value={form.postedFor} onChange={(e) => setForm({ ...form, postedFor: e.target.value })} placeholder="e.g. Defendant Evidence, Arguments" />
-              </Field>
-            </div>
-          </div>
-
-          {/* Section 3: Proceedings — Rich Text Editor with Template Import */}
-          <div className="hearing-modal__section hearing-modal__section--grow">
-            <div className="hearing-modal__section-title">
-              <Icon name="file" size={16} />
-              <span>Proceedings</span>
-            </div>
-            <div className="hearing-modal__template-bar">
-              <div className="hearing-modal__template-bar-left">
-                <Icon name="copy" size={14} />
-                <span>Import Template:</span>
-                <select
-                  className="hearing-modal__template-select"
-                  value={selectedTemplate}
-                  onChange={(e) => { setSelectedTemplate(e.target.value); applyTemplate(e.target.value); }}
-                >
-                  <option value="">— Select a drafting template —</option>
-                  {draftTemplates.filter((t) => t.category === 'Hearing').map((t) => (
-                    <option key={t.id || t._id} value={t.id || t._id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-              {editorContent && (
-                <button className="hearing-modal__clear-btn" onClick={() => { setEditorContent(''); setSelectedTemplate(''); }}>
-                  <Icon name="close" size={12} /> Clear
+          <div className="hearing-modal">
+            {/* Import / Export toolbar */}
+            <div className="hearing-modal__import-export-bar">
+              <div className="hearing-modal__ie-left">
+                <button className={`btn btn--sm ${showImport ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setShowImport((v) => !v)}>
+                  <Icon name="download" size={13} /> Import
                 </button>
+                <label className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}>
+                  <Icon name="upload" size={13} /> Export
+                  <select className="hearing-modal__ie-export-select" onChange={(e) => { const v = e.target.value; if (v === 'json') exportAsJson(); if (v === 'csv') exportAsCsv(); e.target.value = ''; }} onClick={(e) => e.stopPropagation()}>
+                    <option value="">—</option>
+                    <option value="json">JSON</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </label>
+                <button className={`btn btn--sm ${smartMode ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setSmartMode((v) => !v)}>
+                  <Icon name="compass" size={13} /> Smart Mode
+                </button>
+              </div>
+              {showImport && (
+                <div className="hearing-modal__ie-right">
+                  <input type="file" accept=".json,.csv" onChange={handleImportFile} style={{ display: 'none' }} id="hearing-import-file" />
+                  <label htmlFor="hearing-import-file" className="btn btn--sm btn--ghost" style={{ cursor: 'pointer' }}><Icon name="file" size={13} /> Upload File</label>
+                </div>
               )}
             </div>
-            <div className="hearing-modal__editor-wrapper">
-              <DocEditor
-                value={editorContent}
-                onChange={setEditorContent}
-                pageSize="letter"
-                margin="narrow"
-                placeholders={hearingShortcodes}
-              />
-            </div>
-          </div>
 
-          {/* Section 4: Attachment */}
-          <div className="hearing-modal__section">
-            <div className="hearing-modal__section-title">
-              <Icon name="paperclip" size={16} />
-              <span>Attachment</span>
-            </div>
-            {form.docName ? (
-              <div className="list-row order-sheet__file-row">
-                <div className="list-row__icon"><Icon name="file" size={15} /></div>
-                <div className="order-sheet__file-name">{form.docName}</div>
-                <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
-                <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}>
-                  <Icon name="close" size={13} />
-                </button>
+            {showImport && (
+              <div className="hearing-modal__import-panel">
+                <textarea
+                  className="hearing-modal__import-textarea"
+                  placeholder="Paste JSON or CSV here...&#10;&#10;JSON example:&#10;{&quot;caseId&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-06-25&quot;, &quot;status&quot;: &quot;Active&quot;, &quot;purpose&quot;: &quot;Hearing&quot;, &quot;nextHearingDate&quot;: &quot;2026-07-10&quot;, &quot;postedFor&quot;: &quot;Defendant Evidence&quot;, &quot;judge&quot;: &quot;Judge name&quot; }&#10;&#10;CSV example:&#10;caseId,date,status,purpose,nextHearingDate,postedFor,judge&#10;abc123,2026-06-25,Active,Hearing,2026-07-10,Defendant Evidence,Judge name"
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  rows={4}
+                />
+                <div className="hearing-modal__import-actions">
+                  <Button size="sm" variant="ghost" onClick={() => { setShowImport(false); setImportText(''); }}>Cancel</Button>
+                  <Button size="sm" onClick={() => importData(importText)}><Icon name="check" size={13} /> Apply Import</Button>
+                </div>
               </div>
-            ) : (
-              <FileDrop onFile={onHearingFile} hint="Attach order sheet / hearing documents" />
             )}
+
+            {/* Section 1: Case Detail */}
+            <div className="hearing-modal__section">
+              <div className="hearing-modal__section-title">
+                <Icon name="target" size={16} />
+                <span>Case Detail</span>
+              </div>
+              <div className="input-row">
+                <Field label="Case Number">
+                  <CaseSelect value={form.caseId} onChange={(v) => { setForm({ ...form, caseId: v }); setEditorContent(''); setSelectedTemplate(''); }} />
+                </Field>
+                <Field label="Judge">
+                  <Input
+                    value={form.judge || getCaseDetails(form.caseId)?.judge || ''}
+                    onChange={(e) => setForm({ ...form, judge: e.target.value })}
+                    placeholder="Judge name"
+                  />
+                </Field>
+              </div>
+              {form.caseId && (() => {
+                const cd = getCaseDetails(form.caseId);
+                return cd ? (
+                  <div className="hearing-modal__case-preview">
+                    <Icon name="balance" size={13} />
+                    <div className="hearing-modal__case-preview-text">
+                      <span className="hearing-modal__case-preview-number">{formatCaseNumber(cd) || cd.caseNumber || cd.case_display_number}</span>
+                      <span className="hearing-modal__case-preview-title">{cd.title}</span>
+                    </div>
+                    <span className="hearing-modal__case-preview-badge">{cd.court || '—'}</span>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+
+            {/* Section 2: Hearing Details */}
+            <div className="hearing-modal__section">
+              <div className="hearing-modal__section-title">
+                <Icon name="settings" size={16} />
+                <span>Hearing Details</span>
+              </div>
+              <div className="input-row">
+                <Field label="Hearing Date">
+                  <Input
+                    type="date"
+                    value={form.date || ''}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  />
+                </Field>
+                <Field label="Status">
+                  <div className="hearing-modal__status-row">
+                    <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                      <option value="">Select status…</option>
+                      {caseStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </Select>
+                    <button className="hearing-modal__gear-btn" title="Manage case statuses" onClick={() => setShowStatusCrud(true)}>
+                      <Icon name="gear" size={15} />
+                    </button>
+                  </div>
+                </Field>
+              </div>
+              <div className="input-row">
+                <Field label="Purpose">
+                  <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
+                </Field>
+                <Field label="Next Hearing Date">
+                  <Input type="date" value={form.nextHearingDate} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
+                </Field>
+              </div>
+              <div className="input-row">
+                <Field label="Next Hearing Purpose">
+                  <Input value={form.postedFor} onChange={(e) => setForm({ ...form, postedFor: e.target.value })} placeholder="e.g. Defendant Evidence, Arguments" />
+                </Field>
+              </div>
+            </div>
+
+            {/* Section 3: Proceedings — Rich Text Editor with Template Import */}
+            <div className="hearing-modal__section hearing-modal__section--grow">
+              <div className="hearing-modal__section-title">
+                <Icon name="file" size={16} />
+                <span>Proceedings</span>
+              </div>
+              <div className="hearing-modal__template-bar">
+                <div className="hearing-modal__template-bar-left">
+                  <Icon name="copy" size={14} />
+                  <span>Import Template:</span>
+                  <select
+                    className="hearing-modal__template-select"
+                    value={selectedTemplate}
+                    onChange={(e) => { setSelectedTemplate(e.target.value); applyTemplate(e.target.value); }}
+                  >
+                    <option value="">— Select a drafting template —</option>
+                    {draftTemplates.filter((t) => t.category === 'Hearing').map((t) => (
+                      <option key={t.id || t._id} value={t.id || t._id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+                {editorContent && (
+                  <button className="hearing-modal__clear-btn" onClick={() => { setEditorContent(''); setSelectedTemplate(''); }}>
+                    <Icon name="close" size={12} /> Clear
+                  </button>
+                )}
+              </div>
+              <div className="hearing-modal__editor-wrapper">
+                <DocEditor
+                  value={editorContent}
+                  onChange={setEditorContent}
+                  pageSize="letter"
+                  margin="narrow"
+                  placeholders={hearingShortcodes}
+                />
+              </div>
+            </div>
+
+            {/* Section 4: Attachment */}
+            <div className="hearing-modal__section">
+              <div className="hearing-modal__section-title">
+                <Icon name="paperclip" size={16} />
+                <span>Attachment</span>
+              </div>
+              {form.docName ? (
+                <div className="list-row order-sheet__file-row">
+                  <div className="list-row__icon"><Icon name="file" size={15} /></div>
+                  <div className="order-sheet__file-name">{form.docName}</div>
+                  <Button size="sm" variant="ghost" icon="eye" onClick={() => viewFile(form.docRef)}>View</Button>
+                  <button className="btn btn--danger btn--sm" onClick={() => setForm({ ...form, docRef: null, docName: '' })}>
+                    <Icon name="close" size={13} />
+                  </button>
+                </div>
+              ) : (
+                <FileDrop onFile={onHearingFile} hint="Attach order sheet / hearing documents" />
+              )}
+            </div>
           </div>
-        </div>
         )}
 
       </Modal>
@@ -1709,6 +1709,6 @@ export default function OrderSheet() {
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." /></Field>
         <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." /></Field>
       </Modal>
-  </>
+    </>
   );
 }
