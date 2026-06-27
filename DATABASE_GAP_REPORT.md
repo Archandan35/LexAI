@@ -125,7 +125,7 @@ Project-wide grep for `localStorage` / provider names **outside** `src/providers
 **Real leakage (must fix):**
 - `services/backupService.js` — direct `localStorage` for the DB blob, catalog, settings. **Critical**: bypasses the provider; the single biggest violation.
 - UI-preference `localStorage` (client UI state, but still outside providers):
-  - `app/pages/CaseVault.jsx` → `lexai.casefilters.v1`
+  - `app/pages/ManageCases.jsx` → `lexai.casefilters.v1`
   - `app/pages/DraftingStudio.jsx` → `lexai.draftfolders.v1`, `lexai.autosave.v1`
   - `components/DocumentManager.jsx` → `lexai.docview.v1`
   - `logic/notificationLogic.js` → `lexai.notifs.dismissed.v1`

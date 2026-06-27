@@ -83,7 +83,7 @@ export default function ManageCase() {
   };
 
   if (loading) return <Spinner label="Loading case…" />;
-  if (!vault?.case) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Vault</Button>} />;
+  if (!vault?.case) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
 
   const c = vault.case;
   const lastHearing = vault.lastHearing;

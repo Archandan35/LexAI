@@ -45,7 +45,7 @@ export default function StorageSettings() {
       <PageHeader
         icon="database"
         title="Storage & Sync Center"
-        subtitle="Cloud storage for Case Vault documents and draft files. The database Backup & Recovery module is separate and unchanged."
+        subtitle="Cloud storage for Manage Cases documents and draft files. The database Backup & Recovery module is separate and unchanged."
       />
 
       <div className="grid-2 mb-16">

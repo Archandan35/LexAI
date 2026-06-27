@@ -306,7 +306,7 @@ export default function CreateCase() {
         <div className="cc-topbar__left">
           <div className="cc-topbar__icon-wrap"><Icon name="pen" size={22} /></div>
           <div>
-            <h1 className="cc-topbar__title">Create Case</h1>
+            <h1 className="cc-topbar__title">Create Cases</h1>
             <p className="cc-topbar__sub">Fill in the details below to create a new case</p>
           </div>
         </div>
@@ -605,7 +605,7 @@ export default function CreateCase() {
           <Icon name="save" size={15} /> Save Draft
         </button>
         <button className="btn btn--primary" onClick={() => submitCase(false)} disabled={saving}>
-          <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Case'}
+          <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Cases'}
         </button>
       </div>
       <ApiDebugLog entries={apiLogs} onClear={clearApiLogs} />

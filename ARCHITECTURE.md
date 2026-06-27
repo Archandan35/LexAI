@@ -29,9 +29,9 @@ App (ToastProvider → AppDataProvider → Router)
     ├── /cross-examination CrossExamination
     ├── /evidence         EvidenceGap
     ├── /documents        DocumentReview
-    ├── /timeline         TimelineBuilder
+    ├── /cases/case-timeline  CaseTimeline
     ├── /hearing-notes    HearingNotes
-    ├── /cases            CaseVault
+    ├── /cases            ManageCases
     ├── /cases/:id        CaseDetail
     ├── /cause-list       CauseList
     ├── /case-manage      CaseManage

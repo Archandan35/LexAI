@@ -166,7 +166,7 @@ export const caseLogic = {
     }
   },
 
-  // Case Vault — everything filed under one case.
+  // Manage Cases — everything filed under one case.
   async vault(caseId) {
     try {
       const [theCase, drafts, documents, hearings, notes, folders, history, activity, reminders] = await Promise.all([

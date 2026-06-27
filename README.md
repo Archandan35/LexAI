@@ -82,9 +82,9 @@ src/
 - **Cross Examination Studio** — friendly / hostile / impeachment / admission question banks
 - **Evidence Gap Analyzer** — claim ↔ evidence mapping with gaps
 - **Document Review** — OCR + extraction of dates, parties, case/plot/khata numbers, exhibits
-- **Timeline Builder** — OCR-driven chronology from documents
+- **Case Timeline** — OCR-driven chronology from documents
 - **Hearing Notes** — facts, issues, evidence, verified citations, oral submissions
-- **Case Vault** — documents, drafts, citations, notes, orders, hearing history per case
+- **Manage Cases** — documents, drafts, citations, notes, orders, hearing history per case
 - **Cause List** — hearing dates & status, case dropdown, file upload/view, descriptions, case history + template add/update/delete
 - **Case Manager** — case-number-wise details with folder-wise documents (suit copy, written statement, petition, deposition, …) and view mode
 

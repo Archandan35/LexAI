@@ -76,9 +76,9 @@ Page ──► Hook ──► Logic ──► Service ──► databaseService 
 
 ### Traced flows for major modules
 
-**Cases (CaseVault / CaseDetail / Dashboard)**
+**Cases (ManageCases / CaseDetail / Dashboard)**
 ```
-CaseVault.jsx ─► useCases() ─► caseLogic ─► caseService
+ManageCases.jsx ─► useCases() ─► caseLogic ─► caseService
    caseService.listCases() ─► databaseService.list('cases') ─► getDatabaseProvider().list('cases') ─► localStorage 'lexai.db.v1'
 ```
 
@@ -87,7 +87,7 @@ CaseVault.jsx ─► useCases() ─► caseLogic ─► caseService
 DraftingStudio.jsx ─► draftingLogic ─► draftingService ─► databaseService.{list,create,update}('drafts') ─► provider
 ```
 
-**Documents (DocumentReview / CaseVault)**
+**Documents (DocumentReview / ManageCases)**
 ```
 DocumentReview.jsx ─► documentReviewLogic ─► storageService ─► databaseService.*('documents') ─► provider
                                               + getStorageProvider()/getOCRProvider() for file bytes & OCR

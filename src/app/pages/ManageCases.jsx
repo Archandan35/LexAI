@@ -131,20 +131,20 @@ export default function ManageCases() {
           />
 
           <div className="toolbar-row">
-            <div className="datatable__search case-vault__search">
+            <div className="datatable__search manage-cases__search">
               <Icon name="search" size={15} />
               <input placeholder="Search cases, judge, client, tags…" value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
-            <select className="select case-vault__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
+            <select className="select manage-cases__filter-court" value={filters.court} onChange={(e) => setFilters({ ...filters, court: e.target.value })}>
               <option value="">All courts</option>{uniqueCourtNames.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            <select className="select case-vault__filter-court" value={filters.courtLocation} onChange={(e) => setFilters({ ...filters, courtLocation: e.target.value })}>
+            <select className="select manage-cases__filter-court" value={filters.courtLocation} onChange={(e) => setFilters({ ...filters, courtLocation: e.target.value })}>
               <option value="">All jurisdictions</option>{uniqueCourtLocations.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
-            <select className="select case-vault__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
+            <select className="select manage-cases__filter-stage" value={filters.stage} onChange={(e) => setFilters({ ...filters, stage: e.target.value })}>
               <option value="">All stages</option>{stageNames.map((s) => <option key={s}>{s}</option>)}
             </select>
-            <select className="select case-vault__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+            <select className="select manage-cases__filter-status" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
               <option value="">All status</option>{statuses.map((s) => <option key={s}>{s}</option>)}
             </select>
             <div className="spacer" />
@@ -171,9 +171,9 @@ export default function ManageCases() {
               <div className="table-scroll">
                 <table className="table">
                   <thead><tr>
-                    <th className="case-vault__th-check">{can('casevault.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
-                    <th className="case-vault__th-check" />
-                    <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="case-vault__th-actions">Actions</th>
+                    <th className="manage-cases__th-check">{can('casevault.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
+                    <th className="manage-cases__th-check" />
+                    <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
                   </tr></thead>
                   <tbody>
                     {filtered.map((c) => (
@@ -184,8 +184,8 @@ export default function ManageCases() {
                             <Icon name="star" size={15} className={c.watch ? 'star--on' : ''} fill={c.watch} />
                           </button>
                         </td>
-                        <td className="case-vault__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
-                        <td className="case-vault__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
+                        <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
+                        <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
                         <td>{c.court_name || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
                         <td>{formatDate(c.next_hearing)}</td>
@@ -209,7 +209,7 @@ export default function ManageCases() {
           </Card>
 
           <Modal open={open} title="New Case" size="lg" onClose={() => setOpen(false)}>
-            <CaseForm onSubmit={save} onCancel={() => setOpen(false)} busy={busy} submitLabel="Create Case" />
+            <CaseForm onSubmit={save} onCancel={() => setOpen(false)} busy={busy} submitLabel="Create Cases" />
           </Modal>
         </div>
       )}
@@ -223,7 +223,7 @@ export default function ManageCases() {
                 <Icon name="folder" size={32} />
               </div>
               <div className="cv-banner__text">
-                <h2 className="cv-banner__title">Case Vault</h2>
+                <h2 className="cv-banner__title">Manage Cases</h2>
                 <p className="cv-banner__desc">
                   Every matter with its documents, drafts, history, timeline and hearings in one secure place.
                 </p>
@@ -357,7 +357,7 @@ export default function ManageCases() {
           )}
 
           <Modal open={open} title="New Case" size="lg" onClose={() => setOpen(false)}>
-            <CaseForm onSubmit={save} onCancel={() => setOpen(false)} busy={busy} submitLabel="Create Case" />
+            <CaseForm onSubmit={save} onCancel={() => setOpen(false)} busy={busy} submitLabel="Create Cases" />
           </Modal>
         </div>
       )}

@@ -2745,7 +2745,7 @@ kbd.cmd__kbd {
   color: var(--text-faint);
 }
 
-/* ===== Case Vault enhancements ===== */
+/* ===== Manage Cases enhancements ===== */
 
 /* Watchlist star */
 .star--on {
@@ -6623,37 +6623,37 @@ kbd.cmd__kbd {
   margin-top: 10px;
 }
 
-/* ---- CaseVault additions ---- */
-.case-vault__search {
+/* ---- Manage Cases additions ---- */
+.manage-cases__search {
   max-width: 320px;
 }
 
-.case-vault__filter-court {
+.manage-cases__filter-court {
   max-width: 180px;
 }
 
-.case-vault__filter-stage {
+.manage-cases__filter-stage {
   max-width: 170px;
 }
 
-.case-vault__filter-status {
+.manage-cases__filter-status {
   max-width: 150px;
 }
 
-.case-vault__th-check {
+.manage-cases__th-check {
   width: 36px;
 }
 
-.case-vault__cell-case {
+.manage-cases__cell-case {
   font-weight: 650;
   cursor: pointer;
 }
 
-.case-vault__cell-clickable {
+.manage-cases__cell-clickable {
   cursor: pointer;
 }
 
-.case-vault__th-actions {
+.manage-cases__th-actions {
   width: 160px;
 }
 
@@ -9205,37 +9205,37 @@ kbd.cmd__kbd {
   margin-top: 10px;
 }
 
-/* ---- CaseVault additions ---- */
-.case-vault__search {
+/* ---- Manage Cases additions ---- */
+.manage-cases__search {
   max-width: 320px;
 }
 
-.case-vault__filter-court {
+.manage-cases__filter-court {
   max-width: 180px;
 }
 
-.case-vault__filter-stage {
+.manage-cases__filter-stage {
   max-width: 170px;
 }
 
-.case-vault__filter-status {
+.manage-cases__filter-status {
   max-width: 150px;
 }
 
-.case-vault__th-check {
+.manage-cases__th-check {
   width: 36px;
 }
 
-.case-vault__cell-case {
+.manage-cases__cell-case {
   font-weight: 650;
   cursor: pointer;
 }
 
-.case-vault__cell-clickable {
+.manage-cases__cell-clickable {
   cursor: pointer;
 }
 
-.case-vault__th-actions {
+.manage-cases__th-actions {
   width: 160px;
 }
 
@@ -11076,10 +11076,10 @@ kbd.cmd__kbd {
 }
 
 /* ================================================================
-   Create Case redesign — matching new design (v2)
+   Create Cases redesign — matching new design (v2)
    ================================================================ */
 
-/* ---- Create Case top bar ---- */
+/* ---- Create Cases top bar ---- */
 .cc-topbar {
   display: flex;
   align-items: flex-start;
@@ -11119,7 +11119,7 @@ kbd.cmd__kbd {
   margin: 0;
 }
 
-/* ---- Create Case section cards ---- */
+/* ---- Create Cases section cards ---- */
 .cc-section {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -11281,7 +11281,7 @@ kbd.cmd__kbd {
   font-weight: 650;
 }
 
-/* ---- Create Case sticky footer ---- */
+/* ---- Create Cases sticky footer ---- */
 .cc-footer {
   position: sticky;
   bottom: 0;
@@ -17409,7 +17409,7 @@ kbd.cmd__kbd {
 }
 
 /* ================================================================
-   Case Vault — Mobile List View (matches Dashboard pattern)
+   Manage Cases — Mobile List View (matches Dashboard pattern)
    ================================================================ */
 
 .cv-mobile-view {

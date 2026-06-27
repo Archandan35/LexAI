@@ -50,7 +50,7 @@ export default function DocumentReview() {
     if (!file && !text) return;
     await fileLogic.uploadDocument(file || { name: 'Pasted text.txt', text, type: 'text/plain' }, { caseId, folder: 'Reviewed' });
     await refreshCases();
-    toast.push('Saved to Case Vault.', 'success');
+    toast.push('Saved to Manage Cases.', 'success');
   };
 
   return (

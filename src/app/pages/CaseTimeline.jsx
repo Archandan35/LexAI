@@ -13,7 +13,7 @@ import { fileLogic } from '@/logic/fileLogic.js';
 import { exportPdf } from '@/utils/exportDoc.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
-// Timeline Builder — OCR-driven chronology from documents or pasted text.
+// Case Timeline — OCR-driven chronology from documents or pasted text.
 export default function CaseTimeline() {
   const toast = useToast();
   const [events, setEvents] = useState(null);
@@ -63,7 +63,7 @@ export default function CaseTimeline() {
 
       <div className="grid-sidebar">
         <div className="flex-col gap-16">
-          <Card title="From Case Vault">
+          <Card title="From Manage Cases">
             <Field label="Build from a case's documents"><CaseSelect value={caseId} onChange={setCaseId} /></Field>
             <Button icon="folder" loading={busy} onClick={fromCase} className="btn--block">Build from Case</Button>
           </Card>

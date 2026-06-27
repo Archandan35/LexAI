@@ -11,7 +11,7 @@ preferences provider.
 |------|--------|-------|
 | DB blob | `backupService` read/wrote `localStorage['lexai.db.v1']` | `databaseAdminService.snapshot()/restore()` (provider-agnostic) |
 | Backup catalog/settings | `localStorage` keys in `backupService` | preferences provider via `preferencesService` |
-| UI prefs (view/filters/folders/autosave/dismissals) | direct `localStorage` in CaseVault, DraftingStudio, DocumentManager, notificationLogic | `preferencesService` → `LocalPreferencesProvider` |
+| UI prefs (view/filters/folders/autosave/dismissals) | direct `localStorage` in ManageCases, DraftingStudio, DocumentManager, notificationLogic | `preferencesService` → `LocalPreferencesProvider` |
 
 ## Verification (grep over `src/`, excluding `src/providers/`)
 - `localStorage` in code outside providers: **none** (only one UI **text string** mentioning the word remains in `BackupManagement.jsx`, since reworded).
@@ -27,7 +27,7 @@ preferences provider.
 ## Files Modified
 - `src/services/backupService.js` — DB blob via provider; catalog/settings via preferences.
 - `src/logic/backupLogic.js` — `await` the now-async snapshot/restore.
-- `src/logic/notificationLogic.js`, `src/components/DocumentManager.jsx`, `src/app/pages/CaseVault.jsx`, `src/app/pages/DraftingStudio.jsx` — UI prefs via `preferencesService`.
+- `src/logic/notificationLogic.js`, `src/components/DocumentManager.jsx`, `src/app/pages/ManageCases.jsx`, `src/app/pages/DraftingStudio.jsx` — UI prefs via `preferencesService`.
 - `src/config/config.js`, `.env.example` — `VITE_PREFERENCES_PROVIDER`.
 - `src/app/pages/BackupManagement.jsx` — corrected info copy.
 
