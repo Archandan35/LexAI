@@ -23,12 +23,12 @@ export default function ForgotPassword() {
   return (
     <div className="auth-shell">
       <div className="auth-card fade-in">
-        <div className="auth-brand">
-          <div className="sidebar__logo" style={{ width: 46, height: 46 }}>⚖</div>
-          <div>
-            <div className="sidebar__title" style={{ fontSize: 22 }}>{settings.siteTitle}</div>
-            <div className="sidebar__sub">Password recovery</div>
-          </div>
+        <div className="auth-card__logo">
+          {settings.logoUrl ? (
+            <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
+          ) : (
+            <div className="auth-card__logo-fallback">{settings.siteTitle?.charAt(0) || 'F'}</div>
+          )}
         </div>
 
         <h1 className="auth-title">Forgot password</h1>

@@ -41,6 +41,9 @@ export default function Topbar({ onToggle }) {
       <button className="topbar__toggle" onClick={onToggle} aria-label="Toggle sidebar">
         <Icon name="menu" size={18} />
       </button>
+      {settings.logoUrl && (
+        <img src={settings.logoUrl} alt={settings.siteTitle} className="topbar__logo" />
+      )}
       <div>
         <div className="topbar__title">{current.label}</div>
         <div className="topbar__crumb">{settings.siteTitle}{settings.tagline ? ` · ${settings.tagline}` : ''}</div>

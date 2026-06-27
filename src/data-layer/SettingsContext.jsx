@@ -5,6 +5,7 @@ import { settingsCache } from '@/core/settingsCache.js';
 const DEFAULTS = {
   siteTitle: 'LexAI',
   tagline: 'Indian Litigation Assistant',
+  logoUrl: '',
   mainUrl: '',
   portalUrl: '',
   adminEmail: '',

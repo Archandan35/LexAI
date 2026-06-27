@@ -53,12 +53,12 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card fade-in">
-        <div className="auth-brand">
-          <div className="sidebar__logo">⚖</div>
-          <div>
-            <div className="auth-brand-title">{settings.siteTitle}</div>
-            <div className="sidebar__sub">{settings.tagline}</div>
-          </div>
+        <div className="auth-card__logo">
+          {settings.logoUrl ? (
+            <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
+          ) : (
+            <div className="auth-card__logo-fallback">{settings.siteTitle?.charAt(0) || 'L'}</div>
+          )}
         </div>
 
         <h1 className="auth-title">Sign in</h1>

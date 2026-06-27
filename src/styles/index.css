@@ -114,6 +114,16 @@ select {
   border-top: 1px solid var(--border);
   text-align: center;
 }
+
+.app-footer__link {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.app-footer__link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 767px) {
   .app-footer { padding: 10px 16px; font-size: 10.5px; }
 }
@@ -165,6 +175,16 @@ select {
   color: #fff;
   font-weight: 800;
   box-shadow: var(--shadow-brand);
+  overflow: hidden;
+}
+
+.sidebar__logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 11px;
+  background: #fff;
+  padding: 4px;
 }
 
 .sidebar__title {
@@ -407,6 +427,14 @@ select {
   background: var(--brand-soft);
   color: var(--navy-700);
   border-color: var(--border-strong);
+}
+
+.topbar__logo {
+  height: 32px;
+  max-width: 100px;
+  object-fit: contain;
+  margin-right: 10px;
+  border-radius: 6px;
 }
 
 .topbar__title {
@@ -1544,6 +1572,33 @@ select {
   align-items: center;
   gap: 12px;
   margin-bottom: 22px;
+}
+
+/* Auth card centered logo (replaces auth-brand on auth pages) */
+.auth-card__logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.auth-card__logo-img {
+  max-width: 200px;
+  max-height: 60px;
+  object-fit: contain;
+}
+
+.auth-card__logo-fallback {
+  width: 56px;
+  height: 56px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .auth-title {
@@ -6238,6 +6293,97 @@ kbd.cmd__kbd {
 
 .gs-file-upload:hover {
   border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* Logo upload */
+.gs-logo-upload__input {
+  display: none;
+}
+
+.gs-logo-upload__placeholder {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 200px;
+  height: 120px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.gs-logo-upload__placeholder:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.gs-logo-upload__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.gs-logo-upload__img {
+  max-width: 240px;
+  max-height: 80px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.gs-logo-upload__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gs-logo-upload__remove {
+  color: var(--danger) !important;
+}
+
+/* Date preview & tokens help */
+.gs-date-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+  padding: 6px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.gs-date-preview__label {
+  color: var(--text-faint);
+}
+
+.gs-date-preview__value {
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gs-date-tokens-help {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  line-height: 1.6;
+  padding: 4px 0;
+}
+
+.gs-date-tokens-help code {
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
   color: var(--brand);
 }
 

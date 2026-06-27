@@ -63,8 +63,33 @@ function formatByPattern(date, format, timezone) {
     case '06/23/2026':
     case 'mdy':
       return `${pad2(m + 1)}/${pad2(day)}/${y}`;
-    default:
-      return `${MONTHS_FULL[m]} ${day}, ${y}`;
+    default: {
+      // Try custom PHP-style format tokens
+      const map = {
+        'F': MONTHS_FULL[m],
+        'M': MONTHS_SHORT[m],
+        'm': pad2(m + 1),
+        'n': String(m + 1),
+        'd': pad2(day),
+        'j': String(day),
+        'jS': ordinal(day),
+        'Y': String(y),
+        'y': String(y).slice(-2),
+        'H': pad2(h),
+        'h': pad2(h % 12 || 12),
+        'i': pad2(min),
+        's': pad2(sec),
+        'g': String(h % 12 || 12),
+        'G': String(h),
+        'A': h >= 12 ? 'PM' : 'AM',
+        'a': h >= 12 ? 'pm' : 'am',
+      };
+      let result = format;
+      for (const [token, val] of Object.entries(map)) {
+        result = result.split(token).join(val);
+      }
+      return result;
+    }
   }
 }
 

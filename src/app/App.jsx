@@ -16,6 +16,15 @@ function DocumentTitle() {
   useEffect(() => {
     document.title = settings.siteTitle || 'LexAI';
   }, [settings.siteTitle]);
+
+  useEffect(() => {
+    if (!settings.logoUrl) return;
+    const link = document.querySelector('link[rel="icon"]') || document.createElement('link');
+    link.rel = 'icon';
+    link.href = settings.logoUrl;
+    if (!link.parentNode) document.head.appendChild(link);
+  }, [settings.logoUrl]);
+
   return null;
 }
 

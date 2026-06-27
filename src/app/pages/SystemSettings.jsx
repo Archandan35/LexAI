@@ -4,6 +4,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { settingsLogic } from '@/logic/settingsLogic.js';
+import { DateEngine } from '@/core/DateEngine.js';
 
 const labelToId = (label) => 'setting-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -65,11 +66,12 @@ const CATEGORIES = [
         title: 'General Settings',
         subtitle: 'Manage your application general settings and preferences.',
         key: 'siteInfo',
-        tocItems: ['Site Title', 'Tagline', 'WordPress Address (URL)', 'Site Address (URL)', 'E-mail Address', 'Membership', 'New User Default Role', 'Site Language', 'Timezone', 'Date Format', 'Time Format', 'Week Starts On', 'Save Changes', 'Changelog'],
+        tocItems: ['Website Logo', 'Site Title', 'Tagline', 'Website URL', 'Site Address (URL)', 'E-mail Address', 'Membership', 'New User Default Role', 'Site Language', 'Timezone', 'Date Format', 'Time Format', 'Week Starts On', 'Save Changes', 'Changelog'],
         fields: [
+          { type: 'image', label: 'Website Logo', key: 'logoUrl', description: 'Upload your brand logo. Recommended size: 200x50px. Supports PNG, SVG, JPG.' },
           { type: 'icon-text', label: 'Site Title', key: 'siteTitle', placeholder: 'LexAI', icon: 'layers', description: '' },
           { type: 'icon-text', label: 'Tagline', key: 'tagline', placeholder: 'AI-Powered Legal Assistant for Modern Law Practice', icon: 'badge', description: 'A short description about your platform' },
-          { type: 'icon-url', label: 'WordPress Address (URL)', key: 'mainUrl', placeholder: 'https://lexai.app', icon: 'link', description: 'The URL of your WordPress installation' },
+          { type: 'icon-url', label: 'Website URL', key: 'mainUrl', placeholder: 'https://lexai.app', icon: 'link', description: 'The primary URL of your application.' },
           { type: 'icon-url', label: 'Site Address (URL)', key: 'portalUrl', placeholder: 'https://lexai.app', icon: 'link', description: 'The URL of your website (if different from above)' },
           { type: 'icon-email', label: 'E-mail Address', key: 'adminEmail', placeholder: 'admin@lexai.app', icon: 'bell', description: 'This address is used for admin notifications' },
           { type: 'checkbox', label: 'Membership', key: 'allowRegistration', checkboxLabel: 'Anyone can register', description: 'Anyone can register or only invited users', default: true },
@@ -85,13 +87,17 @@ const CATEGORIES = [
             type: 'radio-date', label: 'Date Format', key: 'dateFormat',
             options: [
               { value: 'june23', label: 'June 23, 2026' },
+              { value: '23june', label: '23 June 2026' },
+              { value: '23rdjune', label: '23rd June 2026' },
+              { value: '23.06.2026', label: '23.06.2026' },
               { value: 'iso', label: '2026-06-23' },
+              { value: '23-06-2026', label: '23-06-2026' },
               { value: 'dmy', label: '23/06/2026' },
               { value: 'mdy', label: '06/23/2026' },
               { value: 'custom', label: 'Custom:' },
             ],
             default: 'june23',
-            description: 'Choose how dates should be displayed',
+            description: 'Choose how dates should be displayed across the application.',
           },
           {
             type: 'radio-time', label: 'Time Format', key: 'timeFormat',
@@ -423,7 +429,38 @@ const DEFAULTS = flattenFields(CATEGORIES);
 
 /* ── Field renderer ─────────────────────────────────────── */
 function SettingsField({ field, value, onChange, settings }) {
+  const imageRef = useRef(null);
   switch (field.type) {
+    case 'image': {
+      const fileRef = imageRef;
+      const handleFile = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => onChange(field.key, ev.target.result);
+        reader.readAsDataURL(file);
+      };
+      const handleRemove = () => onChange(field.key, '');
+      return (
+        <div className="gs-logo-upload">
+          {value ? (
+            <div className="gs-logo-upload__preview">
+              <img src={value} alt="Logo preview" className="gs-logo-upload__img" />
+              <div className="gs-logo-upload__actions">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileRef.current?.click()}>Replace</button>
+                <button type="button" className="btn btn--ghost btn--sm gs-logo-upload__remove" onClick={handleRemove}>Remove</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="gs-logo-upload__placeholder" onClick={() => fileRef.current?.click()}>
+              <Icon name="upload" size={20} />
+              <span>Click to upload logo</span>
+            </button>
+          )}
+          <input ref={fileRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="gs-logo-upload__input" onChange={handleFile} />
+        </div>
+      );
+    }
     case 'icon-text':
       return <IconInput icon={field.icon} value={value} placeholder={field.placeholder} onChange={(v) => onChange(field.key, v)} />;
     case 'icon-url':
@@ -508,7 +545,9 @@ function SettingsField({ field, value, onChange, settings }) {
     }
     case 'radio-date': {
       const customFormat = settings['customDateFormat'] || 'F j, Y';
-      const example = 'June 23, 2026';
+      const demoDate = new Date(2026, 5, 23, 9, 52, 0);
+      const fmt = value === 'custom' ? customFormat : value;
+      const preview = DateEngine.formatDate(demoDate, fmt);
       return (
         <div className="gs-radio-group gs-radio-group--date">
           {field.options.map((opt) => (
@@ -526,12 +565,18 @@ function SettingsField({ field, value, onChange, settings }) {
                       value={customFormat}
                       onChange={(e) => onChange('customDateFormat', e.target.value)}
                     />
-                    <span className="gs-date-example">Example: {example}</span>
                   </span>
                 )}
               </span>
             </label>
           ))}
+          <div className="gs-date-preview">
+            <span className="gs-date-preview__label">Preview: </span>
+            <span className="gs-date-preview__value">{preview}</span>
+          </div>
+          <div className="gs-date-tokens-help">
+            <strong>Format tokens:</strong> <code>F</code> = Full month, <code>j</code> = Day, <code>Y</code> = 4-digit year, <code>y</code> = 2-digit year, <code>m</code> = 01-12, <code>n</code> = 1-12, <code>d</code> = 01-31, <code>jS</code> = 23rd. Example: <code>F j, Y</code> → June 23, 2026
+          </div>
         </div>
       );
     }
@@ -592,7 +637,7 @@ export default function SystemSettings() {
       return;
     }
     if (settings.mainUrl && !/^https?:\/\/.+/.test(settings.mainUrl)) {
-      toast.push('Application URL must start with http:// or https://', 'error');
+      toast.push('Website URL must start with http:// or https://', 'error');
       return;
     }
     if (settings.portalUrl && !/^https?:\/\/.+/.test(settings.portalUrl)) {

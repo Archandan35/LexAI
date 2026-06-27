@@ -146,12 +146,12 @@ export default function BootstrapAdmin() {
     return (
       <div className="auth-shell">
         <div className="auth-card fade-in">
-          <div className="auth-brand">
-            <div className="sidebar__logo">&#x2696;</div>
-            <div>
-<div className="auth-brand-title">{settings.siteTitle}</div>
-          <div className="sidebar__sub">{settings.tagline}</div>
-            </div>
+          <div className="auth-card__logo">
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
+            ) : (
+              <div className="auth-card__logo-fallback">{settings.siteTitle?.charAt(0) || 'L'}</div>
+            )}
           </div>
           <h1 className="auth-title">Preparing Setup</h1>
           <p className="auth-sub">{timedOut ? status : 'Verifying database state...'}</p>
@@ -179,12 +179,12 @@ export default function BootstrapAdmin() {
     return (
       <div className="auth-shell">
         <div className="auth-card fade-in">
-          <div className="auth-brand">
-            <div className="sidebar__logo">&#x2696;</div>
-            <div>
-<div className="auth-brand-title">{settings.siteTitle}</div>
-          <div className="sidebar__sub">{settings.tagline}</div>
-            </div>
+          <div className="auth-card__logo">
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
+            ) : (
+              <div className="auth-card__logo-fallback">{settings.siteTitle?.charAt(0) || 'L'}</div>
+            )}
           </div>
           <div className="auth-confirm">
             <div className="auth-confirm__icon">&#x2709;</div>
@@ -209,12 +209,12 @@ export default function BootstrapAdmin() {
   return (
     <div className="auth-shell">
       <div className="auth-card fade-in">
-        <div className="auth-brand">
-          <div className="sidebar__logo">&#x2696;</div>
-          <div>
-            <div className="auth-brand-title">{settings.siteTitle}</div>
-            <div className="sidebar__sub">{settings.tagline}</div>
-          </div>
+        <div className="auth-card__logo">
+          {settings.logoUrl ? (
+            <img src={settings.logoUrl} alt={settings.siteTitle} className="auth-card__logo-img" />
+          ) : (
+            <div className="auth-card__logo-fallback">{settings.siteTitle?.charAt(0) || 'L'}</div>
+          )}
         </div>
 
         <h1 className="auth-title">Bootstrap System</h1>

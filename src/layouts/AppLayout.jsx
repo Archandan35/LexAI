@@ -40,9 +40,8 @@ export default function AppLayout() {
             <Outlet />
           </main>
           <footer className="app-footer">
-            <span>{settings.siteTitle}</span>
-            {settings.adminEmail && <span> · {settings.adminEmail}</span>}
-            {settings.mainUrl && <span> · {settings.mainUrl}</span>}
+            {settings.adminEmail && <span>{settings.adminEmail}</span>}
+            {settings.mainUrl && <span> · <a href={settings.mainUrl} target="_blank" rel="noopener noreferrer" className="app-footer__link">{settings.mainUrl}</a></span>}
           </footer>
         </div>
         {debugMode && <DebugOverlay />}

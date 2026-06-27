@@ -6,6 +6,8 @@ import RequireAuth from '@/components/RequireAuth.jsx';
 import Login from '@/app/pages/Login.jsx';
 import Register from '@/app/pages/Register.jsx';
 import ForgotPassword from '@/app/pages/ForgotPassword.jsx';
+import ResetPassword from '@/app/pages/ResetPassword.jsx';
+import VerifyAccount from '@/app/pages/VerifyAccount.jsx';
 import AccessDenied from '@/app/pages/AccessDenied.jsx';
 import TemplatesLibrary from '@/app/pages/TemplatesLibrary.jsx';
 import LegalNotices from '@/app/pages/LegalNotices.jsx';
@@ -85,6 +87,8 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-account" element={<VerifyAccount />} />
       <Route path="/bootstrap-admin" element={<BootstrapAdmin />} />
 
       {/* Authenticated app shell */}

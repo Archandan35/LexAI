@@ -71,7 +71,11 @@ export default function Sidebar({ collapsed, mobileOpen }) {
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar__brand">
         <div className="sidebar__logo">
-          <Icon name="bolt" size={22} />
+          {settings.logoUrl ? (
+            <img src={settings.logoUrl} alt={settings.siteTitle} className="sidebar__logo-img" />
+          ) : (
+            <Icon name="bolt" size={22} />
+          )}
         </div>
         <div>
           <div className="sidebar__title">{settings.siteTitle}</div>
