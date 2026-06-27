@@ -9,7 +9,7 @@ const statusColour = (s) => {
   return map[s?.toLowerCase()] || 'grey';
 };
 
-export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
+export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDocument, cases: allCases }) {
   const data = hearing || doc;
   if (!data) return null;
 
@@ -27,7 +27,7 @@ export default function HearingPreviewModal({ hearing, doc, onClose, onViewDocum
   const displaySubtitle = !isDoc && data.parties ? data.parties : null;
 
   return (
-    <Modal open={true} title="" onClose={onClose} size="lg" className="hearing-preview-modal" disableBackdrop disableEscape>
+    <Modal open={true} title="" onClose={onClose} size="lg" className="order-sheet-preview-modal" disableBackdrop disableEscape>
       <div className="hpm">
         <div className="hpm-drag-handle"><span></span></div>
 

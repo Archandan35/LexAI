@@ -14333,13 +14333,13 @@ kbd.cmd__kbd {
 }
 
 /* ── Hearing Preview Modal ── */
-.hearing-preview-modal {
+.order-sheet-preview-modal {
   max-width: 730px;
   border-radius: 22px;
   overflow: hidden;
 }
 
-.hearing-preview-modal .modal__body {
+.order-sheet-preview-modal .modal__body {
   padding: 0;
 }
 
@@ -14859,8 +14859,8 @@ kbd.cmd__kbd {
 .sosb-right-stats b { color: var(--text-dark); }
 
 /* ── Smart mode modal override ── */
-.hearing-preview-modal.smart-mode { max-width: 98vw !important; width: 98vw; }
-.hearing-preview-modal.smart-mode .modal__body { padding: 0; display: flex; flex-direction: column; height: 88vh; }
+.order-sheet-preview-modal.smart-mode { max-width: 98vw !important; width: 98vw; }
+.order-sheet-preview-modal.smart-mode .modal__body { padding: 0; display: flex; flex-direction: column; height: 88vh; }
 
 /* ============================================================
    COMPREHENSIVE RESPONSIVE SYSTEM
@@ -15841,7 +15841,7 @@ kbd.cmd__kbd {
     display: block;
   }
 
-  .hearing-preview-modal {
+  .order-sheet-preview-modal {
     max-width: 100%;
     border-radius: 24px 24px 0 0;
     max-height: 90vh;
@@ -15849,7 +15849,7 @@ kbd.cmd__kbd {
     margin-bottom: 0;
   }
 
-  .hearing-preview-modal .modal__body {
+  .order-sheet-preview-modal .modal__body {
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -16233,7 +16233,7 @@ kbd.cmd__kbd {
 
 /* ---- Hearing Preview Modal (Phone only) ---- */
 @media (max-width: 480px) {
-  .hearing-preview-modal {
+  .order-sheet-preview-modal {
     max-height: 94vh;
   }
 

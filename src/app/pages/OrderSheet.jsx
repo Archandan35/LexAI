@@ -11,7 +11,7 @@ import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
-import HearingPreviewModal from '@/components/HearingPreviewModal.jsx';
+import OrderSheetPreviewModal from '@/components/OrderSheetPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
 import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
@@ -869,7 +869,7 @@ export default function OrderSheet() {
               )}
               {tab === 'timeline' && (
                 <Card bodyClass="card__body--flush">
-                  <HearingPreviewModal open={false} onClose={() => { }} hearing={null} />
+                  <OrderSheetPreviewModal open={false} onClose={() => { }} hearing={null} />
                   {/* placeholder */}
                   <EmptyState icon="clock" title="Timeline coming soon." />
                 </Card>
@@ -1480,7 +1480,7 @@ export default function OrderSheet() {
         open={open}
         title={smartMode ? 'Smart Order Builder' : (editing ? 'Edit Order Sheet' : 'Add Order Sheet')}
         size="lg"
-        className={smartMode ? 'hearing-preview-modal smart-mode' : ''}
+        className={smartMode ? 'order-sheet-preview-modal smart-mode' : ''}
         onClose={() => { setOpen(false); setSmartMode(false); }}
         footer={smartMode ? undefined : <><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
       >
@@ -1684,7 +1684,7 @@ export default function OrderSheet() {
 
       {/* Hearing Preview Modal */}
       {(previewHearing || previewDoc) && (
-        <HearingPreviewModal
+        <OrderSheetPreviewModal
           hearing={previewHearing}
           doc={previewDoc}
           onClose={() => { setPreviewHearing(null); setPreviewDoc(null); }}
