@@ -96,18 +96,21 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setError('');
     try {
       const result = await VerificationEngine.verify();
-      if (result.ok && !result.needsSetup && result.missing.length === 0) {
-        toast.success('Database verified — all resources are present.');
-        setScanResult(result);
-        setStep(10);
-      } else {
+      if (!result.ok) {
+        throw new Error(result.error || 'Verification failed');
+      }
+      if (result.missing && result.missing.length > 0) {
         const msg = `${result.missing.length} resource(s) still missing. Run the SQL again or check manually.`;
         setError(msg);
         toast.error(msg);
+      } else {
+        toast.success('Database verified — all resources are present.');
+        setScanResult(result);
+        setStep(10);
       }
     } catch (e) {
       setError(e?.message || 'Verification failed');
-      toast.error('Verification failed');
+      toast.error(e?.message || 'Verification failed');
     } finally {
       setVerifying(false);
     }
