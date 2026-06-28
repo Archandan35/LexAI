@@ -85,8 +85,13 @@ export default function SetupWizard({ detectError: propDetectError }) {
   };
 
   const handleLaunch = () => {
-    WizardLogger.info('Launching LexAI');
-    window.location.href = '/';
+    WizardLogger.info('Restarting setup - completing setup');
+    setStep(1);
+    setMethod(null);
+    setScanResult(null);
+    setSqlText('');
+    setHealth(null);
+    setError('');
   };
 
   const [verifying, setVerifying] = useState(false);
