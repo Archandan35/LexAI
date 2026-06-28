@@ -1,3 +1,4 @@
+import React from 'react';
 import Icon from './Icon.jsx';
 import Button from './Button.jsx';
 import { Input } from './Field.jsx';
