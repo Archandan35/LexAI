@@ -533,6 +533,10 @@ export default function SetupWizard({ detectError: propDetectError }) {
   };
 
   const handleReviewDone = async () => {
+    if (selectedIds.size === 0) {
+      setError('Select at least one item to proceed.');
+      return;
+    }
     setBusy(true); setError('');
     try {
       const scan = await databaseScannerService.scanAll();
@@ -541,7 +545,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
       setComparison(cmp);
       const recs = recommendationService.generate(cmp.findings || {});
       setRecommendations(recs);
-      const stillMissing = recs.filter((r) =>
+      const selectedRecs = recs.filter((r) => selectedIds.has(r.id));
+      const stillMissing = selectedRecs.filter((r) =>
         r.action === 'create' &&
         r.severity !== 'improvement' && r.severity !== 'info'
       );
@@ -1073,44 +1078,62 @@ export default function SetupWizard({ detectError: propDetectError }) {
                   <>
                     <h3 className="wizard-section-title">Missing Resources</h3>
                     <p className="auth-sub--sm" style={{ fontSize: 13 }}>
-                      The following required resources are missing. Copy the SQL below, run it in your database SQL editor, then click <b>Verify</b>.
+                      Check the items you want to create. Copy the SQL, run it in your database, then click <b>Verify</b>.
                     </p>
 
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Tables"
                       findings={recommendations.filter((r) => r.category === 'table' && r.action === 'create')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Indexes"
                       findings={recommendations.filter((r) => r.category === 'index')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Policies"
                       findings={recommendations.filter((r) => r.category === 'policy')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Functions"
                       findings={recommendations.filter((r) => r.category === 'function')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Foreign Keys"
                       findings={recommendations.filter((r) => r.category === 'foreignKey' && r.action === 'create')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Broken Foreign Keys"
                       findings={recommendations.filter((r) => r.category === 'foreignKey' && r.action === 'repair')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Triggers"
                       findings={recommendations.filter((r) => r.category === 'trigger')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Extensions"
                       findings={recommendations.filter((r) => r.category === 'extension')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
-                    <FindingCategoryReadonly
+                    <FindingCategory
                       title="Missing Roles"
                       findings={recommendations.filter((r) => r.category === 'role')}
+                      selectedIds={selectedIds}
+                      onToggle={toggleFinding}
                     />
 
                     {/* --- UNNECESSARY ITEMS (REMOVE) --- */}
@@ -1120,17 +1143,23 @@ export default function SetupWizard({ detectError: propDetectError }) {
                         <p className="auth-sub--sm" style={{ fontSize: 13 }}>
                           These items exist but are not part of the LexAI blueprint. Review and decide what to do with each.
                         </p>
-                        <FindingCategoryReadonly
+                        <FindingCategory
                           title="Unnecessary Tables"
                           findings={recommendations.filter((r) => r.category === 'table' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
                         />
-                        <FindingCategoryReadonly
+                        <FindingCategory
                           title="Unnecessary Indexes"
                           findings={recommendations.filter((r) => r.category === 'index' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
                         />
-                        <FindingCategoryReadonly
+                        <FindingCategory
                           title="Unnecessary Policies"
                           findings={recommendations.filter((r) => r.category === 'policy' && r.action === 'remove')}
+                          selectedIds={selectedIds}
+                          onToggle={toggleFinding}
                         />
                       </div>
                     )}
@@ -1192,8 +1221,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     )}
 
                     <div className="dm-mt" style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 16, marginTop: 16, background: 'var(--surface-1)' }}>
-                      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px 0' }}>Required SQL</h4>
-                      <pre className="code-block wizard-sql" style={{ maxHeight: 300, overflow: 'auto' }}>{sql || recommendations.filter((r) => r.action === 'create').map((r) => safeSql(r)).filter(Boolean).join('\n\n')}</pre>
+                      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px 0' }}>SQL for Selected Items ({selectedIds.size})</h4>
+                      <pre className="code-block wizard-sql" style={{ maxHeight: 300, overflow: 'auto' }}>{sql || recommendations.filter((r) => selectedIds.has(r.id)).map((r) => safeSql(r)).filter(Boolean).join('\n\n')}</pre>
                       <div className="toolbar-row dm-toolbar-mt" style={{ gap: 8 }}>
                         <Button variant="ghost" icon="copy" size="sm" onClick={handleCopySql}>
                           {sqlCopied ? 'Copied!' : 'Copy SQL'}
@@ -1205,7 +1234,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     </div>
                     <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
                       <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handleReviewDone}>
-                        I've run the SQL — Verify
+                        I've run the SQL — Verify ({selectedIds.size} items)
                       </Button>
                       <Button variant="ghost" icon="download" onClick={handleExportReport}>
                         Export Report
