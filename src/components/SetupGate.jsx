@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import SetupWizard from '@/app/pages/SetupWizard.jsx';
+import AdminSetup from '@/app/pages/AdminSetup.jsx';
 import Spinner from './Spinner.jsx';
 import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
@@ -17,13 +17,9 @@ export default function SetupGate({ children }) {
       if (res.data?.authError) {
         setDetectError(`Auth error: ${res.data.authError}. Check the provider API key and ensure it has access to the project.`);
       }
-      if (!res.ok) {
-        setState('setup');
-        return;
-      }
       const users = await userService.list().catch(() => []);
-      if (!users || users.length === 0) {
-        setState('bootstrap');
+      if (!users || users.length === 0 || !res.ok) {
+        setState('setup');
         return;
       }
       setState('ready');
@@ -36,10 +32,12 @@ export default function SetupGate({ children }) {
   useEffect(() => { if (state === 'ready') databaseAdminService.grantAllCollections(); }, [state]);
 
   if (state === 'checking') return <div className="auth-shell"><Spinner /></div>;
-  if (state === 'setup') return <SetupWizard detectError={detectError} />;
+  if (state === 'setup') {
+    return <AdminSetup />;
+  }
   if (state === 'bootstrap') {
-    if (location.pathname === '/bootstrap-admin') return children;
-    return <Navigate to="/bootstrap-admin" replace />;
+    if (location.pathname === '/admin/setup') return children;
+    return <Navigate to="/admin/setup" replace />;
   }
   return children;
 }

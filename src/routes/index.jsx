@@ -51,7 +51,7 @@ import AuditLogs from '@/app/pages/AuditLogs.jsx';
 import StorageSettings from '@/app/pages/StorageSettings.jsx';
 import EnvApiManager from '@/app/pages/EnvApiManager.jsx';
 import DatabaseManager from '@/app/pages/DatabaseManager.jsx';
-import BootstrapAdmin from '@/app/pages/BootstrapAdmin.jsx';
+import AdminSetup from '@/app/pages/AdminSetup.jsx';
 import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
 import SystemSettings from '@/app/pages/SystemSettings.jsx';
 import CaseTypes from '@/app/pages/CaseTypes.jsx';
@@ -89,7 +89,7 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-account" element={<VerifyAccount />} />
-      <Route path="/bootstrap-admin" element={<BootstrapAdmin />} />
+      <Route path="/admin/setup" element={<AdminSetup />} />
 
       {/* Authenticated app shell */}
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
