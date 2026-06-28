@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useContext } from 'react';
 import { authLogic } from '@/logic/authLogic.js';
 import { roleService } from '@/services/roleService.js';
 import { rbacLogic } from '@/logic/rbacLogic.js';

@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import { useToastState } from '@/hooks/useToast.js';
 
 const ToastContext = createContext(null);
