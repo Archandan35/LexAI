@@ -59,8 +59,9 @@ export function SettingsProvider({ children }) {
 
 export function useSettings() {
   const ctx = useContext(SettingsContext);
-  if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
-  return ctx;
+  // Fail-safe: render default settings when provider is missing.
+  // This prevents the whole app from hard-crashing during mis-mounting.
+  return ctx || { settings: DEFAULTS, loading: false, error: null, refreshSettings: () => Promise.resolve() };
 }
 
 export { DEFAULTS as SETTINGS_DEFAULTS };
