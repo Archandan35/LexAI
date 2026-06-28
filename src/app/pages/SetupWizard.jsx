@@ -114,6 +114,45 @@ function HealthReport({ comparison, duplicates }) {
   );
 }
 
+function FindingCategoryReadonly({ title, findings }) {
+  if (!findings || findings.length === 0) return null;
+  const [expandedId, setExpandedId] = useState(null);
+  return (
+    <div style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 42 }}>
+        <div style={{ flex: '0 0 220px', padding: '10px 14px', background: 'var(--surface-1)', borderRight: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14 }}>
+          <span style={{ color: 'var(--warning)' }}>{'\u26A0'}</span>
+          <span>{title}</span>
+          <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontVariantNumeric: 'tabular-nums' }}>({findings.length})</span>
+        </div>
+        <div style={{ flex: 1, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {findings.slice(0, 10).map((f) => (
+            <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '2px 8px', borderRadius: 4, whiteSpace: 'nowrap' }}
+              title={f.label || f.target}>
+              <span>{f.target || f.label}</span>
+            </span>
+          ))}
+          {findings.length > 10 && (
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}
+              onClick={() => setExpandedId(expandedId ? null : 'overflow')}>
+              {expandedId === 'overflow' ? 'Show less' : `+${findings.length - 10} more`}
+            </span>
+          )}
+        </div>
+      </div>
+      {expandedId === 'overflow' && (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '8px 12px 8px 234px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {findings.slice(10).map((f) => (
+            <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '2px 8px', borderRadius: 4, whiteSpace: 'nowrap' }}>
+              <span>{f.target || f.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FindingCategory({ title, findings, selectedIds, onToggle, kind }) {
   if (!findings || findings.length === 0) return null;
   const [expandedId, setExpandedId] = useState(null);
@@ -361,6 +400,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [duplicateActions, setDuplicateActions] = useState({});
   const fileRef = useRef(null);
 
+  const [stepError, setStepError] = useState(null);
+
   // Simple Setup
   const [projectUrl, setProjectUrl] = useState('');
   const [anonKey, setAnonKey] = useState('');
@@ -490,20 +531,37 @@ export default function SetupWizard({ detectError: propDetectError }) {
     setBusy(false);
   };
 
-  const handleReviewDone = () => {
-    if (selectedIds.size === 0) {
-      setError('Select at least one item to proceed, or go back.');
-      return;
+  const handleReviewDone = async () => {
+    if (recommendations.length === 0) {
+      return handlePostVerify();
     }
-    const criticalItems = recommendations.filter((r) =>
-      r.severity === 'critical' && (r.category === 'table' || r.category === 'function')
-    );
-    const unselectedCritical = criticalItems.filter((r) => !selectedIds.has(r.id));
-    if (unselectedCritical.length > 0) {
-      setError(`Cannot proceed: ${unselectedCritical.length} critical item(s) must be selected (${unselectedCritical.map((r) => r.target).join(', ')}).`);
-      return;
-    }
+    setBusy(true); setError(''); setExecPhase('executing');
     goToStep(5);
+    const allCreateItems = recommendations.filter((r) => r.action === 'create' && safeSql(r));
+    const executed = [];
+    for (const r of allCreateItems) {
+      const sql = safeSql(r);
+      if (sql) {
+        const res = await InstallationExecutor.executeSql(sql);
+        if (res.ok) {
+          executed.push({ status: 'ok', label: r.label, target: r.target, category: r.category });
+        } else {
+          executed.push({ status: 'error', error: res.error, label: r.label, target: r.target, category: r.category });
+        }
+      }
+    }
+    const errors = executed.filter((e) => e.status === 'error');
+    if (errors.length > 0) {
+      setExecPhase(null);
+      setBusy(false);
+      setError(errors.map((e) =>
+        `Resource: "${e.target}" (${e.category}) — Reason: ${e.error} — Action: Review and retry.`
+      ).join('\n'));
+      return;
+    }
+    setExecPhase('done');
+    setBusy(false);
+    await handlePostVerify();
   };
 
   const handleExecuteApproved = async () => {
@@ -626,9 +684,11 @@ export default function SetupWizard({ detectError: propDetectError }) {
       if (fullyValid) {
         goToStep(7);
       } else {
+        setExecPhase(null);
         setError(`${blockCount} critical issue(s) must be resolved before proceeding.`);
       }
     } catch (e) {
+      setExecPhase(null);
       setError(e?.message || 'Verification failed.');
       setBusy(false);
     }
@@ -1014,64 +1074,46 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                 {recommendations.length > 0 ? (
                   <>
-                    <h3 className="wizard-section-title">Select Items to Create/Repair</h3>
+                    <h3 className="wizard-section-title">Missing Resources — Auto-Creation Pending</h3>
                     <p className="auth-sub--sm" style={{ fontSize: 13 }}>
-                      Review each finding below. Check the items you want to create or repair. Unchecked items will be skipped.
+                      The following required resources are missing. Click <b>Continue</b> to automatically create them.
                     </p>
 
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Tables"
                       findings={recommendations.filter((r) => r.category === 'table' && r.action === 'create')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Indexes"
                       findings={recommendations.filter((r) => r.category === 'index')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Policies"
                       findings={recommendations.filter((r) => r.category === 'policy')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Functions"
                       findings={recommendations.filter((r) => r.category === 'function')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Foreign Keys"
                       findings={recommendations.filter((r) => r.category === 'foreignKey' && r.action === 'create')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Broken Foreign Keys"
                       findings={recommendations.filter((r) => r.category === 'foreignKey' && r.action === 'repair')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Triggers"
                       findings={recommendations.filter((r) => r.category === 'trigger')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Extensions"
                       findings={recommendations.filter((r) => r.category === 'extension')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
-                    <FindingCategory
+                    <FindingCategoryReadonly
                       title="Missing Roles"
                       findings={recommendations.filter((r) => r.category === 'role')}
-                      selectedIds={selectedIds}
-                      onToggle={toggleFinding}
                     />
 
                     {/* --- UNNECESSARY ITEMS (REMOVE) --- */}
@@ -1081,23 +1123,17 @@ export default function SetupWizard({ detectError: propDetectError }) {
                         <p className="auth-sub--sm" style={{ fontSize: 13 }}>
                           These items exist but are not part of the LexAI blueprint. Review and decide what to do with each.
                         </p>
-                        <FindingCategory
+                        <FindingCategoryReadonly
                           title="Unnecessary Tables"
                           findings={recommendations.filter((r) => r.category === 'table' && r.action === 'remove')}
-                          selectedIds={selectedIds}
-                          onToggle={toggleFinding}
                         />
-                        <FindingCategory
+                        <FindingCategoryReadonly
                           title="Unnecessary Indexes"
                           findings={recommendations.filter((r) => r.category === 'index' && r.action === 'remove')}
-                          selectedIds={selectedIds}
-                          onToggle={toggleFinding}
                         />
-                        <FindingCategory
+                        <FindingCategoryReadonly
                           title="Unnecessary Policies"
                           findings={recommendations.filter((r) => r.category === 'policy' && r.action === 'remove')}
-                          selectedIds={selectedIds}
-                          onToggle={toggleFinding}
                         />
                       </div>
                     )}
@@ -1109,9 +1145,6 @@ export default function SetupWizard({ detectError: propDetectError }) {
                         {recommendations.filter((r) => r.id.startsWith('remove_unused')).map((r) => (
                           <div key={r.id} className="wizard-finding__row" style={{ fontSize: 13, padding: '6px 0' }}>
                             <span className="wizard-finding__label">{r.target} on {r.table}</span>
-                            <label className="wizard-finding__checkbox">
-                              <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleFinding(r.id)} />
-                            </label>
                           </div>
                         ))}
                       </div>
@@ -1162,8 +1195,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     )}
 
                     <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
-                      <Button variant="primary" className="btn--block" icon="arrow" onClick={handleReviewDone}>
-                        Continue with {selectedIds.size} Selected
+                      <Button variant="primary" className="btn--block" icon="bolt" loading={busy} onClick={handleReviewDone}>
+                        {busy ? 'Creating resources...' : `Create Missing Resources (${recommendations.filter((r) => r.action === 'create').length} items)`}
                       </Button>
                       <Button variant="ghost" icon="download" onClick={handleExportReport}>
                         Export Report
@@ -1257,46 +1290,29 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                 {execPhase === 'executing' && (
                   <div className="alert alert--info dm-mt">
-                    <Icon name="info" size={16} /> <span>Executing approved changes...</span>
+                    <Icon name="info" size={16} /> <span>Creating missing resources...</span>
                   </div>
                 )}
 
-                {installResult && execPhase === 'done' && (
-                  <>
-                    {installResult.steps?.filter((s) => s.status === 'error').length > 0 && (
-                      <div className="alert alert--warn dm-mt">
-                        <Icon name="alert" size={16} />
-                        <div>
-                          <strong>Some operations had errors:</strong>
-                          <ul style={{ margin: '6px 0 0 16px', fontSize: 13 }}>
-                            {installResult.steps.filter((s) => s.status === 'error').map((s) => (
-                              <li key={s.id}>{s.id}: {s.error}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-                    {installResult.steps?.filter((s) => s.status === 'ok').length > 0 && (
-                      <div className="alert alert--success dm-mt">
-                        <Icon name="check" size={16} />
-                        <span>{installResult.steps.filter((s) => s.status === 'ok').length} operation{installResult.steps.filter((s) => s.status === 'ok').length !== 1 ? 's' : ''} completed successfully.</span>
-                      </div>
-                    )}
-                  </>
+                {execPhase === 'done' && !busy && (
+                  <div className="alert alert--success dm-mt">
+                    <Icon name="check" size={16} />
+                    <span>Missing resources created. Running verification...</span>
+                  </div>
                 )}
 
-                {execPhase !== 'executing' && execPhase !== 'done' && (
+                {execPhase !== 'executing' && execPhase !== 'done' && error && (
                   <div className="dm-toolbar-mt">
                     <Button variant="primary" className="btn--block" icon="bolt" loading={busy} onClick={handleExecuteApproved}>
-                      Execute {selectedIds.size} Selected Change{selectedIds.size !== 1 ? 's' : ''}
+                      Retry Resource Creation
                     </Button>
                   </div>
                 )}
 
-                {method === 'simple' && step === 5 && !busy && execPhase === null && (
-                  <div className="dm-toolbar-mt" style={{ marginTop: 8 }}>
-                    <Button variant="ghost" className="btn--block" onClick={() => goToStep(4)}>
-                      Back to Review
+                {!busy && !error && execPhase !== 'executing' && (
+                  <div className="dm-toolbar-mt">
+                    <Button variant="primary" className="btn--block" icon="arrow" loading={busy} onClick={handlePostVerify}>
+                      Proceed to Verification
                     </Button>
                   </div>
                 )}
@@ -1528,7 +1544,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {/* --- READY / FINISH --- */}
             {step === currentSteps.length && (
               <>
-                {method === 'simple' && postScan ? (
+                {method === 'simple' && postScan && validateResult?.valid && !comparison?.summary?.missingTables && !comparison?.summary?.missingFunctions ? (
                   <>
                     <CertificationReport preScan={preScan} postScan={postScan} preDuplicates={duplicateScanResult} recommendations={recommendations} />
                     <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
@@ -1542,14 +1558,14 @@ export default function SetupWizard({ detectError: propDetectError }) {
                   </>
                 ) : (
                   <>
-                    {validateResult?.valid && (
+                    {validateResult?.valid && !comparison?.summary?.missingTables && !comparison?.summary?.missingFunctions && (
                       <div className="dm-toolbar-mt">
                         <Button variant="primary" className="btn--block" icon="arrow" onClick={handleFinish}>
                           Continue to Setup
                         </Button>
                       </div>
                     )}
-                    {!validateResult && (
+                    {(!validateResult || !validateResult.valid || comparison?.summary?.missingTables > 0 || comparison?.summary?.missingFunctions > 0) && (
                       <div className="dm-toolbar-mt">
                         <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handlePostVerify}>
                           Run Verification
