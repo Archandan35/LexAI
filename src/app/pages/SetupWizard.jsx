@@ -388,6 +388,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
   const [scanResult, setScanResult] = useState(null);
   const [comparison, setComparison] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
+  const [remainingRecs, setRemainingRecs] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [sqlCopied, setSqlCopied] = useState(false);
   const [copySql, setCopySql] = useState('');
@@ -532,36 +533,31 @@ export default function SetupWizard({ detectError: propDetectError }) {
   };
 
   const handleReviewDone = async () => {
-    if (recommendations.length === 0) {
-      return handlePostVerify();
-    }
-    setBusy(true); setError(''); setExecPhase('executing');
-    goToStep(5);
-    const allCreateItems = recommendations.filter((r) => r.action === 'create' && safeSql(r));
-    const executed = [];
-    for (const r of allCreateItems) {
-      const sql = safeSql(r);
-      if (sql) {
-        const res = await InstallationExecutor.executeSql(sql);
-        if (res.ok) {
-          executed.push({ status: 'ok', label: r.label, target: r.target, category: r.category });
-        } else {
-          executed.push({ status: 'error', error: res.error, label: r.label, target: r.target, category: r.category });
-        }
+    setBusy(true); setError('');
+    try {
+      const scan = await databaseScannerService.scanAll();
+      if (!scan.ok) { setError(scan.error || 'Verification scan failed.'); setBusy(false); return; }
+      const cmp = blueprintComparatorService.compare(scan);
+      setComparison(cmp);
+      const recs = recommendationService.generate(cmp.findings || {});
+      setRecommendations(recs);
+      const stillMissing = recs.filter((r) =>
+        r.action === 'create' &&
+        r.severity !== 'improvement' && r.severity !== 'info'
+      );
+      if (stillMissing.length === 0) {
+        setBusy(false);
+        await handlePostVerify();
+        return;
       }
-    }
-    const errors = executed.filter((e) => e.status === 'error');
-    if (errors.length > 0) {
-      setExecPhase(null);
+      const sql = stillMissing.map((r) => safeSql(r)).filter(Boolean).join('\n\n');
+      setSql(sql);
       setBusy(false);
-      setError(errors.map((e) =>
-        `Resource: "${e.target}" (${e.category}) — Reason: ${e.error} — Action: Review and retry.`
-      ).join('\n'));
-      return;
+      setError(`Still missing: ${stillMissing.length} item(s). Copy the SQL below, run it in your database, then click Verify again.`);
+    } catch (e) {
+      setError(e?.message || 'Verification failed.');
+      setBusy(false);
     }
-    setExecPhase('done');
-    setBusy(false);
-    await handlePostVerify();
   };
 
   const handleExecuteApproved = async () => {
@@ -675,17 +671,18 @@ export default function SetupWizard({ detectError: propDetectError }) {
         }
       }
 
-      const issueCount = checks.filter((c) => c.status === 'warn' || c.status === 'fail').length;
-      const blockCount = checks.filter((c) => c.status === 'fail').length;
+      const failCount = checks.filter((c) => c.status === 'fail').length;
       const v = await ValidationEngine.validateInstallation();
-      const fullyValid = v.valid && blockCount === 0;
-      setValidateResult({ ...v, valid: fullyValid, issueCount: v.issueCount + issueCount, checks: [...(v.checks || []), ...checks] });
+      const engineFailCount = (v.checks || []).filter((c) => c.status === 'fail').length;
+      const allPassed = failCount === 0 && engineFailCount === 0;
+      setValidateResult({ ...v, valid: allPassed, issueCount: v.issueCount + checks.length, checks: [...(v.checks || []), ...checks] });
       setBusy(false);
-      if (fullyValid) {
+      if (allPassed) {
         goToStep(7);
       } else {
         setExecPhase(null);
-        setError(`${blockCount} critical issue(s) must be resolved before proceeding.`);
+        const totalFails = failCount + engineFailCount;
+        setError(`${totalFails} critical issue(s) must be resolved before proceeding.`);
       }
     } catch (e) {
       setExecPhase(null);
@@ -1074,9 +1071,9 @@ export default function SetupWizard({ detectError: propDetectError }) {
 
                 {recommendations.length > 0 ? (
                   <>
-                    <h3 className="wizard-section-title">Missing Resources — Auto-Creation Pending</h3>
+                    <h3 className="wizard-section-title">Missing Resources</h3>
                     <p className="auth-sub--sm" style={{ fontSize: 13 }}>
-                      The following required resources are missing. Click <b>Continue</b> to automatically create them.
+                      The following required resources are missing. Copy the SQL below, run it in your database SQL editor, then click <b>Verify</b>.
                     </p>
 
                     <FindingCategoryReadonly
@@ -1194,9 +1191,21 @@ export default function SetupWizard({ detectError: propDetectError }) {
                       </div>
                     )}
 
+                    <div className="dm-mt" style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 16, marginTop: 16, background: 'var(--surface-1)' }}>
+                      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px 0' }}>Required SQL</h4>
+                      <pre className="code-block wizard-sql" style={{ maxHeight: 300, overflow: 'auto' }}>{sql || recommendations.filter((r) => r.action === 'create').map((r) => safeSql(r)).filter(Boolean).join('\n\n')}</pre>
+                      <div className="toolbar-row dm-toolbar-mt" style={{ gap: 8 }}>
+                        <Button variant="ghost" icon="copy" size="sm" onClick={handleCopySql}>
+                          {sqlCopied ? 'Copied!' : 'Copy SQL'}
+                        </Button>
+                        <Button variant="ghost" icon="download" size="sm" onClick={handleDownloadSql}>
+                          Download
+                        </Button>
+                      </div>
+                    </div>
                     <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
-                      <Button variant="primary" className="btn--block" icon="bolt" loading={busy} onClick={handleReviewDone}>
-                        {busy ? 'Creating resources...' : `Create Missing Resources (${recommendations.filter((r) => r.action === 'create').length} items)`}
+                      <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handleReviewDone}>
+                        I've run the SQL — Verify
                       </Button>
                       <Button variant="ghost" icon="download" onClick={handleExportReport}>
                         Export Report
@@ -1544,7 +1553,7 @@ export default function SetupWizard({ detectError: propDetectError }) {
             {/* --- READY / FINISH --- */}
             {step === currentSteps.length && (
               <>
-                {method === 'simple' && postScan && validateResult?.valid && !comparison?.summary?.missingTables && !comparison?.summary?.missingFunctions ? (
+                {!comparison?.summary?.missingTables && !comparison?.summary?.missingFunctions ? (
                   <>
                     <CertificationReport preScan={preScan} postScan={postScan} preDuplicates={duplicateScanResult} recommendations={recommendations} />
                     <div className="dm-toolbar-mt" style={{ display: 'flex', gap: 8 }}>
@@ -1557,22 +1566,11 @@ export default function SetupWizard({ detectError: propDetectError }) {
                     </div>
                   </>
                 ) : (
-                  <>
-                    {validateResult?.valid && !comparison?.summary?.missingTables && !comparison?.summary?.missingFunctions && (
-                      <div className="dm-toolbar-mt">
-                        <Button variant="primary" className="btn--block" icon="arrow" onClick={handleFinish}>
-                          Continue to Setup
-                        </Button>
-                      </div>
-                    )}
-                    {(!validateResult || !validateResult.valid || comparison?.summary?.missingTables > 0 || comparison?.summary?.missingFunctions > 0) && (
-                      <div className="dm-toolbar-mt">
-                        <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handlePostVerify}>
-                          Run Verification
-                        </Button>
-                      </div>
-                    )}
-                  </>
+                  <div className="dm-toolbar-mt">
+                    <Button variant="primary" className="btn--block" icon="refresh" loading={busy} onClick={handlePostVerify}>
+                      Run Verification
+                    </Button>
+                  </div>
                 )}
               </>
             )}
