@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 
 const DebugContext = createContext(null);
@@ -31,7 +31,7 @@ export function DebugProvider({ children }) {
 }
 
 export function useDebug() {
-  return useContext(DebugContext) || { debugMode: false, toggleDebug: () => {} };
+  return useContext(DebugContext) || { debugMode: false, toggleDebug: () => { } };
 }
 
 export default DebugContext;

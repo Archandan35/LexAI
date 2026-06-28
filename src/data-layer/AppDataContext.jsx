@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useCallback } from 'react';
 import { caseLogic } from '@/logic/caseLogic.js';
 
 // AppDataContext — shares the case list app-wide so dropdowns (order sheet, case
@@ -26,7 +26,7 @@ export function AppDataProvider({ children }) {
 }
 
 export function useAppData() {
-  return useContext(AppDataContext) || { cases: [], ready: false, refreshCases: () => {} };
+  return useContext(AppDataContext) || { cases: [], ready: false, refreshCases: () => { } };
 }
 
 export default AppDataContext;
