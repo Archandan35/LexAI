@@ -66,7 +66,7 @@ export const MODULES = [
 export const MODULE_KEYS = MODULES.map((m) => m.key);
 export const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.key, m]));
 
-// A permission string is `module.action`, e.g. `cases.delete`.
+// A permission string is `module.action`, e.g. `cases.delet`.
 export function permKey(module, action) {
   return `${module}.${action}`;
 }
