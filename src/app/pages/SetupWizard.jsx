@@ -67,55 +67,48 @@ function MethodCard({ method, selected, onSelect }) {
   );
 }
 
-function SummaryBadge({ count, label, kind }) {
-  const color = kind === 'healthy' ? 'var(--success)' : kind === 'critical' ? 'var(--error)' : kind === 'warning' ? 'var(--warning)' : 'var(--text-muted)';
-  return (
-    <div className="wizard-badge" style={{ borderLeftColor: color }}>
-      <div className="wizard-badge__count" style={{ color }}>{count}</div>
-      <div className="wizard-badge__label">{label}</div>
-    </div>
-  );
-}
-
 function HealthReport({ comparison, duplicates }) {
   if (!comparison?.ok) return null;
   const s = comparison.summary;
   const dupCount = duplicates?.ok ? duplicates.duplicates.length : 0;
+  const rows = [
+    { label: 'Healthy Objects', count: s.healthyObjects || 0, status: 'healthy' },
+    { label: 'Missing Tables', count: s.missingTables || 0, status: s.missingTables > 0 ? 'critical' : 'healthy' },
+    { label: 'Missing Indexes', count: s.missingIndexes || 0, status: s.missingIndexes > 0 ? 'warning' : 'healthy' },
+    { label: 'Missing Policies', count: s.missingPolicies || 0, status: s.missingPolicies > 0 ? 'critical' : 'healthy' },
+    { label: 'Missing Functions', count: s.missingFunctions || 0, status: s.missingFunctions > 0 ? 'critical' : 'healthy' },
+    { label: 'Missing Foreign Keys', count: s.missingFks || 0, status: s.missingFks > 0 ? 'critical' : 'healthy' },
+    { label: 'Missing Triggers', count: s.missingTriggers || 0, status: s.missingTriggers > 0 ? 'warning' : 'healthy' },
+    { label: 'Missing Extensions', count: s.missingExtensions || 0, status: s.missingExtensions > 0 ? 'warning' : 'healthy' },
+    { label: 'Missing Roles', count: s.missingRoles || 0, status: s.missingRoles > 0 ? 'warning' : 'healthy' },
+    { label: 'Unknown Objects', count: s.extraTables + s.extraPolicies + s.extraIndexes, status: s.extraTables + s.extraPolicies + s.extraIndexes > 0 ? 'warning' : 'healthy' },
+    { label: 'Broken FKs', count: s.brokenFks || 0, status: s.brokenFks > 0 ? 'critical' : 'healthy' },
+  ];
   return (
     <div className="dm-mt">
       <h3 className="wizard-section-title">Database Health Summary</h3>
-      <div className="wizard-badges">
-        <SummaryBadge count={s.healthyObjects || 0} label="Healthy Objects" kind="healthy" />
-        <SummaryBadge count={s.missingTables + s.missingIndexes + s.missingPolicies + s.missingFunctions + s.missingTriggers + s.missingFks + s.missingExtensions + s.missingRoles} label="Missing Objects" kind={(s.missingTables || 0) + (s.missingIndexes || 0) + (s.missingPolicies || 0) + (s.missingFunctions || 0) + (s.missingTriggers || 0) + (s.missingFks || 0) + (s.missingExtensions || 0) + (s.missingRoles || 0) > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={s.extraTables + s.extraPolicies + s.extraIndexes} label="Unknown Objects" kind={s.extraTables + s.extraPolicies + s.extraIndexes > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.brokenFks || 0} label="Broken Objects" kind={s.brokenFks > 0 ? 'critical' : 'healthy'} />
-        <SummaryBadge count={dupCount} label="Duplicates" kind={dupCount > 0 ? 'warning' : 'healthy'} />
-        <SummaryBadge count={s.warningCount || 0} label="Warnings" kind={s.warningCount > 0 ? 'warning' : 'healthy'} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 85px', gap: '3px 10px', marginTop: 10, fontSize: 13 }}>
+        {['Category', 'Count', 'Status'].map((h) => (
+          <div key={h} style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '5px 8px' }}>{h}</div>
+        ))}
+        {rows.map((r) => {
+          const sc = r.status === 'healthy' ? 'var(--success)' : r.status === 'critical' ? 'var(--error)' : 'var(--warning)';
+          const bg = r.status === 'healthy' ? 'transparent' : r.status === 'critical' ? 'rgba(239,68,68,0.06)' : 'rgba(234,179,8,0.06)';
+          const sTxt = r.status === 'healthy' ? 'PASS' : r.status === 'critical' ? 'FAIL' : 'WARN';
+          return (
+            <React.Fragment key={r.label}>
+              <div style={{ padding: '5px 8px', background: bg, borderRadius: 4 }}>{r.label}</div>
+              <div style={{ padding: '5px 8px', background: bg, borderRadius: 4, textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.count}</div>
+              <div style={{ padding: '5px 8px', background: bg, borderRadius: 4, color: sc, fontWeight: 600, fontSize: 12 }}>{sTxt}</div>
+            </React.Fragment>
+          );
+        })}
       </div>
-    </div>
-  );
-}
-
-function FindingRow({ finding, selected, onToggle, expanded, onExpand }) {
-  const severityColor = finding.severity === 'critical' ? 'var(--error)' : finding.severity === 'warning' ? 'var(--warning)' : 'var(--text-muted)';
-  return (
-      <div className={`wizard-finding ${expanded ? 'wizard-finding--expanded' : ''}`}>
-        <div className="wizard-finding__row" onClick={onExpand}>
-          <span className="wizard-finding__severity" style={{ color: severityColor }}>
-            <Icon name={finding.severity === 'critical' || finding.severity === 'warning' ? 'alert' : 'info'} size={14} />
-          </span>
-        <span className="wizard-finding__label">{finding.label}</span>
-        <span className="wizard-finding__action">{finding.action}</span>
-        <span className="wizard-finding__target">{finding.target}</span>
-        <label className="wizard-finding__checkbox" onClick={(e) => e.stopPropagation()}>
-          <input type="checkbox" checked={selected} onChange={() => onToggle(finding.id)} />
-        </label>
-      </div>
-      {expanded && (
-        <div className="wizard-finding__detail">
-          {finding.description}
-          {finding.sql && <pre className="code-block code-block--sm dm-mt">{finding.sql}</pre>}
-        </div>
+      {dupCount > 0 && (
+        <div style={{ marginTop: 8, fontSize: 13, color: 'var(--warning)', fontWeight: 500 }}>Duplicates: {dupCount} duplicate{dupCount !== 1 ? 's' : ''} detected</div>
+      )}
+      {(s.warningCount || 0) > 0 && (
+        <div style={{ marginTop: 4, fontSize: 13, color: 'var(--warning)', fontWeight: 500 }}>Warnings: {s.warningCount}</div>
       )}
     </div>
   );
@@ -127,37 +120,66 @@ function FindingCategory({ title, findings, selectedIds, onToggle, kind }) {
   const allSelected = findings.every((f) => selectedIds.has(f.id));
   const someSelected = findings.some((f) => selectedIds.has(f.id));
   return (
-    <div className="dm-mt">
-      <div className="flex-row gap-8" style={{ alignItems: 'center', marginBottom: 8 }}>
-        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, flex: 1 }}>{title} ({findings.length})</h4>
-        <label className="flex-row gap-4" style={{ fontSize: 13, cursor: 'pointer', alignItems: 'center' }}>
-          <input
-            type="checkbox"
-            checked={allSelected}
-            ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
-            onChange={() => {
-              for (const f of findings) {
-                if (allSelected) {
-                  if (selectedIds.has(f.id)) onToggle(f.id);
-                } else {
-                  if (!selectedIds.has(f.id)) onToggle(f.id);
+    <div style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden', marginTop: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 42 }}>
+        <div style={{ flex: '0 0 220px', padding: '10px 14px', background: 'var(--surface-1)', borderRight: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14 }}>
+          <span>{title}</span>
+          <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontVariantNumeric: 'tabular-nums' }}>({findings.length})</span>
+        </div>
+        <div style={{ flex: 1, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', fontWeight: 500 }}>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+              onChange={() => {
+                for (const f of findings) {
+                  if (allSelected) { if (selectedIds.has(f.id)) onToggle(f.id); }
+                  else { if (!selectedIds.has(f.id)) onToggle(f.id); }
                 }
-              }
-            }}
-          />
-          Select all
-        </label>
+              }}
+            />
+            Select all
+          </label>
+          <span style={{ width: 1, height: 18, background: 'var(--border)' }} />
+          {findings.slice(0, 10).map((f) => (
+            <label key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, cursor: 'pointer', padding: '2px 8px', borderRadius: 4, background: selectedIds.has(f.id) ? 'var(--brand-soft)' : 'transparent', whiteSpace: 'nowrap' }}
+              title={f.label || f.target}>
+              <input type="checkbox" checked={selectedIds.has(f.id)} onChange={() => onToggle(f.id)} />
+              <span>{f.target || f.label}</span>
+            </label>
+          ))}
+          {findings.length > 10 && (
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedId(expandedId ? null : 'overflow');
+              }}>
+              {expandedId === 'overflow' ? 'Show less' : `+${findings.length - 10} more`}
+            </span>
+          )}
+        </div>
       </div>
-      {findings.map((f) => (
-        <FindingRow
-          key={f.id}
-          finding={f}
-          selected={selectedIds.has(f.id)}
-          onToggle={onToggle}
-          expanded={expandedId === f.id}
-          onExpand={() => setExpandedId(expandedId === f.id ? null : f.id)}
-        />
-      ))}
+      {expandedId === 'overflow' && (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '8px 12px 8px 234px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {findings.slice(10).map((f) => (
+            <label key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, cursor: 'pointer', padding: '2px 8px', borderRadius: 4, background: selectedIds.has(f.id) ? 'var(--brand-soft)' : 'transparent', whiteSpace: 'nowrap' }}>
+              <input type="checkbox" checked={selectedIds.has(f.id)} onChange={() => onToggle(f.id)} />
+              <span>{f.target || f.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      {expandedId && expandedId !== 'overflow' && (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '8px 12px 8px 234px' }}>
+          {findings.filter((f) => f.id === expandedId).map((f) => (
+            <div key={f.id} style={{ fontSize: 13 }}>
+              <div style={{ color: 'var(--text-soft)', marginBottom: 4 }}>{f.description}</div>
+              {f.sql && <pre className="code-block code-block--sm">{f.sql}</pre>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
