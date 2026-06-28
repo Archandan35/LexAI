@@ -109,6 +109,7 @@ function systemSqlSupabaseAuth() {
     '-- Falls back to \'anon\' when the calling user is not authenticated',
     '-- (auth.uid() IS NULL) or when the users table is not yet accessible.',
     '',
+    'drop function if exists current_user_role() cascade;',
     'create or replace function current_user_role()',
     'returns text',
     'language plpgsql',
@@ -154,6 +155,7 @@ function systemSqlVerifyInstallation() {
     '-- ============================================================',
     '-- Returns JSONB with per-component health status.',
     '',
+    'drop function if exists verify_installation() cascade;',
     'create or replace function verify_installation()',
     'returns jsonb',
     'language plpgsql',
@@ -506,6 +508,7 @@ function systemSqlUserRoleTrigger() {
     '-- ============================================================',
     '-- 5b-sync. USER ROLE REGISTRY SYNC TRIGGER (post-DDL, depends on users table)',
     '-- ============================================================',
+    'drop function if exists sync_user_role_registry() cascade;',
     "create or replace function sync_user_role_registry()",
     'returns trigger',
     'language plpgsql',
@@ -1043,12 +1046,19 @@ function systemSqlPolicies({ onlyCollections } = {}) {
     'create policy cause_list_templates_user_select on cause_list_templates for select to authenticated using (current_user_role() = ANY(ARRAY[\'admin\',\'manager\',\'user\']));',
   ];
   const tableFromPolicy = (line) => {
-    const m = line.match(/^create policy \w+ on (\w+) for /);
-    return m ? m[1] : null;
+    const m = line.match(/^create policy (\w+) on (\w+) for /);
+    return m ? { name: m[1], table: m[2] } : null;
   };
   return raw.filter((line) => {
-    const table = tableFromPolicy(line);
-    return !table || keepTable(table);
+    const info = tableFromPolicy(line);
+    return !info || keepTable(info.table);
+  })
+  .map((line) => {
+    const info = tableFromPolicy(line);
+    if (info) {
+      return `drop policy if exists ${info.name} on ${info.table};\n${line}`;
+    }
+    return line;
   })
   .join('\n')
 }
@@ -1087,17 +1097,17 @@ function systemSqlIndexes() {
     '-- ============================================================',
     '-- 14. INDEXES',
     '-- ============================================================',
-    'create index if not exists idx_schema_registry_version on schema_registry (version);',
-    'create index if not exists idx_field_registry_entity on field_registry (entity);',
-    'create index if not exists idx_provider_registry_active on provider_registry (active);',
-    'create index if not exists idx_provider_adapter_active on provider_adapter_registry (active);',
-    'create index if not exists idx_schema_mapping_active on schema_mapping (active);',
-    'create index if not exists idx_mapping_history_entity on mapping_history (entity_name);',
-    'create index if not exists idx_provider_capabilities_provider on provider_capabilities (provider);',
-    'create index if not exists idx_provider_capabilities_feature on provider_capabilities (feature);',
-    'create index if not exists idx_entity_prefix_registry_prefix on entity_prefix_registry (prefix);',
-    'create index if not exists idx_foreign_key_registry_from on foreign_key_registry (from_entity);',
-    'create index if not exists idx_foreign_key_registry_to on foreign_key_registry (to_entity);',
+    'create index if not exists idx_schema_registry_version on "schema_registry" ("version");',
+    'create index if not exists idx_field_registry_entity on "field_registry" ("entity");',
+    'create index if not exists idx_provider_registry_active on "provider_registry" ("active");',
+    'create index if not exists idx_provider_adapter_active on "provider_adapter_registry" ("active");',
+    'create index if not exists idx_schema_mapping_active on "schema_mapping" ("active");',
+    'create index if not exists idx_mapping_history_entity_name on "mapping_history" ("entity_name");',
+    'create index if not exists idx_provider_capabilities_provider on "provider_capabilities" ("provider");',
+    'create index if not exists idx_provider_capabilities_feature on "provider_capabilities" ("feature");',
+    'create index if not exists idx_entity_prefix_registry_prefix on "entity_prefix_registry" ("prefix");',
+    'create index if not exists idx_foreign_key_registry_from_entity on "foreign_key_registry" ("from_entity");',
+    'create index if not exists idx_foreign_key_registry_to_entity on "foreign_key_registry" ("to_entity");',
   ].join('\n');
 }
 
