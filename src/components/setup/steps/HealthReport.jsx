@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { HealthAnalyzer } from '@/services/setup/HealthAnalyzer.js';
 import { DatabaseScanner } from '@/services/setup/DatabaseScanner.js';
 import { VerificationEngine } from '@/services/setup/VerificationEngine.js';
@@ -69,3 +70,4 @@ export default function HealthReport({ onComplete, back }) {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { userLogic } from '@/logic/userLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -95,3 +96,4 @@ export default function UserDetails() {
     </div>
   );
 }
+

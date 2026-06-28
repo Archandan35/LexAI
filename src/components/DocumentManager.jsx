@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import Card from './Card.jsx';
 import Button from './Button.jsx';
 import Badge from './Badge.jsx';
@@ -236,3 +237,4 @@ export function FolderManagerModal({ open, onClose, caseId, folders, kind, onCha
     </Modal>
   );
 }
+

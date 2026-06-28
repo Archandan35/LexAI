@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications.js';
 import Icon from './Icon.jsx';
@@ -48,3 +49,4 @@ export default function NotificationsBell() {
     </div>
   );
 }
+

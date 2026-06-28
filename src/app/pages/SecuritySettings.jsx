@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { userService } from '@/services/userService.js';
 import { settingsLogic } from '@/logic/settingsLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -124,3 +125,4 @@ export default function SecuritySettings() {
     </div>
   );
 }
+

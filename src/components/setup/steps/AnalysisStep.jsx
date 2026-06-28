@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { DatabaseScanner } from '@/services/setup/DatabaseScanner.js';
 import Button from '@/components/Button.jsx';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -80,3 +81,4 @@ export default function AnalysisStep({ onAnalyzed, back }) {
     </div>
   );
 }
+

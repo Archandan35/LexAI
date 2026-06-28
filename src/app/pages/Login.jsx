@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
@@ -100,3 +101,4 @@ export default function Login() {
     </div>
   );
 }
+

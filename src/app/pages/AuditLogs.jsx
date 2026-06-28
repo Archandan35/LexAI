@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { auditService } from '@/services/auditService.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -66,3 +67,4 @@ export default function AuditLogs() {
     </div>
   );
 }
+

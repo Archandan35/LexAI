@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
@@ -154,3 +155,4 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
     </Modal>
   );
 }
+

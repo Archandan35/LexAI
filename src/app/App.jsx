@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import AppRoutes from '@/routes/index.jsx';
 import { ToastProvider } from '@/data-layer/ToastContext.jsx';
 import { AuthProviderCtx } from '@/data-layer/AuthContext.jsx';
@@ -47,3 +48,4 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+

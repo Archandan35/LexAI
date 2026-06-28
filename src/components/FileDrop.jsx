@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import Icon from './Icon.jsx';
 import { bytes } from '@/utils/format.js';
 
@@ -34,3 +35,4 @@ export default function FileDrop({ onFile, accept = '.pdf,.docx,.doc,.png,.jpg,.
     </div>
   );
 }
+

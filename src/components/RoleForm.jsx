@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Field, Input, Textarea, Select } from './Field.jsx';
 import Button from './Button.jsx';
 
@@ -41,3 +42,4 @@ export default function RoleForm({ initial, onSubmit, onCancel, busy }) {
     </div>
   );
 }
+

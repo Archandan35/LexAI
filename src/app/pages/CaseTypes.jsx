@@ -1,3 +1,4 @@
+import { useState, useCallback, useRef } from 'react';
 import { useCaseTypes } from '@/hooks/useCaseTypes.js';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -312,3 +313,4 @@ export default function CaseTypes() {
     </div>
   );
 }
+

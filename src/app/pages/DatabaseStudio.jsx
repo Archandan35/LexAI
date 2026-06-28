@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -355,3 +356,4 @@ function SchemaPreview({ table }) {
   }, [table]);
   return <pre className="code-block">{sql || 'Loading…'}</pre>;
 }
+

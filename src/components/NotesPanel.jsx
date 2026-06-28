@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Card from './Card.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
@@ -71,3 +72,4 @@ export default function NotesPanel({ caseId, notes, onChanged }) {
     </Card>
   );
 }
+

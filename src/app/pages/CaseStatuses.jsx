@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -97,3 +98,4 @@ export default function CaseStatuses() {
     </div>
   );
 }
+

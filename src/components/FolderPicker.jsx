@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Field, Select, Input } from './Field.jsx';
 import Button from './Button.jsx';
 
@@ -36,3 +37,4 @@ export default function FolderPicker({ folders = [], value, onChange, onCreateFo
     </Field>
   );
 }
+

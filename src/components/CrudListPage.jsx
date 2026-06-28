@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -58,3 +59,4 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
     </div>
   );
 }
+

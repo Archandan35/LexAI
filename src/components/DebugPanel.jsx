@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { DateEngine } from '@/core/DateEngine.js';
@@ -142,3 +143,4 @@ export default function DebugPanel({ logs, error, result, onClear, onCopy, colla
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import Card from './Card.jsx';
 import Button from './Button.jsx';
 import Badge from './Badge.jsx';
@@ -111,3 +112,4 @@ export default function CaseHistory({ caseId, onChanged }) {
     </Card>
   );
 }
+

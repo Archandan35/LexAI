@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Button from '@/components/Button.jsx';
 import { ConnectionManager } from '@/services/setup/ConnectionManager.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -132,3 +133,4 @@ export default function ConnectionStep({ method, onConnected, back }) {
     </div>
   );
 }
+

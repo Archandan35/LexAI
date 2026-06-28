@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
@@ -203,3 +204,4 @@ export default function Clients() {
     </div>
   );
 }
+

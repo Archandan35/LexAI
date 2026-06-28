@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '@/hooks/useDashboard.js';
 import Icon from '@/components/Icon.jsx';

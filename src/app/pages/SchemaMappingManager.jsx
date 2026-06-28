@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { SchemaMappingService } from '@/services/schemaMappingService.js';
 import { listSchemas } from '@/data-provider/schema/index.js';
 import PageHeader from '@/components/PageHeader.jsx';
@@ -392,3 +393,4 @@ export default function SchemaMappingManager() {
     </div>
   );
 }
+

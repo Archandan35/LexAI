@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLogCapture } from '@/components/DebugPanel.jsx';
 import { DateEngine } from '@/core/DateEngine.js';
 
@@ -67,3 +68,4 @@ const btnStyle = {
   background: '#334155', border: 'none', color: '#e2e8f0',
   cursor: 'pointer', fontSize: 11, padding: '2px 8px', borderRadius: 4,
 };
+

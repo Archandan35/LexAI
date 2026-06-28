@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useDebug } from '@/data-layer/DebugContext.jsx';

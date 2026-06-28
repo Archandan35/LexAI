@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 
 // RichTextEditor — lightweight contentEditable editor using the built-in
 // document.execCommand formatting (bold/italic/underline/lists). No external
@@ -47,3 +48,4 @@ export default function RichTextEditor({ value, onChange }) {
     </div>
   );
 }
+

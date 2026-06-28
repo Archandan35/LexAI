@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { InstallationExecutor } from '@/services/setup/InstallationExecutor.js';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -153,3 +154,4 @@ export default function InstallStep({ scanResult, onInstalled, onManualSql }) {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import { Input } from '@/components/Field.jsx';
@@ -129,3 +130,4 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -76,3 +77,4 @@ export default function CommandBar({ open, onClose }) {
     </div>
   );
 }
+

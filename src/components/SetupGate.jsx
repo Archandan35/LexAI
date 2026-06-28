@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import SetupWizard from '@/app/pages/SetupWizard.jsx';
 import Spinner from './Spinner.jsx';
@@ -42,3 +43,4 @@ export default function SetupGate({ children }) {
   }
   return children;
 }
+

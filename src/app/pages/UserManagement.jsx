@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '@/hooks/useUsers.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -281,3 +282,4 @@ export default function UserManagement() {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import Button from '@/components/Button.jsx';
 
 export default function RestoreStep({ onComplete, back }) {
@@ -91,3 +92,4 @@ export default function RestoreStep({ onComplete, back }) {
     </div>
   );
 }
+

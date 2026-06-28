@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ConnectionManager } from '@/services/setup/ConnectionManager.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
 
@@ -56,3 +57,4 @@ export default function DetectionStep({ onDetected, back }) {
     </div>
   );
 }
+

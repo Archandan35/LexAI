@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
@@ -363,3 +364,4 @@ export default function ManageCases() {
     </>
   );
 }
+

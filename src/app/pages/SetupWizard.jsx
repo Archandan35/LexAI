@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import ProgressTimeline from '@/components/setup/wizard/ProgressTimeline.jsx';
 import WelcomeStep from '@/components/setup/steps/WelcomeStep.jsx';
@@ -141,3 +142,4 @@ export default function SetupWizard({ detectError: propDetectError }) {
     </div>
   );
 }
+

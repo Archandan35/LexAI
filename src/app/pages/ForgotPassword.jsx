@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authLogic } from '@/logic/authLogic.js';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
@@ -55,3 +56,4 @@ export default function ForgotPassword() {
     </div>
   );
 }
+

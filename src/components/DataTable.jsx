@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import Icon from './Icon.jsx';
 import EmptyState from './EmptyState.jsx';
 
@@ -132,3 +133,4 @@ export default function DataTable({
     </div>
   );
 }
+

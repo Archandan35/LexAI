@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
@@ -64,3 +65,4 @@ export default function RestoreBackupModal({ backup, open, onClose, onRestored, 
     </Modal>
   );
 }
+

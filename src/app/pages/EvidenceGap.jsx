@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -84,3 +85,4 @@ export default function EvidenceGap() {
     </div>
   );
 }
+

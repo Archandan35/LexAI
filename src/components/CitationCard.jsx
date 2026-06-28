@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Icon from './Icon.jsx';
 import Badge from './Badge.jsx';
 import { formatDate } from '@/utils/format.js';
@@ -63,3 +64,4 @@ export default function CitationCard({ item, rank }) {
     </div>
   );
 }
+

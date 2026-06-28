@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import StageManager from './StageManager.jsx';
@@ -326,3 +327,4 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
     </div>
   );
 }
+

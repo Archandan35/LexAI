@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import CommandBar from '@/components/CommandBar.jsx';
@@ -82,3 +83,4 @@ export default function Topbar({ onToggle }) {
     </header>
   );
 }
+

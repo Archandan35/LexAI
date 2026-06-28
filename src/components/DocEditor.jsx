@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import Icon from './Icon.jsx';
 
 // DocEditor — Word-grade contentEditable editor (dependency-free, execCommand).
@@ -131,3 +132,4 @@ export default function DocEditor({
     </div>
   );
 }
+

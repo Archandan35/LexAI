@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/Icon.jsx';
 import { DateEngine } from '@/core/DateEngine.js';
 
@@ -95,3 +96,4 @@ export default function ApiDebugLog({ entries, onClear }) {
     </div>
   );
 }
+

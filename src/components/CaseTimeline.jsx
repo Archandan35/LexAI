@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Card from './Card.jsx';
 import Badge from './Badge.jsx';
 import Icon from './Icon.jsx';
@@ -46,3 +47,4 @@ export default function CaseTimeline({ caseId, refreshKey }) {
     </Card>
   );
 }
+

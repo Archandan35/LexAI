@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 
 const STEP_LABELS = [
   'Welcome', 'Method', 'Connect', 'Detect', 'Analyze',
@@ -83,3 +84,4 @@ export default function ProgressTimeline({ currentStep, goToStep }) {
     </>
   );
 }
+

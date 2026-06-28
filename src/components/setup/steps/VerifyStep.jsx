@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { VerificationEngine } from '@/services/setup/VerificationEngine.js';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -81,3 +82,4 @@ export default function VerifyStep({ onVerified, manualSql, back }) {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import Button from '@/components/Button.jsx';
 import StatusBadge from '../wizard/StatusBadge.jsx';
@@ -54,3 +55,4 @@ export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateS
     </div>
   );
 }
+
