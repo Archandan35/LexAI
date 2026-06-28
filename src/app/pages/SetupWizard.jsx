@@ -15,6 +15,7 @@ import FinishStep from '@/components/setup/steps/FinishStep.jsx';
 import RestoreStep from '@/components/setup/steps/RestoreStep.jsx';
 import { SqlGenerator } from '@/services/setup/SqlGenerator.js';
 import { ReportGenerator } from '@/services/setup/ReportGenerator.js';
+import { VerificationEngine } from '@/services/setup/VerificationEngine.js';
 import { WizardLogger } from '@/services/setup/WizardLogger.js';
 
 export default function SetupWizard({ detectError: propDetectError }) {
@@ -88,6 +89,30 @@ export default function SetupWizard({ detectError: propDetectError }) {
     window.location.href = '/';
   };
 
+  const [verifying, setVerifying] = useState(false);
+
+  const handleVerify = async () => {
+    setVerifying(true);
+    setError('');
+    try {
+      const result = await VerificationEngine.verify();
+      if (result.ok && !result.needsSetup && result.missing.length === 0) {
+        toast.success('Database verified — all resources are present.');
+        setScanResult(result);
+        setStep(10);
+      } else {
+        const msg = `${result.missing.length} resource(s) still missing. Run the SQL again or check manually.`;
+        setError(msg);
+        toast.error(msg);
+      }
+    } catch (e) {
+      setError(e?.message || 'Verification failed');
+      toast.error('Verification failed');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const handleExport = () => {
     const report = ReportGenerator.generate(health, scanResult, health?.verification, {});
     ReportGenerator.download(report);
@@ -114,7 +139,8 @@ export default function SetupWizard({ detectError: propDetectError }) {
       case 6: return <PlanStep scanResult={scanResult} onPlanned={handlePlanned} back={back} />;
       case 7: return (
         <ReviewStep scanResult={scanResult} sqlText={sqlText}
-          onInstall={handleInstall} onGenerateSql={handleExport} back={back} />
+          onInstall={handleInstall} onGenerateSql={handleExport}
+          onVerify={handleVerify} verifying={verifying} back={back} />
       );
       case 8: return <InstallStep scanResult={scanResult} onInstalled={handleInstalled} onManualSql={handleManualSql} />;
       case 9: return <VerifyStep onVerified={handleVerified} manualSql={sqlText} back={() => goTo(7)} />;

@@ -3,7 +3,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import Button from '@/components/Button.jsx';
 import StatusBadge from '../wizard/StatusBadge.jsx';
 
-export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateSql, back }) {
+export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateSql, onVerify, verifying, back }) {
   const toast = useToast();
   const missing = scanResult?.missing || [];
   const hasSql = sqlText && sqlText.trim().length > 0;
@@ -20,7 +20,7 @@ export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateS
   return (
     <div className="wizard-step">
       <p className="wizard-desc">
-        Review the changes that will be made to your database.
+        Copy the SQL below and run it in your database, then click <strong>Verify</strong> to confirm everything is installed.
       </p>
       <div className="wizard-summary-grid">
         <div className="wizard-summary-card wizard-summary-card--green">
@@ -48,8 +48,11 @@ export default function ReviewStep({ scanResult, sqlText, onInstall, onGenerateS
       )}
       <div className="wizard-actions">
         <Button variant="ghost" onClick={back}>Back</Button>
-        <Button variant="primary" icon="bolt" onClick={onInstall} disabled={missing.length === 0}>
-          Install
+        <Button variant="primary" icon="check" onClick={onVerify} disabled={verifying}>
+          {verifying ? 'Verifying...' : 'Verify Database'}
+        </Button>
+        <Button variant="ghost" icon="bolt" onClick={onInstall} disabled={missing.length === 0}>
+          Auto Install
         </Button>
       </div>
     </div>
