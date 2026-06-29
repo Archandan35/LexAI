@@ -322,7 +322,7 @@ export default function BenchTypes() {
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
                   <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
                     <option value="">— choose —</option>
-                    {items.map(item => <option key={item.id} value={item.id}>{item.name} ({item.short_code})</option>)}
+                    {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
                 </div>
                 {editId && (
@@ -359,7 +359,7 @@ export default function BenchTypes() {
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
                   <Select value={delId} onChange={e => setDelId(e.target.value)}>
                     <option value="">— choose —</option>
-                    {items.map(item => <option key={item.id} value={item.id}>{item.name} ({item.short_code})</option>)}
+                    {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
                 </div>
                 {delId && (
@@ -388,7 +388,6 @@ export default function BenchTypes() {
                       <label key={item.id} className={`bench-types__checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="bench-types__checkbox-name">{item.name}</span>
-                        <code className="bench-types__checkbox-code">{item.short_code}</code>
                         <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
                       </label>
                     ))}
