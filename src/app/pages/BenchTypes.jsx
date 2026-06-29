@@ -62,7 +62,17 @@ export default function BenchTypes() {
   const load = async () => {
     setLoading(true);
     const res = await benchTypeLogic.list();
-    if (Array.isArray(res)) setItems(res);
+    if (Array.isArray(res)) {
+      let data = res;
+      const allZero = data.every(i => !i.display_order);
+      if (allZero) {
+        data = data.map((i, idx) => ({ ...i, display_order: idx + 1 }));
+        for (const item of data) {
+          await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
+        }
+      }
+      setItems(data);
+    }
     setLoading(false);
   };
 
