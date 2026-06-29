@@ -189,26 +189,36 @@ export default function BenchTypes() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const handleDragStart = (index) => { setDragIndex(index); setDropIndex(null); };
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    setDragIndex(index);
+    setDropIndex(null);
+  };
   const handleDragOver = (e, index) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
     if (dragIndex === null || index === dragIndex || search) return;
     setDropIndex(index);
   };
   const handleDragLeave = () => { setDropIndex(null); };
-  const handleDrop = async (index) => {
-    if (dragIndex === null || dragIndex === index || search) return;
+  const handleDrop = (e, index) => {
+    e.preventDefault();
+    const from = Number(e.dataTransfer.getData('text/plain'));
+    if (isNaN(from) || from === index || search) return;
     const reordered = [...filtered];
-    const [moved] = reordered.splice(dragIndex, 1);
+    const [moved] = reordered.splice(from, 1);
     reordered.splice(index, 0, moved);
     const updated = reordered.map((item, i) => ({ ...item, display_order: i + 1 }));
     setItems(updated);
     setDragIndex(null);
     setDropIndex(null);
-    for (const item of updated) {
-      await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
-    }
-    load();
+    (async () => {
+      for (const item of updated) {
+        await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
+      }
+      load();
+    })();
   };
   const handleDragEnd = () => { setDragIndex(null); setDropIndex(null); };
 
@@ -469,10 +479,10 @@ export default function BenchTypes() {
               <tr
                 key={item.id}
                 draggable={!search}
-                onDragStart={() => handleDragStart(idx)}
+                onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDragLeave={handleDragLeave}
-                onDrop={() => handleDrop(idx)}
+                onDrop={(e) => handleDrop(e, idx)}
                 onDragEnd={handleDragEnd}
                 className={`bench-types__row${dragIndex === idx ? ' bench-types__row--dragging' : ''}${dropIndex === idx && dragIndex !== null ? ' bench-types__row--drop-target' : ''}`}
               >
