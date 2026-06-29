@@ -76,7 +76,7 @@ export const NAV_GROUPS = [
       { to: '/admin/users', label: 'Users', icon: 'users', module: 'users' },
       { to: '/admin/roles', label: 'Roles & Permissions', icon: 'lock', module: 'roles' },
       {
-        label: 'Database Management Center', icon: 'database',
+        label: 'Database Center', icon: 'database',
         children: [
           { to: '/admin/database-center/dashboard', label: 'Dashboard', icon: 'grid', module: 'admin' },
           { to: '/admin/database-center/data-explorer', label: 'Data Explorer', icon: 'search', module: 'admin' },
