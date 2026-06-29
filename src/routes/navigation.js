@@ -16,6 +16,7 @@ export const NAV_GROUPS = [
           { to: '/cases', label: 'Manage Cases', icon: 'file', end: true, module: 'manageCase' },
           { to: '/cases/order-sheet', label: 'Order Sheet', icon: 'calendar', module: 'orderSheet' },
           { to: '/cases/case-timeline', label: 'Case Timeline', icon: 'clock', module: 'timeline' },
+          { to: '/cases/hearings', label: 'Hearing Notes', icon: 'notes', module: 'hearingNotes' },
         ],
       },
       { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
@@ -87,6 +88,15 @@ export const NAV_GROUPS = [
           { to: '/admin/database-center/maintenance', label: 'Maintenance', icon: 'wrench', module: 'admin' },
           { to: '/admin/database-center/migration', label: 'Migration', icon: 'migrate', module: 'admin' },
           { to: '/admin/database-center/audit-activity', label: 'Audit & Activity', icon: 'activity', module: 'admin' },
+        ],
+      },
+      {
+        label: 'System Config', icon: 'gear',
+        children: [
+          { to: '/admin/security', label: 'Security Settings', icon: 'shield', module: 'settings' },
+          { to: '/admin/env-api', label: 'Env & API Manager', icon: 'globe', module: 'env' },
+          { to: '/admin/storage', label: 'Storage Settings', icon: 'folder', module: 'storage' },
+          { to: '/admin/permission-manager', label: 'Permission Manager', icon: 'lock', module: 'permissions' },
         ],
       },
     ],
