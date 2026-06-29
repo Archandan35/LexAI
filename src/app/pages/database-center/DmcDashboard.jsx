@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useBackups } from '@/hooks/useBackups.js';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
-import { userService } from '@/services/userService.js';
 import { bytes } from '@/utils/format.js';
-import { useAuth } from '@/data-layer/AuthContext.jsx';
 import Icon from '@/components/Icon.jsx';
 
 export default function DmcDashboard() {
-  const { user } = useAuth();
   const { backups, stats } = useBackups();
   const [health, setHealth] = useState({ status: 'checking', provider: '—', version: '—', collections: 0 });
 
   useEffect(() => {
-    databaseAdminService.connectionStatus().then((s) => {
-      setHealth({ status: s.connected ? 'connected' : 'disconnected', provider: s.provider || '—', version: s.version || '—', collections: s.collections || 0 });
+    Promise.all([
+      databaseAdminService.connectionStatus().catch(() => ({ connected: false })),
+    ]).then(([s]) => {
+      setHealth({
+        status: s.connected ? 'connected' : 'disconnected',
+        provider: databaseAdminService.providerName(),
+        version: String(databaseAdminService.schemaVersion()),
+        collections: databaseAdminService.knownCollections().length,
+      });
     }).catch(() => setHealth({ status: 'error', provider: '—', version: '—', collections: 0 }));
   }, []);
 
@@ -21,7 +25,7 @@ export default function DmcDashboard() {
     { label: 'Provider', value: health.provider, sub: 'Connection ' + health.status, dot: health.status === 'connected' ? 'ok' : health.status === 'error' ? 'err' : 'warn' },
     { label: 'Collections', value: health.collections, sub: 'Schema v' + health.version },
     { label: 'Total Backups', value: backups.length, sub: stats?.lastBackup ? 'Last: ' + new Date(stats.lastBackup).toLocaleDateString() : 'No backups yet' },
-    { label: 'Backup Size', value: bytes(stats?.totalBytes || 0), sub: stats?.protectedCount + ' protected' },
+    { label: 'Backup Size', value: bytes(stats?.totalBytes || 0), sub: (stats?.protectedCount ?? 0) + ' protected' },
     { label: 'Retention', value: stats?.retention || '—', sub: stats?.frequency || 'manual' },
     { label: 'Storage Used', value: bytes(0), sub: 'File storage' },
   ];

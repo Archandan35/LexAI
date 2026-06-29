@@ -35,8 +35,8 @@ export default function DmcMigration() {
 
   const startValidation = async () => {
     try {
-      const info = await databaseAdminService.connectionStatus();
-      setReport({ source: sourceProvider, target: targetProvider, schemaVersion: info.version || '—', collections: info.collections || 0, status: 'ready' });
+      await databaseAdminService.connectionStatus();
+      setReport({ source: sourceProvider, target: targetProvider, schemaVersion: String(databaseAdminService.schemaVersion()), collections: databaseAdminService.knownCollections().length, status: 'ready' });
       toast.push('Validation ready. Schema mapping complete.', 'info');
     } catch (e) {
       toast.push(e.message, 'error');
