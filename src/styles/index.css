@@ -16236,6 +16236,19 @@ kbd.cmd__kbd {
 .bench-types__cell-code { font-size: 12px; background: var(--bg); padding: 2px 8px; border-radius: 4px; color: var(--navy-600); }
 .bench-types__cell-desc { color: var(--text-soft); font-size: 13px; }
 .bench-types__hint { display: block; font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+.bench-types__checkbox-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.bench-types__checkbox-all { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text); }
+.bench-types__checkbox-all input[type="checkbox"] { accent-color: var(--brand); width: 16px; height: 16px; cursor: pointer; }
+.bench-types__checkbox-count { font-size: 12px; color: var(--text-faint); margin-left: auto; }
+.bench-types__checkbox-list { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.bench-types__checkbox-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background 0.1s; border-bottom: 1px solid var(--border); }
+.bench-types__checkbox-row:last-child { border-bottom: none; }
+.bench-types__checkbox-row:hover { background: var(--bg); }
+.bench-types__checkbox-row.checked { background: var(--brand-soft); }
+.bench-types__checkbox-row input[type="checkbox"] { accent-color: var(--brand); width: 16px; height: 16px; cursor: pointer; }
+.bench-types__checkbox-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+.bench-types__checkbox-code { font-size: 11.5px; background: var(--bg); padding: 1px 6px; border-radius: 4px; color: var(--navy-600); }
+.bench-types__checkbox-empty { padding: 24px; text-align: center; color: var(--text-faint); font-size: 13px; }
 .bench-types__empty { padding: 32px 16px; text-align: center; color: var(--text-faint); font-size: 14px; }
 .bench-types__footer { margin-top: 12px; font-size: 12.5px; color: var(--text-faint); }
 .bench-types__loading { display: grid; place-items: center; padding: 60px; }

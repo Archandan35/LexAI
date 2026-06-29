@@ -50,7 +50,7 @@ export default function BenchTypes() {
 
   const [bulkAddText, setBulkAddText] = useState('');
   const [bulkEditText, setBulkEditText] = useState('');
-  const [bulkDelText, setBulkDelText] = useState('');
+  const [bulkDelSelected, setBulkDelSelected] = useState(new Set());
 
   const [importFile, setImportFile] = useState(null);
 
@@ -69,7 +69,7 @@ export default function BenchTypes() {
     setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
     setEditId(''); setEditName(''); setEditCode('');
     setDelId(''); setImportFile(null);
-    setBulkAddText(''); setBulkEditText(''); setBulkDelText('');
+    setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
   };
 
   const activate = (key) => {
@@ -135,15 +135,29 @@ export default function BenchTypes() {
     else toast.push(res.error, 'error');
   };
 
+  const toggleBulkDel = (id) => {
+    setBulkDelSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (bulkDelSelected.size === filtered.length) {
+      setBulkDelSelected(new Set());
+    } else {
+      setBulkDelSelected(new Set(filtered.map(i => i.id)));
+    }
+  };
+
   const doBulkDelete = async () => {
-    const lines = bulkDelText.split('\n').map(l => l.trim()).filter(Boolean);
-    if (!lines.length) { toast.push('Paste at least one name or code.', 'error'); return; }
-    const toDelete = items.filter(x => lines.includes(x.name) || lines.includes(x.short_code));
-    if (!toDelete.length) { toast.push('No matching items found.', 'error'); return; }
-    if (!window.confirm(`Delete ${toDelete.length} item(s)?`)) return;
-    for (const item of toDelete) await benchTypeLogic.remove(item.id);
-    setBulkDelText('');
-    toast.push(`${toDelete.length} deleted.`, 'success');
+    if (!bulkDelSelected.size) { toast.push('Select at least one bench type.', 'error'); return; }
+    if (!window.confirm(`Delete ${bulkDelSelected.size} bench type(s)?`)) return;
+    for (const id of bulkDelSelected) await benchTypeLogic.remove(id);
+    const count = bulkDelSelected.size;
+    setBulkDelSelected(new Set());
+    toast.push(`${count} deleted.`, 'success');
     load();
   };
 
@@ -293,17 +307,32 @@ export default function BenchTypes() {
             {activeAction === 'delete' && subMode === 'bulk' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
-                  <label className="bench-types__label">Paste names or short codes to delete — one per line</label>
-                  <Textarea
-                    value={bulkDelText}
-                    onChange={e => setBulkDelText(e.target.value)}
-                    placeholder={'Single Bench\nSB\nDivision Bench'}
-                    rows={8}
-                  />
-                  <div className="bench-types__warning">
-                    <Icon name="alert" size={16} />
-                    <span>All matched items will be permanently deleted.</span>
+                  <label className="bench-types__label">Select bench types to delete</label>
+                  <div className="bench-types__checkbox-toolbar">
+                    <label className="bench-types__checkbox-all">
+                      <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />
+                      <span>Select all {filtered.length}</span>
+                    </label>
+                    <span className="bench-types__checkbox-count">{bulkDelSelected.size} selected</span>
                   </div>
+                  <div className="bench-types__checkbox-list">
+                    {filtered.length === 0 ? (
+                      <div className="bench-types__checkbox-empty">No bench types to display.</div>
+                    ) : filtered.map(item => (
+                      <label key={item.id} className={`bench-types__checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
+                        <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
+                        <span className="bench-types__checkbox-name">{item.name}</span>
+                        <code className="bench-types__checkbox-code">{item.short_code}</code>
+                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {bulkDelSelected.size > 0 && (
+                    <div className="bench-types__warning">
+                      <Icon name="alert" size={16} />
+                      <span>{bulkDelSelected.size} bench type(s) will be permanently deleted.</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -361,7 +390,7 @@ export default function BenchTypes() {
                 <td><code className="bench-types__cell-code">{item.short_code}</code></td>
                 <td><span className="bench-types__cell-desc">{item.description || '—'}</span></td>
                 <td>{item.display_order ?? '—'}</td>
-                <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
+                <td><span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span></td>
               </tr>
             ))}
           </tbody>
