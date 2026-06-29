@@ -44,13 +44,9 @@ import UserDetails from '@/app/pages/UserDetails.jsx';
 import RoleManagement from '@/app/pages/RoleManagement.jsx';
 import RoleDetails from '@/app/pages/RoleDetails.jsx';
 import PermissionManager from '@/app/pages/PermissionManager.jsx';
-import BackupManagement from '@/app/pages/BackupManagement.jsx';
-import BackupHistory from '@/app/pages/BackupHistory.jsx';
-import BackupSettings from '@/app/pages/BackupSettings.jsx';
-import AuditLogs from '@/app/pages/AuditLogs.jsx';
 import StorageSettings from '@/app/pages/StorageSettings.jsx';
 import EnvApiManager from '@/app/pages/EnvApiManager.jsx';
-import DatabaseManager from '@/app/pages/DatabaseManager.jsx';
+import SetupWizard from '@/app/pages/SetupWizard.jsx';
 import AdminSetup from '@/app/pages/AdminSetup.jsx';
 import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
 import SystemSettings from '@/app/pages/SystemSettings.jsx';
@@ -69,11 +65,6 @@ import Priorities from '@/app/pages/Priorities.jsx';
 import CaseStatuses from '@/app/pages/CaseStatuses.jsx';
 import JudgeList from '@/app/pages/JudgeList.jsx';
 import PartyTypes from '@/app/pages/PartyTypes.jsx';
-import SchemaManager from '@/app/pages/SchemaManager.jsx';
-import SchemaMappingManager from '@/app/pages/SchemaMappingManager.jsx';
-import DatabaseStudio from '@/app/pages/DatabaseStudio.jsx';
-import SqlConsole from '@/app/pages/SqlConsole.jsx';
-import RestoreCenter from '@/app/pages/RestoreCenter.jsx';
 import PerformanceAnalytics from '@/app/pages/PerformanceAnalytics.jsx';
 import CustomReports from '@/app/pages/CustomReports.jsx';
 import DatabaseCenter from '@/app/pages/database-center/DatabaseCenter.jsx';
@@ -164,6 +155,7 @@ export default function AppRoutes() {
         <Route path="/admin/security" element={G('settings', <SecuritySettings />)} />
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
         <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
+        <Route path="/admin/setup-wizard" element={G('admin', <SetupWizard />)} />
 
         {/* ── Database Management Center ── */}
         <Route path="/admin/database-center" element={G('admin', <DatabaseCenter />)}>

@@ -97,6 +97,7 @@ export const NAV_GROUPS = [
           { to: '/admin/env-api', label: 'Env & API Manager', icon: 'globe', module: 'env' },
           { to: '/admin/storage', label: 'Storage Settings', icon: 'folder', module: 'storage' },
           { to: '/admin/permission-manager', label: 'Permission Manager', icon: 'lock', module: 'permissions' },
+          { to: '/admin/setup-wizard', label: 'Setup Wizard', icon: 'wrench', module: 'admin' },
         ],
       },
     ],
