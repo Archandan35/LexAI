@@ -76,6 +76,16 @@ import SqlConsole from '@/app/pages/SqlConsole.jsx';
 import RestoreCenter from '@/app/pages/RestoreCenter.jsx';
 import PerformanceAnalytics from '@/app/pages/PerformanceAnalytics.jsx';
 import CustomReports from '@/app/pages/CustomReports.jsx';
+import DatabaseCenter from '@/app/pages/database-center/DatabaseCenter.jsx';
+import DmcDashboard from '@/app/pages/database-center/DmcDashboard.jsx';
+import DmcDataExplorer from '@/app/pages/database-center/DmcDataExplorer.jsx';
+import DmcDeleteManager from '@/app/pages/database-center/DmcDeleteManager.jsx';
+import DmcImportCenter from '@/app/pages/database-center/DmcImportCenter.jsx';
+import DmcExportCenter from '@/app/pages/database-center/DmcExportCenter.jsx';
+import DmcBackupRecovery from '@/app/pages/database-center/DmcBackupRecovery.jsx';
+import DmcMaintenance from '@/app/pages/database-center/DmcMaintenance.jsx';
+import DmcMigration from '@/app/pages/database-center/DmcMigration.jsx';
+import DmcAuditActivity from '@/app/pages/database-center/DmcAuditActivity.jsx';
 import TestDesignPage from '@/app/pages/TestDesignPage.jsx';
 
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
@@ -151,19 +161,35 @@ export default function AppRoutes() {
         <Route path="/admin/users" element={G('users', <UserManagement />)} />
         <Route path="/admin/users/:id" element={G('users', <UserDetails />)} />
         <Route path="/admin/roles-permissions" element={<Navigate to="/admin/roles" replace />} />
-        <Route path="/admin/activity" element={G('audit', <AuditLogs />)} />
-        <Route path="/admin/backup" element={G('backup', <BackupManagement />)} />
-        <Route path="/admin/backup/history" element={G('backup', <BackupHistory />)} />
-        <Route path="/admin/backup/settings" element={G('backup', <BackupSettings />)} />
-        <Route path="/admin/backup/restore" element={G('backup', <RestoreCenter />)} />
-        <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
-        <Route path="/admin/database" element={G('settings', <DatabaseManager />)} />
-        <Route path="/admin/database/studio" element={G('settings', <DatabaseStudio />)} />
-        <Route path="/admin/database/sql" element={G('settings', <SqlConsole />)} />
-        <Route path="/admin/schema" element={G('schema', <SchemaManager />)} />
-        <Route path="/admin/schema-mapping" element={G('settings', <SchemaMappingManager />)} />
         <Route path="/admin/security" element={G('settings', <SecuritySettings />)} />
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
+        <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
+
+        {/* ── Database Management Center ── */}
+        <Route path="/admin/database-center" element={G('admin', <DatabaseCenter />)}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DmcDashboard />} />
+          <Route path="data-explorer" element={<DmcDataExplorer />} />
+          <Route path="delete-manager" element={<DmcDeleteManager />} />
+          <Route path="import" element={<DmcImportCenter />} />
+          <Route path="export" element={<DmcExportCenter />} />
+          <Route path="backup-recovery" element={<DmcBackupRecovery />} />
+          <Route path="maintenance" element={<DmcMaintenance />} />
+          <Route path="migration" element={<DmcMigration />} />
+          <Route path="audit-activity" element={<DmcAuditActivity />} />
+        </Route>
+
+        {/* ── Old routes → DMC redirects ── */}
+        <Route path="/admin/activity" element={<Navigate to="/admin/database-center/audit-activity" replace />} />
+        <Route path="/admin/backup" element={<Navigate to="/admin/database-center/backup-recovery" replace />} />
+        <Route path="/admin/backup/history" element={<Navigate to="/admin/database-center/backup-recovery" replace />} />
+        <Route path="/admin/backup/settings" element={<Navigate to="/admin/database-center/backup-recovery" replace />} />
+        <Route path="/admin/backup/restore" element={<Navigate to="/admin/database-center/backup-recovery" replace />} />
+        <Route path="/admin/database" element={<Navigate to="/admin/database-center/dashboard" replace />} />
+        <Route path="/admin/database/studio" element={<Navigate to="/admin/database-center/data-explorer" replace />} />
+        <Route path="/admin/database/sql" element={<Navigate to="/admin/database-center/data-explorer" replace />} />
+        <Route path="/admin/schema" element={<Navigate to="/admin/database-center/data-explorer" replace />} />
+        <Route path="/admin/schema-mapping" element={<Navigate to="/admin/database-center/migration" replace />} />
 
         {/* ── Tools ── */}
         <Route path="/test-design" element={<TestDesignPage />} />
@@ -193,7 +219,7 @@ export default function AppRoutes() {
         <Route path="/admin/court-types" element={<Navigate to="/court-management/courts" replace />} />
         <Route path="/court-management/hierarchy" element={<Navigate to="/court-management/courts" replace />} />
         <Route path="/admin/case-types" element={<Navigate to="/court-management/case-types" replace />} />
-        <Route path="/admin/audit" element={<Navigate to="/admin/activity" replace />} />
+        <Route path="/admin/audit" element={<Navigate to="/admin/database-center/audit-activity" replace />} />
         <Route path="/admin/settings" element={<Navigate to="/settings" replace />} />
 
         {/* Admin sub-routes that still exist */}

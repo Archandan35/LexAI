@@ -75,16 +75,18 @@ export const NAV_GROUPS = [
     items: [
       { to: '/admin/users', label: 'Users', icon: 'users', module: 'users' },
       { to: '/admin/roles', label: 'Roles & Permissions', icon: 'lock', module: 'roles' },
-      { to: '/admin/activity', label: 'Activity Monitoring', icon: 'history', module: 'audit' },
       {
-        label: 'Backup & Database', icon: 'database',
+        label: 'Database Management Center', icon: 'database',
         children: [
-          { to: '/admin/backup', label: 'Backup Management', icon: 'database', module: 'backup' },
-          { to: '/admin/backup/restore', label: 'Restore Center', icon: 'refresh', module: 'backup' },
-          { to: '/admin/storage', label: 'Storage & Sync', icon: 'cloud', module: 'storage' },
-          { to: '/admin/database', label: 'Database Manager', icon: 'database', module: 'settings' },
-          { to: '/admin/schema', label: 'Schema Manager', icon: 'layers', module: 'schema' },
-          { to: '/admin/database/sql', label: 'SQL Console', icon: 'code', module: 'settings' },
+          { to: '/admin/database-center/dashboard', label: 'Dashboard', icon: 'grid', module: 'admin' },
+          { to: '/admin/database-center/data-explorer', label: 'Data Explorer', icon: 'search', module: 'admin' },
+          { to: '/admin/database-center/backup-recovery', label: 'Backup & Recovery', icon: 'database', module: 'admin' },
+          { to: '/admin/database-center/import', label: 'Import Center', icon: 'download', module: 'admin' },
+          { to: '/admin/database-center/export', label: 'Export Center', icon: 'upload', module: 'admin' },
+          { to: '/admin/database-center/delete-manager', label: 'Delete Manager', icon: 'trash', module: 'admin' },
+          { to: '/admin/database-center/maintenance', label: 'Maintenance', icon: 'wrench', module: 'admin' },
+          { to: '/admin/database-center/migration', label: 'Migration', icon: 'migrate', module: 'admin' },
+          { to: '/admin/database-center/audit-activity', label: 'Audit & Activity', icon: 'activity', module: 'admin' },
         ],
       },
     ],
@@ -126,7 +128,6 @@ export const NAV_GROUPS = [
     label: '',
     items: [
       { to: '/settings', label: 'System Settings', icon: 'gear', module: 'settings' },
-      { to: '/admin/database', label: 'Database Manager & Migration', icon: 'database' },
     ],
   },
 ];

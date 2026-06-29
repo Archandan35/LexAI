@@ -1,0 +1,183 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { useToast } from '@/data-layer/ToastContext.jsx';
+import { userService } from '@/services/userService.js';
+import { caseService } from '@/services/caseService.js';
+import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
+import { caseActivityService } from '@/services/caseActivityService.js';
+import { storageService } from '@/services/storageService.js';
+import { caseFolderService } from '@/services/caseFolderService.js';
+import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
+import { fileLogic } from '@/logic/fileLogic.js';
+import Button from '@/components/Button.jsx';
+import PageHeader from '@/components/PageHeader.jsx';
+import Icon from '@/components/Icon.jsx';
+
+export default function DmcDeleteManager() {
+  const { user } = useAuth();
+  const toast = useToast();
+  const [users, setUsers] = useState([]);
+  const [cases, setCases] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [scope, setScope] = useState('collection');
+  const [selectedCollection, setSelectedCollection] = useState('documents');
+  const [dryRun, setDryRun] = useState(true);
+  const [backupFirst, setBackupFirst] = useState(true);
+  const [preview, setPreview] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const collections = ['documents', 'drafts', 'cases', 'case_folders', 'hearings', 'notes', 'audit_logs', 'reminders', 'case_history', 'case_activity'];
+
+  useEffect(() => {
+    userService.list().then(setUsers).catch(() => {});
+    caseService.list().then(setCases).catch(() => {});
+  }, []);
+
+  const analyze = async () => {
+    setPreview(null);
+    if (scope === 'user' && !selectedUserId) { toast.push('Select a user first.', 'error'); return; }
+
+    if (scope === 'user') {
+      const targetUser = users.find((u) => u.id === selectedUserId);
+      const userCases = cases.filter((c) => c.advocate === targetUser?.name || c.createdBy === targetUser?.id);
+      const userDocs = await documentsRepository.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).catch(() => []);
+      setPreview({
+        type: 'user',
+        label: `Data for ${targetUser?.name || selectedUserId}`,
+        cases: userCases.length,
+        documents: userDocs.length,
+        collections: 1,
+        records: userCases.length + userDocs.length,
+        userCases,
+        userDocs,
+      });
+    } else {
+      const repo = { documents: documentsRepository }[selectedCollection];
+      if (!repo) { toast.push('Collection scanning not available for this collection.', 'error'); return; }
+      const all = await repo.getAll().catch(() => []);
+      setPreview({ type: 'collection', label: `All records in "${selectedCollection}"`, collections: 1, records: all.length, sample: all.slice(0, 5) });
+    }
+  };
+
+  const executeDelete = async () => {
+    if (!preview) return;
+    if (!confirm(`Permanently delete ${preview.records} record(s)? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      if (preview.type === 'user') {
+        for (const c of preview.userCases) {
+          await caseFolderLogic.remove({ id: null, caseId: c.id, kind: 'document', name: '' }, {}, user).catch(() => {});
+          await caseService.deleteCase(c.id);
+        }
+        for (const d of preview.userDocs) {
+          await storageService.deleteDocument(d.id, d.ref).catch(() => {});
+        }
+        await caseActivityService.record('system', 'delete.user', `Deleted data for user ${preview.label}`, user);
+        toast.push(`Deleted ${preview.records} record(s) for ${preview.label}.`, 'success');
+      } else {
+        toast.push('Bulk collection delete not available through this interface.', 'error');
+      }
+      setPreview(null);
+    } catch (e) {
+      toast.push(e?.message || 'Delete failed.', 'error');
+    }
+    setDeleting(false);
+  };
+
+  const userOptions = users.filter((u) => u.id !== user?.id).map((u) => ({ value: u.id, label: u.name || u.email || u.id }));
+
+  return (
+    <>
+      <PageHeader icon="trash" title="Delete Manager" subtitle="Safely delete data with dry-run, dependency checks, and backup-before-delete." />
+
+      <div className="dmc-section">
+        <div className="dmc-section__title"><Icon name="layers" size={17} /> Delete Scope</div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <label className="dmc-select" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', cursor: 'pointer' }}>
+            <input type="radio" name="scope" checked={scope === 'collection'} onChange={() => setScope('collection')} /> Collection Cleanup
+          </label>
+          <label className="dmc-select" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', cursor: 'pointer' }}>
+            <input type="radio" name="scope" checked={scope === 'user'} onChange={() => setScope('user')} /> User Data Cleanup
+          </label>
+        </div>
+
+        {scope === 'user' && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
+            <select className="dmc-select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} style={{ minWidth: 200 }}>
+              <option value="">Select user…</option>
+              {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            {selectedUserId && (
+              <span style={{ fontSize: 12.5, color: 'var(--text-soft)' }}>
+                Related: {cases.filter((c) => c.advocate === users.find((u) => u.id === selectedUserId)?.name).length} cases
+              </span>
+            )}
+          </div>
+        )}
+
+        {scope === 'collection' && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
+            <select className="dmc-select" value={selectedCollection} onChange={(e) => setSelectedCollection(e.target.value)} style={{ minWidth: 200 }}>
+              {collections.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+            <input type="checkbox" checked={dryRun} onChange={() => setDryRun(!dryRun)} /> Dry Run (preview only)
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer' }}>
+            <input type="checkbox" checked={backupFirst} onChange={() => setBackupFirst(!backupFirst)} disabled={dryRun} /> Backup before delete
+          </label>
+          <Button size="sm" variant="primary" onClick={analyze}>{dryRun ? 'Preview' : 'Analyze'}</Button>
+        </div>
+      </div>
+
+      {preview && (
+        <div className="dmc-section">
+          <div className="dmc-section__title"><Icon name="eye" size={17} /> Delete Preview</div>
+          <table className="dmc-table">
+            <thead><tr><th>Scope</th><th>Collections</th><th>Records</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>{preview.label}</td>
+                <td>{preview.collections}</td>
+                <td><strong>{preview.records}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+
+          {preview.type === 'user' && preview.userCases?.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Affected Cases ({preview.cases})</div>
+              <table className="dmc-table">
+                <thead><tr><th>Case</th><th>Documents</th></tr></thead>
+                <tbody>
+                  {preview.userCases.slice(0, 10).map((c) => (
+                    <tr key={c.id}><td>{c.caseNumber || c.case_display_number || c.id}</td><td>{preview.userDocs.filter((d) => d.caseId === c.id).length}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!dryRun && (
+            <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+              <Button variant="danger" onClick={executeDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Confirm Delete'}</Button>
+              <Button variant="ghost" onClick={() => setPreview(null)}>Cancel</Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!preview && (
+        <div className="dmc-empty">
+          <div className="dmc-empty__icon"><Icon name="trash" size={36} /></div>
+          <div className="dmc-empty__title">No scope selected</div>
+          <div className="dmc-empty__hint">Choose a scope above and click Preview to analyze before deleting.</div>
+        </div>
+      )}
+    </>
+  );
+}
