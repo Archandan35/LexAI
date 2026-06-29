@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Icon from './Icon.jsx';
 import CrudManager from './CrudManager.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+import { exportPdf, exportDocx } from '@/utils/exportDoc.js';
 
 const STEPS = [
   { num: 1, title: 'HAZIRA', sub: 'Party Details' },
@@ -229,6 +230,35 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
   const charCount = (str) => `${(str || '').length}/250`;
 
+  const orderContent = useMemo(() => {
+    const parts = [];
+    if (form.hazira) parts.push(`<p><strong>Hazira:</strong> ${form.hazira}</p>`);
+    if (form.petitionDetails) parts.push(`<p><strong>Petition Details:</strong> ${form.petitionDetails}</p>`);
+    if (form.filedBy) parts.push(`<p><strong>Filed By:</strong> ${form.filedBy}</p>`);
+    if (form.filedOn) parts.push(`<p><strong>Filed On:</strong> ${form.filedOn}</p>`);
+    if (form.objectionStatus) parts.push(`<p><strong>Objection Status:</strong> ${form.objectionStatus}</p>`);
+    if (form.objectionFiledBy) parts.push(`<p><strong>Objection Filed By:</strong> ${form.objectionFiledBy}</p>`);
+    if (form.todaysMatter) parts.push(`<p><strong>Today's Matter:</strong> ${form.todaysMatter}</p>`);
+    if (form.courtObservation) parts.push(`<p><strong>Court Observation:</strong> ${form.courtObservation}</p>`);
+    if (form.orderStatus) parts.push(`<p><strong>Order Status:</strong> ${form.orderStatus}</p>`);
+    if (form.nextDate) parts.push(`<p><strong>Next Date:</strong> ${form.nextDate}</p>`);
+    if (form.nextPurpose) parts.push(`<p><strong>Purpose:</strong> ${form.nextPurpose}</p>`);
+    if (form.putUpFor) parts.push(`<p><strong>Put Up For:</strong> ${form.putUpFor}</p>`);
+    return parts.join('\n');
+  }, [form]);
+
+  const handleSaveDraft = useCallback(() => {
+    onSave?.(form);
+  }, [form, onSave]);
+
+  const handlePreviewPdf = useCallback(() => {
+    exportPdf('Order Sheet', orderContent);
+  }, [orderContent]);
+
+  const handleDownloadDocx = useCallback(() => {
+    exportDocx('Order Sheet', orderContent);
+  }, [orderContent]);
+
   const handleStepClick = useCallback((num) => {
     setActiveStep(num);
     if (isMobile) {
@@ -249,13 +279,13 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
           <div className="sosb-topbar__t2">Create professional court orders in minutes</div>
         </div>
         <div className="sosb-topbar__actions">
-          <button className="sosb-btn sosb-btn--ghost">
+          <button className="sosb-btn sosb-btn--ghost" onClick={handleSaveDraft}>
             <Icon name="save" size={15} strokeWidth={1.7} /> Save Draft
           </button>
-          <button className="sosb-btn sosb-btn--ghost">
+          <button className="sosb-btn sosb-btn--ghost" onClick={handlePreviewPdf}>
             <Icon name="doc" size={15} strokeWidth={1.7} /> Preview PDF
           </button>
-          <button className="sosb-btn sosb-btn--primary">
+          <button className="sosb-btn sosb-btn--primary" onClick={handleDownloadDocx}>
             <Icon name="download" size={15} strokeWidth={1.9} /> Download DOCX
           </button>
         </div>

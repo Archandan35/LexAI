@@ -5736,6 +5736,8 @@ kbd.cmd__kbd {
   flex-direction: column;
   min-height: 100vh;
   background: var(--surface-2);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Top bar */
@@ -5817,6 +5819,8 @@ kbd.cmd__kbd {
   gap: 0;
   flex: 1;
   align-items: start;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Left sidebar nav */
@@ -6522,6 +6526,54 @@ kbd.cmd__kbd {
 
   .gs-field-label-col {
     padding-top: 0;
+  }
+
+  .gs-topbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .gs-topbar__search {
+    min-width: 0;
+    flex: 1;
+    width: 100%;
+  }
+
+  .gs-content {
+    padding: 16px;
+  }
+
+  .gs-panel__header {
+    padding: 12px 14px;
+  }
+
+  .gs-field-row {
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gs-topbar {
+    padding: 10px 12px;
+  }
+
+  .gs-topbar__title {
+    font-size: 16px;
+  }
+
+  .gs-content {
+    padding: 12px;
+  }
+
+  .gs-field-row {
+    padding: 8px 12px;
+    gap: 4px;
+  }
+
+  .gs-panel__header {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }
 
@@ -10132,6 +10184,40 @@ kbd.cmd__kbd {
 
 .cc-footer__spacer {
   flex: 1;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: all 0.15s var(--ease);
+  flex-shrink: 0;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cc__gear-btn,
+.cc__remove-btn {
+  border: 1px solid var(--border);
+}
+
+.cc__gear-btn:hover,
+.cc__remove-btn:hover {
+  border-color: var(--border-strong);
 }
 
 /* ===== Entity Manager Modal (Manage Case Types, Court Types, etc.) ===== */
