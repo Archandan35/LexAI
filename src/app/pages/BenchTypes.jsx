@@ -14,12 +14,28 @@ const ACTIONS = [
   { key: 'import', label: 'Import', icon: 'upload', variant: 'ghost' },
 ];
 
+const SUB_MODES = {
+  add: [
+    { key: 'single', label: 'Single Add', icon: 'plus' },
+    { key: 'bulk', label: 'Bulk Add', icon: 'users' },
+  ],
+  edit: [
+    { key: 'single', label: 'Single Edit', icon: 'edit' },
+    { key: 'bulk', label: 'Bulk Edit', icon: 'edit' },
+  ],
+  delete: [
+    { key: 'single', label: 'Single Delete', icon: 'trash' },
+    { key: 'bulk', label: 'Bulk Delete', icon: 'trash' },
+  ],
+};
+
 export default function BenchTypes() {
   const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeAction, setActiveAction] = useState(null);
+  const [subMode, setSubMode] = useState('single');
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -31,6 +47,11 @@ export default function BenchTypes() {
   const [editCode, setEditCode] = useState('');
 
   const [delId, setDelId] = useState('');
+
+  const [bulkAddText, setBulkAddText] = useState('');
+  const [bulkEditText, setBulkEditText] = useState('');
+  const [bulkDelText, setBulkDelText] = useState('');
+
   const [importFile, setImportFile] = useState(null);
 
   const load = async () => {
@@ -44,16 +65,39 @@ export default function BenchTypes() {
 
   const reset = () => {
     setActiveAction(null);
+    setSubMode('single');
     setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
     setEditId(''); setEditName(''); setEditCode('');
     setDelId(''); setImportFile(null);
+    setBulkAddText(''); setBulkEditText(''); setBulkDelText('');
+  };
+
+  const activate = (key) => {
+    if (activeAction === key) { reset(); return; }
+    setActiveAction(key);
+    setSubMode('single');
   };
 
   const doAdd = async () => {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
-    if (res.ok) { reset(); toast.push('Bench type added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Bench type added.', 'success'); load(); }
     else toast.push(res.error, 'error');
+  };
+
+  const doBulkAdd = async () => {
+    const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    let added = 0, skipped = 0;
+    for (const line of lines) {
+      const [name, code] = line.split(':').map(s => s.trim());
+      if (!name || !code) { skipped++; continue; }
+      const res = await benchTypeLogic.create({ name, short_code: code.toUpperCase() });
+      if (res.ok) added++; else skipped++;
+    }
+    setBulkAddText('');
+    toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
+    load();
   };
 
   const doEdit = async () => {
@@ -61,8 +105,25 @@ export default function BenchTypes() {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     const item = items.find(x => x.id === editId);
     const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: item?.status });
-    if (res.ok) { reset(); toast.push('Bench type updated.', 'success'); load(); }
+    if (res.ok) { setEditId(''); toast.push('Bench type updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
+  };
+
+  const doBulkEdit = async () => {
+    const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    let updated = 0, skipped = 0;
+    for (const line of lines) {
+      const [idPart, namePart] = line.split('|').map(s => s.trim());
+      const item = items.find(x => x.short_code === idPart || x.name === idPart || x.id === idPart);
+      if (!item || !namePart) { skipped++; continue; }
+      const [name, code] = namePart.split(':').map(s => s.trim());
+      const res = await benchTypeLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
+      if (res.ok) updated++; else skipped++;
+    }
+    setBulkEditText('');
+    toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
+    load();
   };
 
   const doDelete = async () => {
@@ -70,8 +131,20 @@ export default function BenchTypes() {
     const item = items.find(x => x.id === delId);
     if (!window.confirm(`Delete bench type "${item?.name}"?`)) return;
     const res = await benchTypeLogic.remove(delId);
-    if (res.ok || !res.error) { reset(); toast.push('Bench type deleted.', 'success'); load(); }
+    if (res.ok || !res.error) { setDelId(''); toast.push('Bench type deleted.', 'success'); load(); }
     else toast.push(res.error, 'error');
+  };
+
+  const doBulkDelete = async () => {
+    const lines = bulkDelText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.push('Paste at least one name or code.', 'error'); return; }
+    const toDelete = items.filter(x => lines.includes(x.name) || lines.includes(x.short_code));
+    if (!toDelete.length) { toast.push('No matching items found.', 'error'); return; }
+    if (!window.confirm(`Delete ${toDelete.length} item(s)?`)) return;
+    for (const item of toDelete) await benchTypeLogic.remove(item.id);
+    setBulkDelText('');
+    toast.push(`${toDelete.length} deleted.`, 'success');
+    load();
   };
 
   const doImport = async () => {
@@ -95,7 +168,7 @@ export default function BenchTypes() {
             key={a.key}
             icon={a.icon}
             variant={activeAction === a.key ? a.variant : 'ghost'}
-            onClick={() => setActiveAction(activeAction === a.key ? null : a.key)}
+            onClick={() => activate(a.key)}
           >
             {a.label}
           </Button>
@@ -107,10 +180,25 @@ export default function BenchTypes() {
           <div className="bench-types__form-header">
             <span className="bench-types__form-header-icon"><Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} /></span>
             <span className="bench-types__form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Bench Type</span>
+            {SUB_MODES[activeAction] && (
+              <div className="bench-types__toggle">
+                {SUB_MODES[activeAction].map(m => (
+                  <button
+                    key={m.key}
+                    className={`bench-types__toggle-btn${subMode === m.key ? ' active' : ''}`}
+                    onClick={() => setSubMode(m.key)}
+                  >
+                    <Icon name={m.icon} size={13} />
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <button className="iconbtn bench-types__form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
+
           <div className="bench-types__form-body">
-            {activeAction === 'add' && (
+            {activeAction === 'add' && subMode === 'single' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field">
                   <label className="bench-types__label">Name <span className="bench-types__required">*</span></label>
@@ -134,7 +222,21 @@ export default function BenchTypes() {
                 </div>
               </div>
             )}
-            {activeAction === 'edit' && (
+            {activeAction === 'add' && subMode === 'bulk' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Paste entries — one per line as <code>Name:CODE</code></label>
+                  <Textarea
+                    value={bulkAddText}
+                    onChange={e => setBulkAddText(e.target.value)}
+                    placeholder={'Single Bench:SB\nDivision Bench:DB\nFull Bench:FB'}
+                    rows={8}
+                  />
+                  <span className="bench-types__hint">Blank lines and invalid entries are skipped.</span>
+                </div>
+              </div>
+            )}
+            {activeAction === 'edit' && subMode === 'single' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
@@ -157,7 +259,21 @@ export default function BenchTypes() {
                 )}
               </div>
             )}
-            {activeAction === 'delete' && (
+            {activeAction === 'edit' && subMode === 'bulk' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Format: <code>CurrentName|NewName:NEWCODE</code> — one per line</label>
+                  <Textarea
+                    value={bulkEditText}
+                    onChange={e => setBulkEditText(e.target.value)}
+                    placeholder={'Single Bench|Single Judge Bench:SJB\nDivision Bench|Div Bench:DB'}
+                    rows={8}
+                  />
+                  <span className="bench-types__hint">Match by name, short code, or id before the pipe.</span>
+                </div>
+              </div>
+            )}
+            {activeAction === 'delete' && subMode === 'single' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
@@ -174,6 +290,23 @@ export default function BenchTypes() {
                 )}
               </div>
             )}
+            {activeAction === 'delete' && subMode === 'bulk' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Paste names or short codes to delete — one per line</label>
+                  <Textarea
+                    value={bulkDelText}
+                    onChange={e => setBulkDelText(e.target.value)}
+                    placeholder={'Single Bench\nSB\nDivision Bench'}
+                    rows={8}
+                  />
+                  <div className="bench-types__warning">
+                    <Icon name="alert" size={16} />
+                    <span>All matched items will be permanently deleted.</span>
+                  </div>
+                </div>
+              </div>
+            )}
             {activeAction === 'import' && (
               <div className="bench-types__import">
                 <div className="bench-types__import-icon"><Icon name="upload" size={28} /></div>
@@ -187,11 +320,15 @@ export default function BenchTypes() {
               </div>
             )}
           </div>
+
           <div className="bench-types__form-footer">
             <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && <Button icon="plus" onClick={doAdd}>Add Bench Type</Button>}
-            {activeAction === 'edit' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'delete' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Bench Type</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
             {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
           </div>
         </Card>
