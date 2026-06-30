@@ -1,0 +1,354 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1580" font-family="'Inter',system-ui,-apple-system,sans-serif">
+  <defs>
+    <linearGradient id="heroGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#EEF2FF"/>
+      <stop offset="50%" stop-color="#F5F3FF"/>
+      <stop offset="100%" stop-color="#FFF7ED"/>
+    </linearGradient>
+    <filter id="shadow-sm"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.06"/></filter>
+    <filter id="shadow-md"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-opacity="0.08"/></filter>
+    <filter id="shadow-lg"><feDropShadow dx="0" dy="4" stdDeviation="12" flood-opacity="0.1"/></filter>
+  </defs>
+
+  <!-- BACKGROUND -->
+  <rect width="1200" height="1580" fill="#F8FAFC" rx="0"/>
+
+  <!-- PAGE WRAPPER -->
+  <g transform="translate(40,32)">
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- HERO BANNER                             -->
+    <!-- ════════════════════════════════════════ -->
+    <g transform="translate(0,0)">
+      <rect width="1120" height="130" rx="16" fill="url(#heroGrad)" stroke="transparent" filter="url(#shadow-md)"/>
+      <!-- Purple left border accent -->
+      <rect x="0" y="0" width="6" height="130" rx="3" fill="#7C3AED"/>
+      
+      <!-- LEFT SECTION -->
+      <!-- Icon tile -->
+      <rect x="24" y="24" width="70" height="70" rx="14" fill="#fff" filter="url(#shadow-sm)"/>
+      <!-- Scales icon (simplified) -->
+      <g transform="translate(59,54)" fill="#7C3AED">
+        <rect x="-10" y="-4" width="20" height="2" rx="1"/>
+        <circle cx="-6" cy="-12" r="5" fill="none" stroke="#7C3AED" stroke-width="1.5"/>
+        <circle cx="6" cy="-12" r="5" fill="none" stroke="#7C3AED" stroke-width="1.5"/>
+        <path d="M-6-17 L-6-28" stroke="#7C3AED" stroke-width="1.5"/>
+        <path d="M6-17 L6-28" stroke="#7C3AED" stroke-width="1.5"/>
+        <path d="M-14-28 L14-28" stroke="#7C3AED" stroke-width="1.5"/>
+        <path d="M0-28 L0-34" stroke="#7C3AED" stroke-width="2"/>
+        <circle cx="0" cy="-36" r="2" fill="#7C3AED"/>
+      </g>
+
+      <!-- Heading -->
+      <text x="110" y="52" font-size="26" font-weight="700" fill="#0F172A">Bench Types</text>
+      <!-- Subtext -->
+      <text x="110" y="76" font-size="13.5" fill="#64748B">Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.)</text>
+      <!-- Purple underline accent -->
+      <rect x="110" y="89" width="36" height="3" rx="1.5" fill="#7C3AED"/>
+
+      <!-- RIGHT - Watermark icon -->
+      <g transform="translate(1040,65)" opacity="0.1">
+        <rect x="-28" y="-28" width="56" height="56" rx="12" fill="#7C3AED"/>
+        <g transform="translate(0,0)" fill="#fff">
+          <rect x="-10" y="-3" width="20" height="2" rx="1"/>
+          <circle cx="-6" cy="-10" r="4" fill="none" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="6" cy="-10" r="4" fill="none" stroke="#fff" stroke-width="1.5"/>
+          <path d="M-6-14 L-6-22" stroke="#fff" stroke-width="1.5"/>
+          <path d="M6-14 L6-22" stroke="#fff" stroke-width="1.5"/>
+          <path d="M-10-22 L10-22" stroke="#fff" stroke-width="1.5"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STATS CARDS ROW (6 cards)               -->
+    <!-- ════════════════════════════════════════ -->
+    <g transform="translate(0,158)">
+      <!-- Card 1 - Total -->
+      <g transform="translate(0,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#EEF2FF"/>
+        <g transform="translate(12,16)"><rect x="0" y="0" width="8" height="2" rx="1" fill="#7C3AED"/><rect x="0" y="5" width="8" height="2" rx="1" fill="#7C3AED"/><rect x="0" y="10" width="8" height="2" rx="1" fill="#7C3AED"/></g>
+        <text x="48" y="20" font-size="9.5" font-weight="600" fill="#94A3B8" letter-spacing="0.5">TOTAL BENCH TYPES</text>
+        <text x="48" y="42" font-size="22" font-weight="700" fill="#0F172A">30</text>
+        <text x="48" y="58" font-size="11" fill="#94A3B8">All bench types</text>
+      </g>
+
+      <!-- Card 2 - Active -->
+      <g transform="translate(184,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#ECFDF5"/>
+        <g transform="translate(12,16)"><path d="M4,5 L7,9 L13,2" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <text x="48" y="20" font-size="9.5" font-weight="600" fill="#94A3B8" letter-spacing="0.5">ACTIVE</text>
+        <text x="48" y="42" font-size="22" font-weight="700" fill="#0F172A">28</text>
+        <text x="48" y="58" font-size="11" fill="#94A3B8">Currently active</text>
+      </g>
+
+      <!-- Card 3 - Inactive -->
+      <g transform="translate(368,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#FFFBEB"/>
+        <g transform="translate(12,16)"><line x1="2" y1="8" x2="14" y2="8" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="14" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/></g>
+        <text x="48" y="20" font-size="9.5" font-weight="600" fill="#94A3B8" letter-spacing="0.5">INACTIVE</text>
+        <text x="48" y="42" font-size="22" font-weight="700" fill="#0F172A">2</text>
+        <text x="48" y="58" font-size="11" fill="#94A3B8">Currently inactive</text>
+      </g>
+
+      <!-- Card 4 - Most Used -->
+      <g transform="translate(552,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#EFF6FF"/>
+        <g transform="translate(12,16)"><circle cx="5" cy="5" r="3" fill="none" stroke="#3B82F6" stroke-width="1.5"/><circle cx="5" cy="11" r="3" fill="none" stroke="#3B82F6" stroke-width="1.5"/><circle cx="11" cy="5" r="3" fill="none" stroke="#3B82F6" stroke-width="1.5"/><circle cx="11" cy="11" r="3" fill="none" stroke="#3B82F6" stroke-width="1.5"/></g>
+        <text x="48" y="20" font-size="9.5" font-weight="600" fill="#94A3B8" letter-spacing="0.5">MOST USED</text>
+        <text x="48" y="40" font-size="13" font-weight="700" fill="#0F172A">Division Bench</text>
+        <text x="48" y="56" font-size="11" fill="#94A3B8">Popular type</text>
+      </g>
+
+      <!-- Card 5 - Created This Month -->
+      <g transform="translate(736,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#F5F3FF"/>
+        <g transform="translate(12,16)"><rect x="1" y="2" width="14" height="12" rx="2" fill="none" stroke="#8B5CF6" stroke-width="1.5"/><line x1="1" y1="7" x2="15" y2="7" stroke="#8B5CF6" stroke-width="1.5"/><circle cx="8" cy="11" r="1.5" fill="#8B5CF6"/></g>
+        <text x="48" y="20" font-size="9" font-weight="600" fill="#94A3B8" letter-spacing="0.4">CREATED THIS MONTH</text>
+        <text x="48" y="42" font-size="22" font-weight="700" fill="#0F172A">4</text>
+        <text x="48" y="58" font-size="11" fill="#94A3B8">New bench types</text>
+      </g>
+
+      <!-- Card 6 - Total Assignments -->
+      <g transform="translate(920,0)">
+        <rect width="170" height="90" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+        <circle cx="20" cy="24" r="16" fill="#ECFEFF"/>
+        <g transform="translate(12,16)"><rect x="2" y="3" width="12" height="10" rx="1.5" fill="none" stroke="#14B8A6" stroke-width="1.5"/><line x1="2" y1="7" x2="14" y2="7" stroke="#14B8A6" stroke-width="1.5"/><line x1="5" y1="1" x2="5" y2="5" stroke="#14B8A6" stroke-width="1.5"/><line x1="11" y1="1" x2="11" y2="5" stroke="#14B8A6" stroke-width="1.5"/></g>
+        <text x="48" y="20" font-size="9.5" font-weight="600" fill="#94A3B8" letter-spacing="0.5">TOTAL ASSIGNMENTS</text>
+        <text x="48" y="42" font-size="22" font-weight="700" fill="#0F172A">124</text>
+        <text x="48" y="58" font-size="11" fill="#94A3B8">Across all cases</text>
+      </g>
+    </g>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- ACTION TOOLBAR                          -->
+    <!-- ════════════════════════════════════════ -->
+    <g transform="translate(0,270)">
+      <!-- Left group -->
+      <g>
+        <!-- Add button -->
+        <rect x="0" y="0" width="90" height="38" rx="8" fill="#7C3AED"/>
+        <g transform="translate(16,11)"><line x1="8" y1="0" x2="8" y2="16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="0" y1="8" x2="16" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g>
+        <text x="40" y="24" font-size="13" font-weight="600" fill="#fff">Add</text>
+
+        <!-- Edit button -->
+        <rect x="100" y="0" width="90" height="38" rx="8" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <g transform="translate(116,11)"><path d="M11,2 L14,5 L6,13 L2,13 L2,9 Z" fill="none" stroke="#334155" stroke-width="1.8" stroke-linejoin="round"/></g>
+        <text x="138" y="24" font-size="13" font-weight="600" fill="#334155">Edit</text>
+
+        <!-- Delete button -->
+        <rect x="200" y="0" width="100" height="38" rx="8" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <g transform="translate(216,11)"><path d="M3,4 L13,4 M5,4 L5,3 C5,2 5.5,1 7,1 L9,1 C10.5,1 11,2 11,3 L11,4 M6,4 L10,4 L9.5,13 C9.5,13.5 9,14 8.5,14 L7.5,14 C7,14 6.5,13.5 6.5,13 Z" fill="none" stroke="#EF4444" stroke-width="1.8" stroke-linejoin="round"/></g>
+        <text x="228" y="24" font-size="13" font-weight="600" fill="#EF4444">Delete</text>
+
+        <!-- Import button -->
+        <rect x="310" y="0" width="100" height="38" rx="8" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <g transform="translate(326,11)"><path d="M8,1 L8,11 M4,7 L8,11 L12,7 M2,13 L14,13" fill="none" stroke="#334155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <text x="342" y="24" font-size="13" font-weight="600" fill="#334155">Import</text>
+      </g>
+
+      <!-- Right - Filter -->
+      <g transform="translate(1040,0)">
+        <rect x="0" y="0" width="90" height="38" rx="8" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <g transform="translate(16,11)"><path d="M1,2 L7,7 L7,13 L9,13 L9,7 L15,2" fill="none" stroke="#334155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <text x="42" y="24" font-size="13" font-weight="600" fill="#334155">Filter</text>
+      </g>
+    </g>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- SEARCH BAR                              -->
+    <!-- ════════════════════════════════════════ -->
+    <g transform="translate(0,326)">
+      <rect width="1120" height="42" rx="8" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+      <g transform="translate(14,13)"><circle cx="7" cy="7" r="6" fill="none" stroke="#94A3B8" stroke-width="1.8"/><line x1="11.5" y1="11.5" x2="16" y2="16" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round"/></g>
+      <text x="40" y="26" font-size="13.5" fill="#94A3B8">Search bench types…</text>
+    </g>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- DATA TABLE                              -->
+    <!-- ════════════════════════════════════════ -->
+    <g transform="translate(0,386)">
+      <!-- Table card background -->
+      <rect width="1120" height="560" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)"/>
+
+      <!-- HEADER ROW -->
+      <rect x="1" y="1" width="1118" height="44" rx="11" fill="#F8FAFC"/>
+      <rect x="1" y="45" width="1118" height="1" fill="#E2E8F0"/>
+
+      <text x="20" y="28" font-size="11" font-weight="600" fill="#94A3B8" letter-spacing="0.5">NAME ↕</text>
+      <text x="320" y="28" font-size="11" font-weight="600" fill="#94A3B8" letter-spacing="0.5">CODE ↕</text>
+      <text x="560" y="28" font-size="11" font-weight="600" fill="#94A3B8" letter-spacing="0.5">STATUS ↕</text>
+      <text x="780" y="28" font-size="11" font-weight="600" fill="#94A3B8" letter-spacing="0.5">ACTIONS</text>
+
+      <!-- Drag helper icon in header -->
+      <g transform="translate(8,14)" opacity="0.3">
+        <circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/>
+        <circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/>
+      </g>
+
+      <!-- TABLE ROWS -->
+      <g font-size="13.5" fill="#0F172A">
+        <!-- Row 1 - Single Bench -->
+        <g transform="translate(0,54)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4">
+            <circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/>
+            <circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/>
+          </g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Single Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-SINGLE-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <!-- Actions -->
+          <g transform="translate(780,7)">
+            <!-- View -->
+            <circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Edit -->
+            <circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- Delete -->
+            <circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- More -->
+            <circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/>
+          </g>
+        </g>
+
+        <!-- Row 2 - Full Bench -->
+        <g transform="translate(0,104)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Full Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-FULL-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 3 - Division Bench -->
+        <g transform="translate(0,154)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Division Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-DIVISION-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 4 - Larger Bench -->
+        <g transform="translate(0,204)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Larger Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-LARGER-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 5 - Review Bench -->
+        <g transform="translate(0,254)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Review Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-REVIEW-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 6 - Constitution Bench -->
+        <g transform="translate(0,304)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Constitution Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-CONSTITUTION-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 7 - Special Bench -->
+        <g transform="translate(0,354)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Special Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-SPECIAL-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 8 - Reference Bench -->
+        <g transform="translate(0,404)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Reference Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-REFERENCE-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 9 - Circuit Bench -->
+        <g transform="translate(0,454)">
+          <line x1="20" y1="50" x2="1100" y2="50" stroke="#F1F5F9"/>
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Circuit Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-CIRCUIT-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+
+        <!-- Row 10 - Vacation Bench -->
+        <g transform="translate(0,504)">
+          <g transform="translate(8,8)" opacity="0.4"><circle cx="3" cy="3" r="1.5" fill="#94A3B8"/><circle cx="3" cy="9" r="1.5" fill="#94A3B8"/><circle cx="3" cy="15" r="1.5" fill="#94A3B8"/><circle cx="9" cy="3" r="1.5" fill="#94A3B8"/><circle cx="9" cy="9" r="1.5" fill="#94A3B8"/><circle cx="9" cy="15" r="1.5" fill="#94A3B8"/></g>
+          <circle cx="42" cy="17" r="14" rx="7" fill="#EEF2FF"/>
+          <g transform="translate(35,10)"><circle cx="7" cy="6" r="3" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M2,14 Q7,10 12,14" fill="none" stroke="#6366F1" stroke-width="1.5"/></g>
+          <text x="66" y="21" font-weight="600">Vacation Bench</text>
+          <text x="320" y="21" fill="#64748B" font-family="'Courier New',monospace" font-size="12">BT-VACATION-BENCH</text>
+          <g transform="translate(560,7)"><rect width="80" height="22" rx="999" fill="#ECFDF5"/><circle cx="14" cy="11" r="3.5" fill="#22C55E"/><text x="22" y="15" font-size="11.5" font-weight="600" fill="#16A34A">Active</text></g>
+          <g transform="translate(780,7)"><circle cx="14" cy="11" r="14" fill="transparent"/><circle cx="14" cy="9" r="4.5" fill="none" stroke="#6366F1" stroke-width="1.5"/><path d="M14,13 L14,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><path d="M8,16 L20,16" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/><circle cx="50" cy="11" r="14" fill="transparent"/><path d="M47,4 L50,7 L42,15 L38,15 L38,11 Z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><circle cx="86" cy="11" r="14" fill="transparent"/><path d="M80,6 L90,6 M82,6 L82,5 C82,4 82.5,3 84,3 L86,3 C87.5,3 88,4 88,5 L88,6 M83,6 L87,6 L86.5,15 C86.5,15.5 86,16 85.5,16 L84.5,16 C84,16 83.5,15.5 83.5,15 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round"/><circle cx="122" cy="11" r="14" fill="transparent"/><circle cx="120" cy="7" r="1.5" fill="#94A3B8"/><circle cx="120" cy="11" r="1.5" fill="#94A3B8"/><circle cx="120" cy="15" r="1.5" fill="#94A3B8"/></g>
+        </g>
+      </g>
+
+      <!-- TABLE FOOTER -->
+      <rect x="1" y="515" width="1118" height="44" rx="0" fill="#fff"/>
+      <line x1="20" y1="516" x2="1100" y2="516" stroke="#E2E8F0"/>
+      <text x="20" y="541" font-size="12.5" fill="#94A3B8">Showing 1 to 10 of 30 bench types</text>
+
+      <!-- Pagination -->
+      <g transform="translate(960,522)">
+        <rect x="0" y="0" width="30" height="30" rx="6" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <path d="M18,10 L12,15 L18,20" fill="none" stroke="#334155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <rect x="36" y="0" width="30" height="30" rx="6" fill="#7C3AED"/>
+        <text x="46" y="20" font-size="12.5" font-weight="600" fill="#fff" text-anchor="middle">1</text>
+
+        <rect x="72" y="0" width="30" height="30" rx="6" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <text x="82" y="20" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle">2</text>
+
+        <rect x="108" y="0" width="30" height="30" rx="6" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <text x="118" y="20" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle">3</text>
+
+        <rect x="144" y="0" width="30" height="30" rx="6" fill="#fff" stroke="#E2E8F0" stroke-width="1"/>
+        <path d="M12,10 L18,15 L12,20" fill="none" stroke="#334155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </g>
+
+  </g>
+</svg>
