@@ -16383,6 +16383,12 @@ kbd.cmd__kbd {
 @media (max-width: 600px) {
   .bench-types { background: #F7F8FA; padding: 0 0 72px; }
 
+  /* ── Visibility ── MUST come before element rules so flex/grid can override ── */
+  .bench-types__desktop-only { display: none !important; }
+  .bench-types__mobile-only { display: block; }
+  .bench-types__table-card { display: none; }
+  .bench-types__stat { display: none; }
+
   /* ── Hero Card ── */
   .bench-types__hero {
     margin: 0 16px 16px; padding: 20px 16px; min-height: auto;
@@ -16428,13 +16434,13 @@ kbd.cmd__kbd {
     margin: 0 16px 14px; padding: 10px 14px; border-radius: 10px;
     font-size: 14px; border: 1px solid #E8E9EE; background: #fff;
   }
-  .bench-types__search-filter { color: #9AA1AE; }
+  .bench-types__search-filter { color: #9AA1AE; padding: 8px; }
   .bench-types__search-filter:hover { color: #6D5BD0; }
   .bench-types__search-filter.active { color: #6D5BD0; }
 
   /* ── Stat Cards Row (3 cards) ── */
-.bench-types__stat-cards { display: flex; gap: 10px; margin: 0 16px 18px; flex-wrap: nowrap; }
-.bench-types__stat-card {
+  .bench-types__stat-cards { display: flex; gap: 10px; margin: 0 16px 18px; flex-wrap: nowrap; }
+  .bench-types__stat-card {
     flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid #E8E9EE; border-radius: 14px; padding: 12px 10px;
   }
   .bench-types__stat-card-row1 { display: flex; align-items: center; gap: 8px; }
@@ -16501,12 +16507,6 @@ kbd.cmd__kbd {
   .bench-types__mobile-action--copy .bench-types__mobile-action-icon { background: #EFECFB; border-color: #D6D0F8; color: #6D5BD0; }
   .bench-types__mobile-action--del .bench-types__mobile-action-icon { background: #FDECEB; border-color: #F3D4D1; color: #E5483D; }
   .bench-types__mobile-action--del .bench-types__mobile-action-label { color: #E5483D; }
-
-  /* ── Visibility ── */
-  .bench-types__desktop-only { display: none !important; }
-  .bench-types__mobile-only { display: block; }
-  .bench-types__table-card { display: none; }
-  .bench-types__stat { display: none; }
 
   /* ── Pagination ── */
   .bench-types__table-footer {
