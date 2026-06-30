@@ -64,6 +64,7 @@ export default function BenchTypes() {
   const [showFilter, setShowFilter] = useState(false);
   const [confirmState, setConfirmState] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(null);
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
@@ -127,17 +128,21 @@ export default function BenchTypes() {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
     setBusy(true);
+    setProgress({ current: 0, total: lines.length, itemName: 'Starting…', percent: 0 });
     let added = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
       const colonIdx = line.indexOf(':');
       const name = colonIdx === -1 ? line : line.slice(0, colonIdx).trim();
       const code = colonIdx === -1 ? autoCode(name) : line.slice(colonIdx + 1).trim().toUpperCase();
+      setProgress({ current: idx + 1, total: lines.length, itemName: name || '…', percent: Math.round(((idx + 1) / lines.length) * 100) });
       if (!name) { skipped++; continue; }
       if (exists(name, code)) { skipped++; continue; }
       const res = await benchTypeLogic.create({ name, short_code: code });
       if (res.ok) added++; else skipped++;
     }
     setBusy(false);
+    setProgress(null);
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
     load();
@@ -220,8 +225,15 @@ export default function BenchTypes() {
       onConfirm: async () => {
         setConfirmState(null);
         setBusy(true);
-        for (const id of bulkDelSelected) await benchTypeLogic.remove(id);
+        const ids = [...bulkDelSelected];
+        setProgress({ current: 0, total: ids.length, itemName: 'Starting…', percent: 0 });
+        for (let idx = 0; idx < ids.length; idx++) {
+          const item = items.find(x => x.id === ids[idx]);
+          setProgress({ current: idx + 1, total: ids.length, itemName: item?.name || '…', percent: Math.round(((idx + 1) / ids.length) * 100) });
+          await benchTypeLogic.remove(ids[idx]);
+        }
         setBusy(false);
+        setProgress(null);
         setBulkDelSelected(new Set());
         toast.push(`${count} deleted.`, 'success');
         load();
@@ -763,6 +775,27 @@ export default function BenchTypes() {
           <span>Calendar</span>
         </button>
       </nav>
+
+      {busy && (
+        <div className="bench-types__busy-overlay">
+          <div className="bench-types__busy-box">
+            {progress ? (
+              <>
+                <div className="bench-types__progress-bar-track">
+                  <div className="bench-types__progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                </div>
+                <div className="bench-types__progress-info">
+                  <span className="bench-types__progress-item">{progress.itemName}</span>
+                  <span className="bench-types__progress-count">{progress.current} / {progress.total}</span>
+                  <span className="bench-types__progress-pct">{progress.percent}%</span>
+                </div>
+              </>
+            ) : (
+              <><div className="spinner" /><span>Please wait…</span></>
+            )}
+          </div>
+        </div>
+      )}
 
       {confirmState && (
         <ConfirmDialog
