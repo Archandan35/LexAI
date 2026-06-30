@@ -75,7 +75,10 @@ export default function BenchTypes() {
           await benchTypeLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
         }
       }
-      setItems(data);
+      const seen = new Set();
+      const deduped = data.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
+      if (deduped.length !== data.length) console.warn('[BenchTypes] Duplicate IDs in list() — deduped', data.length, '→', deduped.length);
+      setItems(deduped);
     }
     setLoading(false);
   };
@@ -202,8 +205,7 @@ export default function BenchTypes() {
 
   const filtered = items.filter(i =>
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).filter((item, idx, arr) => arr.findIndex(x => x.id === item.id) === idx)
-   .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+  ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -483,10 +485,10 @@ export default function BenchTypes() {
       )}
 
       <div className="bench-types__search-row">
-        <div className="bench-types__search">
+        <div className={`bench-types__search${showFilter ? ' bench-types__search--filtered' : ''}`}>
           <Icon name="search" size={18} />
           <input ref={searchRef} value={search} placeholder="Search bench types…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <button className={`bench-types__search-filter${showFilter ? ' active' : ''}`} title="Filter" onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}><Icon name="filter" size={18} /></button>
+          <button className={`bench-types__search-filter${showFilter ? ' active' : ''}`} title={showFilter ? 'Filter active — click to clear' : 'Filter'} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}><Icon name="filter" size={18} /></button>
         </div>
         <div className="bench-types__stat bench-types__desktop-only">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
