@@ -654,21 +654,21 @@ export default function PartyTypes() {
           <div className="cmp-mobile-stat-card">
             <div className="cmp-mobile-stat-row1">
               <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--total"><Icon name="users" size={16} /></div>
-              <span className="cmp-mobile-stat-num">{items.length}</span>
+              <span className="cmp-mobile-stat-num">{partyTypes.length}</span>
             </div>
             <div className="cmp-mobile-stat-label">Total</div>
           </div>
           <div className="cmp-mobile-stat-card">
             <div className="cmp-mobile-stat-row1">
               <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--active"><Icon name="check" size={16} /></div>
-              <span className="cmp-mobile-stat-num">{items.filter(i => i.status === 'Active').length}</span>
+              <span className="cmp-mobile-stat-num">{partyTypes.filter(i => i.status === 'Active').length}</span>
             </div>
             <div className="cmp-mobile-stat-label">Active</div>
           </div>
           <div className="cmp-mobile-stat-card">
             <div className="cmp-mobile-stat-row1">
               <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--inactive"><Icon name="close" size={16} /></div>
-              <span className="cmp-mobile-stat-num">{items.filter(i => i.status !== 'Active').length}</span>
+              <span className="cmp-mobile-stat-num">{partyTypes.filter(i => i.status !== 'Active').length}</span>
             </div>
             <div className="cmp-mobile-stat-label">Inactive</div>
           </div>
