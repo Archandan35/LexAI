@@ -193,13 +193,6 @@ export default function BenchTypes() {
     load();
   };
 
-  const doDuplicate = async (item) => {
-    const newName = item.name + ' (copy)';
-    const res = await benchTypeLogic.create({ name: newName, short_code: '', status: item.status || 'Active', description: item.description || '' });
-    if (res.ok) { toast.push('Bench type duplicated.', 'success'); load(); }
-    else toast.push(res.error, 'error');
-  };
-
   const doImport = async () => {
     if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
     toast.push('CSV import coming soon.', 'info');
@@ -257,25 +250,6 @@ export default function BenchTypes() {
 
   return (
     <div className="fade-in bench-types">
-      <div className="bench-types__topbar">
-        <div className="bench-types__topbar-left">
-          <button className="bench-types__menu-btn" title="Menu"><Icon name="menu" size={24} /></button>
-          <div className="bench-types__brand-icon"><Icon name="scales" size={24} /></div>
-          <div className="bench-types__brand-text">
-            <h1>LexAI</h1>
-            <p>Your AI Legal Assistant</p>
-          </div>
-        </div>
-        <div className="bench-types__topbar-right">
-          <button className="bench-types__circle-btn" title="Search"><Icon name="search" size={20} /></button>
-          <button className="bench-types__circle-btn" title="Notifications">
-            <span className="bench-types__notif-badge">3</span>
-            <Icon name="bell" size={20} />
-          </button>
-          <div className="bench-types__avatar">AC</div>
-        </div>
-      </div>
-
       <div className="bench-types__hero">
         <div className="bench-types__hero-icon"><Icon name="gavel" size={30} /></div>
         <div className="bench-types__hero-text">
@@ -337,7 +311,7 @@ export default function BenchTypes() {
           </Button>
         ))}
       </div>
-      <button className="bench-types__import-mobile" onClick={() => activate('import')}>
+      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
       </button>
 
@@ -519,7 +493,7 @@ export default function BenchTypes() {
         </div>
       </div>
 
-      <div className="bench-types__stat-cards">
+      <div className="bench-types__stat-cards bench-types__mobile-only">
         <div className="bench-types__stat-card bench-types__stat-card--total">
           <div className="bench-types__stat-card-row1">
             <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
@@ -635,11 +609,11 @@ export default function BenchTypes() {
         10 / page <Icon name="chevronDown" size={15} />
       </div>
 
-      <div className="bench-types__mobile-section-header">
+      <div className="bench-types__mobile-section-header bench-types__mobile-only">
         <span className="bench-types__mobile-section-title">All Bench Types</span>
         <span className="bench-types__mobile-section-count">1–{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
       </div>
-      <div className="bench-types__mobile-list">
+      <div className="bench-types__mobile-list bench-types__mobile-only">
         {paged.length === 0 ? (
           <div className="bench-types__empty">No bench types found.</div>
         ) : paged.map((item, idx) => (
@@ -668,7 +642,7 @@ export default function BenchTypes() {
                 <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Edit</span>
               </button>
-              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => doDuplicate(item)}>
+              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Copy</span>
               </button>
@@ -681,7 +655,7 @@ export default function BenchTypes() {
         ))}
       </div>
 
-      <nav className="bench-types__bottom-nav">
+      <nav className="bench-types__bottom-nav bench-types__mobile-only">
         <button className="bench-types__nav-tab bench-types__nav-tab--active">
           <Icon name="home" size={20} />
           <span>Dashboard</span>
