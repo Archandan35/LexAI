@@ -16283,6 +16283,7 @@ kbd.cmd__kbd {
 .bench-types__empty { padding: 32px 16px; text-align: center; color: var(--text-faint); font-size: 14px; }
 .bench-types__footer { margin-top: 12px; font-size: 12.5px; color: var(--text-faint); }
 .bench-types__loading { display: grid; place-items: center; padding: 60px; }
+.bench-types { overflow-x: hidden; }
 .bench-types__hero { display: flex; align-items: center; gap: 16px; padding: 28px 32px; background: linear-gradient(120deg, #eaf0ff 0%, #f3eefc 55%, #fdf3e6 100%); border-left: 5px solid var(--brand); border-radius: var(--radius); margin-bottom: 24px; position: relative; min-height: 80px; }
 .bench-types__hero-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; color: var(--brand); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
 .bench-types__hero-text h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; color: var(--navy-dark, #0a1638); }
@@ -16323,7 +16324,7 @@ kbd.cmd__kbd {
 /* Hero illustration — hidden on desktop */
 .bench-types__hero-illus { display: none; }
 
-/* Per-page — hidden on desktop */
+/* Per-page — hidden on desktop (moved inside table footer) */
 .bench-types__per-page { display: none; }
 .bench-types__desktop-only { display: block; }
 .bench-types__mobile-only { display: none; }
@@ -16512,6 +16513,10 @@ kbd.cmd__kbd {
   }
   .bench-types__page-btn.active { background: #6D5BD0; border-color: #6D5BD0; color: #fff; }
   .bench-types__page-btn:disabled { opacity: 0.3; }
+
+  /* ── Mobile Pagination ── */
+  .bench-types__mobile-pagination { display: flex; justify-content: space-between; align-items: center; margin: 0 16px 16px; padding: 12px 0; font-size: 12px; color: #9AA1AE; }
+  .bench-types__mobile-pag-info { font-size: 12px; color: #9AA1AE; }
 
   /* ── Per-page ── */
   .bench-types__per-page { display: none; }

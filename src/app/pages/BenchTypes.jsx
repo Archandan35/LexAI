@@ -8,7 +8,6 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 
 const ENTITY_PREFIX = 'BT';
-const PER_PAGE = 10;
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -40,6 +39,7 @@ export default function BenchTypes() {
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -60,6 +60,7 @@ export default function BenchTypes() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
+  const searchRef = useRef(null);
 
   const load = async () => {
     setLoading(true);
@@ -202,9 +203,9 @@ export default function BenchTypes() {
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
@@ -482,8 +483,8 @@ export default function BenchTypes() {
       <div className="bench-types__search-row">
         <div className="bench-types__search">
           <Icon name="search" size={18} />
-          <input value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <button className="bench-types__search-filter" title="Filter"><Icon name="filter" size={18} /></button>
+          <input ref={searchRef} value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <button className="bench-types__search-filter" title="Filter" onClick={() => searchRef.current?.focus()}><Icon name="filter" size={18} /></button>
         </div>
         <div className="bench-types__stat bench-types__desktop-only">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
@@ -555,10 +556,10 @@ export default function BenchTypes() {
               <tr><td className="bench-types__empty" colSpan={5}>No bench types found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
-                onDragStart={(e) => handleDragStart(e, (safePage - 1) * PER_PAGE + idx)}
-                onDragOver={(e) => handleDragOver(e, (safePage - 1) * PER_PAGE + idx)}
+                onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
+                onDragOver={(e) => handleDragOver(e, (safePage - 1) * perPage + idx)}
                 onDragEnd={handleDragEnd}
-                className={`bench-types__row${dragIdx === (safePage - 1) * PER_PAGE + idx ? ' bench-types__row--dragging' : ''}`}
+                className={`bench-types__row${dragIdx === (safePage - 1) * perPage + idx ? ' bench-types__row--dragging' : ''}`}
               >
                 <td className="bench-types__drag-cell">
                   <span className="bench-types__drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
@@ -588,7 +589,7 @@ export default function BenchTypes() {
           </tbody>
         </table>
         <div className="bench-types__table-footer">
-          <div>Showing {(safePage - 1) * PER_PAGE + 1} to {Math.min(safePage * PER_PAGE, filtered.length)} of {filtered.length} bench types</div>
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} bench types</div>
           {totalPages > 1 && (
             <div className="bench-types__pagination">
               <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
@@ -606,14 +607,14 @@ export default function BenchTypes() {
         </div>
       </div>
 
-      <div className="bench-types__per-page">
-        10 / page <Icon name="chevronDown" size={15} />
+      <div className="bench-types__per-page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+        {perPage} / page <Icon name="chevronDown" size={15} />
       </div>
 
       <div className="bench-types__mobile-section-header bench-types__mobile-only">
         <span className="bench-types__mobile-section-title">All Bench Types</span>
-        <span className="bench-types__mobile-section-count">{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
-        <span className="bench-types__mobile-per-page">10 / page <Icon name="chevronDown" size={13} /></span>
+        <span className="bench-types__mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
+        <span className="bench-types__mobile-per-page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>{perPage} / page <Icon name="chevronDown" size={13} /></span>
       </div>
       <div className="bench-types__mobile-list bench-types__mobile-only">
         {paged.length === 0 ? (
@@ -655,6 +656,24 @@ export default function BenchTypes() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="bench-types__mobile-pagination bench-types__mobile-only">
+        <div className="bench-types__mobile-pag-info">Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length}</div>
+        {totalPages > 1 && (
+          <div className="bench-types__pagination">
+            <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+              const p = start + i;
+              if (p > totalPages) return null;
+              return (
+                <button key={p} className={`bench-types__page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+              );
+            })}
+            <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+          </div>
+        )}
       </div>
 
       <nav className="bench-types__bottom-nav bench-types__mobile-only">
