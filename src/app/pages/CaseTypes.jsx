@@ -6,6 +6,7 @@ import Card from '@/components/Card.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'CT';
 
@@ -66,6 +67,9 @@ export default function CaseTypes() {
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
   const [formCollapsed, setFormCollapsed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
 
   const filtered = caseTypes.filter((t) =>
     !search || t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -100,13 +104,19 @@ export default function CaseTypes() {
     return `${ENTITY_PREFIX}-${slug}`;
   };
 
+  const exists = (name, code) =>
+    caseTypes.some(i => i.name.toLowerCase() === name.trim().toLowerCase() || (code && i.short_code?.toLowerCase() === code.trim().toLowerCase()));
+
   const doAdd = async () => {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
+    if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
+    setBusy(true);
     try {
       const res = await caseTypeLogic.create({ name: newName, short_code: newCode });
+      setBusy(false);
       if (res.ok) { setNewName(''); setNewCode(''); toast.push('Case type added.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
-    } catch (err) { setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create case type.', 'error'); }
+    } catch (err) { setBusy(false); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create case type.', 'error'); }
   };
 
   const doBulkAdd = async () => {
@@ -123,7 +133,7 @@ export default function CaseTypes() {
         const name = line.slice(0, colonIdx).trim();
         const code = line.slice(colonIdx + 1).trim().toUpperCase();
         return { name, short_code: code || autoCode(name) };
-      }).filter(r => r.name);
+      }).filter(r => r.name && !exists(r.name, r.short_code));
       const res = await caseTypeLogic.bulkCreate(records);
       setBulkAddText('');
       if (res.ok) { toast.push(`${res.data.count} case type(s) added.`, 'success'); await refresh(); }
@@ -161,12 +171,21 @@ export default function CaseTypes() {
   const doDelete = async () => {
     if (!delId) { toast.push('Select a case type to delete.', 'error'); return; }
     const item = caseTypes.find(x => x.id === delId);
-    if (!window.confirm(`Delete case type "${item?.name}"?`)) return;
-    try {
-      const res = await caseTypeLogic.remove(delId);
-      if (res.ok || !res.error) { setDelId(''); toast.push('Case type deleted.', 'success'); await refresh(); }
-      else { setLastError(res.error); toast.push(res.error, 'error'); }
-    } catch (err) { setLastError(err?.message || String(err)); }
+    setConfirmState({
+      title: 'Delete Case Type',
+      message: `Delete case type "${item?.name}"?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await caseTypeLogic.remove(delId);
+        setBusy(false);
+        if (res.ok || !res.error) { setDelId(''); toast.push('Case type deleted.', 'success'); await refresh(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const toggleBulkDel = (id) => {
@@ -187,14 +206,30 @@ export default function CaseTypes() {
 
   const doBulkDelete = async () => {
     if (!bulkDelSelected.size) { toast.push('Select at least one case type.', 'error'); return; }
-    if (!window.confirm(`Delete ${bulkDelSelected.size} case type(s)?`)) return;
-    try {
-      for (const id of bulkDelSelected) await caseTypeLogic.remove(id);
-      const count = bulkDelSelected.size;
-      setBulkDelSelected(new Set());
-      toast.push(`${count} deleted.`, 'success');
-      await refresh();
-    } catch (err) { setLastError(err?.message || String(err)); }
+    const count = bulkDelSelected.size;
+    setConfirmState({
+      title: 'Delete Case Types',
+      message: `Delete ${count} case type(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        setProgress({ current: 0, total: count, itemName: 'Starting…', percent: 0 });
+        const ids = [...bulkDelSelected];
+        for (let idx = 0; idx < ids.length; idx++) {
+          const item = caseTypes.find(x => x.id === ids[idx]);
+          setProgress({ current: idx + 1, total: ids.length, itemName: item?.name || '…', percent: Math.round(((idx + 1) / ids.length) * 100) });
+          await caseTypeLogic.remove(ids[idx]);
+        }
+        setBusy(false);
+        setProgress(null);
+        setBulkDelSelected(new Set());
+        toast.push(`${count} deleted.`, 'success');
+        await refresh();
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const doImport = async () => {
@@ -257,13 +292,22 @@ export default function CaseTypes() {
     setEditCode(item.short_code || '');
   };
 
-  const confirmDeleteItem = async (item) => {
-    if (!window.confirm(`Delete "${item.name}"?`)) return;
-    try {
-      const res = await caseTypeLogic.remove(item.id);
-      if (res.ok || !res.error) { toast.push('Case type deleted.', 'success'); await refresh(); }
-      else { toast.push(res.error, 'error'); }
-    } catch (err) { toast.push(err?.message || 'Failed to delete case type.', 'error'); }
+  const confirmDeleteItem = (item) => {
+    setConfirmState({
+      title: 'Delete Case Type',
+      message: `Delete case type "${item?.name}"? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await caseTypeLogic.remove(item.id);
+        setBusy(false);
+        if (res.ok || !res.error) { toast.push('Case type deleted.', 'success'); await refresh(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const startDelete = (item) => {
@@ -728,6 +772,25 @@ export default function CaseTypes() {
         </nav>
       </div>
 
+      {busy && (
+        <div className="cmp-busy-overlay">
+          <div className="cmp-busy-bar">
+            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+          </div>
+          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
+        </div>
+      )}
+      {confirmState && (
+        <ConfirmDialog
+          open={true}
+          title={confirmState.title}
+          message={confirmState.message}
+          variant={confirmState.variant}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={confirmState.onCancel}
+        />
+      )}
       {!search && <div className="muted cmp-drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
 
       <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />

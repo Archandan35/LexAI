@@ -373,13 +373,25 @@ export default function Courts() {
 
   const removeBulk = async () => {
     if (!selected.size) return;
-    if (!window.confirm(`Delete ${selected.size} court(s)?`)) return;
-    const res = await courtsLogic.bulkRemove([...selected]);
-    if (res.ok) {
-      setSelected(new Set());
-      toast.push(`${res.data?.deleted || selected.size} court(s) deleted.`, 'success');
-      await load();
-    } else { toast.push(res.error, 'error'); }
+    const count = selected.size;
+    setConfirmState({
+      title: 'Delete Courts',
+      message: `Delete ${count} court(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await courtsLogic.bulkRemove([...selected]);
+        setBusy(false);
+        if (res.ok) {
+          setSelected(new Set());
+          toast.push(`${res.data?.deleted || count} court(s) deleted.`, 'success');
+          await load();
+        } else { toast.push(res.error, 'error'); }
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const handleSelectAll = (e) => {

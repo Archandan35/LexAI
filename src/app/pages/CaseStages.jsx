@@ -5,6 +5,7 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -54,6 +55,9 @@ export default function CaseStages() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -87,9 +91,15 @@ export default function CaseStages() {
     setSubMode('single');
   };
 
+  const exists = (name) =>
+    items.some(i => i.name.toLowerCase() === name.trim().toLowerCase());
+
   const doAdd = async () => {
     if (!newName.trim()) { toast.push('Stage name is required.', 'error'); return; }
+    if (exists(newName)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
+    setBusy(true);
     const res = await caseStageLogic.add(newName.trim());
+    setBusy(false);
     if (res.ok) { setNewName(''); toast.push('Case stage added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -99,6 +109,7 @@ export default function CaseStages() {
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
     let added = 0, skipped = 0;
     for (const name of lines) {
+      if (exists(name)) { skipped++; continue; }
       const res = await caseStageLogic.add(name);
       if (res.ok) added++; else skipped++;
     }
@@ -134,10 +145,21 @@ export default function CaseStages() {
   const doDelete = async () => {
     if (!delId) { toast.push('Select a case stage to delete.', 'error'); return; }
     const item = items.find(x => x.id === delId);
-    if (!window.confirm(`Delete case stage "${item?.name}"?`)) return;
-    const res = await caseStageLogic.remove(delId);
-    if (res.ok || !res.error) { setDelId(''); toast.push('Case stage deleted.', 'success'); load(); }
-    else toast.push(res.error, 'error');
+    setConfirmState({
+      title: 'Delete Case Stage',
+      message: `Delete case stage "${item?.name}"?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await caseStageLogic.remove(delId);
+        setBusy(false);
+        if (res.ok || !res.error) { setDelId(''); toast.push('Case stage deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const toggleBulkDel = (id) => {
@@ -158,12 +180,30 @@ export default function CaseStages() {
 
   const doBulkDelete = async () => {
     if (!bulkDelSelected.size) { toast.push('Select at least one case stage.', 'error'); return; }
-    if (!window.confirm(`Delete ${bulkDelSelected.size} case stage(s)?`)) return;
-    for (const id of bulkDelSelected) await caseStageLogic.remove(id);
     const count = bulkDelSelected.size;
-    setBulkDelSelected(new Set());
-    toast.push(`${count} deleted.`, 'success');
-    load();
+    setConfirmState({
+      title: 'Delete Case Stages',
+      message: `Delete ${count} case stage(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        setProgress({ current: 0, total: count, itemName: 'Starting…', percent: 0 });
+        const ids = [...bulkDelSelected];
+        for (let idx = 0; idx < ids.length; idx++) {
+          const item = items.find(x => x.id === ids[idx]);
+          setProgress({ current: idx + 1, total: ids.length, itemName: item?.name || '…', percent: Math.round(((idx + 1) / ids.length) * 100) });
+          await caseStageLogic.remove(ids[idx]);
+        }
+        setBusy(false);
+        setProgress(null);
+        setBulkDelSelected(new Set());
+        toast.push(`${count} deleted.`, 'success');
+        load();
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const doImport = async () => {
@@ -216,6 +256,24 @@ export default function CaseStages() {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const confirmDeleteItem = (item) => {
+    setConfirmState({
+      title: 'Delete Case Stage',
+      message: `Delete case stage "${item?.name}"? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await caseStageLogic.remove(item.id);
+        setBusy(false);
+        if (res.ok || !res.error) { toast.push('Case stage deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const stats = [
@@ -493,7 +551,7 @@ export default function CaseStages() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     <div className="cmp-act-more-wrap">
                       <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
                       {moreMenu === item.id && (
@@ -597,7 +655,7 @@ export default function CaseStages() {
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
+                <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
                   <span className="cmp-mobile-action-label">Delete</span>
                 </button>
@@ -630,6 +688,26 @@ export default function CaseStages() {
           <button className="cmp-nav-tab"><Icon name="calendar" size={20} /><span>Calendar</span></button>
         </nav>
       </div>
+
+        {busy && (
+          <div className="cmp-busy-overlay">
+            <div className="cmp-busy-bar">
+              <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+            </div>
+            <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
+          </div>
+        )}
+        {confirmState && (
+          <ConfirmDialog
+            open={true}
+            title={confirmState.title}
+            message={confirmState.message}
+            variant={confirmState.variant}
+            confirmLabel={confirmState.confirmLabel}
+            onConfirm={confirmState.onConfirm}
+            onCancel={confirmState.onCancel}
+          />
+        )}
     </div>
   );
 }

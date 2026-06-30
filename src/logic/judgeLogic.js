@@ -6,7 +6,7 @@ export const judgeLogic = {
   async list() {
     try {
       const rows = await judgeService.list();
-      return [...rows].sort((a, b) => a.name?.localeCompare(b.name));
+      return [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
     } catch (err) { return fail(err); }
   },
 
@@ -26,6 +26,7 @@ export const judgeLogic = {
         designation: (data.designation || '').trim(),
         court: (data.court || '').trim(),
         status: 'Active',
+        display_order: data.display_order ?? 0,
         createdAt: nowISO(),
       }));
     } catch (err) { return fail(err); }
@@ -41,6 +42,7 @@ export const judgeLogic = {
         designation: (data.designation || '').trim(),
         court: (data.court || '').trim(),
         status: data.status,
+        display_order: data.display_order,
       }));
     } catch (err) { return fail(err); }
   },
@@ -48,6 +50,15 @@ export const judgeLogic = {
   async remove(id) {
     try {
       return ok(await judgeService.remove(id));
+    } catch (err) { return fail(err); }
+  },
+
+  async reorder(orderedIds) {
+    try {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await judgeService.update(orderedIds[i], { display_order: i });
+      }
+      return ok('Reordered');
     } catch (err) { return fail(err); }
   },
 };

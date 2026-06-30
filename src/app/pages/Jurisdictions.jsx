@@ -6,6 +6,7 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'JUR';
 
@@ -64,6 +65,10 @@ export default function Jurisdictions() {
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
 
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
+
   const load = async () => {
     setLoading(true);
     const res = await jurisdictionLogic.list();
@@ -108,7 +113,10 @@ export default function Jurisdictions() {
 
   const doAdd = async () => {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
+    if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
+    setBusy(true);
     const res = await jurisdictionLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
+    setBusy(false);
     if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Jurisdiction added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -117,6 +125,9 @@ export default function Jurisdictions() {
     const slug = name.trim().replace(/\s+/g, '-').toUpperCase();
     return `${ENTITY_PREFIX}-${slug}`;
   };
+
+  const exists = (name, code) =>
+    items.some(i => i.name.toLowerCase() === name.trim().toLowerCase() || (code && i.short_code?.toLowerCase() === code.trim().toLowerCase()));
 
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
@@ -127,12 +138,14 @@ export default function Jurisdictions() {
       if (colonIdx === -1) {
         const name = line;
         const short_code = autoCode(name);
+        if (exists(name, short_code)) { skipped++; continue; }
         const res = await jurisdictionLogic.create({ name, short_code });
         if (res.ok) added++; else skipped++;
       } else {
         const name = line.slice(0, colonIdx).trim();
         const code = line.slice(colonIdx + 1).trim();
         if (!name) { skipped++; continue; }
+        if (exists(name, code.toUpperCase())) { skipped++; continue; }
         const res = await jurisdictionLogic.create({ name, short_code: code.toUpperCase() });
         if (res.ok) added++; else skipped++;
       }
@@ -171,10 +184,21 @@ export default function Jurisdictions() {
   const doDelete = async () => {
     if (!delId) { toast.push('Select a jurisdiction to delete.', 'error'); return; }
     const item = items.find(x => x.id === delId);
-    if (!window.confirm(`Delete jurisdiction "${item?.name}"?`)) return;
-    const res = await jurisdictionLogic.remove(delId);
-    if (res.ok || !res.error) { setDelId(''); toast.push('Jurisdiction deleted.', 'success'); load(); }
-    else toast.push(res.error, 'error');
+    setConfirmState({
+      title: 'Delete Jurisdiction',
+      message: `Delete jurisdiction "${item?.name}"?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await jurisdictionLogic.remove(delId);
+        setBusy(false);
+        if (res.ok || !res.error) { setDelId(''); toast.push('Jurisdiction deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const toggleBulkDel = (id) => {
@@ -195,12 +219,30 @@ export default function Jurisdictions() {
 
   const doBulkDelete = async () => {
     if (!bulkDelSelected.size) { toast.push('Select at least one jurisdiction.', 'error'); return; }
-    if (!window.confirm(`Delete ${bulkDelSelected.size} jurisdiction(s)?`)) return;
-    for (const id of bulkDelSelected) await jurisdictionLogic.remove(id);
     const count = bulkDelSelected.size;
-    setBulkDelSelected(new Set());
-    toast.push(`${count} deleted.`, 'success');
-    load();
+    setConfirmState({
+      title: 'Delete Jurisdictions',
+      message: `Delete ${count} jurisdiction(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        setProgress({ current: 0, total: count, itemName: 'Starting…', percent: 0 });
+        const ids = [...bulkDelSelected];
+        for (let idx = 0; idx < ids.length; idx++) {
+          const item = items.find(x => x.id === ids[idx]);
+          setProgress({ current: idx + 1, total: ids.length, itemName: item?.name || '…', percent: Math.round(((idx + 1) / ids.length) * 100) });
+          await jurisdictionLogic.remove(ids[idx]);
+        }
+        setBusy(false);
+        setProgress(null);
+        setBulkDelSelected(new Set());
+        toast.push(`${count} deleted.`, 'success');
+        load();
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const doImport = async () => {
@@ -254,6 +296,24 @@ export default function Jurisdictions() {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const confirmDeleteItem = (item) => {
+    setConfirmState({
+      title: 'Delete Jurisdiction',
+      message: `Delete jurisdiction "${item?.name}"? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const res = await jurisdictionLogic.remove(item.id);
+        setBusy(false);
+        if (res.ok || !res.error) { toast.push('Jurisdiction deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const stats = [
@@ -565,7 +625,7 @@ export default function Jurisdictions() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     <div className="cmp-act-more-wrap">
                       <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
                       {moreMenu === item.id && (
@@ -670,7 +730,7 @@ export default function Jurisdictions() {
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
+                <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
                   <span className="cmp-mobile-action-label">Delete</span>
                 </button>
@@ -703,6 +763,26 @@ export default function Jurisdictions() {
           <button className="cmp-nav-tab"><Icon name="calendar" size={20} /><span>Calendar</span></button>
         </nav>
       </div>
+
+      {busy && (
+        <div className="cmp-busy-overlay">
+          <div className="cmp-busy-bar">
+            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+          </div>
+          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
+        </div>
+      )}
+      {confirmState && (
+        <ConfirmDialog
+          open={true}
+          title={confirmState.title}
+          message={confirmState.message}
+          variant={confirmState.variant}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={confirmState.onCancel}
+        />
+      )}
     </div>
   );
 }
