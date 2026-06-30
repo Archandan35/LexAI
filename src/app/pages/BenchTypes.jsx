@@ -62,6 +62,7 @@ export default function BenchTypes() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
@@ -89,6 +90,13 @@ export default function BenchTypes() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.bench-types__act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
@@ -323,65 +331,109 @@ export default function BenchTypes() {
   return (
     <div className="fade-in bench-types">
       <div className="bench-types__hero">
-        <div className="bench-types__hero-icon"><Icon name="gavel" size={30} /></div>
+        <div className="bench-types__hero-icon"><Icon name="gavel" size={34} /></div>
         <div className="bench-types__hero-text">
           <h2>Bench Types</h2>
           <p>Manage bench compositions (Single Bench, Division Bench, Full Bench, etc.)</p>
+          <div className="bench-types__hero-accent" />
         </div>
-        <svg className="bench-types__hero-illus" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="120" cy="205" rx="70" ry="8" fill="#0a1638" opacity="0.08"/>
-          <g fill="#f0b429" opacity="0.85">
-            <path d="M30 40 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
-            <path d="M205 70 l2.5 6.5 6.5 2.5 -6.5 2.5 -2.5 6.5 -2.5 -6.5 -6.5 -2.5 6.5 -2.5z"/>
-            <path d="M195 25 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/>
-          </g>
-          <g fill="#d6b35a">
-            <ellipse cx="35" cy="180" rx="7" ry="3.5" transform="rotate(-30 35 180)"/>
-            <ellipse cx="30" cy="168" rx="7" ry="3.5" transform="rotate(-15 30 168)"/>
-            <ellipse cx="27" cy="155" rx="7" ry="3.5" transform="rotate(0 27 155)"/>
-            <ellipse cx="27" cy="142" rx="7" ry="3.5" transform="rotate(15 27 142)"/>
-            <ellipse cx="30" cy="129" rx="7" ry="3.5" transform="rotate(30 30 129)"/>
-            <path d="M40 188 Q25 160 32 122" stroke="#caa023" strokeWidth="2" fill="none"/>
-          </g>
-          <g fill="#d6b35a">
-            <ellipse cx="205" cy="180" rx="7" ry="3.5" transform="rotate(30 205 180)"/>
-            <ellipse cx="210" cy="168" rx="7" ry="3.5" transform="rotate(15 210 168)"/>
-            <ellipse cx="213" cy="155" rx="7" ry="3.5" transform="rotate(0 213 155)"/>
-            <ellipse cx="213" cy="142" rx="7" ry="3.5" transform="rotate(-15 213 142)"/>
-            <ellipse cx="210" cy="129" rx="7" ry="3.5" transform="rotate(-30 210 129)"/>
-            <path d="M200 188 Q215 160 208 122" stroke="#caa023" strokeWidth="2" fill="none"/>
-          </g>
-          <rect x="112" y="120" width="16" height="70" rx="3" fill="#16245e"/>
-          <ellipse cx="120" cy="192" rx="46" ry="10" fill="#16245e"/>
-          <ellipse cx="120" cy="192" rx="46" ry="10" fill="none" stroke="#0a1638" strokeWidth="2" opacity="0.3"/>
-          <rect x="116" y="35" width="8" height="95" rx="3" fill="#f0b429"/>
-          <circle cx="120" cy="28" r="9" fill="#f0b429"/>
-          <circle cx="120" cy="28" r="4" fill="#fff7e0"/>
-          <rect x="45" y="44" width="150" height="6" rx="3" fill="#f0b429"/>
-          <circle cx="120" cy="47" r="6" fill="#caa023"/>
-          <line x1="55" y1="47" x2="40" y2="95" stroke="#caa023" strokeWidth="2"/>
-          <line x1="55" y1="47" x2="70" y2="95" stroke="#caa023" strokeWidth="2"/>
-          <path d="M30 95 q10 22 30 0z" fill="#f0b429"/>
-          <ellipse cx="45" cy="96" rx="20" ry="5" fill="#caa023"/>
-          <line x1="185" y1="47" x2="170" y2="95" stroke="#caa023" strokeWidth="2"/>
-          <line x1="185" y1="47" x2="200" y2="95" stroke="#caa023" strokeWidth="2"/>
-          <path d="M160 95 q10 22 30 0z" fill="#f0b429"/>
-          <ellipse cx="175" cy="96" rx="20" ry="5" fill="#caa023"/>
+        <svg className="bench-types__hero-watermark bench-types__watermark-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="44" y="12" width="12" height="48" rx="2" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="currentColor"/>
+          <ellipse cx="50" cy="62" rx="28" ry="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="47" y="0" width="6" height="12" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="0" r="6" fill="currentColor"/>
+          <circle cx="50" cy="0" r="3" fill="#fff"/>
+          <circle cx="50" cy="0" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
+          <rect x="8" y="28" width="84" height="4" rx="2" fill="currentColor"/>
+          <circle cx="50" cy="30" r="4" fill="currentColor" opacity="0.7"/>
+          <line x1="18" y1="30" x2="8" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="18" y1="30" x2="28" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M4 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <line x1="82" y1="30" x2="72" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <line x1="82" y1="30" x2="92" y2="58" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+          <path d="M72 58 q8 18 24 0q-8 0-24 0z" fill="currentColor" opacity="0.8"/>
+          <ellipse cx="78" cy="58" rx="16" ry="4" fill="currentColor" opacity="0.6"/>
+          <circle cx="16" cy="4" r="2.5" fill="currentColor" opacity="0.5"/>
+          <circle cx="84" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="90" cy="85" r="3" fill="currentColor" opacity="0.3"/>
+          <circle cx="8" cy="78" r="2" fill="currentColor" opacity="0.35"/>
         </svg>
       </div>
 
+      {/* ── Desktop 6-stat row ── */}
+      <div className="bench-types__stats-row">
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="layers" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Total</div>
+            <div className="bench-types__statcard-value">{items.length}</div>
+            <div className="bench-types__statcard-sub">All bench types</div>
+          </div>
+        </div>
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Active</div>
+            <div className="bench-types__statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+            <div className="bench-types__statcard-sub">Currently in use</div>
+          </div>
+        </div>
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Inactive</div>
+            <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+            <div className="bench-types__statcard-sub">Not in use</div>
+          </div>
+        </div>
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Most Used</div>
+            <div className="bench-types__statcard-value bench-types__statcard-value--sm">—</div>
+            <div className="bench-types__statcard-sub">Usage tracking N/A</div>
+          </div>
+        </div>
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Created This Month</div>
+            <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(i => { if (!i.created_at) return false; const d = new Date(i.created_at); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length}</div>
+            <div className="bench-types__statcard-sub">This calendar month</div>
+          </div>
+        </div>
+        <div className="bench-types__statcard">
+          <div className="bench-types__statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={16} /></div>
+          <div className="bench-types__statcard-body">
+            <div className="bench-types__statcard-label">Total Assignments</div>
+            <div className="bench-types__statcard-value bench-types__statcard-value--sm">—</div>
+            <div className="bench-types__statcard-sub">Assignment tracking N/A</div>
+          </div>
+        </div>
+      </div>
+
       <div className="bench-types__toolbar">
-        {ACTIONS.map(a => (
-          <Button
-            key={a.key}
-            icon={a.icon}
-            variant={activeAction === a.key ? a.variant : 'ghost'}
-            onClick={() => activate(a.key)}
-            className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
-          >
-            {a.label}
-          </Button>
-        ))}
+        <div className="bench-types__toolbar-left">
+          {ACTIONS.map(a => (
+            <Button
+              key={a.key}
+              icon={a.icon}
+              variant={activeAction === a.key ? a.variant : 'ghost'}
+              onClick={() => activate(a.key)}
+              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+        <div className="bench-types__toolbar-right">
+          <button className={`bench-types__tb-filter${showFilter ? ' active' : ''}`} title={showFilter ? 'Filter active — click to clear' : 'Filter'} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
+            <Icon name="filter" size={16} />
+            <span>Filter</span>
+          </button>
+        </div>
       </div>
       <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
@@ -558,19 +610,9 @@ export default function BenchTypes() {
         </Card>
       )}
 
-      <div className="bench-types__search-row">
-        <div className={`bench-types__search${showFilter ? ' bench-types__search--filtered' : ''}`}>
-          <Icon name="search" size={18} />
-          <input ref={searchRef} value={search} placeholder="Search bench types…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <button className={`bench-types__search-filter${showFilter ? ' active' : ''}`} title={showFilter ? 'Filter active — click to clear' : 'Filter'} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}><Icon name="filter" size={18} /></button>
-        </div>
-        <div className="bench-types__stat bench-types__desktop-only">
-          <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
-          <div>
-            <div className="bench-types__stat-label">Total Bench Types</div>
-            <div className="bench-types__stat-value">{items.length}</div>
-          </div>
-        </div>
+      <div className={`bench-types__search${showFilter ? ' bench-types__search--filtered' : ''}`}>
+        <Icon name="search" size={18} />
+        <input ref={searchRef} value={search} placeholder="Search bench types…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
 
       <div className="bench-types__stat-cards bench-types__mobile-only">
@@ -626,7 +668,7 @@ export default function BenchTypes() {
               <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 120 }}>ACTIONS</th>
+              <th style={{ width: 136 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -657,9 +699,19 @@ export default function BenchTypes() {
                 </td>
                 <td>
                   <div className="bench-types__actions">
-                    <button className="bench-types__act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="bench-types__act-btn bench-types__act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="bench-types__act-btn bench-types__act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
                     <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                    <div className="bench-types__act-more-wrap">
+                      <button className="bench-types__act-btn bench-types__act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
+                      {moreMenu === item.id && (
+                        <div className="bench-types__act-dropdown">
+                          <button className="bench-types__act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                            <Icon name="copy" size={14} /> Duplicate
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -668,11 +720,15 @@ export default function BenchTypes() {
         </table>
         <div className="bench-types__table-footer">
           <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} bench types</div>
+          <span className="bench-types__ft-perpage" title="Change per page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
           {totalPages > 1 && (
             <div className="bench-types__pagination">
               <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+                const windowSize = 5;
+                const start = Math.max(1, Math.min(safePage - Math.floor(windowSize / 2), totalPages - windowSize + 1));
                 const p = start + i;
                 if (p > totalPages) return null;
                 return (
@@ -683,10 +739,6 @@ export default function BenchTypes() {
             </div>
           )}
         </div>
-      </div>
-
-      <div className="bench-types__per-page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
-        {perPage} / page <Icon name="chevronDown" size={15} />
       </div>
 
       <div className="bench-types__mobile-section-header bench-types__mobile-only">
