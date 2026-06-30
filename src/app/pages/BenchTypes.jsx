@@ -6,6 +6,7 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'BT';
 
@@ -60,6 +61,7 @@ export default function BenchTypes() {
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [confirmState, setConfirmState] = useState(null);
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
@@ -101,8 +103,12 @@ export default function BenchTypes() {
     setSubMode('single');
   };
 
+  const exists = (name, code) =>
+    items.some(i => i.name.toLowerCase() === name.trim().toLowerCase() || (code && i.short_code?.toLowerCase() === code.trim().toLowerCase()));
+
   const doAdd = async () => {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
+    if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
     if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Bench type added.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -119,18 +125,12 @@ export default function BenchTypes() {
     let added = 0, skipped = 0;
     for (const line of lines) {
       const colonIdx = line.indexOf(':');
-      if (colonIdx === -1) {
-        const name = line;
-        const short_code = autoCode(name);
-        const res = await benchTypeLogic.create({ name, short_code });
-        if (res.ok) added++; else skipped++;
-      } else {
-        const name = line.slice(0, colonIdx).trim();
-        const code = line.slice(colonIdx + 1).trim();
-        if (!name) { skipped++; continue; }
-        const res = await benchTypeLogic.create({ name, short_code: code.toUpperCase() });
-        if (res.ok) added++; else skipped++;
-      }
+      const name = colonIdx === -1 ? line : line.slice(0, colonIdx).trim();
+      const code = colonIdx === -1 ? autoCode(name) : line.slice(colonIdx + 1).trim().toUpperCase();
+      if (!name) { skipped++; continue; }
+      if (exists(name, code)) { skipped++; continue; }
+      const res = await benchTypeLogic.create({ name, short_code: code });
+      if (res.ok) added++; else skipped++;
     }
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
@@ -166,10 +166,19 @@ export default function BenchTypes() {
   const doDelete = async () => {
     if (!delId) { toast.push('Select a bench type to delete.', 'error'); return; }
     const item = items.find(x => x.id === delId);
-    if (!window.confirm(`Delete bench type "${item?.name}"?`)) return;
-    const res = await benchTypeLogic.remove(delId);
-    if (res.ok || !res.error) { setDelId(''); toast.push('Bench type deleted.', 'success'); load(); }
-    else toast.push(res.error, 'error');
+    setConfirmState({
+      title: 'Delete Bench Type',
+      message: `Delete bench type "${item?.name}"?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        const res = await benchTypeLogic.remove(delId);
+        if (res.ok || !res.error) { setDelId(''); toast.push('Bench type deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const toggleBulkDel = (id) => {
@@ -190,12 +199,21 @@ export default function BenchTypes() {
 
   const doBulkDelete = async () => {
     if (!bulkDelSelected.size) { toast.push('Select at least one bench type.', 'error'); return; }
-    if (!window.confirm(`Delete ${bulkDelSelected.size} bench type(s)?`)) return;
-    for (const id of bulkDelSelected) await benchTypeLogic.remove(id);
     const count = bulkDelSelected.size;
-    setBulkDelSelected(new Set());
-    toast.push(`${count} deleted.`, 'success');
-    load();
+    setConfirmState({
+      title: 'Delete Bench Types',
+      message: `Delete ${count} bench type(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        for (const id of bulkDelSelected) await benchTypeLogic.remove(id);
+        setBulkDelSelected(new Set());
+        toast.push(`${count} deleted.`, 'success');
+        load();
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   const doImport = async () => {
@@ -249,6 +267,22 @@ export default function BenchTypes() {
     setActiveAction('delete');
     setSubMode('single');
     setDelId(item.id);
+  };
+
+  const confirmDeleteItem = (item) => {
+    setConfirmState({
+      title: 'Delete Bench Type',
+      message: `Delete bench type "${item?.name}"? This action cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setConfirmState(null);
+        const res = await benchTypeLogic.remove(item.id);
+        if (res.ok || !res.error) { toast.push('Bench type deleted.', 'success'); load(); }
+        else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
   };
 
   if (loading) return <div className="fade-in bench-types__loading"><div className="spinner" /></div>;
@@ -585,7 +619,7 @@ export default function BenchTypes() {
                   <div className="bench-types__actions">
                     <button className="bench-types__act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="bench-types__act-btn bench-types__act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => startDelete(item)}><Icon name="trash" size={15} /></button>
+                    <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                   </div>
                 </td>
               </tr>
@@ -653,7 +687,7 @@ export default function BenchTypes() {
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Duplicate</span>
               </button>
-              <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
+              <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                 <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Delete</span>
               </button>
@@ -701,6 +735,18 @@ export default function BenchTypes() {
           <span>Calendar</span>
         </button>
       </nav>
+
+      {confirmState && (
+        <ConfirmDialog
+          open={true}
+          title={confirmState.title}
+          message={confirmState.message}
+          variant={confirmState.variant}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={confirmState.onCancel}
+        />
+      )}
     </div>
   );
 }
