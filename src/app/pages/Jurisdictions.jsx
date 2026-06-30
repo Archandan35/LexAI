@@ -603,6 +603,106 @@ export default function Jurisdictions() {
           )}
         </div>
       </div>
+
+      {/* ── Mobile View ── */}
+      <div className="cmp-mobile-only">
+        <div className="cmp-mobile-stats">
+          <div className="cmp-mobile-stat-card">
+            <div className="cmp-mobile-stat-row1">
+              <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--total"><Icon name="compass" size={16} /></div>
+              <span className="cmp-mobile-stat-num">{items.length}</span>
+            </div>
+            <div className="cmp-mobile-stat-label">Total</div>
+          </div>
+          <div className="cmp-mobile-stat-card">
+            <div className="cmp-mobile-stat-row1">
+              <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--active"><Icon name="check" size={16} /></div>
+              <span className="cmp-mobile-stat-num">{items.filter(i => i.status === 'Active').length}</span>
+            </div>
+            <div className="cmp-mobile-stat-label">Active</div>
+          </div>
+          <div className="cmp-mobile-stat-card">
+            <div className="cmp-mobile-stat-row1">
+              <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--inactive"><Icon name="close" size={16} /></div>
+              <span className="cmp-mobile-stat-num">{items.filter(i => i.status !== 'Active').length}</span>
+            </div>
+            <div className="cmp-mobile-stat-label">Inactive</div>
+          </div>
+        </div>
+
+        <div className="cmp-mobile-section-header">
+          <span className="cmp-mobile-section-title">All Jurisdictions</span>
+          <span className="cmp-mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
+          <span className="cmp-mobile-per-page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+            {perPage} / page <Icon name="chevronDown" size={13} />
+          </span>
+        </div>
+
+        <div className="cmp-mobile-list">
+          {paged.length === 0 ? (
+            <div className="cmp-empty">No jurisdictions found.</div>
+          ) : paged.map(item => (
+            <div key={item.id} className="cmp-mobile-card">
+              <div className="cmp-mobile-card-row1">
+                <span className="cmp-mobile-drag-handle"><Icon name="grip" size={15} /></span>
+                <span className="cmp-mobile-avatar"><Icon name="compass" size={18} /></span>
+                <div className="cmp-mobile-card-info">
+                  <div className="cmp-mobile-card-top">
+                    <span className="cmp-mobile-card-name">{item.name}</span>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                      <span className="cmp-status-dot"></span>{item.status || 'Active'}
+                    </span>
+                  </div>
+                  <span className="cmp-mobile-card-code">{item.short_code}</span>
+                </div>
+              </div>
+              <div className="cmp-mobile-divider"></div>
+              <div className="cmp-mobile-card-row2">
+                <button className="cmp-mobile-action" title="View" onClick={() => setViewItem(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name="eye" size={15} /></span>
+                  <span className="cmp-mobile-action-label">View</span>
+                </button>
+                <button className="cmp-mobile-action" title="Edit" onClick={() => startEdit(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
+                  <span className="cmp-mobile-action-label">Edit</span>
+                </button>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                  <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
+                  <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
+                  <span className="cmp-mobile-action-label">Delete</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="cmp-mobile-pagination">
+          <div className="cmp-mobile-pag-info">Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length}</div>
+          {totalPages > 1 && (
+            <div className="cmp-pagination">
+              <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+                const p = start + i;
+                if (p > totalPages) return null;
+                return <button key={p} className={`cmp-page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>;
+              })}
+              <button className="cmp-page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+            </div>
+          )}
+        </div>
+
+        <nav className="cmp-bottom-nav">
+          <button className="cmp-nav-tab cmp-nav-tab--active"><Icon name="home" size={20} /><span>Dashboard</span></button>
+          <button className="cmp-nav-tab"><Icon name="briefcase" size={20} /><span>Matters</span></button>
+          <button className="cmp-nav-fab"><Icon name="plus" size={24} /></button>
+          <button className="cmp-nav-tab"><Icon name="file" size={20} /><span>Order Sheet</span></button>
+          <button className="cmp-nav-tab"><Icon name="calendar" size={20} /><span>Calendar</span></button>
+        </nav>
+      </div>
     </div>
   );
 }
