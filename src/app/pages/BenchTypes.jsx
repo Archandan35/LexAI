@@ -483,6 +483,7 @@ export default function BenchTypes() {
         <div className="bench-types__search">
           <Icon name="search" size={18} />
           <input value={search} placeholder="Search bench types…" onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <button className="bench-types__search-filter" title="Filter"><Icon name="filter" size={18} /></button>
         </div>
         <div className="bench-types__stat bench-types__desktop-only">
           <div className="bench-types__stat-icon"><Icon name="layers" size={20} /></div>
@@ -611,7 +612,8 @@ export default function BenchTypes() {
 
       <div className="bench-types__mobile-section-header bench-types__mobile-only">
         <span className="bench-types__mobile-section-title">All Bench Types</span>
-        <span className="bench-types__mobile-section-count">1–{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
+        <span className="bench-types__mobile-section-count">{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
+        <span className="bench-types__mobile-per-page">10 / page <Icon name="chevronDown" size={13} /></span>
       </div>
       <div className="bench-types__mobile-list bench-types__mobile-only">
         {paged.length === 0 ? (
@@ -644,7 +646,7 @@ export default function BenchTypes() {
               </button>
               <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
-                <span className="bench-types__mobile-action-label">Copy</span>
+                <span className="bench-types__mobile-action-label">Duplicate</span>
               </button>
               <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => startDelete(item)}>
                 <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
