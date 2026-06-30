@@ -193,6 +193,13 @@ export default function BenchTypes() {
     load();
   };
 
+  const doDuplicate = async (item) => {
+    const newName = item.name + ' (copy)';
+    const res = await benchTypeLogic.create({ name: newName, short_code: '', status: item.status || 'Active', description: item.description || '' });
+    if (res.ok) { toast.push('Bench type duplicated.', 'success'); load(); }
+    else toast.push(res.error, 'error');
+  };
+
   const doImport = async () => {
     if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
     toast.push('CSV import coming soon.', 'info');
@@ -330,7 +337,7 @@ export default function BenchTypes() {
           </Button>
         ))}
       </div>
-      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
+      <button className="bench-types__import-mobile" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
       </button>
 
@@ -512,7 +519,7 @@ export default function BenchTypes() {
         </div>
       </div>
 
-      <div className="bench-types__stat-cards bench-types__mobile-only">
+      <div className="bench-types__stat-cards">
         <div className="bench-types__stat-card bench-types__stat-card--total">
           <div className="bench-types__stat-card-row1">
             <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
@@ -628,11 +635,11 @@ export default function BenchTypes() {
         10 / page <Icon name="chevronDown" size={15} />
       </div>
 
-      <div className="bench-types__mobile-section-header bench-types__mobile-only">
+      <div className="bench-types__mobile-section-header">
         <span className="bench-types__mobile-section-title">All Bench Types</span>
         <span className="bench-types__mobile-section-count">1–{Math.min(PER_PAGE, filtered.length)} of {filtered.length}</span>
       </div>
-      <div className="bench-types__mobile-list bench-types__mobile-only">
+      <div className="bench-types__mobile-list">
         {paged.length === 0 ? (
           <div className="bench-types__empty">No bench types found.</div>
         ) : paged.map((item, idx) => (
@@ -661,7 +668,7 @@ export default function BenchTypes() {
                 <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Edit</span>
               </button>
-              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => doDuplicate(item)}>
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Copy</span>
               </button>
@@ -674,7 +681,7 @@ export default function BenchTypes() {
         ))}
       </div>
 
-      <nav className="bench-types__bottom-nav bench-types__mobile-only">
+      <nav className="bench-types__bottom-nav">
         <button className="bench-types__nav-tab bench-types__nav-tab--active">
           <Icon name="home" size={20} />
           <span>Dashboard</span>

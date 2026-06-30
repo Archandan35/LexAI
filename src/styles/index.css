@@ -16330,6 +16330,11 @@ kbd.cmd__kbd {
 .bench-types__per-page { display: none; }
 .bench-types__desktop-only { display: block; }
 .bench-types__mobile-only { display: none; }
+.bench-types__stat-cards,
+.bench-types__import-mobile,
+.bench-types__mobile-section-header,
+.bench-types__mobile-list,
+.bench-types__bottom-nav { display: none; }
 
 /* ==================== TABLET (≤ 1024px) ==================== */
 @media (max-width: 1024px) {
@@ -16411,10 +16416,7 @@ kbd.cmd__kbd {
     content: '⚖'; position: absolute; top: 8px; right: 12px;
     font-size: 28px; opacity: 0.15;
   }
-  .bench-types__hero-illus { display: none; }
-  .bench-types__hero-icon { width: 46px; height: 46px; border-radius: 11px; background: #fff; border: 1px solid #E8E9EE; box-shadow: none; color: #6D5BD0; flex-shrink: 0; }
-  .bench-types__hero-text h2 { font-size: 19px; font-weight: 700; color: #1A1D29; margin: 0 0 3px; }
-  .bench-types__hero-text p { font-size: 12.5px; color: #646B7A; max-width: 270px; margin: 0; }
+  .bench-types__hero { display: none; }
 
   /* ── Action Bar (3 buttons) ── */
   .bench-types__toolbar { display: flex; gap: 8px; margin: 0 16px 12px; padding: 0; }
