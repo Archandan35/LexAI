@@ -14,7 +14,7 @@ export const priorityLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Priority name is required.');
-      return ok(await priorityService.create({ name, display_order: data.display_order ?? 0, color: data.color || '#6b7280', status: 'Active', createdAt: nowISO() }));
+      return ok(await priorityService.create({ name, short_code: data.short_code, display_order: data.display_order ?? 0, color: data.color || '#6b7280', status: data.status || 'Active', description: data.description, createdAt: nowISO() }));
     } catch (err) { return fail(err); }
   },
 

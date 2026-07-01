@@ -32,6 +32,10 @@ export const caseStageLogic = {
     return ok(await caseStageService.remove(id));
   },
 
+  async setStatus(id, status) {
+    return ok(await caseStageService.update(id, { status }));
+  },
+
   // Persist a new ordering (drag & reorder).
   async reorder(orderedIds) {
     for (let i = 0; i < orderedIds.length; i += 1) {

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -41,7 +40,6 @@ export default function Jurisdictions() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
@@ -53,6 +51,7 @@ export default function Jurisdictions() {
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
 
   const [delId, setDelId] = useState('');
 
@@ -87,13 +86,6 @@ export default function Jurisdictions() {
   };
 
   useEffect(() => { load(); }, []);
-
-  useEffect(() => {
-    if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
@@ -159,7 +151,7 @@ export default function Jurisdictions() {
     if (!editId) { toast.push('Select a jurisdiction to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     const item = items.find(x => x.id === editId);
-    const res = await jurisdictionLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: item?.status });
+    const res = await jurisdictionLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
     if (res.ok) { setEditId(''); toast.push('Jurisdiction updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -250,6 +242,13 @@ export default function Jurisdictions() {
     toast.push('CSV import coming soon.', 'info');
   };
 
+  const handleToggle = async (item) => {
+    const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
+    const res = await jurisdictionLogic.update(item.id, { status: newStatus });
+    if (res.ok) { toast.push(`Jurisdiction ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
+    else toast.push(res.error, 'error');
+  };
+
   const filtered = items.filter(i =>
     !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
   ).sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
@@ -290,6 +289,7 @@ export default function Jurisdictions() {
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -455,7 +455,7 @@ export default function Jurisdictions() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Jurisdiction <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -469,6 +469,13 @@ export default function Jurisdictions() {
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                    </div>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -546,14 +553,14 @@ export default function Jurisdictions() {
             )}
           </div>
           <div className="cmp-form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Jurisdiction</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Jurisdiction'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving…' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
           </div>
         </Card>
       )}
@@ -592,7 +599,7 @@ export default function Jurisdictions() {
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 160 }}>ACTIONS</th>
+              <th style={{ width: 200 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -625,17 +632,13 @@ export default function Jurisdictions() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className={`cmp-act-btn${item.status === 'Active' ? ' cmp-act-btn--active' : ' cmp-act-btn--inactive'}`}
+                      title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                      onClick={() => handleToggle(item)}>
+                      {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
+                    </button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="cmp-act-more-wrap">
-                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="cmp-act-dropdown">
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -730,6 +733,12 @@ export default function Jurisdictions() {
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
+                <button className="cmp-mobile-action" title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'} onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon" style={{ color: item.status === 'Active' ? 'var(--green, #22c55e)' : 'var(--red, #ef4444)' }}>
+                    {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
+                  </span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
+                </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
                   <span className="cmp-mobile-action-label">Delete</span>
@@ -766,10 +775,22 @@ export default function Jurisdictions() {
 
       {busy && (
         <div className="cmp-busy-overlay">
-          <div className="cmp-busy-bar">
-            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+          <div className="cmp-busy-box">
+            {progress ? (
+              <>
+                <div className="cmp-progress-bar-track">
+                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                </div>
+                <div className="cmp-progress-info">
+                  <span className="cmp-progress-item">{progress.itemName}</span>
+                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
+                  <span className="cmp-progress-pct">{progress.percent}%</span>
+                </div>
+              </>
+            ) : (
+              <><div className="spinner" /><span>Please wait…</span></>
+            )}
           </div>
-          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
         </div>
       )}
       {confirmState && (

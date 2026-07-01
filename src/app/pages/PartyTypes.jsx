@@ -6,6 +6,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 
 const ENTITY_PREFIX = 'PT';
 
@@ -40,17 +41,19 @@ export default function PartyTypes() {
   const [page, setPage] = useState(1);
 
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [newStatus, setNewStatus] = useState('Active');
+  const [newDesc, setNewDesc] = useState('');
   const [bulkAddText, setBulkAddText] = useState('');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
 
   const [delId, setDelId] = useState('');
 
@@ -63,30 +66,38 @@ export default function PartyTypes() {
   const dragOrder = useRef(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const [formCollapsed, setFormCollapsed] = useState(false);
+  const [lastError, setLastError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
+  const logs = useLogCapture(lastError, lastResult);
   const [confirmState, setConfirmState] = useState(null);
-
-  useEffect(() => {
-    if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [moreMenu]);
 
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode('');
-    setEditId(''); setEditName(''); setEditCode('');
+    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText('');
-    if (activeAction !== 'delete' || subMode !== 'bulk') setSelected(new Set());
+    setMoreMenu(null);
+    setFormCollapsed(false);
+    setSelected(new Set());
     setPage(1);
   };
+
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-actions, .cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
 
   const activate = (key) => {
     if (activeAction === key) { reset(); return; }
     setActiveAction(key);
     setSubMode('single');
+    setFormCollapsed(false);
   };
 
   const doAdd = async () => {
@@ -94,9 +105,9 @@ export default function PartyTypes() {
       if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
       if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
       setBusy(true);
-      const res = await partyTypeLogic.create({ name: newName, short_code: newCode });
+      const res = await partyTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
       setBusy(false);
-      if (res.ok) { setNewName(''); setNewCode(''); toast.push('Party type added.', 'success'); await refresh(); }
+      if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Party type added.', 'success'); await refresh(); }
       else toast.push(res.error, 'error');
     } catch (err) { setBusy(false); toast.push(err?.message || 'Failed to create party type.', 'error'); }
   };
@@ -113,8 +124,11 @@ export default function PartyTypes() {
     try {
       const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
       if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+      setBusy(true);
       let added = 0, skipped = 0;
-      for (const line of lines) {
+      for (let idx = 0; idx < lines.length; idx++) {
+        const line = lines[idx];
+        setProgress({ current: idx + 1, total: lines.length, itemName: line.split(':')[0], percent: Math.round(((idx + 1) / lines.length) * 100) });
         const colonIdx = line.indexOf(':');
         if (colonIdx === -1) {
           const name = line;
@@ -131,39 +145,49 @@ export default function PartyTypes() {
           if (res.ok) added++; else skipped++;
         }
       }
+      setBusy(false);
+      setProgress(null);
       setBulkAddText('');
       toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
       await refresh();
-    } catch (err) { toast.push(err?.message || 'Bulk add failed.', 'error'); }
+    } catch (err) { setBusy(false); setProgress(null); toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
   const doEdit = async () => {
     try {
       if (!editId) { toast.push('Select a party type to edit.', 'error'); return; }
       if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
-      const res = await partyTypeLogic.update(editId, { name: editName, short_code: editCode });
+      setBusy(true);
+      const item = partyTypes.find(x => x.id === editId);
+      const res = await partyTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
+      setBusy(false);
       if (res.ok) { setEditId(''); toast.push('Party type updated.', 'success'); await refresh(); }
       else toast.push(res.error, 'error');
-    } catch (err) { toast.push(err?.message || 'Failed to update party type.', 'error'); }
+    } catch (err) { setBusy(false); toast.push(err?.message || 'Failed to update party type.', 'error'); }
   };
 
   const doBulkEdit = async () => {
     try {
       const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
       if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+      setBusy(true);
       let updated = 0, skipped = 0;
-      for (const line of lines) {
+      for (let idx = 0; idx < lines.length; idx++) {
+        const line = lines[idx];
         const [idPart, namePart] = line.split('|').map(s => s.trim());
+        setProgress({ current: idx + 1, total: lines.length, itemName: idPart, percent: Math.round(((idx + 1) / lines.length) * 100) });
         const item = partyTypes.find(x => x.short_code === idPart || x.name === idPart || x.id === idPart);
         if (!item || !namePart) { skipped++; continue; }
         const [name, code] = namePart.split(':').map(s => s.trim());
         const res = await partyTypeLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
         if (res.ok) updated++; else skipped++;
       }
+      setBusy(false);
+      setProgress(null);
       setBulkEditText('');
       toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
       await refresh();
-    } catch (err) { toast.push(err?.message || 'Bulk edit failed.', 'error'); }
+    } catch (err) { setBusy(false); setProgress(null); toast.push(err?.message || 'Bulk edit failed.', 'error'); }
   };
 
   const doDelete = async () => {
@@ -254,6 +278,7 @@ export default function PartyTypes() {
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -361,45 +386,51 @@ export default function PartyTypes() {
 
       <div className="cmp-stats-row">
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="users" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{partyTypes.length}</div>
+            <div className="cmp-statcard-sub">All party types</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="check-circle" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Active</div>
             <div className="cmp-statcard-value">{partyTypes.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+            <div className="cmp-statcard-sub">Currently in use</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="x-circle" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Inactive</div>
             <div className="cmp-statcard-value">{partyTypes.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+            <div className="cmp-statcard-sub">Not in use</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="bar-chart" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Most Used</div>
             <div className="cmp-statcard-value">&mdash;</div>
+            <div className="cmp-statcard-sub">Usage tracking N/A</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="calendar" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Created This Month</div>
             <div className="cmp-statcard-value">{createdThisMonth}</div>
+            <div className="cmp-statcard-sub">This calendar month</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="layers" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{partyTypes.length}</div>
+            <div className="cmp-statcard-sub">All party types</div>
           </div>
         </div>
       </div>
@@ -425,10 +456,14 @@ export default function PartyTypes() {
         </div>
       </div>
 
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
+
       {activeAction && (
-        <div className="cmp-form">
+        <Card className="cmp-form">
           <div className="cmp-form-header">
-            <span className="cmp-form-header-icon"><Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} /></span>
+            <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
             <span className="cmp-form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Party Type</span>
             {SUB_MODES[activeAction] && (
               <div className="cmp-toggle">
@@ -444,10 +479,15 @@ export default function PartyTypes() {
                 ))}
               </div>
             )}
-            <button className="cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
+            <button className="iconbtn cmp-form-collapse" onClick={() => setFormCollapsed(!formCollapsed)} title={formCollapsed ? 'Expand' : 'Collapse'}>
+              <Icon name={formCollapsed ? 'chevron' : 'chevronDown'} size={18} />
+            </button>
+            <button className="iconbtn cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
           <div className="cmp-form-body">
-            {activeAction === 'add' && subMode === 'single' && (
+            {!formCollapsed && (
+              <>
+                {activeAction === 'add' && subMode === 'single' && (
               <div className="cmp-form-grid">
                 <div className="cmp-field--full">
                   <label className="cmp-label">Name <span className="cmp-required">*</span></label>
@@ -456,6 +496,18 @@ export default function PartyTypes() {
                 <div className="cmp-field--full">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                   <Input value={newCode} placeholder="e.g., PL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                </div>
+                <div className="cmp-field--full">
+                  <label className="cmp-label">Status</label>
+                  <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </Select>
+                </div>
+                <div className="cmp-field--full">
+                  <label className="cmp-label">Description <span className="cmp-optional">(optional)</span></label>
+                  <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
+                  <span className="cmp-char-count">{newDesc.length} / 250</span>
                 </div>
               </div>
             )}
@@ -474,7 +526,7 @@ export default function PartyTypes() {
               <div className="cmp-form-grid">
                 <div className="cmp-field--full">
                   <label className="cmp-label">Select Party Type <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = partyTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = partyTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {partyTypes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -488,6 +540,13 @@ export default function PartyTypes() {
                     <div className="cmp-field--full">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                    </div>
+                    <div className="cmp-field--full">
+                      <label className="cmp-label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -538,7 +597,7 @@ export default function PartyTypes() {
                       <label key={item.id} className={`cmp-checkbox-row${selected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={selected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className="cmp-checkbox-code">{item.short_code}</span>
+                        <span className={`cmp-checkbox-status cmp-checkbox-status--${(item.status || 'Active').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status || 'Active'}</span>
                       </label>
                     ))}
                   </div>
@@ -563,18 +622,20 @@ export default function PartyTypes() {
                 {importFile && <div className="cmp-import-file">Selected: {importFile.name}</div>}
               </div>
             )}
+            </>
+            )}
           </div>
           <div className="cmp-form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Party Type</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Party Type'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving…' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={busy || !importFile}>{busy ? 'Importing…' : 'Import'}</Button>}
           </div>
-        </div>
+        </Card>
       )}
 
       <div className="cmp-search">
@@ -583,27 +644,27 @@ export default function PartyTypes() {
       </div>
 
       {viewItem && (
-        <div className="cmp-detail">
+        <Card className="cmp-detail">
           <div className="cmp-detail-header">
             <span className="cmp-detail-title">{viewItem.name}</span>
-            <span className="cmp-detail-code">{viewItem.short_code}</span>
+            <span className="cmp-code-pill">{viewItem.short_code}</span>
             <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
               <span className="cmp-status-dot"></span>
               {viewItem.status || 'Active'}
             </span>
-            <button className="cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
+            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
           </div>
           <div className="cmp-detail-body">
             <div className="cmp-detail-row">
-              <span className="cmp-detail-label">Code</span>
-              <span className="cmp-detail-value">{viewItem.short_code}</span>
+              <span className="cmp-detail-label">Description</span>
+              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
             </div>
             <div className="cmp-detail-row">
               <span className="cmp-detail-label">Display Order</span>
               <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       <div className="cmp-table-card">
@@ -611,17 +672,15 @@ export default function PartyTypes() {
           <thead>
             <tr>
               <th style={{ width: 32 }}></th>
-              <th style={{ width: 32 }}></th>
-              <th><span>NAME</span></th>
-              <th><span>CODE</span></th>
-              <th><span>ORDER</span></th>
-              <th><span>STATUS</span></th>
-              <th style={{ width: 130 }}>ACTIONS</th>
+              <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th style={{ width: 180 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={7}>No party types found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={5}>No party types found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id}
                 draggable={!search}
@@ -630,19 +689,6 @@ export default function PartyTypes() {
                 onDragEnd={handleDragEnd}
                 className={`cmp-row${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}
               >
-                <td className="cmp-drag-cell">
-                  <input type="checkbox" checked={selected.has(item.id)}
-                    onChange={() => {
-                      if (activeAction === 'delete' && subMode === 'bulk') toggleBulkDel(item.id);
-                      else {
-                        setSelected(prev => {
-                          const next = new Set(prev);
-                          if (next.has(item.id)) next.delete(item.id); else next.add(item.id);
-                          return next;
-                        });
-                      }
-                    }} />
-                </td>
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder">
                     <Icon name="grip" size={15} />
@@ -655,7 +701,6 @@ export default function PartyTypes() {
                   </div>
                 </td>
                 <td><span className="cmp-code-pill">{item.short_code}</span></td>
-                <td><span className="cmp-cell-desc">{item.display_order ?? '—'}</span></td>
                 <td>
                   <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                     <span className="cmp-status-dot"></span>
@@ -666,21 +711,13 @@ export default function PartyTypes() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(item.description || ''); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
+                      title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                      onClick={() => handleToggle(item)}>
+                      <Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} />
+                    </button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="cmp-act-more-wrap">
-                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="cmp-act-dropdown">
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); handleToggle(item); }}>
-                            {item.status === 'Active' ? <Icon name="pause" size={14} /> : <Icon name="play" size={14} />}
-                            {item.status === 'Active' ? 'Deactivate' : 'Activate'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -771,9 +808,15 @@ export default function PartyTypes() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(item.description || ''); setActiveAction('add'); }}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
+                  title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                  onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} /></span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
@@ -813,10 +856,22 @@ export default function PartyTypes() {
 
         {busy && (
           <div className="cmp-busy-overlay">
-            <div className="cmp-busy-bar">
-              <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+            <div className="cmp-busy-box">
+              {progress ? (
+                <>
+                  <div className="cmp-progress-info">{progress.itemName}</div>
+                  <div className="cmp-progress-bar-track">
+                    <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  </div>
+                  <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
+                </>
+              ) : (
+                <>
+                  <div className="spinner" />
+                  <div className="cmp-busy-label">Please wait…</div>
+                </>
+              )}
             </div>
-            <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
           </div>
         )}
         {confirmState && (
@@ -830,6 +885,7 @@ export default function PartyTypes() {
             onCancel={confirmState.onCancel}
           />
         )}
+        <DebugPanel logs={logs} />
     </div>
   );
 }

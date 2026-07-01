@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment, useCallback } from 'react';
 import Button from '@/components/Button.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Select, Textarea } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
-import Modal from '@/components/Modal.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
@@ -31,21 +30,6 @@ const SUB_MODES = {
     { key: 'bulk', label: 'Bulk Delete', icon: 'trash' },
   ],
 };
-
-const STOP_WORDS = new Set(['of', 'and', 'the', 'in', 'at', 'a', 'an', 'for', 'to']);
-
-function slugShortCode(name) {
-  const cleaned = String(name || '').trim();
-  if (!cleaned) return '';
-  const parenMatch = cleaned.match(/\(([^)]+)\)/);
-  const parenPart = parenMatch ? parenMatch[1] : '';
-  let mainName = cleaned.replace(/\([^)]*\)/g, '').trim();
-  const mainWords = mainName.split(/\s+/).filter(Boolean);
-  const mainAbbrev = mainWords.filter((w) => !STOP_WORDS.has(w.toLowerCase())).map((w) => w[0].toUpperCase()).join('');
-  const parenWords = parenPart.split(/\s+/).filter(Boolean);
-  const parenAbbrev = parenWords.filter((w) => !STOP_WORDS.has(w.toLowerCase())).map((w) => w[0].toUpperCase()).join('');
-  return (mainAbbrev + parenAbbrev).toUpperCase();
-}
 
 export default function Courts() {
   const toast = useToast();
@@ -85,13 +69,6 @@ export default function Courts() {
   const dragOrder = useRef(null);
   const searchRef = useRef(null);
 
-  // Legacy state (tree view, import summary, edit modal, bulk delete selection)
-  const [mode, setMode] = useState('single');
-  const [bulkTab, setBulkTab] = useState('text');
-  const [bulkText, setBulkText] = useState('');
-  const fileInputRef = useRef(null);
-  const [importResult, setImportResult] = useState(null);
-  const [editModal, setEditModal] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [dragId, setDragId] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
@@ -99,7 +76,20 @@ export default function Courts() {
   const load = async () => {
     setLoading(true);
     const res = await courtsLogic.list();
-    if (Array.isArray(res)) setItems(res);
+    if (Array.isArray(res)) {
+      let data = res;
+      const allZero = data.every(i => !i.display_order);
+      if (allZero) {
+        data = data.map((i, idx) => ({ ...i, display_order: idx + 1 }));
+        for (const item of data) {
+          await courtsLogic.update(item.id, { display_order: item.display_order }).catch(() => {});
+        }
+      }
+      const seen = new Set();
+      const deduped = data.filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true; });
+      if (deduped.length !== data.length) console.warn('[Courts] Duplicate IDs in list() — deduped', data.length, '→', deduped.length);
+      setItems(deduped);
+    }
     setLoading(false);
   };
 
@@ -110,54 +100,6 @@ export default function Courts() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [moreMenu]);
-
-  // Single add
-  const add = async () => {
-    if (!newName.trim()) { toast.push('Name is required.', 'error'); return; }
-    const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
-    const res = await courtsLogic.create({ name: newName, short_code: newCode, parent_id: newParent || null, display_order: order });
-    if (res.ok) { setNewName(''); setNewCode(''); setNewParent(''); toast.push('Court added.', 'success'); await load(); }
-    else { toast.push(res.error, 'error'); }
-  };
-
-  // Bulk add
-  const addBulk = async () => {
-    let result;
-    setImportResult(null);
-
-    if (bulkTab === 'text') {
-      if (!bulkText.trim()) { toast.push('Paste at least one court name.', 'error'); return; }
-      result = await courtsLogic.importText(bulkText);
-    } else if (bulkTab === 'csv') {
-      if (!bulkText.trim()) { toast.push('Paste CSV data.', 'error'); return; }
-      result = await courtsLogic.importCSV(bulkText);
-    } else if (bulkTab === 'json') {
-      if (!bulkText.trim()) { toast.push('Paste JSON data.', 'error'); return; }
-      result = await courtsLogic.importJSON(bulkText);
-    }
-
-    if (result?.ok) {
-      setBulkText('');
-      setImportResult(result.data);
-      toast.push(`${result.data.imported.length} court(s) imported.`, 'success');
-      await load();
-    } else {
-      toast.push(result?.error || 'Import failed.', 'error');
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop().toLowerCase();
-    let text;
-    try { text = await file.text(); } catch { toast.push('Failed to read file.', 'error'); return; }
-    setBulkText(text);
-    if (ext === 'csv') setBulkTab('csv');
-    else if (ext === 'json') setBulkTab('json');
-    else setBulkTab('text');
-    e.target.value = '';
-  };
 
   const reset = () => {
     setActiveAction(null);
@@ -354,23 +296,16 @@ export default function Courts() {
     setDelId(item.id);
   };
 
+  const handleToggle = useCallback(async (item) => {
+    try {
+      const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
+      const res = await courtsLogic.update(item.id, { name: item.name, status: newStatus });
+      if (res.ok) { toast.push(`Court ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); await load(); }
+      else toast.push(res.error, 'error');
+    } catch (err) { toast.push(err?.message || 'Failed to toggle status.', 'error'); }
+  }, [load, toast]);
+
   // Legacy tree functions
-  const saveEdit = async () => {
-    const m = editModal;
-    if (!m) return;
-    if (!m.name.trim()) { toast.push('Name cannot be empty.', 'error'); return; }
-    const item = items.find((i) => i.id === m.id);
-    const res = await courtsLogic.update(m.id, { name: m.name, short_code: m.short_code, parent_id: m.parent_id || null, display_order: item?.display_order, status: item?.status });
-    if (res.ok) { setEditModal(null); toast.push('Court updated.', 'success'); await load(); }
-    else { toast.push(res.error, 'error'); }
-  };
-
-  const handleEditPicker = (id) => {
-    if (!id) { setEditModal(null); return; }
-    const item = items.find((i) => i.id === id);
-    if (item) startEdit(item);
-  };
-
   const removeBulk = async () => {
     if (!selected.size) return;
     const count = selected.size;
@@ -464,7 +399,7 @@ export default function Courts() {
     !search ||
     i.name.toLowerCase().includes(search.toLowerCase()) ||
     (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -496,6 +431,9 @@ export default function Courts() {
             onDrop={(e) => handleDrop(e, item.id)}
             onDragEnd={handleDragEnd}
           >
+            <td className="cmp-drag-cell">
+              <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
+            </td>
             <td className="courts__cell courts__cell--checkbox">
               <input
                 type="checkbox"
@@ -520,6 +458,11 @@ export default function Courts() {
               <div className="cmp-actions">
                 <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                 <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
+                  title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  onClick={() => handleToggle(item)}>
+                  <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                </button>
                 <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                 <div className="cmp-act-more-wrap">
                   <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
@@ -832,44 +775,61 @@ export default function Courts() {
               <span>{viewItem.description || '—'}</span>
             </div>
             <div className="cmp-view-detail-row">
+              <span className="cmp-view-detail-label">Display Order</span>
+              <span>{viewItem.display_order ?? '—'}</span>
+            </div>
+            <div className="cmp-view-detail-row">
               <span className="cmp-view-detail-label">ID</span>
               <span className="cmp-mono">{viewItem.id}</span>
             </div>
           </div>
           <div className="cmp-view-detail-footer">
             <Button variant="ghost" size="sm" icon="edit" onClick={() => { setViewItem(null); activate('edit'); setEditId(viewItem.id); setEditName(viewItem.name); setEditCode(viewItem.short_code || ''); setEditParent(viewItem.parent_id || ''); setEditStatus(viewItem.status || 'Active'); }}>Edit</Button>
-            <Button variant="ghost" size="sm" icon="trash" className="cmp-btn-danger-outline" onClick={() => { setViewItem(null); setTimeout(() => startDelete(viewItem.id), 100); }}>Delete</Button>
+            <Button variant="ghost" size="sm" icon="trash" className="cmp-btn-danger-outline" onClick={() => { setViewItem(null); startDelete(viewItem); }}>Delete</Button>
             <Button variant="ghost" size="sm" icon="copy" onClick={() => { setViewItem(null); const newName = `${viewItem.name} (copy)`; setNewName(newName); setNewCode(viewItem.short_code ? `${viewItem.short_code}C` : ''); setNewParent(viewItem.parent_id || ''); setNewStatus('Active'); activate('add'); }}>Duplicate</Button>
           </div>
         </Card>
       )}
 
-      {/* Busy overlay */}
       {busy && (
         <div className="cmp-busy-overlay">
-          <div className="cmp-busy-bar">
-            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress)}%` }} />
+          <div className="cmp-busy-box">
+            {progress ? (
+              <>
+                <div className="cmp-progress-bar-track">
+                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                </div>
+                <div className="cmp-progress-info">
+                  <span className="cmp-progress-item">{progress.itemName}</span>
+                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
+                  <span className="cmp-progress-pct">{progress.percent}%</span>
+                </div>
+              </>
+            ) : (
+              <><div className="spinner" /><span>Please wait…</span></>
+            )}
           </div>
-          <div className="cmp-busy-text">{progress}%</div>
         </div>
       )}
 
-      {/* ConfirmDialog */}
-      <ConfirmDialog
-        open={confirmState?.show}
-        title={confirmState?.title || 'Confirm'}
-        message={confirmState?.message || ''}
-        confirmLabel={confirmState?.confirmLabel || 'Yes'}
-        onConfirm={() => confirmState?.onConfirm()}
-        onCancel={() => confirmState?.onCancel ? confirmState.onCancel() : setConfirmState({ ...confirmState, show: false })}
-        variant={confirmState?.variant}
-      />
+      {confirmState && (
+        <ConfirmDialog
+          open={true}
+          title={confirmState.title}
+          message={confirmState.message}
+          variant={confirmState.variant}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={confirmState.onCancel}
+        />
+      )}
 
       {/* Table Card */}
       <div className="cmp-table-card">
         <table className="cmp-table">
           <thead>
             <tr>
+              <th style={{ width: 32 }}></th>
               <th className="courts__th-checkbox"><input type="checkbox" onChange={handleSelectAll} checked={selected.size === filtered.length && filtered.length > 0} /></th>
               <th>Court Name</th>
               <th>Shortcode</th>
@@ -880,15 +840,29 @@ export default function Courts() {
           </thead>
           <tbody>
             {rootItems.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={6}>No courts defined.</td></tr>
+              <tr><td className="cmp-empty" colSpan={7}>No courts defined.</td></tr>
             ) : renderTree(rootItems)}
           </tbody>
         </table>
         <div className="cmp-table-footer">
-          <div>Showing all {filtered.length} records</div>
+          <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} courts</div>
           <span className="cmp-ft-perpage" title="Change per page" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
             {perPage} / page <Icon name="chevronDown" size={13} />
           </span>
+          {totalPages > 1 && (
+            <div className="cmp-pagination">
+              <button className="cmp-page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const start = Math.max(1, Math.min(safePage - 2, totalPages - 4));
+                const p = start + i;
+                if (p > totalPages) return null;
+                return (
+                  <button key={p} className={`cmp-page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                );
+              })}
+              <button className="cmp-page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -897,139 +871,6 @@ export default function Courts() {
           <button className="btn btn--danger btn--sm" onClick={removeBulk}><Icon name="trash" size={14} /> Delete ({selected.size})</button>
         </div>
       )}
-
-      {/* Import Summary Modal */}
-      <Modal
-        open={!!importResult}
-        onClose={() => setImportResult(null)}
-        title="Import Summary"
-        size="lg"
-        footer={
-          <button className="btn btn--primary" onClick={() => setImportResult(null)}>Done</button>
-        }
-      >
-        {importResult && (
-          <div className="courts__import-summary">
-            <div className="courts__import-stats">
-              <div className="courts__import-stat courts__import-stat--ok">
-                <strong>{importResult.imported.length}</strong> Imported
-              </div>
-              <div className="courts__import-stat courts__import-stat--skip">
-                <strong>{importResult.skipped.length}</strong> Skipped (duplicates)
-              </div>
-              <div className="courts__import-stat courts__import-stat--fail">
-                <strong>{importResult.failed.length}</strong> Failed
-              </div>
-            </div>
-
-            {importResult.imported.length > 0 && (
-              <>
-                <h4 className="courts__import-heading">Imported Courts</h4>
-                <ul className="courts__import-list">
-                  {importResult.imported.map((c, i) => (
-                    <li key={i} className="courts__import-item courts__import-item--ok">
-                      <Icon name="check" size={13} /> {c.name} <code>{c.short_code}</code>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-
-            {importResult.skipped.length > 0 && (
-              <>
-                <h4 className="courts__import-heading">Skipped (Duplicates)</h4>
-                <ul className="courts__import-list">
-                  {importResult.skipped.map((s, i) => (
-                    <li key={i} className="courts__import-item courts__import-item--skip">
-                      <Icon name="close" size={13} /> {s.name} — {s.error}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-
-            {importResult.failed.length > 0 && (
-              <>
-                <h4 className="courts__import-heading">Failed</h4>
-                <ul className="courts__import-list">
-                  {importResult.failed.map((f, i) => (
-                    <li key={i} className="courts__import-item courts__import-item--fail">
-                      <Icon name="alert-circle" size={13} /> {f.record?.name || 'Unknown'} — {f.error}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        open={!!editModal}
-        onClose={() => setEditModal(null)}
-        title={editModal?.id ? `Edit Court: ${editModal.name}` : 'Edit Court'}
-        footer={
-          editModal?.id ? (
-            <>
-              <button className="btn btn--ghost" onClick={() => setEditModal(null)}>Cancel</button>
-              <button className="btn btn--primary" onClick={saveEdit}><Icon name="check" size={15} /> Save</button>
-            </>
-          ) : (
-            <button className="btn btn--ghost" onClick={() => setEditModal(null)}>Cancel</button>
-          )
-        }
-      >
-        {editModal && !editModal.id && (
-          <div className="courts__edit-modal">
-            <div className="flex-col gap-8">
-              <div className="flex-col gap-4">
-                <label className="field-label">Select Court</label>
-                <Select
-                  value=""
-                  onChange={(e) => handleEditPicker(e.target.value)}
-                  options={[{ value: '', label: '— Choose a court —' }, ...liveOptions(null)]}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        {editModal && editModal.id && (
-          <div className="courts__edit-modal">
-            <div className="flex-col gap-8">
-              <div className="flex-col gap-4">
-                <label className="field-label">Name</label>
-                <Input
-                  value={editModal.name}
-                  autoFocus
-                  onChange={(e) => setEditModal({ ...editModal, name: e.target.value, preview: slugShortCode(e.target.value) || editModal.short_code })}
-                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                />
-              </div>
-              <div className="flex-col gap-4">
-                <label className="field-label">Short Code <span className="muted">(leave empty to auto-generate)</span></label>
-                <Input
-                  value={editModal.short_code}
-                  onChange={(e) => setEditModal({ ...editModal, short_code: e.target.value })}
-                  placeholder={editModal.preview || 'Auto'}
-                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                />
-                {!editModal.short_code && editModal.preview && (
-                  <span className="courts__preview-hint">Will be generated as: <strong>{editModal.preview}</strong></span>
-                )}
-              </div>
-              <div className="flex-col gap-4">
-                <label className="field-label">Parent Court</label>
-                <Select
-                  value={editModal.parent_id}
-                  onChange={(e) => setEditModal({ ...editModal, parent_id: e.target.value })}
-                  options={[{ value: '', label: '— No parent —' }, ...liveOptions(editModal.id)]}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
 
       {/* ── Mobile View ── */}
       <div className="cmp-mobile-only">
@@ -1089,13 +930,19 @@ export default function Courts() {
                   <span className="cmp-mobile-action-icon"><Icon name="eye" size={15} /></span>
                   <span className="cmp-mobile-action-label">View</span>
                 </button>
-                <button className="cmp-mobile-action" title="Edit" onClick={() => { setEditModal({ id: item.id, name: item.name, short_code: item.short_code || '', parent_id: item.parent_id || '' }); setActiveAction('edit'); }}>
+                <button className="cmp-mobile-action" title="Edit" onClick={() => startEdit(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(''); setNewParent(item.parent_id || ''); setActiveAction('add'); setMode('single'); setShowFilter(true); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(''); setNewParent(item.parent_id || ''); setNewStatus('Active'); setActiveAction('add'); }}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
+                  title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>

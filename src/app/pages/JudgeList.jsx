@@ -5,6 +5,7 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { judgeLogic } from '@/logic/judgeLogic.js';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'J';
@@ -41,7 +42,7 @@ export default function JudgeList() {
   const [page, setPage] = useState(1);
 
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
+
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
@@ -54,6 +55,7 @@ export default function JudgeList() {
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
   const [editDesignation, setEditDesignation] = useState('');
+  const [editStatus, setEditStatus] = useState('');
 
   const [delId, setDelId] = useState('');
 
@@ -66,6 +68,11 @@ export default function JudgeList() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
+  const [moreMenu, setMoreMenu] = useState(null);
+  const [formCollapsed, setFormCollapsed] = useState(false);
+  const [lastError, setLastError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
+  const logs = useLogCapture(lastError, lastResult);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
 
@@ -80,7 +87,11 @@ export default function JudgeList() {
 
   useEffect(() => {
     if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
+    const handler = (e) => {
+      if (!e.target.closest('.cmp-more-menu') && !e.target.closest('.cmp-act-btn--more')) {
+        setMoreMenu(null);
+      }
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [moreMenu]);
@@ -89,9 +100,11 @@ export default function JudgeList() {
     setActiveAction(null);
     setSubMode('single');
     setNewName(''); setNewCode(''); setNewDesignation(''); setNewStatus('Active');
-    setEditId(''); setEditName(''); setEditCode(''); setEditDesignation('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditDesignation(''); setEditStatus('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setMoreMenu(null);
+    setFormCollapsed(false);
     setPage(1);
   };
 
@@ -99,6 +112,7 @@ export default function JudgeList() {
     if (activeAction === key) { reset(); return; }
     setActiveAction(key);
     setSubMode('single');
+    setFormCollapsed(false);
   };
 
   const autoCode = (name) => {
@@ -122,8 +136,11 @@ export default function JudgeList() {
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let added = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      setProgress({ current: idx + 1, total: lines.length, itemName: line.split(':')[0], percent: Math.round(((idx + 1) / lines.length) * 100) });
       const colonIdx = line.indexOf(':');
       if (colonIdx === -1) {
         const name = line;
@@ -140,6 +157,8 @@ export default function JudgeList() {
         if (res.ok) added++; else skipped++;
       }
     }
+    setBusy(false);
+    setProgress(null);
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
     load();
@@ -148,8 +167,9 @@ export default function JudgeList() {
   const doEdit = async () => {
     if (!editId) { toast.push('Select a judge to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
-    const item = items.find(x => x.id === editId);
-    const res = await judgeLogic.update(editId, { name: editName, short_code: editCode, designation: editDesignation, status: item?.status });
+    setBusy(true);
+    const res = await judgeLogic.update(editId, { name: editName, short_code: editCode, designation: editDesignation, status: editStatus });
+    setBusy(false);
     if (res.ok) { setEditId(''); toast.push('Judge updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -157,15 +177,20 @@ export default function JudgeList() {
   const doBulkEdit = async () => {
     const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let updated = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
       const [idPart, namePart] = line.split('|').map(s => s.trim());
+      setProgress({ current: idx + 1, total: lines.length, itemName: idPart, percent: Math.round(((idx + 1) / lines.length) * 100) });
       const item = items.find(x => x.short_code === idPart || x.name === idPart || x.id === idPart);
       if (!item || !namePart) { skipped++; continue; }
       const [name, code] = namePart.split(':').map(s => s.trim());
       const res = await judgeLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
       if (res.ok) updated++; else skipped++;
     }
+    setBusy(false);
+    setProgress(null);
     setBulkEditText('');
     toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
     load();
@@ -237,7 +262,18 @@ export default function JudgeList() {
 
   const doImport = async () => {
     if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
+    setBusy(true);
     toast.push('CSV import coming soon.', 'info');
+    setBusy(false);
+  };
+
+  const handleToggle = async (item) => {
+    const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
+    setBusy(true);
+    const res = await judgeLogic.update(item.id, { status: newStatus });
+    setBusy(false);
+    if (res.ok) { toast.push(`Judge ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
+    else toast.push(res.error, 'error');
   };
 
   const filtered = items.filter(i =>
@@ -271,7 +307,13 @@ export default function JudgeList() {
     setDragIdx(null);
     dragOrder.current = null;
     setBusy(true);
-    await judgeLogic.reorder(ids);
+    try {
+      await judgeLogic.reorder(ids);
+      setLastResult('Reordered successfully');
+    } catch (err) {
+      setLastError(err);
+      toast.push('Failed to reorder judges. Please try again.', 'error');
+    }
     setBusy(false);
     load();
   };
@@ -290,6 +332,7 @@ export default function JudgeList() {
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditDesignation(item.designation || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -354,45 +397,51 @@ export default function JudgeList() {
 
       <div className="cmp-stats-row">
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#EEF2FF',color:'#6366F1'}}><Icon name="users" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{items.length}</div>
+            <div className="cmp-statcard-sub">All judges</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="check-circle" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Active</div>
             <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+            <div className="cmp-statcard-sub">Currently presiding</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="x-circle" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Inactive</div>
             <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+            <div className="cmp-statcard-sub">Not presiding</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="bar-chart" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#F0F9FF',color:'#0EA5E9'}}><Icon name="bar-chart" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Most Used</div>
             <div className="cmp-statcard-value">&mdash;</div>
+            <div className="cmp-statcard-sub">Usage tracking N/A</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="calendar" size={18} /></div>
-          <div>
+          <div className="cmp-statcard-icon" style={{background:'#FEF2F2',color:'#EF4444'}}><Icon name="calendar" size={20} /></div>
+          <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Created This Month</div>
             <div className="cmp-statcard-value">{createdThisMonth}</div>
+            <div className="cmp-statcard-sub">This calendar month</div>
           </div>
         </div>
         <div className="cmp-statcard">
-          <div className="cmp-statcard-icon"><Icon name="users" size={18} /></div>
-          <div>
-            <div className="cmp-statcard-label">Total</div>
-            <div className="cmp-statcard-value">{items.length}</div>
+          <div className="cmp-statcard-icon" style={{background:'#F5F3FF',color:'#7C3AED'}}><Icon name="briefcase" size={20} /></div>
+          <div className="cmp-statcard-body">
+            <div className="cmp-statcard-label">Total Assignments</div>
+            <div className="cmp-statcard-value">&mdash;</div>
+            <div className="cmp-statcard-sub">Assignment tracking N/A</div>
           </div>
         </div>
       </div>
@@ -418,6 +467,10 @@ export default function JudgeList() {
         </div>
       </div>
 
+      <button className="cmp-import-mobile cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
+
       {activeAction && (
         <Card className="cmp-form">
           <div className="cmp-form-header">
@@ -437,10 +490,15 @@ export default function JudgeList() {
                 ))}
               </div>
             )}
+            <button className="iconbtn cmp-form-collapse" onClick={() => setFormCollapsed(!formCollapsed)} title={formCollapsed ? 'Expand' : 'Collapse'}>
+              <Icon name={formCollapsed ? 'chevron' : 'chevronDown'} size={18} />
+            </button>
             <button className="iconbtn cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
           <div className="cmp-form-body">
-            {activeAction === 'add' && subMode === 'single' && (
+            {!formCollapsed && (
+              <>
+                {activeAction === 'add' && subMode === 'single' && (
               <div className="cmp-form-grid">
                 <div className="cmp-field">
                   <label className="cmp-label">Name <span className="cmp-required">*</span></label>
@@ -453,6 +511,13 @@ export default function JudgeList() {
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Designation <span className="cmp-optional">(optional)</span></label>
                   <Input value={newDesignation} placeholder="e.g., District & Sessions Judge" onChange={e => setNewDesignation(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                </div>
+                <div className="cmp-field">
+                  <label className="cmp-label">Status</label>
+                  <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </Select>
                 </div>
               </div>
             )}
@@ -471,7 +536,7 @@ export default function JudgeList() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Judge <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditDesignation(item.designation || ''); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditDesignation(item.designation || ''); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -489,6 +554,13 @@ export default function JudgeList() {
                     <div className="cmp-field cmp-field--full">
                       <label className="cmp-label">Designation <span className="cmp-optional">(optional)</span></label>
                       <Input value={editDesignation} onChange={e => setEditDesignation(e.target.value)} />
+                    </div>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -539,7 +611,7 @@ export default function JudgeList() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
+                        <span className={`cmp-checkbox-status cmp-checkbox-status--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -564,16 +636,18 @@ export default function JudgeList() {
                 {importFile && <div className="cmp-import-file">Selected: {importFile.name}</div>}
               </div>
             )}
+            </>
+            )}
           </div>
           <div className="cmp-form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Judge</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Judge'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving…' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={busy || !importFile}>{busy ? 'Importing…' : 'Import'}</Button>}
           </div>
         </Card>
       )}
@@ -599,6 +673,10 @@ export default function JudgeList() {
               <span className="cmp-detail-label">Designation</span>
               <span className="cmp-detail-value">{viewItem.designation || '—'}</span>
             </div>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Display Order</span>
+              <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
+            </div>
           </div>
         </Card>
       )}
@@ -612,7 +690,7 @@ export default function JudgeList() {
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">DESIGNATION <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 120 }}>ACTIONS</th>
+              <th style={{ width: 180 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -623,7 +701,7 @@ export default function JudgeList() {
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
                 onDragOver={(e) => handleDragOver(e, (safePage - 1) * perPage + idx)}
                 onDragEnd={handleDragEnd}
-                className={`${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}>
+                className={`cmp-row${dragIdx === (safePage - 1) * perPage + idx ? ' cmp-row--dragging' : ''}`}>
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
@@ -645,17 +723,13 @@ export default function JudgeList() {
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewDesignation(item.designation || ''); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
+                      title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                      onClick={() => handleToggle(item)}>
+                      <Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} />
+                    </button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="cmp-act-more-wrap">
-                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="cmp-act-dropdown">
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -746,9 +820,15 @@ export default function JudgeList() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewDesignation(item.designation || ''); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
+                  title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                  onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} /></span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
@@ -784,14 +864,26 @@ export default function JudgeList() {
         </nav>
       </div>
 
-      {busy && (
-        <div className="cmp-busy-overlay">
-          <div className="cmp-busy-bar">
-            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+        {busy && (
+          <div className="cmp-busy-overlay">
+            <div className="cmp-busy-box">
+              {progress ? (
+                <>
+                  <div className="cmp-progress-info">{progress.itemName}</div>
+                  <div className="cmp-progress-bar-track">
+                    <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  </div>
+                  <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
+                </>
+              ) : (
+                <>
+                  <div className="spinner" />
+                  <div className="cmp-busy-label">Please wait…</div>
+                </>
+              )}
+            </div>
           </div>
-          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
-        </div>
-      )}
+        )}
       {confirmState && (
         <ConfirmDialog
           open={true}
@@ -803,6 +895,7 @@ export default function JudgeList() {
           onCancel={confirmState.onCancel}
         />
       )}
+      <DebugPanel logs={logs} />
     </div>
   );
 }

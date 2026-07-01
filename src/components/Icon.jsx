@@ -82,6 +82,18 @@ const PATHS = {
 
 /* Icons that need multiple SVG elements (circles, rects, etc.) */
 const COMPLEX = {
+  'toggle-left': (
+    <>
+      <rect key="r" x="2" y="6" width="20" height="12" rx="6" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <circle key="c" cx="10" cy="12" r="4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  'toggle-right': (
+    <>
+      <rect key="r" x="2" y="6" width="20" height="12" rx="6" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <circle key="c" cx="14" cy="12" r="4" fill="currentColor" stroke="none" />
+    </>
+  ),
   'more-horizontal': (
     <>
       <circle key="c1" cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" />

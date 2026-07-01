@@ -41,17 +41,19 @@ export default function CaseTypes() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [newStatus, setNewStatus] = useState('Active');
+  const [newDesc, setNewDesc] = useState('');
   const [bulkAddText, setBulkAddText] = useState('');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
   const [bulkEditText, setBulkEditText] = useState('');
 
   const [delId, setDelId] = useState('');
@@ -69,6 +71,7 @@ export default function CaseTypes() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
+  const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
 
   const filtered = caseTypes.filter((t) =>
@@ -80,16 +83,24 @@ export default function CaseTypes() {
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-actions, .cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
+
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode('');
+    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
     setBulkAddText(''); setBulkEditText('');
-    setEditId(''); setEditName(''); setEditCode('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setBulkDelSelected(new Set());
     setFormCollapsed(false);
     setPage(1);
+    setMoreMenu(null);
   };
 
   const activate = (key) => {
@@ -112,9 +123,9 @@ export default function CaseTypes() {
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
     try {
-      const res = await caseTypeLogic.create({ name: newName, short_code: newCode });
+      const res = await caseTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
       setBusy(false);
-      if (res.ok) { setNewName(''); setNewCode(''); toast.push('Case type added.', 'success'); await refresh(); }
+      if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Case type added.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { setBusy(false); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create case type.', 'error'); }
   };
@@ -122,6 +133,8 @@ export default function CaseTypes() {
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
+    setProgress({ current: 0, total: lines.length, itemName: 'Preparing…', percent: 0 });
     try {
       const records = lines.map((line) => {
         const colonIdx = line.indexOf(':');
@@ -135,25 +148,31 @@ export default function CaseTypes() {
         return { name, short_code: code || autoCode(name) };
       }).filter(r => r.name && !exists(r.name, r.short_code));
       const res = await caseTypeLogic.bulkCreate(records);
+      setProgress(null);
+      setBusy(false);
       setBulkAddText('');
       if (res.ok) { toast.push(`${res.data.count} case type(s) added.`, 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
-    } catch (err) { setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
+    } catch (err) { setProgress(null); setBusy(false); setLastError(err?.message || String(err)); toast.push(err?.message || 'Bulk add failed.', 'error'); }
   };
 
   const doEdit = async () => {
     if (!editId) { toast.push('Select a case type to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
+    setBusy(true);
     try {
-      const res = await caseTypeLogic.update(editId, { name: editName, short_code: editCode });
+      const item = caseTypes.find(x => x.id === editId);
+      const res = await caseTypeLogic.update(editId, { name: editName, short_code: editCode, status: editStatus, description: item?.description || '' });
+      setBusy(false);
       if (res.ok) { setEditId(''); toast.push('Case type updated.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
-    } catch (err) { setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to update case type.', 'error'); }
+    } catch (err) { setBusy(false); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to update case type.', 'error'); }
   };
 
   const doBulkEdit = async () => {
     const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let updated = 0, skipped = 0;
     for (const line of lines) {
       const [idPart, namePart] = line.split('|').map(s => s.trim());
@@ -163,6 +182,7 @@ export default function CaseTypes() {
       const res = await caseTypeLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
       if (res.ok) updated++; else skipped++;
     }
+    setBusy(false);
     setBulkEditText('');
     toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
     await refresh();
@@ -277,19 +297,13 @@ export default function CaseTypes() {
     dragOrder.current = null;
   }, [dragIdx, refresh, toast]);
 
-  useEffect(() => {
-    if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [moreMenu]);
-
   const startEdit = (item) => {
     setActiveAction('edit');
     setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const confirmDeleteItem = (item) => {
@@ -430,6 +444,17 @@ export default function CaseTypes() {
                     <label className="cmp-label">Code <span className="cmp-required">*</span></label>
                     <Input value={newCode} placeholder="e.g., CIV" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                   </div>
+                  <div className="cmp-field">
+                    <label className="cmp-label">Status</label>
+                    <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </Select>
+                  </div>
+                  <div className="cmp-field cmp-field--full">
+                    <label className="cmp-label">Description</label>
+                    <Input value={newDesc} placeholder="Optional description" onChange={e => setNewDesc(e.target.value)} />
+                  </div>
                 </div>
               )}
               {activeAction === 'add' && subMode === 'bulk' && (
@@ -447,7 +472,7 @@ export default function CaseTypes() {
                 <div className="cmp-form-grid">
                   <div className="cmp-field cmp-field--full">
                     <label className="cmp-label">Select Case Type <span className="cmp-required">*</span></label>
-                    <Select value={editId} onChange={e => { setEditId(e.target.value); const item = caseTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
+                    <Select value={editId} onChange={e => { setEditId(e.target.value); const item = caseTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
                       <option value="">— choose —</option>
                       {caseTypes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                     </Select>
@@ -461,6 +486,13 @@ export default function CaseTypes() {
                       <div className="cmp-field">
                         <label className="cmp-label">Code <span className="cmp-required">*</span></label>
                         <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      </div>
+                      <div className="cmp-field">
+                        <label className="cmp-label">Status</label>
+                        <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </Select>
                       </div>
                     </>
                   )}
@@ -512,6 +544,7 @@ export default function CaseTypes() {
                           <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                           <span className="cmp-checkbox-name">{item.name}</span>
                           <span className="cmp-code-pill" style={{ marginLeft: 8 }}>{item.short_code}</span>
+                          <span className="cmp-checkbox-status">{item.status || 'Active'}</span>
                         </label>
                       ))}
                     </div>
@@ -540,14 +573,14 @@ export default function CaseTypes() {
           )}
           {!formCollapsed && (
             <div className="cmp-form-footer">
-              <button className="btn btn--ghost" onClick={reset}>Cancel</button>
-              {activeAction === 'add' && subMode === 'single' && <button className="btn btn--primary" onClick={doAdd}><Icon name="plus" size={15} /> Add Case Type</button>}
-              {activeAction === 'add' && subMode === 'bulk' && <button className="btn btn--primary" onClick={doBulkAdd}><Icon name="users" size={15} /> Add All</button>}
-              {activeAction === 'edit' && subMode === 'single' && <button className="btn btn--primary" onClick={doEdit}><Icon name="check" size={15} /> Save Changes</button>}
-              {activeAction === 'edit' && subMode === 'bulk' && <button className="btn btn--primary" onClick={doBulkEdit}><Icon name="check" size={15} /> Save All Changes</button>}
-              {activeAction === 'delete' && subMode === 'single' && <button className="btn btn--danger" onClick={doDelete}><Icon name="trash" size={15} /> Delete</button>}
-              {activeAction === 'delete' && subMode === 'bulk' && <button className="btn btn--danger" onClick={doBulkDelete}><Icon name="trash" size={15} /> Delete All Matched</button>}
-              {activeAction === 'import' && <button className="btn btn--primary" onClick={doImport} disabled={!importFile}><Icon name="upload" size={15} /> Import</button>}
+              <button className="btn btn--ghost" onClick={reset} disabled={busy}>Cancel</button>
+              {activeAction === 'add' && subMode === 'single' && <button className="btn btn--primary" onClick={doAdd} disabled={busy}><Icon name="plus" size={15} /> {busy ? 'Adding…' : 'Add Case Type'}</button>}
+              {activeAction === 'add' && subMode === 'bulk' && <button className="btn btn--primary" onClick={doBulkAdd} disabled={busy}><Icon name="users" size={15} /> {busy ? 'Adding…' : 'Add All'}</button>}
+              {activeAction === 'edit' && subMode === 'single' && <button className="btn btn--primary" onClick={doEdit} disabled={busy}><Icon name="check" size={15} /> {busy ? 'Saving…' : 'Save Changes'}</button>}
+              {activeAction === 'edit' && subMode === 'bulk' && <button className="btn btn--primary" onClick={doBulkEdit} disabled={busy}><Icon name="check" size={15} /> {busy ? 'Saving…' : 'Save All Changes'}</button>}
+              {activeAction === 'delete' && subMode === 'single' && <button className="btn btn--danger" onClick={doDelete} disabled={busy}><Icon name="trash" size={15} /> {busy ? 'Deleting…' : 'Delete'}</button>}
+              {activeAction === 'delete' && subMode === 'bulk' && <button className="btn btn--danger" onClick={doBulkDelete} disabled={busy}><Icon name="trash" size={15} /> {busy ? 'Deleting…' : 'Delete All Matched'}</button>}
+              {activeAction === 'import' && <button className="btn btn--primary" onClick={doImport} disabled={!importFile || busy}><Icon name="upload" size={15} /> {busy ? 'Importing…' : 'Import'}</button>}
             </div>
           )}
         </Card>
@@ -566,8 +599,22 @@ export default function CaseTypes() {
           </div>
           <div className="cmp-detail-body">
             <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Code</span>
+              <span className="cmp-detail-value">{viewItem.short_code}</span>
+            </div>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Status</span>
+              <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                <span className="cmp-status-dot"></span>{viewItem.status || 'Active'}
+              </span>
+            </div>
+            <div className="cmp-detail-row">
               <span className="cmp-detail-label">Display Order</span>
               <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
+            </div>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Description</span>
+              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
             </div>
           </div>
         </Card>
@@ -586,11 +633,11 @@ export default function CaseTypes() {
             <tr>
               <th style={{ width: 32 }}></th>
               <th style={{ width: 32 }}></th>
-              <th>NAME</th>
-              <th>CODE</th>
-              <th>ORDER</th>
-              <th>STATUS</th>
-              <th style={{ width: 180 }}>ACTIONS</th>
+              <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="cmp-sort">ORDER <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th style={{ width: 200 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -629,20 +676,13 @@ export default function CaseTypes() {
                     <div className="cmp-actions">
                       <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                       <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                      <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                      <button className="cmp-act-btn" title={`Toggle to ${item.status === 'Active' ? 'Inactive' : 'Active'}`} onClick={() => handleToggle(item)}>
-                        {item.status === 'Active' ? <Icon name="check" size={15} /> : <Icon name="play" size={12} />}
+                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setActiveAction('add'); setSubMode('single'); setFormCollapsed(false); setShowFilter(true); }}><Icon name="copy" size={15} /></button>
+                      <button className={`cmp-act-btn${item.status === 'Active' ? ' cmp-act-btn--toggle-on' : ' cmp-act-btn--toggle-off'}`}
+                        title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                        onClick={() => handleToggle(item)}>
+                        {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
                       </button>
-                      <div className="cmp-act-more-wrap">
-                        <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                        {moreMenu === item.id && (
-                          <div className="cmp-act-dropdown">
-                            <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setActiveAction('add'); setSubMode('single'); setFormCollapsed(false); setShowFilter(true); }}>
-                              <Icon name="copy" size={14} /> Duplicate
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     </div>
                   </td>
                 </tr>
@@ -698,6 +738,10 @@ export default function CaseTypes() {
           </div>
         </div>
 
+        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={14} /> Import CSV
+        </button>
+
         <div className="cmp-mobile-section-header">
           <span className="cmp-mobile-section-title">All Case Types</span>
           <span className="cmp-mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
@@ -734,9 +778,15 @@ export default function CaseTypes() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setActiveAction('add'); setSubMode('single'); setFormCollapsed(false); setShowFilter(true); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setActiveAction('add'); setSubMode('single'); setFormCollapsed(false); setShowFilter(true); }}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className={`cmp-mobile-action${item.status === 'Active' ? ' cmp-mobile-action--toggle-on' : ' cmp-mobile-action--toggle-off'}`} title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'} onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon">
+                    {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
+                  </span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
@@ -774,10 +824,22 @@ export default function CaseTypes() {
 
       {busy && (
         <div className="cmp-busy-overlay">
-          <div className="cmp-busy-bar">
-            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+          <div className="cmp-busy-box">
+            {progress ? (
+              <>
+                <div className="cmp-progress-bar-track">
+                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                </div>
+                <div className="cmp-progress-info">
+                  <span className="cmp-progress-item">{progress.itemName}</span>
+                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
+                  <span className="cmp-progress-pct">{progress.percent}%</span>
+                </div>
+              </>
+            ) : (
+              <><div className="spinner" /><span>Please wait…</span></>
+            )}
           </div>
-          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
         </div>
       )}
       {confirmState && (

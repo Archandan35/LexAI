@@ -41,7 +41,6 @@ export default function CaseStatuses() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
   const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
@@ -52,6 +51,7 @@ export default function CaseStatuses() {
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editStatus, setEditStatus] = useState('');
 
   const [delId, setDelId] = useState('');
 
@@ -88,18 +88,11 @@ export default function CaseStatuses() {
 
   useEffect(() => { load(); }, []);
 
-  useEffect(() => {
-    if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [moreMenu]);
-
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
     setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
-    setEditId(''); setEditName(''); setEditCode('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
     setPage(1);
@@ -132,8 +125,11 @@ export default function CaseStatuses() {
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let added = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      setProgress({ current: idx + 1, total: lines.length, itemName: line.split(':')[0], percent: Math.round(((idx + 1) / lines.length) * 100) });
       const colonIdx = line.indexOf(':');
       if (colonIdx === -1) {
         const name = line;
@@ -150,6 +146,8 @@ export default function CaseStatuses() {
         if (res.ok) added++; else skipped++;
       }
     }
+    setBusy(false);
+    setProgress(null);
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
     load();
@@ -158,8 +156,10 @@ export default function CaseStatuses() {
   const doEdit = async () => {
     if (!editId) { toast.push('Select a case status to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
+    setBusy(true);
     const item = items.find(x => x.id === editId);
-    const res = await caseStatusLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: item?.status });
+    const res = await caseStatusLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
+    setBusy(false);
     if (res.ok) { setEditId(''); toast.push('Case status updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -167,15 +167,20 @@ export default function CaseStatuses() {
   const doBulkEdit = async () => {
     const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let updated = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
       const [idPart, namePart] = line.split('|').map(s => s.trim());
+      setProgress({ current: idx + 1, total: lines.length, itemName: idPart, percent: Math.round(((idx + 1) / lines.length) * 100) });
       const item = items.find(x => x.short_code === idPart || x.name === idPart || x.id === idPart);
       if (!item || !namePart) { skipped++; continue; }
       const [name, code] = namePart.split(':').map(s => s.trim());
       const res = await caseStatusLogic.update(item.id, { name: name || item.name, short_code: code || item.short_code });
       if (res.ok) updated++; else skipped++;
     }
+    setBusy(false);
+    setProgress(null);
     setBulkEditText('');
     toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
     load();
@@ -247,7 +252,18 @@ export default function CaseStatuses() {
 
   const doImport = async () => {
     if (!importFile) { toast.push('Select a CSV file.', 'error'); return; }
+    setBusy(true);
     toast.push('CSV import coming soon.', 'info');
+    setBusy(false);
+  };
+
+  const handleToggle = async (item) => {
+    const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
+    setBusy(true);
+    const res = await caseStatusLogic.update(item.id, { status: newStatus });
+    setBusy(false);
+    if (res.ok) { toast.push(`Case status ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
+    else toast.push(res.error, 'error');
   };
 
   const filtered = items.filter(i =>
@@ -280,7 +296,9 @@ export default function CaseStatuses() {
     const ids = dragOrder.current;
     setDragIdx(null);
     dragOrder.current = null;
+    setBusy(true);
     await caseStatusLogic.reorder(ids);
+    setBusy(false);
     load();
   };
 
@@ -290,6 +308,7 @@ export default function CaseStatuses() {
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -361,20 +380,23 @@ export default function CaseStatuses() {
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{items.length}</div>
+            <div className="cmp-statcard-sub">All case statuses</div>
           </div>
         </div>
         <div className="cmp-statcard">
           <div className="cmp-statcard-icon" style={{background:'#ECFDF5',color:'#22C55E'}}><Icon name="check-circle" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Active</div>
-            <div className="cmp-statcard-value">{items.filter(i => i.status === 'Active').length}</div>
+            <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</div>
+            <div className="cmp-statcard-sub">Currently in use</div>
           </div>
         </div>
         <div className="cmp-statcard">
           <div className="cmp-statcard-icon" style={{background:'#FFF7ED',color:'#F59E0B'}}><Icon name="ban" size={20} /></div>
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Inactive</div>
-            <div className="cmp-statcard-value">{items.filter(i => i.status !== 'Active').length}</div>
+            <div className="cmp-statcard-value">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</div>
+            <div className="cmp-statcard-sub">Not in use</div>
           </div>
         </div>
         <div className="cmp-statcard">
@@ -382,6 +404,7 @@ export default function CaseStatuses() {
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Most Used</div>
             <div className="cmp-statcard-value">—</div>
+            <div className="cmp-statcard-sub">Usage tracking N/A</div>
           </div>
         </div>
         <div className="cmp-statcard">
@@ -389,6 +412,7 @@ export default function CaseStatuses() {
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Created This Month</div>
             <div className="cmp-statcard-value">{items.filter(i => i.created_at && new Date(i.created_at) >= monthStart).length}</div>
+            <div className="cmp-statcard-sub">This calendar month</div>
           </div>
         </div>
         <div className="cmp-statcard">
@@ -396,6 +420,7 @@ export default function CaseStatuses() {
           <div className="cmp-statcard-body">
             <div className="cmp-statcard-label">Total</div>
             <div className="cmp-statcard-value">{items.length}</div>
+            <div className="cmp-statcard-sub">All case statuses</div>
           </div>
         </div>
       </div>
@@ -420,6 +445,10 @@ export default function CaseStatuses() {
           </button>
         </div>
       </div>
+
+      <button className="cmp-import-mobile cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
 
       {activeAction && (
         <Card className="cmp-form">
@@ -482,7 +511,7 @@ export default function CaseStatuses() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Case Status <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -496,6 +525,13 @@ export default function CaseStatuses() {
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                    </div>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </Select>
                     </div>
                   </>
                 )}
@@ -573,14 +609,14 @@ export default function CaseStatuses() {
             )}
           </div>
           <div className="cmp-form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Case Status</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding\u2026' : 'Add Case Status'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding\u2026' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving\u2026' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving\u2026' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting\u2026' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting\u2026' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={busy || !importFile}>{busy ? 'Importing\u2026' : 'Import'}</Button>}
           </div>
         </Card>
       )}
@@ -649,21 +685,17 @@ export default function CaseStatuses() {
                   </span>
                 </td>
                 <td>
-                  <div className="cmp-actions">
-                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="cmp-act-more-wrap">
-                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="cmp-act-dropdown">
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                        </div>
-                      )}
+                    <div className="cmp-actions">
+                      <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                      <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                      <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                      <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
+                        title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                        onClick={() => handleToggle(item)}>
+                        <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                      </button>
+                      <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     </div>
-                  </div>
                 </td>
               </tr>
             ))}
@@ -704,14 +736,14 @@ export default function CaseStatuses() {
           <div className="cmp-mobile-stat-card">
             <div className="cmp-mobile-stat-row1">
               <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--active"><Icon name="check" size={16} /></div>
-              <span className="cmp-mobile-stat-num">{items.filter(i => i.status === 'Active').length}</span>
+              <span className="cmp-mobile-stat-num">{items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length}</span>
             </div>
             <div className="cmp-mobile-stat-label">Active</div>
           </div>
           <div className="cmp-mobile-stat-card">
             <div className="cmp-mobile-stat-row1">
               <div className="cmp-mobile-stat-icon cmp-mobile-stat-icon--inactive"><Icon name="close" size={16} /></div>
-              <span className="cmp-mobile-stat-num">{items.filter(i => i.status !== 'Active').length}</span>
+              <span className="cmp-mobile-stat-num">{items.filter(i => (i.status || 'Active').toLowerCase() !== 'active').length}</span>
             </div>
             <div className="cmp-mobile-stat-label">Inactive</div>
           </div>
@@ -757,6 +789,12 @@ export default function CaseStatuses() {
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
+                <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
+                  title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
+                </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
                   <span className="cmp-mobile-action-label">Delete</span>
@@ -791,14 +829,23 @@ export default function CaseStatuses() {
         </nav>
       </div>
 
-      {busy && (
-        <div className="cmp-busy-overlay">
-          <div className="cmp-busy-bar">
-            <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+        {busy && (
+          <div className="cmp-busy-overlay">
+            <div className="cmp-busy-box">
+              {progress ? (
+                <>
+                  <div className="cmp-busy-box-title">{progress.itemName}</div>
+                  <div className="cmp-busy-bar">
+                    <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  </div>
+                  <div className="cmp-busy-text">{progress.current}/{progress.total}</div>
+                </>
+              ) : (
+                <div className="cmp-busy-spinner"><div className="spinner" /></div>
+              )}
+            </div>
           </div>
-          <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
-        </div>
-      )}
+        )}
       {confirmState && (
         <ConfirmDialog
           open={true}

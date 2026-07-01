@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ACTIONS = [
@@ -29,8 +30,11 @@ const SUB_MODES = {
   ],
 };
 
+const ENTITY_PREFIX = 'CS';
+
 export default function CaseStages() {
   const toast = useToast();
+  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -38,13 +42,14 @@ export default function CaseStages() {
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-  const [moreMenu, setMoreMenu] = useState(null);
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
+  const [newStatus, setNewStatus] = useState('Active');
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
+  const [editStatus, setEditStatus] = useState('Active');
   const [delId, setDelId] = useState('');
 
   const [bulkAddText, setBulkAddText] = useState('');
@@ -54,9 +59,14 @@ export default function CaseStages() {
   const [importFile, setImportFile] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
   const dragOrder = useRef(null);
+  const [lastError, setLastError] = useState(null);
+  const [lastResult, setLastResult] = useState(null);
+  const [formCollapsed, setFormCollapsed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(null);
+  const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
 
   const load = async () => {
@@ -68,27 +78,23 @@ export default function CaseStages() {
 
   useEffect(() => { load(); }, []);
 
-  useEffect(() => {
-    if (!moreMenu) return;
-    const handler = (e) => { if (!e.target.closest('.cmp-act-more-wrap')) setMoreMenu(null); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [moreMenu]);
-
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName('');
-    setEditId(''); setEditName('');
+    setNewName(''); setNewStatus('Active');
+    setEditId(''); setEditName(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
+    setFormCollapsed(false);
     setPage(1);
+    setMoreMenu(null);
   };
 
   const activate = (key) => {
     if (activeAction === key) { reset(); return; }
     setActiveAction(key);
     setSubMode('single');
+    setFormCollapsed(false);
   };
 
   const exists = (name) =>
@@ -100,19 +106,25 @@ export default function CaseStages() {
     setBusy(true);
     const res = await caseStageLogic.add(newName.trim());
     setBusy(false);
-    if (res.ok) { setNewName(''); toast.push('Case stage added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewStatus('Active'); toast.push('Case stage added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
   const doBulkAdd = async () => {
     const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
+    setProgress({ current: 0, total: lines.length, itemName: 'Preparing…', percent: 0 });
     let added = 0, skipped = 0;
-    for (const name of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const name = lines[idx];
+      setProgress({ current: idx + 1, total: lines.length, itemName: name, percent: Math.round(((idx + 1) / lines.length) * 100) });
       if (exists(name)) { skipped++; continue; }
       const res = await caseStageLogic.add(name);
       if (res.ok) added++; else skipped++;
     }
+    setBusy(false);
+    setProgress(null);
     setBulkAddText('');
     toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
     load();
@@ -121,7 +133,10 @@ export default function CaseStages() {
   const doEdit = async () => {
     if (!editId) { toast.push('Select a case stage to edit.', 'error'); return; }
     if (!editName.trim()) { toast.push('Stage name cannot be empty.', 'error'); return; }
+    setBusy(true);
+    const item = items.find(x => x.id === editId);
     const res = await caseStageLogic.rename(editId, editName.trim());
+    setBusy(false);
     if (res.ok) { setEditId(''); toast.push('Case stage updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
@@ -129,14 +144,19 @@ export default function CaseStages() {
   const doBulkEdit = async () => {
     const lines = bulkEditText.split('\n').map(l => l.trim()).filter(Boolean);
     if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
     let updated = 0, skipped = 0;
-    for (const line of lines) {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
       const [idPart, namePart] = line.split('|').map(s => s.trim());
+      setProgress({ current: idx + 1, total: lines.length, itemName: idPart, percent: Math.round(((idx + 1) / lines.length) * 100) });
       const item = items.find(x => x.name === idPart || x.id === idPart);
       if (!item || !namePart) { skipped++; continue; }
       const res = await caseStageLogic.rename(item.id, namePart);
       if (res.ok) updated++; else skipped++;
     }
+    setBusy(false);
+    setProgress(null);
     setBulkEditText('');
     toast.push(`${updated} updated.${skipped ? ` ${skipped} skipped.` : ''}`, updated ? 'success' : 'info');
     load();
@@ -219,6 +239,22 @@ export default function CaseStages() {
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
+  useEffect(() => {
+    if (!moreMenu) return;
+    const handler = (e) => { if (!e.target.closest('.cmp-actions, .cmp-act-more-wrap')) setMoreMenu(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [moreMenu]);
+
+  const handleToggle = useCallback(async (stage) => {
+    try {
+      const newStatus = stage.status === 'Active' ? 'Inactive' : 'Active';
+      const res = await caseStageLogic.setStatus(stage.id, newStatus);
+      if (res.ok) { toast.push(`Case stage ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
+      else { setLastError(res.error); toast.push(res.error, 'error'); }
+    } catch (err) { setLastError(err?.message || String(err)); }
+  }, [toast]);
+
   const handleDragStart = (e, idx) => {
     setDragIdx(idx);
     dragOrder.current = filtered.map(t => t.id);
@@ -236,20 +272,25 @@ export default function CaseStages() {
     setDragIdx(idx);
   };
 
-  const handleDragEnd = async () => {
-    if (dragIdx === null || !dragOrder.current) { setDragIdx(null); return; }
-    const ids = dragOrder.current;
+  const handleDragEnd = useCallback(async () => {
+    if (dragIdx === null || !dragOrder.current) { setDragIdx(null); setDraggingId(null); return; }
+    try {
+      const ids = dragOrder.current;
+      await caseStageLogic.reorder(ids);
+      toast.push('Order updated.', 'success');
+    } catch (err) { setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to reorder.', 'error'); }
     setDragIdx(null);
+    setDraggingId(null);
     dragOrder.current = null;
-    await caseStageLogic.reorder(ids);
     load();
-  };
+  }, [dragIdx, toast]);
 
   const startEdit = (item) => {
     setActiveAction('edit');
     setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
+    setEditStatus(item.status || 'Active');
   };
 
   const startDelete = (item) => {
@@ -261,7 +302,7 @@ export default function CaseStages() {
   const confirmDeleteItem = (item) => {
     setConfirmState({
       title: 'Delete Case Stage',
-      message: `Delete case stage "${item?.name}"? This action cannot be undone.`,
+      message: `Delete case stage "${item?.name}"? This action cannot be undone. All associated data will be removed.`,
       variant: 'danger',
       confirmLabel: 'Delete',
       onConfirm: async () => {
@@ -277,12 +318,12 @@ export default function CaseStages() {
   };
 
   const stats = [
-    { label: 'Total', value: items.length, icon: 'layers', bg: '#EEF2FF', color: '#6366F1' },
-    { label: 'Stages With Cases', value: '—', icon: 'check-circle', bg: '#ECFDF5', color: '#22C55E' },
-    { label: 'Inactive', value: 0, icon: 'ban', bg: '#FFF7ED', color: '#F59E0B' },
-    { label: 'Most Used', value: '—', icon: 'bar-chart', bg: '#F0F9FF', color: '#0EA5E9' },
-    { label: 'Created This Month', value: 0, icon: 'calendar', bg: '#FEF2F2', color: '#EF4444' },
-    { label: 'Total', value: 0, icon: 'briefcase', bg: '#F5F3FF', color: '#7C3AED' },
+    { label: 'Total Case Stages', value: items.length, icon: 'layers', bg: '#EEF2FF', color: '#6366F1', sub: 'All case stages' },
+    { label: 'Active', value: items.filter(i => (i.status||'Active').toLowerCase()==='active').length, icon: 'check', bg: '#ECFDF5', color: '#22C55E', sub: 'Active case stages' },
+    { label: 'Inactive', value: items.filter(i => (i.status||'Active').toLowerCase()!=='active').length, icon: 'close', bg: '#FFF7ED', color: '#F59E0B', sub: 'Inactive case stages' },
+    { label: 'Most Used', value: '—', icon: 'bar-chart', bg: '#F0F0FF', color: '#8B5CF6', sub: 'Most frequently used' },
+    { label: 'Created This Month', value: items.filter(t => { const d = new Date(t.created_at); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length, icon: 'calendar', bg: '#FFF1F2', color: '#F43F5E', sub: 'This month' },
+    { label: 'Total', value: items.length, icon: 'briefcase', bg: '#F0F9FF', color: '#0EA5E9', sub: 'All case stages' },
   ];
 
   if (loading) return <div className="fade-in cmp-loading"><div className="spinner" /></div>;
@@ -328,6 +369,7 @@ export default function CaseStages() {
             <div className="cmp-statcard-body">
               <div className="cmp-statcard-label">{s.label}</div>
               <div className="cmp-statcard-value">{s.value}</div>
+              {s.sub && <div className="cmp-statcard-sub">{s.sub}</div>}
             </div>
           </div>
         ))}
@@ -360,27 +402,37 @@ export default function CaseStages() {
             <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
             <span className="cmp-form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Case Stage</span>
             {SUB_MODES[activeAction] && (
-              <div className="cmp-toggle">
+              <div className="cmp-form-toggle">
                 {SUB_MODES[activeAction].map(m => (
                   <button
                     key={m.key}
-                    className={`cmp-toggle-btn${subMode === m.key ? ' active' : ''}`}
+                    className={`cmp-form-toggle-btn${subMode === m.key ? ' active' : ''}`}
                     onClick={() => setSubMode(m.key)}
                   >
-                    <Icon name={m.icon} size={13} />
-                    {m.label}
+                    <Icon name={m.icon} size={13} /> {m.label}
                   </button>
                 ))}
               </div>
             )}
-            <button className="iconbtn" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
+            <button className="cmp-form-collapse" onClick={() => setFormCollapsed(!formCollapsed)} title={formCollapsed ? 'Expand' : 'Collapse'}>
+              <Icon name="chevrons-up-down" size={16} />
+            </button>
+            <button className="cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
+          {!formCollapsed && (
           <div className="cmp-form-body">
             {activeAction === 'add' && subMode === 'single' && (
               <div className="cmp-form-grid">
-                <div className="cmp-field cmp-field--full">
+                <div className="cmp-field">
                   <label className="cmp-label">Name <span className="cmp-required">*</span></label>
                   <Input value={newName} placeholder="e.g., Filing" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                </div>
+                <div className="cmp-field">
+                  <label className="cmp-label">Status</label>
+                  <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </Select>
                 </div>
               </div>
             )}
@@ -405,10 +457,19 @@ export default function CaseStages() {
                   </Select>
                 </div>
                 {editId && (
-                  <div className="cmp-field cmp-field--full">
-                    <label className="cmp-label">Name <span className="cmp-required">*</span></label>
-                    <Input value={editName} onChange={e => setEditName(e.target.value)} />
-                  </div>
+                  <>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Name <span className="cmp-required">*</span></label>
+                      <Input value={editName} onChange={e => setEditName(e.target.value)} />
+                    </div>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Status</label>
+                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </Select>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -434,7 +495,7 @@ export default function CaseStages() {
                 {delId && (
                   <div className="cmp-warning">
                     <Icon name="alert" size={16} />
-                    <span>This action cannot be undone.</span>
+                    <span>This action cannot be undone. All associated data will be removed.</span>
                   </div>
                 )}
               </div>
@@ -457,6 +518,7 @@ export default function CaseStages() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
+                        <span className="cmp-checkbox-status">{item.status || 'Active'}</span>
                       </label>
                     ))}
                   </div>
@@ -482,16 +544,19 @@ export default function CaseStages() {
               </div>
             )}
           </div>
+          )}
+          {!formCollapsed && (
           <div className="cmp-form-footer">
-            <Button variant="ghost" onClick={reset}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd}>Add Case Stage</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd}>Add All</Button>}
-            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit}>Save Changes</Button>}
-            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit}>Save All Changes</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete}>Delete</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete}>Delete All Matched</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile}>Import</Button>}
+            <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Case Stage'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
+            {activeAction === 'edit' && subMode === 'single' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
+            {activeAction === 'edit' && subMode === 'bulk' && <Button icon="check" onClick={doBulkEdit} disabled={busy}>{busy ? 'Saving…' : 'Save All Changes'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
+            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={busy || !importFile}>{busy ? 'Importing…' : 'Import'}</Button>}
           </div>
+          )}
         </Card>
       )}
 
@@ -504,12 +569,21 @@ export default function CaseStages() {
         <Card className="cmp-detail">
           <div className="cmp-detail-header">
             <span className="cmp-detail-title">{viewItem.name}</span>
-            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
+            <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+              <span className="cmp-status-dot"></span>{viewItem.status || 'Active'}
+            </span>
+            <button className="cmp-detail-close" onClick={() => setViewItem(null)}><Icon name="close" size={16} /></button>
           </div>
           <div className="cmp-detail-body">
             <div className="cmp-detail-row">
               <span className="cmp-detail-label">Name</span>
               <span className="cmp-detail-value">{viewItem.name}</span>
+            </div>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Status</span>
+              <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                <span className="cmp-status-dot"></span>{viewItem.status || 'Active'}
+              </span>
             </div>
             <div className="cmp-detail-row">
               <span className="cmp-detail-label">Order</span>
@@ -525,12 +599,13 @@ export default function CaseStages() {
             <tr>
               <th style={{ width: 32 }}></th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th style={{ width: 160 }}>ACTIONS</th>
+              <th style={{ width: 80 }}><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
+              <th style={{ width: 200 }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={3}>No case stages found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={4}>No case stages found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -548,20 +623,22 @@ export default function CaseStages() {
                   </div>
                 </td>
                 <td>
+                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="cmp-status-dot"></span>
+                    {item.status || 'Active'}
+                  </span>
+                </td>
+                <td>
                   <div className="cmp-actions">
                     <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className={`cmp-act-btn${item.status === 'Active' ? ' cmp-act-btn--toggle-on' : ' cmp-act-btn--toggle-off'}`}
+                      title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                      onClick={() => handleToggle(item)}>
+                      {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
+                    </button>
                     <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="cmp-act-more-wrap">
-                      <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="cmp-act-dropdown">
-                          <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -616,6 +693,10 @@ export default function CaseStages() {
           </div>
         </div>
 
+        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={14} /> Import CSV
+        </button>
+
         <div className="cmp-mobile-section-header">
           <span className="cmp-mobile-section-title">All Case Stages</span>
           <span className="cmp-mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
@@ -651,9 +732,15 @@ export default function CaseStages() {
                   <span className="cmp-mobile-action-icon"><Icon name="edit" size={15} /></span>
                   <span className="cmp-mobile-action-label">Edit</span>
                 </button>
-                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+                <button className="cmp-mobile-action cmp-mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewStatus(item.status || 'Active'); setActiveAction('add'); }}>
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
+                </button>
+                <button className={`cmp-mobile-action${item.status === 'Active' ? ' cmp-mobile-action--toggle-on' : ' cmp-mobile-action--toggle-off'}`} title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'} onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon">
+                    {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
+                  </span>
+                  <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                   <span className="cmp-mobile-action-icon"><Icon name="trash" size={15} /></span>
@@ -691,10 +778,22 @@ export default function CaseStages() {
 
         {busy && (
           <div className="cmp-busy-overlay">
-            <div className="cmp-busy-bar">
-              <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+            <div className="cmp-busy-box">
+              {progress ? (
+                <>
+                  <div className="cmp-progress-bar-track">
+                    <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                  </div>
+                  <div className="cmp-progress-info">
+                    <span className="cmp-progress-item">{progress.itemName}</span>
+                    <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
+                    <span className="cmp-progress-pct">{progress.percent}%</span>
+                  </div>
+                </>
+              ) : (
+                <><div className="spinner" /><span>Please wait…</span></>
+              )}
             </div>
-            <div className="cmp-busy-text">{progress?.percent ?? 0}%</div>
           </div>
         )}
         {confirmState && (
@@ -708,6 +807,9 @@ export default function CaseStages() {
             onCancel={confirmState.onCancel}
           />
         )}
+      {!search && <div className="muted cmp-drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
+
+      <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }

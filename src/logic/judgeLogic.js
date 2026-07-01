@@ -25,7 +25,7 @@ export const judgeLogic = {
         short_code: (data.short_code || '').trim().toUpperCase(),
         designation: (data.designation || '').trim(),
         court: (data.court || '').trim(),
-        status: 'Active',
+        status: data.status || 'Active',
         display_order: data.display_order ?? 0,
         createdAt: nowISO(),
       }));

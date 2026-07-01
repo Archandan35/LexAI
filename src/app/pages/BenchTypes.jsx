@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -325,6 +325,15 @@ export default function BenchTypes() {
       onCancel: () => setConfirmState(null),
     });
   };
+
+  const handleToggle = useCallback(async (item) => {
+    try {
+      const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
+      const res = await benchTypeLogic.update(item.id, { name: item.name, short_code: item.short_code, status: newStatus });
+      if (res.ok) { toast.push(`Bench type ${newStatus === 'Active' ? 'enabled' : 'disabled'}.`, 'success'); load(); }
+      else toast.push(res.error, 'error');
+    } catch (err) { toast.push(err?.message || 'Failed to toggle status.', 'error'); }
+  }, [load, toast]);
 
   if (loading) return <div className="fade-in bench-types__loading"><div className="spinner" /></div>;
 
@@ -701,6 +710,11 @@ export default function BenchTypes() {
                   <div className="bench-types__actions">
                     <button className="bench-types__act-btn bench-types__act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                     <button className="bench-types__act-btn bench-types__act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className={`bench-types__act-btn ${item.status === 'Active' ? 'bench-types__act-btn--toggle-on' : 'bench-types__act-btn--toggle-off'}`}
+                      title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                      onClick={() => handleToggle(item)}>
+                      <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                    </button>
                     <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     <div className="bench-types__act-more-wrap">
                       <button className="bench-types__act-btn bench-types__act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
@@ -775,9 +789,15 @@ export default function BenchTypes() {
                 <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Edit</span>
               </button>
-              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
+              <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(''); setNewStatus('Active'); setActiveAction('add'); }}>
                 <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                 <span className="bench-types__mobile-action-label">Duplicate</span>
+              </button>
+              <button className={`bench-types__mobile-action ${item.status === 'Active' ? 'bench-types__mobile-action--toggle-on' : 'bench-types__mobile-action--toggle-off'}`}
+                title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                onClick={() => handleToggle(item)}>
+                <span className="bench-types__mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                <span className="bench-types__mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
               </button>
               <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                 <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
