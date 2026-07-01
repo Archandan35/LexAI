@@ -690,9 +690,9 @@ export default function CaseStatuses() {
                       <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
                       <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
                       <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
-                        title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                        title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                         onClick={() => handleToggle(item)}>
-                        <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                        <Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} />
                       </button>
                       <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     </div>
@@ -790,9 +790,9 @@ export default function CaseStatuses() {
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
                 <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
-                  title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                   onClick={() => handleToggle(item)}>
-                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} /></span>
                   <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>

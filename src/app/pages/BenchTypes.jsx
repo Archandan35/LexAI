@@ -707,25 +707,16 @@ export default function BenchTypes() {
                   </span>
                 </td>
                 <td>
-                  <div className="bench-types__actions">
-                    <button className="bench-types__act-btn bench-types__act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                    <button className="bench-types__act-btn bench-types__act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                    <button className={`bench-types__act-btn ${item.status === 'Active' ? 'bench-types__act-btn--toggle-on' : 'bench-types__act-btn--toggle-off'}`}
-                      title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  <div className="cmp-actions">
+                    <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { setNewName(item.name + ' (copy)'); setNewCode(item.short_code || ''); setNewStatus(item.status || 'Active'); setNewDesc(item.description || ''); setActiveAction('add'); setMoreMenu(null); }}><Icon name="copy" size={15} /></button>
+                    <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
+                      title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                       onClick={() => handleToggle(item)}>
-                      <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                      <Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} />
                     </button>
-                    <button className="bench-types__act-btn bench-types__act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    <div className="bench-types__act-more-wrap">
-                      <button className="bench-types__act-btn bench-types__act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                      {moreMenu === item.id && (
-                        <div className="bench-types__act-dropdown">
-                          <button className="bench-types__act-dropdown-item" onClick={() => { setMoreMenu(null); setNewName(item.name + ' (copy)'); setActiveAction('add'); }}>
-                            <Icon name="copy" size={14} /> Duplicate
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                   </div>
                 </td>
               </tr>
@@ -796,7 +787,7 @@ export default function BenchTypes() {
               <button className={`bench-types__mobile-action ${item.status === 'Active' ? 'bench-types__mobile-action--toggle-on' : 'bench-types__mobile-action--toggle-off'}`}
                 title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
                 onClick={() => handleToggle(item)}>
-                <span className="bench-types__mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                <span className="bench-types__mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} /></span>
                 <span className="bench-types__mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
               </button>
               <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>

@@ -1,26 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 
-let cached = null;
-
 export function useCaseTypes() {
-  const [caseTypes, setCaseTypes] = useState(cached?.caseTypes || []);
-  const [loading, setLoading] = useState(!cached);
+  const [caseTypes, setCaseTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const data = await caseTypeLogic.list();
       const list = Array.isArray(data) ? data : [];
-      cached = { caseTypes: list };
       setCaseTypes(list);
     } catch {
-      setCaseTypes([]);
+      // keep existing data
     }
     setLoading(false);
   }, []);
 
-  useEffect(() => { if (!cached) refresh(); }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   return { caseTypes, loading, refresh };
 }

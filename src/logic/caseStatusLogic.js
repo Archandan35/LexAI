@@ -14,7 +14,14 @@ export const caseStatusLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Status name is required.');
-      return ok(await caseStatusService.create({ name, display_order: data.display_order ?? 0, status: 'Active', createdAt: nowISO() }));
+      return ok(await caseStatusService.create({
+        name,
+        short_code: (data.short_code || '').trim().toUpperCase(),
+        description: (data.description || '').trim(),
+        display_order: data.display_order ?? 0,
+        status: data.status || 'Active',
+        createdAt: nowISO(),
+      }));
     } catch (err) { return fail(err); }
   },
 

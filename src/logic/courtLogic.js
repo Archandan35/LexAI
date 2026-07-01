@@ -20,15 +20,13 @@ export const courtLogic = {
     try {
       const name = (data.name || '').trim();
       if (!name) return fail('Court name is required.');
-      const existing = await courtService.list();
-      if (existing.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
-        return fail(`Court "${name}" already exists.`);
-      }
-      const order = existing.reduce((m, c) => Math.max(m, c.display_order ?? 0), 0) + 1;
       return ok(await courtService.create({
         name,
-        display_order: order,
-        status: 'Active',
+        short_code: (data.short_code || '').trim().toUpperCase(),
+        parent_id: data.parent_id || null,
+        description: (data.description || '').trim(),
+        display_order: data.display_order ?? 0,
+        status: data.status || 'Active',
         createdAt: nowISO(),
       }));
     } catch (err) { return fail(err); }
@@ -70,7 +68,15 @@ export const courtLogic = {
         if (existingNames.has(name.toLowerCase())) return null;
         existingNames.add(name.toLowerCase());
         maxOrder += 1;
-        return { name, display_order: maxOrder, status: 'Active', createdAt: nowISO() };
+        return {
+          name,
+          short_code: (r.short_code || '').trim().toUpperCase(),
+          parent_id: r.parent_id || null,
+          description: (r.description || '').trim(),
+          display_order: maxOrder,
+          status: 'Active',
+          createdAt: nowISO()
+        };
       }).filter(Boolean);
 
       if (!pending.length) return ok({ count: 0, items: [] });

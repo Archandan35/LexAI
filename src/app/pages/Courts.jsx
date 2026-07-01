@@ -7,7 +7,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
-const ENTITY_PREFIX = 'CT';
+const ENTITY_PREFIX = 'COU';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -456,24 +456,15 @@ export default function Courts() {
             <td><span className={`badge badge--${item.status === 'Active' ? 'green' : 'grey'}`}>{item.status}</span></td>
             <td>
               <div className="cmp-actions">
-                <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
                 <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => duplicate(item)}><Icon name="copy" size={15} /></button>
                 <button className={`cmp-act-btn ${item.status === 'Active' ? 'cmp-act-btn--toggle-on' : 'cmp-act-btn--toggle-off'}`}
-                  title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                  title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'}
                   onClick={() => handleToggle(item)}>
-                  <Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} />
+                  <Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} />
                 </button>
                 <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                <div className="cmp-act-more-wrap">
-                  <button className="cmp-act-btn cmp-act-btn--more" title="More" onClick={() => setMoreMenu(moreMenu === item.id ? null : item.id)}><Icon name="more-horizontal" size={15} /></button>
-                  {moreMenu === item.id && (
-                    <div className="cmp-act-dropdown">
-                      <button className="cmp-act-dropdown-item" onClick={() => { setMoreMenu(null); duplicate(item); }}>
-                        <Icon name="copy" size={14} /> Duplicate
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
             </td>
           </tr>
@@ -941,7 +932,7 @@ export default function Courts() {
                 <button className={`cmp-mobile-action ${item.status === 'Active' ? 'cmp-mobile-action--toggle-on' : 'cmp-mobile-action--toggle-off'}`}
                   title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
                   onClick={() => handleToggle(item)}>
-                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-left' : 'toggle-right'} size={15} /></span>
+                  <span className="cmp-mobile-action-icon"><Icon name={item.status === 'Active' ? 'toggle-right' : 'toggle-left'} size={15} /></span>
                   <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
                 </button>
                 <button className="cmp-mobile-action cmp-mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>

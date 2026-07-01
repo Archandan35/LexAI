@@ -14,18 +14,35 @@ export const caseStageLogic = {
   },
 
   async add(name) {
-    const n = (name || '').trim();
+    const n = (typeof name === 'object' ? (name.name || '') : (name || '')).trim();
     if (!n) return fail('Stage name is required.');
+    const data = typeof name === 'object' ? name : {};
     const rows = await caseStageService.list();
     if (rows.some((s) => s.name.toLowerCase() === n.toLowerCase())) return fail('That stage already exists.');
     const order = rows.reduce((m, s) => Math.max(m, s.order ?? 0), 0) + 1;
-    return ok(await caseStageService.create({ name: n, order, createdAt: nowISO() }));
+    return ok(await caseStageService.create({
+      name: n,
+      short_code: (data.short_code || '').trim().toUpperCase(),
+      description: (data.description || '').trim(),
+      display_order: data.display_order ?? order,
+      status: data.status || 'Active',
+      createdAt: nowISO(),
+    }));
   },
 
   async rename(id, name) {
     const n = (name || '').trim();
     if (!n) return fail('Stage name is required.');
     return ok(await caseStageService.update(id, { name: n }));
+  },
+
+  async update(id, data) {
+    return ok(await caseStageService.update(id, {
+      name: data.name,
+      short_code: (data.short_code || '').trim().toUpperCase(),
+      description: (data.description || '').trim(),
+      status: data.status,
+    }));
   },
 
   async remove(id) {
@@ -39,8 +56,7 @@ export const caseStageLogic = {
   // Persist a new ordering (drag & reorder).
   async reorder(orderedIds) {
     for (let i = 0; i < orderedIds.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await caseStageService.update(orderedIds[i], { order: i });
+      await caseStageService.update(orderedIds[i], { display_order: i });
     }
     return ok(true);
   },

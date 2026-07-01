@@ -7,16 +7,14 @@ export const CaseTypesSchema = {
     id: 'string',
     name: 'string',
     short_code: 'string',
+    description: 'string',
     display_order: 'number',
     status: 'string',
     created_at: 'datetime',
     updated_at: 'datetime',
   },
   required: ['name', 'short_code'],
-  defaults: {
-    display_order: 0,
-    status: 'Active',
-  },
+  defaults: { display_order: 0, status: 'Active', description: '' },
   relations: [],
   indexes: ['short_code', 'status', 'display_order'],
 };

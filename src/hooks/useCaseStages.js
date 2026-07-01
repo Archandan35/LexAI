@@ -12,7 +12,7 @@ export function useCaseStages() {
       const data = await caseStageLogic.list();
       setStages(Array.isArray(data) ? data : []);
     } catch {
-      setStages([]);
+      // keep existing data
     }
     setLoading(false);
   }, []);

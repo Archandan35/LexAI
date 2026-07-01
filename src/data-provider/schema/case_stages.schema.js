@@ -1,20 +1,21 @@
-// Universal schema — caseStages (stage definitions / ordering).
 export const CaseStagesSchema = {
   collection: 'case_stages',
   label: 'Case Stages',
   primaryKey: 'id',
-  core: false,
+  core: true,
   fields: {
     id: 'string',
     name: 'string',
-    order: 'number',
-    category: 'string',
+    short_code: 'string',
+    description: 'string',
+    display_order: 'number',
+    status: 'string',
     created_at: 'datetime',
+    updated_at: 'datetime',
   },
   required: ['name'],
-  defaults: { order: 0 },
-  relations: [],
-  indexes: ['order'],
+  defaults: { display_order: 0, status: 'Active', description: '' },
+  indexes: ['name', 'short_code', 'status', 'display_order'],
 };
 
 export default CaseStagesSchema;

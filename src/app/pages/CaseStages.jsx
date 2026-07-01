@@ -30,7 +30,7 @@ const SUB_MODES = {
   ],
 };
 
-const ENTITY_PREFIX = 'CS';
+const ENTITY_PREFIX = 'ST';
 
 export default function CaseStages() {
   const toast = useToast();
@@ -46,10 +46,14 @@ export default function CaseStages() {
   const [perPage, setPerPage] = useState(10);
 
   const [newName, setNewName] = useState('');
+  const [newCode, setNewCode] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
+  const [newDesc, setNewDesc] = useState('');
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
+  const [editCode, setEditCode] = useState('');
   const [editStatus, setEditStatus] = useState('Active');
+  const [editDesc, setEditDesc] = useState('');
   const [delId, setDelId] = useState('');
 
   const [bulkAddText, setBulkAddText] = useState('');
@@ -81,8 +85,8 @@ export default function CaseStages() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewStatus('Active');
-    setEditId(''); setEditName(''); setEditStatus('Active');
+    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active'); setEditDesc('');
     setDelId(''); setImportFile(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
     setFormCollapsed(false);
@@ -100,13 +104,18 @@ export default function CaseStages() {
   const exists = (name) =>
     items.some(i => i.name.toLowerCase() === name.trim().toLowerCase());
 
+  const autoCode = (name) => {
+    const slug = name.trim().replace(/\s+/g, '-').toUpperCase();
+    return `${ENTITY_PREFIX}-${slug}`;
+  };
+
   const doAdd = async () => {
-    if (!newName.trim()) { toast.push('Stage name is required.', 'error'); return; }
+    if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     if (exists(newName)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
-    const res = await caseStageLogic.add(newName.trim());
+    const res = await caseStageLogic.add({ name: newName.trim(), short_code: newCode, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewStatus('Active'); toast.push('Case stage added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); toast.push('Case stage added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -117,10 +126,13 @@ export default function CaseStages() {
     setProgress({ current: 0, total: lines.length, itemName: 'Preparing…', percent: 0 });
     let added = 0, skipped = 0;
     for (let idx = 0; idx < lines.length; idx++) {
-      const name = lines[idx];
+      const line = lines[idx];
+      const colonIdx = line.indexOf(':');
+      const name = colonIdx === -1 ? line : line.slice(0, colonIdx).trim();
+      const code = colonIdx === -1 ? autoCode(name) : line.slice(colonIdx + 1).trim().toUpperCase();
       setProgress({ current: idx + 1, total: lines.length, itemName: name, percent: Math.round(((idx + 1) / lines.length) * 100) });
       if (exists(name)) { skipped++; continue; }
-      const res = await caseStageLogic.add(name);
+      const res = await caseStageLogic.add({ name, short_code: code, status: 'Active' });
       if (res.ok) added++; else skipped++;
     }
     setBusy(false);
@@ -134,8 +146,7 @@ export default function CaseStages() {
     if (!editId) { toast.push('Select a case stage to edit.', 'error'); return; }
     if (!editName.trim()) { toast.push('Stage name cannot be empty.', 'error'); return; }
     setBusy(true);
-    const item = items.find(x => x.id === editId);
-    const res = await caseStageLogic.rename(editId, editName.trim());
+    const res = await caseStageLogic.update(editId, { name: editName.trim(), short_code: editCode, status: editStatus });
     setBusy(false);
     if (res.ok) { setEditId(''); toast.push('Case stage updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -290,7 +301,9 @@ export default function CaseStages() {
     setSubMode('single');
     setEditId(item.id);
     setEditName(item.name);
+    setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
+    setEditDesc(item.description || '');
   };
 
   const startDelete = (item) => {

@@ -7,16 +7,18 @@ export const JudgesSchema = {
     id: 'string',
     name: 'string',
     short_code: 'string',
+    description: 'string',
     designation: 'string',
     court: 'string',
+    display_order: 'number',
     status: 'string',
     created_at: 'datetime',
     updated_at: 'datetime',
   },
   required: ['name'],
-  defaults: { status: 'Active' },
+  defaults: { status: 'Active', display_order: 0, description: '' },
   relations: [],
-  indexes: ['name', 'short_code', 'status'],
+  indexes: ['name', 'short_code', 'status', 'display_order'],
 };
 
 export default JudgesSchema;

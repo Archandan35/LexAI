@@ -6,6 +6,8 @@ export const PrioritiesSchema = {
   fields: {
     id: 'string',
     name: 'string',
+    short_code: 'string',
+    description: 'string',
     display_order: 'number',
     color: 'string',
     status: 'string',
@@ -13,9 +15,8 @@ export const PrioritiesSchema = {
     updated_at: 'datetime',
   },
   required: ['name'],
-  defaults: { display_order: 0, color: '#6b7280', status: 'Active' },
-  relations: [],
-  indexes: ['name', 'status'],
+  defaults: { display_order: 0, color: '#6b7280', status: 'Active', description: '' },
+  indexes: ['name', 'short_code', 'status', 'display_order'],
 };
 
 export default PrioritiesSchema;
