@@ -138,7 +138,15 @@ export function relationships() {
 export function applyDefaults(collection, record = {}) {
   const s = schemas[collection];
   if (!s) return { ...record };
-  return { ...s.defaults, ...record };
+  const merged = { ...s.defaults, ...record };
+  if (s.fields) {
+    for (const [key, type] of Object.entries(s.fields)) {
+      if (type === 'datetime' && merged[key] === '') {
+        merged[key] = null;
+      }
+    }
+  }
+  return merged;
 }
 
 // Lightweight, provider-agnostic validation. Returns { valid, missing[] }.
