@@ -30,7 +30,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
           <div className="sosb-dropdown-row">
             <select className="sosb-select sosb-select--grow" value={form.hazira} onChange={(e) => set('hazira', e.target.value)}>
               <option value="">Select party type...</option>
-              {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+              {partyTypes.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
             </select>
             <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
               <Icon name="gear" size={16} strokeWidth={1.7} />
@@ -49,7 +49,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
             <div className="sosb-dropdown-row">
               <select className="sosb-select sosb-select--grow" value={form.filedBy} onChange={(e) => set('filedBy', e.target.value)}>
                 <option value="">Select...</option>
-                {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+                {partyTypes.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
               </select>
               <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
                 <Icon name="gear" size={16} strokeWidth={1.7} />
@@ -114,7 +114,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
           <div className="sosb-dropdown-row">
             <select className="sosb-select sosb-select--grow" value={form.objectionFiledBy} onChange={(e) => set('objectionFiledBy', e.target.value)}>
               <option value="">Select...</option>
-              {partyTypes.map((p) => <option key={p} value={p}>{p}</option>)}
+              {partyTypes.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
             </select>
             <button className="sosb-gear-btn" title="Manage party types" onClick={(e) => { e.stopPropagation(); onGearParty(); }}>
               <Icon name="gear" size={16} strokeWidth={1.7} />
