@@ -175,7 +175,7 @@ function renderField(f, values, setValues) {
 /* Single Add                                                           */
 /* ------------------------------------------------------------------ */
 function SingleAdd({ config, entity }) {
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState({ ...config.defaults });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
@@ -187,7 +187,7 @@ function SingleAdd({ config, entity }) {
         : await config.logic.create(values, config.actor);
       if (tryOk(r)) {
         setMsg({ type: 'success', text: `${entity} added successfully.` });
-        setValues({});
+        setValues({ ...config.defaults });
         config.refresh?.();
       } else setMsg({ type: 'error', text: tryErr(r) });
     } catch (e) { setMsg({ type: 'error', text: e.message }); }

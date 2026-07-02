@@ -58,7 +58,7 @@ export const userLogic = {
         name: data.name || data.email || data.username,
         email: (data.email || '').toLowerCase(),
         username: (data.username || '').toLowerCase(),
-        roleCode: data.roleCode || '',
+        roleCode: data.roleCode || 'Client',
         extraRoles: data.extraRoles || [],
         grants: [], denies: [],
         status: data.status || 'Active',
