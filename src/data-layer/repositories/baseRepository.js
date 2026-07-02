@@ -74,6 +74,19 @@ async function grantCollectionAccess(db, collection) {
   console.log('[grantAccess] running:', sql.trim());
   const res = await db.execSql(sql);
   console.log('[grantAccess] result:', res);
+  // Fix incorrect FK constraint fk_case_folders_parent_id that earlier versions
+  // of SchemaCompiler generated with 'case_id' instead of 'parent_id' as the
+  // source column. This causes "Key is not present in table case_folders" when
+  // creating the first folder for a case. Drop the wrong constraint and recreate
+  // it with the correct column. safe_create_fk skips if the constraint already
+  // has the correct definition.
+  try {
+    await db.execSql(`
+      alter table if exists "case_folders" drop constraint if exists "fk_case_folders_parent_id";
+      select safe_create_fk('case_folders', 'parent_id', 'case_folders', 'id', 'fk_case_folders_parent_id', 'CASCADE');
+    `);
+    console.log('[grantAccess] FK fix applied');
+  } catch (_) {}
   return res.ok;
 }
 
