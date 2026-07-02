@@ -21,6 +21,7 @@ export const NAV_GROUPS = [
       },
       { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
       { to: '/clients', label: 'Clients', icon: 'users' },
+      { to: '/advocates', label: 'Advocates', icon: 'users' },
       { to: '/contacts', label: 'Contacts', icon: 'book' },
     ],
   },

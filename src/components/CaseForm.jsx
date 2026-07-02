@@ -319,7 +319,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
         { key: 'phone', label: 'Phone', placeholder: 'e.g., +91 9876543210' },
         { key: 'address', label: 'Address', placeholder: 'Enter address' },
         { key: 'password', label: 'Password', type: 'password', placeholder: 'Set password' },
-      ], defaults: { roleCode: 'Advocate' }, refresh: () => userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {}) }} />
+      ], defaults: { roleCode: 'advocate' }, refresh: () => userLogic.list().then((r) => { setUsers(Array.isArray(r) ? r : []); }).catch(() => {}) }} />
       <CrudManager open={judgeMgr} onClose={() => { setJudgeMgr(false); refreshJudges(); }} entity="Judge" config={{ logic: judgeLogic, fields: [
         { key: 'name', label: 'Judge Name', placeholder: 'e.g., Justice Sharma' },
         { key: 'short_code', label: 'Short Code', placeholder: 'e.g., JS' },

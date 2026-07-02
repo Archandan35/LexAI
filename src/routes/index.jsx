@@ -14,6 +14,7 @@ import VersionControl from '@/app/pages/VersionControl.jsx';
 import DocumentArchive from '@/app/pages/DocumentArchive.jsx';
 import Calendar from '@/app/pages/Calendar.jsx';
 import Clients from '@/app/pages/Clients.jsx';
+import Advocates from '@/app/pages/Advocates.jsx';
 import Contacts from '@/app/pages/Contacts.jsx';
 import CaseDocuments from '@/app/pages/CaseDocuments.jsx';
 import ActLibrary from '@/app/pages/ActLibrary.jsx';
@@ -112,6 +113,7 @@ export default function AppRoutes() {
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
         <Route path="/tasks" element={<Navigate to="/calendar" replace />} />
         <Route path="/clients" element={G('clients', <Clients />)} />
+        <Route path="/advocates" element={G('clients', <Advocates />)} />
         <Route path="/contacts" element={G('contacts', <Contacts />)} />
 
         {/* ── Drafting Center ── */}
