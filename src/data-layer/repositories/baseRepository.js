@@ -106,11 +106,20 @@ export function createRepository(collection) {
 
     // ---- reads (LexAI field names in, provider translated out) ----
     getAll: (query = {}) => withProvisioning(p(), entityName,
-      () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
+      async () => {
+        const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
+        return (rows || []).map((r) => FieldMapper.toLexAI(entityName, r));
+      }),
     getById: (id) => withProvisioning(p(), entityName,
-      () => p().get(providerName(), id)),
+      async () => {
+        const row = await p().get(providerName(), id);
+        return row ? FieldMapper.toLexAI(entityName, row) : null;
+      }),
     query: (query = {}) => withProvisioning(p(), entityName,
-      () => p().list(providerName(), FieldMapper.filterToProvider(entityName, query))),
+      async () => {
+        const rows = await p().list(providerName(), FieldMapper.filterToProvider(entityName, query));
+        return (rows || []).map((r) => FieldMapper.toLexAI(entityName, r));
+      }),
     count: (query = {}) => withProvisioning(p(), entityName,
       () => p().count(providerName(), FieldMapper.filterToProvider(entityName, query))),
 
