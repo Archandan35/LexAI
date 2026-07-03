@@ -10531,8 +10531,6 @@ kbd.cmd__kbd {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   margin-bottom: 24px;
-  overflow-x: auto;
-  flex-shrink: 0;
   box-shadow: var(--shadow-sm);
 }
 
@@ -10919,8 +10917,6 @@ kbd.cmd__kbd {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   margin-bottom: 24px;
-  overflow-x: auto;
-  flex-shrink: 0;
   box-shadow: var(--shadow-sm);
 }
 
