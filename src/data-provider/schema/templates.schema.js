@@ -7,6 +7,7 @@ export const TemplatesSchema = {
     id: 'string',
     name: 'string',
     category: 'string',
+    description: 'text',
     content: 'text',
     is_active: 'boolean',
     last_updated: 'string',

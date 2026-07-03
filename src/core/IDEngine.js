@@ -39,6 +39,7 @@ let _prefixMap = {
   settings: { prefix: 'SET', padding: 5 },
   envVars: { prefix: 'ENV', padding: 5 },
   configHistory: { prefix: 'CFGH', padding: 5 },
+  templates: { prefix: 'TEMP', padding: 5 },
   schema_meta: { prefix: 'SMETA', padding: 5 },
 };
 
