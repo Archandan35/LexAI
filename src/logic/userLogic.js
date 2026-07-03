@@ -58,6 +58,8 @@ export const userLogic = {
         name: data.name || data.email || data.username,
         email: (data.email || '').toLowerCase(),
         username: (data.username || '').toLowerCase(),
+        phone: data.phone,
+        address: data.address,
         roleCode: data.roleCode || 'Client',
         extraRoles: data.extraRoles || [],
         grants: [], denies: [],
@@ -112,7 +114,24 @@ export const userLogic = {
   },
 
   async setRole(id, roleCode, actor) {
-    return this.update(id, { roleCode }, actor);
+    const res = await this.update(id, { roleCode }, actor);
+    if (res.ok) return res;
+    if ((res.error || '').includes('violates foreign key') || (res.error || '').includes('fk_users_role_code')) {
+      const roles = await roleService.list();
+      if (!roles.find((r) => r.code === roleCode)) {
+        const created = await roleService.create({
+          code: roleCode,
+          name: roleCode.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+          description: `${roleCode} role`,
+          permissions: [], all: false,
+          inheritsHierarchy: true, system: false,
+          status: 'Active',
+          createdAt: nowISO(),
+        });
+        if (created && !created.error) return this.update(id, { roleCode }, actor);
+      }
+    }
+    return res;
   },
 
   async setStatus(id, status, actor) {

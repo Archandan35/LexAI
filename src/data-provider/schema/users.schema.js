@@ -15,6 +15,8 @@ export const UsersSchema = {
     extra_roles: 'array',
     grants: 'array',
     denies: 'array',
+    phone: 'string',
+    address: 'string',
     status: 'string',
     salt: 'string',
     password_hash: 'string',

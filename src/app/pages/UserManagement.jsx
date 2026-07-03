@@ -133,9 +133,15 @@ export default function UserManagement() {
     { key: 'lastLoginAt', label: 'Last login', sortable: true, width: 120, render: (u) => (u.lastLoginAt ? fromNow(u.lastLoginAt) : '—') },
     { key: 'createdAt', label: 'Created', sortable: true, width: 110, render: (u) => formatDate(u.createdAt) },
     { key: 'status', label: 'Status', width: 90, render: (u) => <Badge tone={u.status === 'Active' ? 'green' : 'grey'}>{u.status}</Badge> },
-    { key: 'actions', label: '', width: 150, render: (u) => (
+    { key: 'actions', label: '', width: 200, render: (u) => (
       <div className="row-actions">
-        <button className="iconbtn" title="Details" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="eye" size={15} /></button>
+        <button className="iconbtn" title="View" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="eye" size={15} /></button>
+        <PermissionGate perm="users.edit">
+          <button className="iconbtn" title="Edit" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="edit" size={15} /></button>
+        </PermissionGate>
+        <PermissionGate perm="users.create">
+          <button className="iconbtn" title="Duplicate" onClick={() => { setForm({ ...BLANK, name: u.name, email: u.email, username: u.username, roleCode: u.roleCode, status: 'Active' }); }}><Icon name="copy" size={15} /></button>
+        </PermissionGate>
         <PermissionGate perm="users.edit">
           <button className="iconbtn" title={u.status === 'Active' ? 'Disable' : 'Enable'} onClick={() => setStatus(u, u.status === 'Active' ? 'Disabled' : 'Active')}>
             <Icon name={u.status === 'Active' ? 'ban' : 'check'} size={15} />
