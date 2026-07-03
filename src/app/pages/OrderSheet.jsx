@@ -1488,7 +1488,7 @@ export default function OrderSheet() {
         size="lg"
         className={smartMode ? 'order-sheet-preview-modal smart-mode' : ''}
         onClose={() => { setOpen(false); setSmartMode(false); }}
-        footer={smartMode ? undefined : <><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing}>{editing ? 'Update' : 'Add'}</Button></>}
+        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button icon="save" onClick={() => saveHearing()}>{editing ? 'Update' : 'Add'}</Button></>}
       >
         {smartMode ? (
           <SmartOrderSheetBuilder
