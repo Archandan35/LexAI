@@ -10,13 +10,13 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     this.url = config.credentials.supabaseUrl;
     this.key = config.credentials.supabaseAnonKey;
     this.serviceKey = config.credentials.supabaseServiceRoleKey;
-    this.#bootstrapped = false;
+    this._bootstrapped = false;
     if (!this.url || !this.key) {
       console.warn('[LexAI] Supabase not configured; provider will fail on use.');
     }
   }
 
-  #headers() {
+  _headers() {
     return {
       apikey: this.key,
       Authorization: `Bearer ${this.key}`,
@@ -25,7 +25,7 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     };
   }
 
-  #serviceHeaders() {
+  _serviceHeaders() {
     if (!this.serviceKey) return null;
     return {
       apikey: this.serviceKey,
@@ -34,75 +34,75 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     };
   }
 
-  #bootstrapSql() {
-    return `
-create or replace function exec_sql(sql text)
-returns setof jsonb
-language plpgsql
-security definer
-as $$
-begin
-  if exists (select 1 from pg_tables where tablename = 'migration_registry') then
-    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)
-    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);
-  end if;
-  return query execute sql;
-exception
-  when others then
-    execute sql;
-    return query select '{"ok":true}'::jsonb;
-end;
-$$;
-
-create or replace function safe_ddl(sql text)
-returns void
-language plpgsql
-security definer
-as $$
-declare
-  v_upper text;
-begin
-  v_upper := upper(sql);
-  if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then
-    raise exception 'safe_ddl: DROP is not permitted';
-  end if;
-  if v_upper ~ '^\\s*TRUNCATE' then raise exception 'safe_ddl: TRUNCATE is not permitted'; end if;
-  if v_upper ~ 'ALTER\\s+TABLE.*DROP\\s+(COLUMN|CONSTRAINT)' then
-    raise exception 'safe_ddl: ALTER TABLE DROP is not permitted';
-  end if;
-  if not (
-    v_upper ~ '^\\s*CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s' or
-    v_upper ~ '^\\s*CREATE\\s+INDEX\\s+IF\\s+NOT\\s+EXISTS\\s' or
-    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS' or
-    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+CONSTRAINT' or
-    v_upper ~ '^\\s*CREATE\\s+OR\\s+REPLACE\\s+FUNCTION\\s' or
-    v_upper ~ '^\\s*ALTER\\s+TABLE\\s+IF\\s+EXISTS\\s' or
-    v_upper ~ 'ALTER\\s+TABLE.*ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or
-    v_upper ~ 'ALTER\\s+TABLE.*DISABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or
-    v_upper ~ '^\\s*CREATE\\s+POLICY\\s' or
-    v_upper ~ '^\\s*ALTER\\s+POLICY\\s' or
-    v_upper ~ '^\\s*DROP\\s+POLICY\\s+IF\\s+EXISTS\\s' or
-    v_upper ~ '^\\s*COMMENT\\s+ON\\s' or
-    v_upper ~ '^\\s*DO\\s+\\$\\$' or
-    v_upper ~ '^\\s*--'
-  ) then
-    raise exception 'safe_ddl: Statement does not match any allowed pattern: %', substr(sql, 1, 80);
-  end if;
-  execute sql;
-end;
-$$;
-
-grant execute on function exec_sql(text) to authenticated;
-grant execute on function exec_sql(text) to anon;
-grant execute on function safe_ddl(text) to authenticated;
-grant execute on function safe_ddl(text) to anon;
-'.trim();
+  _bootstrapSql() {
+    const lines = [];
+    lines.push('create or replace function exec_sql(sql text)');
+    lines.push('returns setof jsonb');
+    lines.push('language plpgsql');
+    lines.push('security definer');
+    lines.push('as $$');
+    lines.push('begin');
+    lines.push("  if exists (select 1 from pg_tables where tablename = 'migration_registry') then");
+    lines.push("    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)");
+    lines.push("    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);");
+    lines.push('  end if;');
+    lines.push('  return query execute sql;');
+    lines.push('exception');
+    lines.push('  when others then');
+    lines.push('    execute sql;');
+    lines.push("    return query select '{\"ok\":true}'::jsonb;");
+    lines.push('end;');
+    lines.push('$$;');
+    lines.push('');
+    lines.push('create or replace function safe_ddl(sql text)');
+    lines.push('returns void');
+    lines.push('language plpgsql');
+    lines.push('security definer');
+    lines.push('as $$');
+    lines.push('declare');
+    lines.push('  v_upper text;');
+    lines.push('begin');
+    lines.push("  v_upper := upper(sql);");
+    lines.push("  if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then");
+    lines.push("    raise exception 'safe_ddl: DROP is not permitted';");
+    lines.push('  end if;');
+    lines.push("  if v_upper ~ '^\\s*TRUNCATE' then raise exception 'safe_ddl: TRUNCATE is not permitted'; end if;");
+    lines.push("  if v_upper ~ 'ALTER\\s+TABLE.*DROP\\s+(COLUMN|CONSTRAINT)' then");
+    lines.push("    raise exception 'safe_ddl: ALTER TABLE DROP is not permitted';");
+    lines.push('  end if;');
+    lines.push('  if not (');
+    lines.push("    v_upper ~ '^\\s*CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s' or");
+    lines.push("    v_upper ~ '^\\s*CREATE\\s+INDEX\\s+IF\\s+NOT\\s+EXISTS\\s' or");
+    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS' or");
+    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+CONSTRAINT' or");
+    lines.push("    v_upper ~ '^\\s*CREATE\\s+OR\\s+REPLACE\\s+FUNCTION\\s' or");
+    lines.push("    v_upper ~ '^\\s*ALTER\\s+TABLE\\s+IF\\s+EXISTS\\s' or");
+    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or");
+    lines.push("    v_upper ~ 'ALTER\\s+TABLE.*DISABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or");
+    lines.push("    v_upper ~ '^\\s*CREATE\\s+POLICY\\s' or");
+    lines.push("    v_upper ~ '^\\s*ALTER\\s+POLICY\\s' or");
+    lines.push("    v_upper ~ '^\\s*DROP\\s+POLICY\\s+IF\\s+EXISTS\\s' or");
+    lines.push("    v_upper ~ '^\\s*COMMENT\\s+ON\\s' or");
+    lines.push("    v_upper ~ '^\\s*DO\\s+\\$\\$' or");
+    lines.push("    v_upper ~ '^\\s*--'");
+    lines.push('  ) then');
+    lines.push("    raise exception 'safe_ddl: Statement does not match any allowed pattern: %', substr(sql, 1, 80);");
+    lines.push('  end if;');
+    lines.push('  execute sql;');
+    lines.push('end;');
+    lines.push('$$;');
+    lines.push('');
+    lines.push('grant execute on function exec_sql(text) to authenticated;');
+    lines.push('grant execute on function exec_sql(text) to anon;');
+    lines.push('grant execute on function safe_ddl(text) to authenticated;');
+    lines.push('grant execute on function safe_ddl(text) to anon;');
+    return lines.join('\n');
   }
 
-  async #tryBootstrapExecSql() {
-    const h = this.#serviceHeaders();
+  async _tryBootstrapExecSql() {
+    const h = this._serviceHeaders();
     if (!h) return false;
-    const sql = this.#bootstrapSql();
+    const sql = this._bootstrapSql();
     try {
       const res = await fetch(`${this.url}/pg/v1/sql`, {
         method: 'POST',
@@ -113,7 +113,7 @@ grant execute on function safe_ddl(text) to anon;
         console.warn('[Supabase] bootstrap via /pg/v1/sql failed:', res.status);
         return false;
       }
-      this.#bootstrapped = true;
+      this._bootstrapped = true;
       console.log('[Supabase] exec_sql function bootstrapped successfully');
       return true;
     } catch (e) {
@@ -122,7 +122,7 @@ grant execute on function safe_ddl(text) to anon;
     }
   }
 
-  #endpoint(collection) {
+  _endpoint(collection) {
     return `${this.url}/rest/v1/${collection}`;
   }
 
@@ -131,21 +131,21 @@ grant execute on function safe_ddl(text) to anon;
     Object.entries(query).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params.set(k, `eq.${v}`);
     });
-    const res = await fetch(`${this.#endpoint(collection)}?${params.toString()}`, { headers: this.#headers() });
+    const res = await fetch(`${this._endpoint(collection)}?${params.toString()}`, { headers: this._headers() });
     if (!res.ok) throw new Error(`Supabase list ${collection} ${res.status}`);
     return res.json();
   }
 
   async get(collection, id) {
-    const res = await fetch(`${this.#endpoint(collection)}?id=eq.${id}`, { headers: this.#headers() });
+    const res = await fetch(`${this._endpoint(collection)}?id=eq.${id}`, { headers: this._headers() });
     if (!res.ok) throw new Error(`Supabase get ${collection} ${res.status}`);
     const rows = await res.json();
     return rows[0] || null;
   }
 
   async create(collection, record) {
-    const res = await fetch(this.#endpoint(collection), {
-      method: 'POST', headers: this.#headers(), body: JSON.stringify(record),
+    const res = await fetch(this._endpoint(collection), {
+      method: 'POST', headers: this._headers(), body: JSON.stringify(record),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
@@ -159,8 +159,8 @@ grant execute on function safe_ddl(text) to anon;
   }
 
   async update(collection, id, patch) {
-    const res = await fetch(`${this.#endpoint(collection)}?id=eq.${id}`, {
-      method: 'PATCH', headers: this.#headers(), body: JSON.stringify(patch),
+    const res = await fetch(`${this._endpoint(collection)}?id=eq.${id}`, {
+      method: 'PATCH', headers: this._headers(), body: JSON.stringify(patch),
     });
     if (!res.ok) throw new Error(`Supabase update ${collection} ${res.status}`);
     const rows = await res.json();
@@ -178,7 +178,7 @@ grant execute on function safe_ddl(text) to anon;
     try {
       const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
         method: 'POST',
-        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        headers: { ...this._headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ sql }),
       });
       if (res.ok) {
@@ -192,13 +192,13 @@ grant execute on function safe_ddl(text) to anon;
         }
       }
       // 405 = function does not exist → try to bootstrap
-      if (res.status === 405 && !this.#bootstrapped) {
-        const booted = await this.#tryBootstrapExecSql();
+      if (res.status === 405 && !this._bootstrapped) {
+        const booted = await this._tryBootstrapExecSql();
         if (booted) {
           // Retry the original SQL via the now-available RPC
           const retry = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
             method: 'POST',
-            headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+            headers: { ...this._headers(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ sql }),
           });
           if (retry.ok) {
@@ -225,7 +225,7 @@ grant execute on function safe_ddl(text) to anon;
     try {
       const res = await fetch(`${this.url}/rest/v1/rpc/${functionName}`, {
         method: 'POST',
-        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+        headers: { ...this._headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
       if (!res.ok) return { ok: false, error: `RPC ${functionName} failed: ${res.status}` };
@@ -243,7 +243,7 @@ grant execute on function safe_ddl(text) to anon;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await fetch(`${this.#endpoint(name)}?limit=1`, { headers: this.#headers(), signal: controller.signal });
+      const res = await fetch(`${this._endpoint(name)}?limit=1`, { headers: this._headers(), signal: controller.signal });
       clearTimeout(timer);
       if (res.status === 401 || res.status === 403) {
         throw new Error(`Auth denied (${res.status}) for ${name}`);
@@ -263,8 +263,8 @@ grant execute on function safe_ddl(text) to anon;
     Object.entries(query).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params.set(k, `eq.${v}`);
     });
-    const res = await fetch(`${this.#endpoint(collection)}?${params.toString()}`, {
-      headers: { ...this.#headers(), Prefer: 'count=exact', 'Range-Unit': 'items', Range: '0-0' },
+    const res = await fetch(`${this._endpoint(collection)}?${params.toString()}`, {
+      headers: { ...this._headers(), Prefer: 'count=exact', 'Range-Unit': 'items', Range: '0-0' },
     });
     if (res.status === 401 || res.status === 403) {
       throw new Error(`Supabase auth denied (${res.status}) for ${collection}`);
@@ -315,8 +315,8 @@ grant execute on function safe_ddl(text) to anon;
   }
 
   async remove(collection, id) {
-    const res = await fetch(`${this.#endpoint(collection)}?id=eq.${id}`, {
-      method: 'DELETE', headers: this.#headers(),
+    const res = await fetch(`${this._endpoint(collection)}?id=eq.${id}`, {
+      method: 'DELETE', headers: this._headers(),
     });
     if (!res.ok) return false;
     // res.ok alone is NOT proof anything was deleted — PostgREST returns 200
