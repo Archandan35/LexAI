@@ -14,6 +14,38 @@
 // returns { name: 'Alice', createdAt: '2024-01-01' }.
 
 let _fieldMappings = {}; // { entityName: { lexAIField: providerField } }
+let _initialized = false;
+
+const COMMON = {
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+};
+
+const DEFAULT_MAPPINGS = {
+  users: { ...COMMON, roleCode: 'role_code', extraRoles: 'extra_roles', passwordHash: 'password_hash', lastLoginAt: 'last_login_at' },
+  roles: { ...COMMON, inheritsHierarchy: 'inherits_hierarchy' },
+  cases: { ...COMMON, caseNumber: 'case_number_str', courtName: 'court_name', nextHearing: 'next_hearing', filingDate: 'filing_date', wsFilingDate: 'ws_filing_date', stageHistory: 'stage_history' },
+  clients: { ...COMMON },
+  caseTypes: { ...COMMON },
+  caseStages: { createdAt: 'created_at' },
+  courts: { ...COMMON },
+  judges: { ...COMMON },
+  hearings: { ...COMMON, caseId: 'case_id', nextHearingDate: 'next_hearing_date', postedFor: 'posted_for', docRef: 'doc_ref', docName: 'doc_name', summary: 'summary' },
+  notes: { ...COMMON, caseId: 'case_id' },
+  documents: { caseId: 'case_id', syncStatus: 'sync_status', syncMessage: 'sync_message', lastSyncAt: 'last_sync_at', uploadedAt: 'uploaded_at' },
+  reminders: { ...COMMON, caseId: 'case_id', dueAt: 'due_at' },
+  drafts: { ...COMMON, caseId: 'case_id' },
+  settings: { updatedAt: 'updated_at', updatedBy: 'updated_by' },
+};
+
+function ensureInit() {
+  if (_initialized) return;
+  _initialized = true;
+  for (const [entity, mappings] of Object.entries(DEFAULT_MAPPINGS)) {
+    if (!_fieldMappings[entity]) _fieldMappings[entity] = {};
+    Object.assign(_fieldMappings[entity], mappings);
+  }
+}
 
 export const FieldMapper = {
   // Set a field mapping for an entity.
@@ -43,6 +75,7 @@ export const FieldMapper = {
 
   // Translate an entire record from LexAI fields to provider fields.
   toProvider(entityName, record = {}) {
+    ensureInit();
     const map = _fieldMappings[entityName];
     if (!map) return { ...record };
     const out = {};
@@ -54,6 +87,7 @@ export const FieldMapper = {
 
   // Translate an entire record from provider fields to LexAI fields.
   toLexAI(entityName, record = {}) {
+    ensureInit();
     if (!record) return record;
     const map = _fieldMappings[entityName];
     if (!map) return { ...record };
