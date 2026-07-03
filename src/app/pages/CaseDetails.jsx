@@ -103,8 +103,8 @@ export default function CaseDetails() {
   const upcomingHearing = [...(vault.hearings || [])]
     .filter((h) => new Date(h.date) >= startOfToday())
     .sort((a, b) => new Date(a.date) - new Date(b.date))[0]
-    || (c.next_hearing && new Date(c.next_hearing) >= startOfToday()
-      ? { date: c.next_hearing, purpose: 'Next Hearing', status: 'Scheduled' }
+    || (c.nextHearing && new Date(c.nextHearing) >= startOfToday()
+      ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
       : null);
 
   const hearings = [...vault.hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -130,9 +130,9 @@ export default function CaseDetails() {
             </div>
             <div className="case-details-detail-header__title">{c.title}</div>
             <div className="case-details-meta">
-              <span className="case-details-meta__item"><Icon name="building" size={13} />{c.court_name || combinedCourt(c) || '—'}</span>
+              <span className="case-details-meta__item"><Icon name="building" size={13} />{c.courtName || combinedCourt(c) || '—'}</span>
               <span className="case-details-meta__item"><Icon name="users" size={13} />{c.judge || '—'}</span>
-              <span className="case-details-meta__item"><Icon name="calendar" size={13} />{formatDate(c.filing_date)}</span>
+              <span className="case-details-meta__item"><Icon name="calendar" size={13} />{formatDate(c.filingDate)}</span>
             </div>
           </div>
 
@@ -151,7 +151,7 @@ export default function CaseDetails() {
             </div>
             <div className="case-details-detail-metric">
               <div className="case-details-detail-metric__label"><Icon name="calendar" size={13} /> Next Hearing</div>
-              <div className="case-details-detail-metric__value">{formatDate(c.next_hearing)}</div>
+              <div className="case-details-detail-metric__value">{formatDate(c.nextHearing)}</div>
             </div>
             <div className="case-details-detail-metric">
               <div className="case-details-detail-metric__label"><Icon name="alert" size={13} /> Priority</div>
@@ -256,7 +256,7 @@ export default function CaseDetails() {
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="building" size={18} /></div>
                     <span className="case-details-detail-chart__label">Court</span>
-                    <span className="case-details-detail-chart__value">{c.court_name ? (c.court_name.length > 30 ? `${c.court_name.slice(0, 30)}...` : c.court_name) : '—'}</span>
+                    <span className="case-details-detail-chart__value">{c.courtName ? (c.courtName.length > 30 ? `${c.courtName.slice(0, 30)}...` : c.courtName) : '—'}</span>
                   </div>
                   <div className="case-details-detail-chart__row">
                     <div className="case-details-detail-chart__icon"><Icon name="grid" size={18} /></div>
@@ -320,14 +320,14 @@ export default function CaseDetails() {
                       <div className="case-details-detail-dates__icon"><Icon name="calendar" size={15} /></div>
                       <span className="case-details-detail-dates__label">Filing Date</span>
                     </div>
-                    <div className="case-details-detail-dates__value">{formatDate(c.filing_date)}</div>
+                    <div className="case-details-detail-dates__value">{formatDate(c.filingDate)}</div>
                   </div>
                   <div className="case-details-detail-dates__cell">
                     <div className="case-details-detail-dates__top">
                       <div className="case-details-detail-dates__icon"><Icon name="calendar" size={15} /></div>
                       <span className="case-details-detail-dates__label">Next Hearing</span>
                     </div>
-                    <div className="case-details-detail-dates__value">{formatDate(c.next_hearing)}</div>
+                    <div className="case-details-detail-dates__value">{formatDate(c.nextHearing)}</div>
                   </div>
                   <div className="case-details-detail-dates__cell">
                     <div className="case-details-detail-dates__top">
@@ -412,7 +412,7 @@ export default function CaseDetails() {
 
           {tab === 'Court Info' && (
             <Card title="Court Info">
-              <Row label="Court Name" value={c.court_name} />
+              <Row label="Court Name" value={c.courtName} />
               <Row label="Bench Type" value={c.bench_type} />
               <Row label="Judge" value={c.judge} />
             </Card>
@@ -424,10 +424,10 @@ export default function CaseDetails() {
                 <Row label="Current Stage" value={c.stage} />
                 <Row label="Status" value={c.status} />
                 <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
-                <Row label="Filing Date" value={formatDate(c.filing_date)} />
+                <Row label="Filing Date" value={formatDate(c.filingDate)} />
                 <Row label="Registration Date" value={formatDate(c.registration_date)} />
-                <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
-                <Row label="Next Hearing Date" value={formatDate(c.next_hearing)} />
+                <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
+                <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />
                 <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
                 <Row label="Disposal / Judgment Date" value={formatDate(c.disposal_date)} />
               </Card>
@@ -502,9 +502,9 @@ export default function CaseDetails() {
               <h1>{c.case_display_number || c.caseNumber}</h1>
               <p>{c.title}</p>
               <div className="case-detail__meta-row">
-                <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{c.court_name || combinedCourt(c)}</span>
+                <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="vault" size={14} /></span>{c.courtName || combinedCourt(c)}</span>
                 <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="users" size={14} /></span>{c.judge || '—'}</span>
-                <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filing_date)}</span>
+                <span className="case-detail__meta-item"><span className="icon-soft"><Icon name="calendar" size={14} /></span>{formatDate(c.filingDate)}</span>
                 {c.case_type && <Badge tone="grey">{c.case_type}</Badge>}
               </div>
             </div>
@@ -519,7 +519,7 @@ export default function CaseDetails() {
 
           <div className="case-detail__metrics">
             <Metric icon="target" label="Current Stage" value={c.stage || '—'} />
-            <Metric icon="calendar" label="Next Hearing" value={formatDate(c.next_hearing)} />
+            <Metric icon="calendar" label="Next Hearing" value={formatDate(c.nextHearing)} />
             <Metric icon="alert" label="Priority" value={<Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority || '—'}</Badge>} flag />
             <Metric icon="file" label="Documents" value={documents.length} />
             <Metric icon="list" label="Hearings" value={hearings.length} />
@@ -548,10 +548,10 @@ export default function CaseDetails() {
                   <Row label="Case Year" value={c.case_year} />
                   <Row label="Case Type" value={c.case_type} />
                   <Row label="Case Stage" value={c.stage} />
-                  <Row label="Filing Date" value={formatDate(c.filing_date)} />
+                  <Row label="Filing Date" value={formatDate(c.filingDate)} />
                   <Row label="Plaintiff" value={c.plaintiff || c.parties?.plaintiff} />
                   <Row label="Defendant" value={c.defendant || c.parties?.defendant} />
-                  <Row label="Court Name" value={c.court_name} />
+                  <Row label="Court Name" value={c.courtName} />
                   <Row label="Bench Type" value={c.bench_type} />
                   <Row label="Judge" value={c.judge} />
                   <Row label="Status" value={c.status} />
@@ -587,11 +587,11 @@ export default function CaseDetails() {
                     <div className="case-detail__dates-grid">
                       <div className="case-detail__date-cell">
                         <div className="case-detail__date-cell-label">Filing Date</div>
-                        <div className="case-detail__date-cell-value">{formatDate(c.filing_date)}</div>
+                        <div className="case-detail__date-cell-value">{formatDate(c.filingDate)}</div>
                       </div>
                       <div className="case-detail__date-cell">
                         <div className="case-detail__date-cell-label">Next Hearing Date</div>
-                        <div className="case-detail__date-cell-value">{formatDate(c.next_hearing)}</div>
+                        <div className="case-detail__date-cell-value">{formatDate(c.nextHearing)}</div>
                       </div>
                       <div className="case-detail__date-cell">
                         <div className="case-detail__date-cell-label">Last Hearing Date</div>
@@ -674,7 +674,7 @@ export default function CaseDetails() {
 
           {tab === 'Court Info' && (
             <Card title="Court Info">
-              <Row label="Court Name" value={c.court_name} />
+              <Row label="Court Name" value={c.courtName} />
               <Row label="Bench Type" value={c.bench_type} />
               <Row label="Judge" value={c.judge} />
             </Card>
@@ -686,10 +686,10 @@ export default function CaseDetails() {
                 <Row label="Current Stage" value={c.stage} />
                 <Row label="Status" value={c.status} />
                 <Row label="Priority" value={c.priority ? <Badge tone={priorityTone[c.priority] || 'grey'}>{c.priority}</Badge> : '—'} />
-                <Row label="Filing Date" value={formatDate(c.filing_date)} />
+                <Row label="Filing Date" value={formatDate(c.filingDate)} />
                 <Row label="Registration Date" value={formatDate(c.registration_date)} />
-                <Row label="Written Statement Filing Date" value={formatDate(c.ws_filing_date)} />
-                <Row label="Next Hearing Date" value={formatDate(c.next_hearing)} />
+                <Row label="Written Statement Filing Date" value={formatDate(c.wsFilingDate)} />
+                <Row label="Next Hearing Date" value={formatDate(c.nextHearing)} />
                 <Row label="Last Hearing Date" value={lastHearing ? formatDate(lastHearing.date) : '—'} />
                 <Row label="Disposal / Judgment Date" value={formatDate(c.disposal_date)} />
               </Card>

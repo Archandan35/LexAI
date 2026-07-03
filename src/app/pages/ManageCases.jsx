@@ -176,7 +176,7 @@ export default function ManageCases() {
                 <table className="table">
                   <thead><tr>
                     <th className="manage-cases__th-check">{can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
-                    <th className="manage-cases__th-check" />
+                    <th className="manage-cases__th-check"><Icon name="star" size={13} /></th>
                     <th>Case Number</th><th>Parties</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
                   </tr></thead>
                   <tbody>
@@ -190,9 +190,9 @@ export default function ManageCases() {
                         </td>
                         <td className="manage-cases__cell-case" onClick={() => nav(`/cases/${c.id}`)}>{c.case_display_number || c.caseNumber}</td>
                         <td className="manage-cases__cell-clickable" onClick={() => nav(`/cases/${c.id}`)}>{c.title}</td>
-                        <td>{c.court_name || combinedCourt(c)}</td>
+                        <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone="navy">{c.stage}</Badge> : '—'}</td>
-                        <td>{formatDate(c.next_hearing)}</td>
+                        <td>{formatDate(c.nextHearing)}</td>
                         <td><Badge>{c.status}</Badge></td>
                         <td>
                           <div className="row-actions">
@@ -319,13 +319,13 @@ export default function ManageCases() {
 
                   <div className="cv-case-card__meta">
                     <span className="cv-case-card__court">
-                      <Icon name="building" size={13} />{c.court_name || combinedCourt(c)}
+                      <Icon name="building" size={13} />{c.courtName || combinedCourt(c)}
                     </span>
                     <span className={`cv-badge-stage${getStageVariant(c.stage) === 'defendant' ? ' cv-badge-stage--defendant' : ''}`}>
                       {c.stage || '—'}
                     </span>
                     <span className="cv-case-card__date">
-                      <Icon name="calendar" size={13} />{formatDate(c.next_hearing)}
+                      <Icon name="calendar" size={13} />{formatDate(c.nextHearing)}
                     </span>
                   </div>
                 </div>

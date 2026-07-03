@@ -507,7 +507,7 @@ export default function OrderSheet() {
     if (!text) return '';
     const c = caseData || {};
     const d = form.date ? new Date(form.date) : new Date();
-    const nd = c.next_hearing ? new Date(c.next_hearing) : null;
+    const nd = c.nextHearing ? new Date(c.nextHearing) : null;
     const today = new Date();
     return text
       .replace(/\{caseNumber\}/g, formatCaseNumber(c) || c.caseNumber || c.case_display_number || '—')
@@ -1027,7 +1027,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Filing Date</span>
-                        <span className="order-sheet__details-value">{formatDate(selCase.filing_date) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(selCase.filingDate) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Current Stage</span>
@@ -1035,7 +1035,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Next Hearing</span>
-                        <span className="order-sheet__details-value">{formatDate(selCase.next_hearing) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(selCase.nextHearing) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Judge</span>
@@ -1200,7 +1200,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Filing Date</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.filingDate) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Current Stage</span>
@@ -1208,7 +1208,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Next Hearing</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.nextHearing) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Judge</span>
@@ -1385,7 +1385,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Filing Date</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.filing_date) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.filingDate) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Current Stage</span>
@@ -1393,7 +1393,7 @@ export default function OrderSheet() {
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Next Hearing</span>
-                        <span className="order-sheet__details-value">{formatDate(history.case?.next_hearing) || '—'}</span>
+                        <span className="order-sheet__details-value">{formatDate(history.case?.nextHearing) || '—'}</span>
                       </div>
                       <div className="order-sheet__details-item">
                         <span className="order-sheet__details-label">Judge</span>

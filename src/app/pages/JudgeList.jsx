@@ -319,8 +319,8 @@ export default function JudgeList() {
   };
 
   const createdThisMonth = items.filter(i => {
-    if (!i.created_at) return false;
-    const d = new Date(i.created_at);
+    if (!i.createdAt) return false;
+    const d = new Date(i.createdAt);
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;

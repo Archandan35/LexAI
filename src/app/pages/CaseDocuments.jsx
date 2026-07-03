@@ -198,8 +198,8 @@ export default function CaseDocuments() {
     if (fileExtFilter.length > 0) arr = arr.filter((d) => fileExtFilter.includes(fileExt(d.name || '')));
     if (sortBy === 'name-az') arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     if (sortBy === 'name-za') arr.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-    if (sortBy === 'date-new') arr.sort((a, b) => new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0));
-    if (sortBy === 'date-old') arr.sort((a, b) => new Date(a.uploaded_at || 0) - new Date(b.uploaded_at || 0));
+    if (sortBy === 'date-new') arr.sort((a, b) => new Date(b.uploadedAt || b.uploaded_at || 0) - new Date(a.uploadedAt || a.uploaded_at || 0));
+    if (sortBy === 'date-old') arr.sort((a, b) => new Date(a.uploadedAt || a.uploaded_at || 0) - new Date(b.uploadedAt || b.uploaded_at || 0));
     if (sortBy === 'size') arr.sort((a, b) => (b.size || 0) - (a.size || 0));
     return arr;
   }, [visible, search, fileExtFilter, sortBy]);
