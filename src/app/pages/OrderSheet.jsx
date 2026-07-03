@@ -9,7 +9,7 @@ import CaseSelect from '@/components/CaseSelect.jsx';
 import FileDrop from '@/components/FileDrop.jsx';
 import { Field, Input, Textarea, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
-import CrudManager from '@/components/CrudManager.jsx';
+import DataTable from '@/components/DataTable.jsx';
 import OrderSheetPreviewModal from '@/components/OrderSheetPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
@@ -90,6 +90,7 @@ export default function OrderSheet() {
   const [tplOpen, setTplOpen] = useState(false);
   const [tplForm, setTplForm] = useState(EMPTY_TPL);
   const [tplEditing, setTplEditing] = useState(null);
+  const [tplViewMode, setTplViewMode] = useState(false);
   const [tplSearch, setTplSearch] = useState('');
   const [tplCategory, setTplCategory] = useState('');
   const [tplPage, setTplPage] = useState(1);
@@ -98,6 +99,14 @@ export default function OrderSheet() {
     { key: 'name', label: 'Name', sortable: true },
     { key: 'category', label: 'Category', sortable: true },
     { key: 'description', label: 'Description' },
+    { key: 'actions', label: '', width: 120, render: (row) => (
+      <div style={{ display: 'flex', gap: 2 }}>
+        <button className="order-sheet__tpl-action" title="View" onClick={(e) => { e.stopPropagation(); openTplView(row); }}><Icon name="eye" size={13} /></button>
+        <button className="order-sheet__tpl-action" title="Edit" onClick={(e) => { e.stopPropagation(); openTplEdit(row); }}><Icon name="edit" size={13} /></button>
+        <button className="order-sheet__tpl-action" title="Duplicate" onClick={(e) => { e.stopPropagation(); duplicateTpl(row); }}><Icon name="copy" size={13} /></button>
+        <button className="order-sheet__tpl-action" title="Delete" onClick={(e) => { e.stopPropagation(); deleteTpl(row); }}><Icon name="trash" size={13} /></button>
+      </div>
+    )},
   ];
 
   // Case History & Timeline views
@@ -350,7 +359,24 @@ export default function OrderSheet() {
   };
 
   // ----- Templates CRUD -----
-  const openTplNew = () => { setTplEditing(null); setTplForm(EMPTY_TPL); setTplOpen(true); };
+  const openTplNew = () => { setTplEditing(null); setTplViewMode(false); setTplForm(EMPTY_TPL); setTplOpen(true); };
+  const openTplEdit = (tpl) => { setTplEditing(tpl.id); setTplViewMode(false); setTplForm({ ...tpl }); setTplOpen(true); };
+  const openTplView = (tpl) => { setTplEditing(tpl.id); setTplViewMode(true); setTplForm({ ...tpl }); setTplOpen(true); };
+
+  const duplicateTpl = async (tpl) => {
+    const res = await templateLogic.create({ name: `${tpl.name} (Copy)`, category: tpl.category, description: tpl.description, content: tpl.content });
+    if (!res.ok) { toast.push(res.error || 'Failed to duplicate template.', 'error'); return; }
+    await loadDraftingTemplates();
+    toast.push('Template duplicated.', 'success');
+  };
+
+  const deleteTpl = async (tpl) => {
+    if (!confirm(`Delete template "${tpl.name}"?`)) return;
+    const res = await templateLogic.remove(tpl.id);
+    if (!res.ok) { toast.push(res.error || 'Failed to delete template.', 'error'); return; }
+    await loadDraftingTemplates();
+    toast.push('Template deleted.', 'success');
+  };
 
   const saveTpl = async () => {
     if (!tplForm.name || !tplForm.category) { toast.push('Name and category are required.', 'error'); return; }
@@ -770,6 +796,10 @@ export default function OrderSheet() {
                                 <Icon name="edit" size={16} />
                                 <span>Edit</span>
                               </button>
+                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); duplicateHearing(h); }} title="Duplicate">
+                                <Icon name="copy" size={15} />
+                                <span>Duplicate</span>
+                              </button>
                               <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
                                 <Icon name="trash" size={16} />
                                 <span>Delete</span>
@@ -848,31 +878,27 @@ export default function OrderSheet() {
               )}
               {tab === 'templates' && (
                 <Card bodyClass="card__body--flush">
-                  <CrudManager
+                  <DataTable
                     columns={tplColumns}
                     rows={filteredTpls}
-                    totalPages={tplTotalPages}
-                    page={tplPage}
-                    onPage={setTplPage}
                     pageSize={10}
+                    searchable
+                    searchKeys={['name', 'category', 'description']}
+                    searchPlaceholder="Search templates…"
                     emptyIcon="file"
                     emptyTitle="No templates yet."
-                    emptyAction={<Button icon="plus" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add Template</Button>}
-                    onRowClick={(row) => { setTplForm({ ...row }); setTplEditing(row.id); setTplOpen(true); }}
-                    toolbarLeft={() => (
-                      <>
-                        <Field label="" className="mb-0">
-                          <Input placeholder="Search templates…" value={tplSearch} onChange={(e) => { setTplSearch(e.target.value); setTplPage(1); }} />
-                        </Field>
+                    initialSort={{ key: 'name', dir: 'asc' }}
+                    toolbar={
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <Select value={tplCategory} onChange={(e) => { setTplCategory(e.target.value); setTplPage(1); }}>
                           <option value="">All Categories</option>
                           <option value="Hearing">Hearing</option>
                           <option value="Order">Order</option>
                           <option value="Notice">Notice</option>
                         </Select>
-                      </>
-                    )}
-                    toolbarRight={<Button icon="plus" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add Template</Button>}
+                        <Button icon="plus" size="sm" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add</Button>
+                      </div>
+                    }
                   />
                 </Card>
               )}
@@ -1322,6 +1348,12 @@ export default function OrderSheet() {
                             </span>
                           </div>
                         </div>
+                        <div className="order-sheet__tpl-actions">
+                          <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
+                          <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
+                          <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
+                          <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
+                        </div>
                       </div>
                     );
                   })}
@@ -1738,21 +1770,21 @@ export default function OrderSheet() {
         />
       )}
 
-      {/* Template creation modal */}
+      {/* Template creation/editing/viewing modal */}
       <Modal
         open={tplOpen}
-        title={tplEditing ? 'Edit Template' : 'New Template'}
+        title={tplViewMode ? 'View Template' : (tplEditing ? 'Edit Template' : 'New Template')}
         onClose={() => setTplOpen(false)}
-        footer={<><Button variant="ghost" onClick={() => setTplOpen(false)}>Cancel</Button><Button icon="save" onClick={saveTpl}>{tplEditing ? 'Update' : 'Create'}</Button></>}
+        footer={tplViewMode ? <Button variant="ghost" onClick={() => setTplOpen(false)}>Close</Button> : <><Button variant="ghost" onClick={() => setTplOpen(false)}>Cancel</Button><Button icon="save" onClick={saveTpl}>{tplEditing ? 'Update' : 'Create'}</Button></>}
       >
-        <Field label="Template Name"><Input value={tplForm.name} onChange={(e) => setTplForm({ ...tplForm, name: e.target.value })} placeholder="e.g. Legal Notice" /></Field>
+        <Field label="Template Name"><Input value={tplForm.name} onChange={(e) => setTplForm({ ...tplForm, name: e.target.value })} placeholder="e.g. Legal Notice" readOnly={tplViewMode} /></Field>
         <Field label="Category">
-          <Select value={tplForm.category} onChange={(e) => setTplForm({ ...tplForm, category: e.target.value })}>
+          <Select value={tplForm.category} onChange={(e) => setTplForm({ ...tplForm, category: e.target.value })} disabled={tplViewMode}>
             <option value="Hearing">Hearing</option>
           </Select>
         </Field>
-        <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." /></Field>
-        <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." /></Field>
+        <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." readOnly={tplViewMode} /></Field>
+        <Field label="Template Content"><Textarea value={tplForm.content} onChange={(e) => setTplForm({ ...tplForm, content: e.target.value })} placeholder="Drafting content structure..." readOnly={tplViewMode} /></Field>
       </Modal>
     </>
   );

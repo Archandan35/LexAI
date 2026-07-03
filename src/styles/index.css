@@ -10994,6 +10994,38 @@ kbd.cmd__kbd {
   padding-top: 10px;
 }
 
+.order-sheet__tpl-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.order-sheet__tpl-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.order-sheet__tpl-action:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.order-sheet__tpl-action:last-child:hover {
+  color: var(--red);
+}
+
 .order-sheet__tpl-tag {
   font-size: 11px;
   font-weight: 700;
