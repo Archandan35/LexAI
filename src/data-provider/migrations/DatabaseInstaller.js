@@ -93,8 +93,8 @@ export const databaseInstaller = {
   async installSchema(onProgress) {
     const name = this.provider();
     const provider = getDatabaseProvider();
-    const coreSchemas = listSchemas().filter((s) => s.core);
-    const totalSteps = coreSchemas.length + 2;
+    const allSchemas = listSchemas();
+    const totalSteps = allSchemas.length + 2;
     let step = 0;
 
     const report = (label, status = 'working') => {
@@ -110,7 +110,7 @@ export const databaseInstaller = {
         const current = await this.detect();
 
         if (current.partialInstall) {
-          for (const s of coreSchemas) {
+          for (const s of allSchemas) {
             report(`Create ${s.collection}`, 'done');
           }
           return {
@@ -118,7 +118,7 @@ export const databaseInstaller = {
             success: true,
             needsManual: false,
             currentStep: 'Tables ready',
-            completedSteps: coreSchemas.length,
+            completedSteps: allSchemas.length,
             totalSteps,
           };
         }
@@ -142,7 +142,7 @@ export const databaseInstaller = {
         };
       }
 
-      for (const s of coreSchemas) {
+      for (const s of allSchemas) {
         report(`Create ${s.collection}`);
         const r = await provider.ensureCollection(s.collection, s);
         if (!r || r.ok === false) {
