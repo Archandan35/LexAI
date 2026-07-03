@@ -7,7 +7,7 @@ import { Field, Input, Textarea } from '@/components/Field.jsx';
 import { userLogic } from '@/logic/userLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
-const EMPTY_FORM = { name: '', email: '', phone: '', address: '', password: '', status: 'Active' };
+const EMPTY_FORM = { name: '', email: '', phone: '', address: '', status: 'Active' };
 
 function initials(name) {
   if (!name) return '?';
@@ -50,8 +50,7 @@ export default function Advocates() {
     return items.filter((u) =>
       (u.name || '').toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q) ||
-      (u.phone || '').toLowerCase().includes(q) ||
-      (u.username || '').toLowerCase().includes(q)
+      (u.phone || '').toLowerCase().includes(q)
     );
   }, [items, search]);
 
@@ -66,11 +65,10 @@ export default function Advocates() {
 
   const save = async () => {
     if (!form.name?.trim()) { toast.error('Name is required.'); return; }
-    if (!editing && !form.password?.trim()) { toast.error('Password is required.'); return; }
     setSaving(true);
     const r = editing
       ? await userLogic.update(editing.id, { ...form, roleCode: 'advocate' })
-      : await userLogic.create({ ...form, roleCode: 'advocate' });
+      : await userLogic.create({ ...form, roleCode: 'advocate', password: crypto.randomUUID() });
     if (r && !r.error) {
       toast.success(editing ? 'Advocate updated.' : 'Advocate added.');
       setShowForm(false);
@@ -152,11 +150,7 @@ export default function Advocates() {
               <option value="Inactive">Inactive</option>
             </select>
           </Field>
-          {!editing && (
-            <Field label="Password" required>
-              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Set password" />
-            </Field>
-          )}
+
         </div>
         <Field label="Address">
           <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Address..." rows={2} />

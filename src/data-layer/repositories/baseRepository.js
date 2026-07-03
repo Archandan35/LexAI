@@ -71,9 +71,16 @@ async function grantCollectionAccess(db, collection) {
     create policy "_sequences_anon_all" on "_sequences" for all to anon using (true) with check (true);
     grant insert, select, update, delete on table "_sequences" to anon;
   `;
-  console.log('[grantAccess] running:', sql.trim());
   const res = await db.execSql(sql);
-  console.log('[grantAccess] result:', res);
+  if (res?.needsManual) {
+    console.warn('[grantAccess] exec_sql RPC not available — RLS policies not auto-created. Run installation SQL manually in Supabase SQL Editor.');
+    return false;
+  }
+  if (res?.ok === false) {
+    console.warn('[grantAccess] failed:', res.error);
+    return false;
+  }
+  console.log('[grantAccess] RLS policies applied for', table);
   // Fix incorrect FK constraint fk_case_folders_parent_id that earlier versions
   // of SchemaCompiler generated with 'case_id' instead of 'parent_id' as the
   // source column. This causes "Key is not present in table case_folders" when
@@ -85,9 +92,8 @@ async function grantCollectionAccess(db, collection) {
       alter table if exists "case_folders" drop constraint if exists "fk_case_folders_parent_id";
       select safe_create_fk('case_folders', 'parent_id', 'case_folders', 'id', 'fk_case_folders_parent_id', 'CASCADE');
     `);
-    console.log('[grantAccess] FK fix applied');
   } catch (_) {}
-  return res.ok;
+  return true;
 }
 
 export function createRepository(collection) {

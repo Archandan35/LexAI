@@ -9,6 +9,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     super();
     this.url = config.credentials.supabaseUrl;
     this.key = config.credentials.supabaseAnonKey;
+    this.serviceKey = config.credentials.supabaseServiceRoleKey;
+    this.#bootstrapped = false;
     if (!this.url || !this.key) {
       console.warn('[LexAI] Supabase not configured; provider will fail on use.');
     }
@@ -21,6 +23,103 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     };
+  }
+
+  #serviceHeaders() {
+    if (!this.serviceKey) return null;
+    return {
+      apikey: this.serviceKey,
+      Authorization: `Bearer ${this.serviceKey}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  #bootstrapSql() {
+    return `
+create or replace function exec_sql(sql text)
+returns setof jsonb
+language plpgsql
+security definer
+as $$
+begin
+  if exists (select 1 from pg_tables where tablename = 'migration_registry') then
+    insert into migration_registry (id, version, description, sql_hash, applied_at, duration_ms, success)
+    values (gen_random_uuid()::text, 0, 'exec_sql', md5(sql), now(), 0, true);
+  end if;
+  return query execute sql;
+exception
+  when others then
+    execute sql;
+    return query select '{"ok":true}'::jsonb;
+end;
+$$;
+
+create or replace function safe_ddl(sql text)
+returns void
+language plpgsql
+security definer
+as $$
+declare
+  v_upper text;
+begin
+  v_upper := upper(sql);
+  if v_upper ~ '^\\s*DROP\\s+(DATABASE|SCHEMA|TABLE|VIEW|FUNCTION|INDEX|ROLE|POLICY|TRIGGER|EXTENSION|PUBLICATION|SUBSCRIPTION)' then
+    raise exception 'safe_ddl: DROP is not permitted';
+  end if;
+  if v_upper ~ '^\\s*TRUNCATE' then raise exception 'safe_ddl: TRUNCATE is not permitted'; end if;
+  if v_upper ~ 'ALTER\\s+TABLE.*DROP\\s+(COLUMN|CONSTRAINT)' then
+    raise exception 'safe_ddl: ALTER TABLE DROP is not permitted';
+  end if;
+  if not (
+    v_upper ~ '^\\s*CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s' or
+    v_upper ~ '^\\s*CREATE\\s+INDEX\\s+IF\\s+NOT\\s+EXISTS\\s' or
+    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS' or
+    v_upper ~ 'ALTER\\s+TABLE.*ADD\\s+CONSTRAINT' or
+    v_upper ~ '^\\s*CREATE\\s+OR\\s+REPLACE\\s+FUNCTION\\s' or
+    v_upper ~ '^\\s*ALTER\\s+TABLE\\s+IF\\s+EXISTS\\s' or
+    v_upper ~ 'ALTER\\s+TABLE.*ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or
+    v_upper ~ 'ALTER\\s+TABLE.*DISABLE\\s+ROW\\s+LEVEL\\s+SECURITY' or
+    v_upper ~ '^\\s*CREATE\\s+POLICY\\s' or
+    v_upper ~ '^\\s*ALTER\\s+POLICY\\s' or
+    v_upper ~ '^\\s*DROP\\s+POLICY\\s+IF\\s+EXISTS\\s' or
+    v_upper ~ '^\\s*COMMENT\\s+ON\\s' or
+    v_upper ~ '^\\s*DO\\s+\\$\\$' or
+    v_upper ~ '^\\s*--'
+  ) then
+    raise exception 'safe_ddl: Statement does not match any allowed pattern: %', substr(sql, 1, 80);
+  end if;
+  execute sql;
+end;
+$$;
+
+grant execute on function exec_sql(text) to authenticated;
+grant execute on function exec_sql(text) to anon;
+grant execute on function safe_ddl(text) to authenticated;
+grant execute on function safe_ddl(text) to anon;
+'.trim();
+  }
+
+  async #tryBootstrapExecSql() {
+    const h = this.#serviceHeaders();
+    if (!h) return false;
+    const sql = this.#bootstrapSql();
+    try {
+      const res = await fetch(`${this.url}/pg/v1/sql`, {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ query: sql }),
+      });
+      if (!res.ok) {
+        console.warn('[Supabase] bootstrap via /pg/v1/sql failed:', res.status);
+        return false;
+      }
+      this.#bootstrapped = true;
+      console.log('[Supabase] exec_sql function bootstrapped successfully');
+      return true;
+    } catch (e) {
+      console.warn('[Supabase] bootstrap error:', e.message);
+      return false;
+    }
   }
 
   #endpoint(collection) {
@@ -73,6 +172,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   }
 
   // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).
+  // If the RPC is not available (405), tries to bootstrap the function using the
+  // service role key via /pg/v1/sql, then retries via RPC.
   async execSql(sql) {
     try {
       const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
@@ -80,16 +181,40 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
         headers: { ...this.#headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ sql }),
       });
-      if (!res.ok) return { ok: false, error: await res.text().catch(() => 'Unknown error') };
-      const body = await res.text().catch(() => '');
-      if (!body) return { ok: true };
-      try {
-        const data = JSON.parse(body);
-        // setof jsonb — PostgREST returns an array
-        return { ok: true, data: Array.isArray(data) ? data : [data] };
-      } catch {
-        return { ok: true };
+      if (res.ok) {
+        const body = await res.text().catch(() => '');
+        if (!body) return { ok: true };
+        try {
+          const data = JSON.parse(body);
+          return { ok: true, data: Array.isArray(data) ? data : [data] };
+        } catch {
+          return { ok: true };
+        }
       }
+      // 405 = function does not exist → try to bootstrap
+      if (res.status === 405 && !this.#bootstrapped) {
+        const booted = await this.#tryBootstrapExecSql();
+        if (booted) {
+          // Retry the original SQL via the now-available RPC
+          const retry = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
+            method: 'POST',
+            headers: { ...this.#headers(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sql }),
+          });
+          if (retry.ok) {
+            const body = await retry.text().catch(() => '');
+            if (!body) return { ok: true };
+            try {
+              const data = JSON.parse(body);
+              return { ok: true, data: Array.isArray(data) ? data : [data] };
+            } catch {
+              return { ok: true };
+            }
+          }
+          return { ok: false, error: await retry.text().catch(() => 'Retry failed') };
+        }
+      }
+      return { ok: false, needsManual: res.status === 405, error: await res.text().catch(() => 'Unknown error') };
     } catch (e) {
       return { ok: false, error: e.message };
     }
@@ -161,8 +286,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return null;
   }
 
-  // Try to create the table via exec_sql RPC if a schema is provided. Falls
-  // back to needsManual when the RPC doesn't exist or DDL is denied.
+  // Try to create the table via exec_sql (bootstraps if needed). Falls
+  // back to needsManual when the RPC doesn't exist and no service key is available.
   async ensureCollection(name, schema) {
     const exists = await this.collectionExists(name);
     if (exists) return { created: false, ok: true };
@@ -173,39 +298,20 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
         .map(([field, type]) => `"${field}" ${PG_TYPE_MAP[type] || 'text'}`)
         .join(', ');
       const sql = `CREATE TABLE IF NOT EXISTS "${name}" (${columns});`;
-      try {
-        const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-          method: 'POST',
-          headers: { ...this.#headers(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sql }),
-        });
-        if (res.ok) return { created: true, ok: true };
-        return { created: false, ok: false, needsManual: true, sql };
-      } catch {
-        return { created: false, ok: false, needsManual: true, sql };
-      }
+      const res = await this.execSql(sql);
+      if (res.ok) return { created: true, ok: true };
+      return { created: false, ok: false, needsManual: res.needsManual !== false, sql };
     }
 
     return { created: false, ok: false, needsManual: true };
   }
 
-  // Best-effort column creation via exec_sql RPC. If the RPC function does not
-  // exist on the Supabase project the call silently fails (DDL from the browser
-  // requires a custom pgrpc function). Returns { created, ok, sql } so callers
-  // can surface the SQL for manual execution.
+  // Best-effort column creation via exec_sql (bootstraps if needed).
   async ensureColumn(collection, column, type) {
     const sql = `ALTER TABLE "${collection}" ADD COLUMN IF NOT EXISTS "${column}" ${type};`;
-    try {
-      const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
-        method: 'POST',
-        headers: { ...this.#headers(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sql }),
-      });
-      if (res.ok) return { created: true, ok: true, sql };
-      return { created: false, ok: false, sql, needsManual: true };
-    } catch {
-      return { created: false, ok: false, sql, needsManual: true };
-    }
+    const res = await this.execSql(sql);
+    if (res.ok) return { created: true, ok: true, sql };
+    return { created: false, ok: false, sql, needsManual: res.needsManual !== false };
   }
 
   async remove(collection, id) {

@@ -26,6 +26,7 @@ export const config = {
     ollamaBaseUrl: env.VITE_OLLAMA_BASE_URL || 'http://localhost:11434',
     supabaseUrl: env.VITE_SUPABASE_URL || '',
     supabaseAnonKey: env.VITE_SUPABASE_ANON_KEY || '',
+    supabaseServiceRoleKey: env.VITE_SUPABASE_SERVICE_ROLE_KEY || '',
     mongoDataApiUrl: env.VITE_MONGO_DATA_API_URL || '',
     mongoDataApiKey: env.VITE_MONGO_DATA_API_KEY || '',
     mongoDataSource: env.VITE_MONGO_DATA_SOURCE || '',

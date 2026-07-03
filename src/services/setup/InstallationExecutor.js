@@ -10,13 +10,13 @@ export const InstallationExecutor = {
       return { ok: true, skipped: true };
     }
     const provider = getDatabaseProvider();
-    if (typeof provider.execSql !== 'function') {
-      WizardLogger.warn('exec_sql RPC not available — manual execution required');
-      return { ok: false, needsManual: true, error: 'exec_sql RPC not available' };
-    }
     try {
       if (onProgress) onProgress({ label: 'Executing installation SQL...', pct: 30 });
       const res = await provider.execSql(sql);
+      if (res?.needsManual) {
+        WizardLogger.warn('exec_sql RPC not available and no service role key configured — manual execution required');
+        return { ok: false, needsManual: true, error: 'exec_sql RPC not available. Set VITE_SUPABASE_SERVICE_ROLE_KEY for auto-install, or run the SQL manually in Supabase SQL Editor.' };
+      }
       if (res?.ok === false) {
         WizardLogger.error('SQL execution failed', res.error);
         return { ok: false, error: res.error || 'SQL execution failed' };
@@ -34,9 +34,9 @@ export const InstallationExecutor = {
 
   async executeSql(sql) {
     const provider = getDatabaseProvider();
-    if (typeof provider.execSql !== 'function') return { ok: false, needsManual: true };
     try {
       const res = await provider.execSql(sql);
+      if (res?.needsManual) return { ok: false, needsManual: true, error: 'exec_sql RPC not available' };
       return res?.ok === false ? { ok: false, error: res.error } : { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
