@@ -83,7 +83,7 @@ export default function ManageCases() {
     const sc = shortCodeMap[raw.toLowerCase()] || '';
     const cn = c.case_number || c.caseNumber;
     const cy = c.case_year;
-    if (sc && cn && cy) return `${sc} ${cn} of ${cy}`;
+    if (sc && cn && cy) return `${sc} No. ${cn} of ${cy}`;
     if (cn && cy) return `No. ${cn} of ${cy}`;
     return c.case_display_number || c.caseNumber || '';
   };

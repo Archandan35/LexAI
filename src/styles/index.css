@@ -10479,10 +10479,12 @@ kbd.cmd__kbd {
 /* ---- Searchable Select (fixed dropdown) ---- */
 .searchable-select {
   width: 100%;
+  position: relative;
 }
 
 .searchable-select .input {
   width: 100%;
+  cursor: text;
 }
 
 .searchable-select__dropdown {

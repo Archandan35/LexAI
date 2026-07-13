@@ -41,7 +41,6 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
     setDropdownStyle({
       position: 'fixed',
       left: rect.left + 'px',
-      width: rect.width + 'px',
       top: top + 'px',
       zIndex: 9999,
     });
@@ -71,7 +70,7 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
   }, [filtered, focusedIdx, select]);
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative', ...style }} className="searchable-select">
+    <div ref={wrapperRef} style={style} className="searchable-select">
       <input
         ref={inputRef}
         className="input"
@@ -80,7 +79,7 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
         onFocus={() => { setOpen(true); }}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); setFocusedIdx(-1); }}
         onKeyDown={handleKey}
-        style={{ cursor: 'text', caretColor: open ? 'auto' : 'transparent' }}
+        style={{ caretColor: open ? 'auto' : 'transparent' }}
         readOnly={!open}
       />
       {open && (
