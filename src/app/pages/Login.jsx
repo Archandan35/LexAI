@@ -7,10 +7,7 @@ import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
-
 export default function Login() {
-  const { logs, clearLogs, copyLogs } = useLogCapture();
   const { login, isAuthenticated } = useAuth();
   const { settings } = useSettings();
   const nav = useNavigate();
@@ -96,7 +93,6 @@ export default function Login() {
 
         <div className="auth-note">Client-side demo auth — not production-secure. All other users are created in User Management.</div>
 
-        <DebugPanel logs={logs} error={error} onClear={clearLogs} onCopy={copyLogs} />
       </div>
     </div>
   );

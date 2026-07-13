@@ -26,8 +26,7 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
-import ApiDebugLog, { useApiLog } from '@/components/ApiDebugLog.jsx';
+
 
 const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
@@ -132,8 +131,7 @@ export default function CreateCase() {
   const { user } = useAuth();
   const toast = useToast();
   const nav = useNavigate();
-  const { logs, clearLogs, copyLogs } = useLogCapture();
-  const { entries: apiLogs, add: addApiLog, clear: clearApiLogs } = useApiLog();
+
 
   const { caseTypes, refresh: refreshCaseTypes } = useCaseTypes();
   const { names: stageNames, refresh: refreshStages } = useCaseStages();
@@ -148,15 +146,11 @@ export default function CreateCase() {
 
   useEffect(() => {
     clientLogic.list().then((r) => {
-      const ok = Array.isArray(r);
-      setClients(ok ? r : []);
-      addApiLog(ok ? 'success' : 'error', `loadClients: ${ok ? r.length : 'failed'}`);
-    }).catch((e) => { setClients([]); addApiLog('error', 'loadClients exception', e?.message); });
+      setClients(Array.isArray(r) ? r : []);
+    }).catch(() => { setClients([]); });
     userLogic.list().then((r) => {
-      const ok = Array.isArray(r);
-      setUsers(ok ? r : []);
-      addApiLog(ok ? 'success' : 'error', `loadUsers: ${ok ? r.length : 'failed'}`);
-    }).catch((e) => { setUsers([]); addApiLog('error', 'loadUsers exception', e?.message); });
+      setUsers(Array.isArray(r) ? r : []);
+    }).catch(() => { setUsers([]); });
   }, []);
 
   const [form, setForm] = useState({ ...INITIAL_FORM });
@@ -242,25 +236,19 @@ export default function CreateCase() {
     setSaving(true);
     try {
       const payload = buildPayload(draft);
-      addApiLog('info', 'Creating case...', payload);
       const result = await caseLogic.create(payload, user);
       if (result?.id) {
-        addApiLog('success', `Case created: ${result.case_number || result.id}`, result);
         const targetFolder = !autoCreateFolder && form.document_folder ? form.document_folder : (result.caseNumber || result.case_display_number || 'Miscellaneous');
         for (const file of selectedFiles) {
-          addApiLog('info', `Uploading: ${file.name}`);
-          const ur = await fileLogic.uploadDocument(file, { caseId: result.id, folder: targetFolder }, user);
-          if (ur.ok) addApiLog('success', `Uploaded: ${file.name}`, ur.data);
-          else addApiLog('error', `Upload failed: ${file.name}`, ur.error);
+          await fileLogic.uploadDocument(file, { caseId: result.id, folder: targetFolder }, user);
         }
         toast.success(draft ? 'Draft saved!' : 'Case created successfully!');
         resetForm();
-      } else { addApiLog('error', 'createCase: result has no id', result); toast.error('Failed to create case.'); }
+      } else { toast.error('Failed to create case.'); }
     } catch (e) {
-      addApiLog('error', 'createCase exception', { message: e?.message, stack: e?.stack });
       toast.error(e?.message || 'An error occurred.');
     } finally { setSaving(false); }
-  }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, addApiLog, autoCreateFolder]);
+  }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, autoCreateFolder]);
 
   /* Options */
   const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
@@ -599,8 +587,6 @@ export default function CreateCase() {
           <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Cases'}
         </button>
       </div>
-      <ApiDebugLog entries={apiLogs} onClear={clearApiLogs} />
-      <DebugPanel logs={logs} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ACTIONS = [
@@ -34,7 +33,6 @@ const ENTITY_PREFIX = 'ST';
 
 export default function CaseStages() {
   const toast = useToast();
-  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -822,7 +820,6 @@ export default function CaseStages() {
         )}
       {!search && <div className="muted cmp-drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
 
-      <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }

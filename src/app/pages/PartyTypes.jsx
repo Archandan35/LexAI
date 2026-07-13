@@ -7,7 +7,7 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Card from '@/components/Card.jsx';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
+
 
 const ENTITY_PREFIX = 'PT';
 
@@ -71,7 +71,6 @@ export default function PartyTypes() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const { logs } = useLogCapture(lastError, lastResult);
   const [confirmState, setConfirmState] = useState(null);
 
   const reset = () => {
@@ -886,7 +885,6 @@ export default function PartyTypes() {
             onCancel={confirmState.onCancel}
           />
         )}
-        <DebugPanel logs={logs} />
     </div>
   );
 }

@@ -2,10 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { MODULE_MAP } from '@/constants/permissions.js';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
-
 export default function AccessDenied() {
-  const { logs, clearLogs, copyLogs } = useLogCapture();
   const nav = useNavigate();
   const { state } = useLocation();
   const moduleLabel = state?.module ? (MODULE_MAP[state.module]?.label || state.module) : null;
@@ -25,7 +22,6 @@ export default function AccessDenied() {
           <Button variant="ghost" icon="arrow" onClick={() => nav(-1)}>Go back</Button>
           <Button variant="primary" icon="grid" onClick={() => nav('/')}>Dashboard</Button>
         </div>
-        <DebugPanel logs={logs} onClear={clearLogs} onCopy={copyLogs} />
       </div>
     </div>
   );

@@ -10,12 +10,9 @@ import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
-
 const TIMEOUT_MS = 10000;
 
 export default function AdminSetup() {
-  const { logs, clearLogs, copyLogs } = useLogCapture();
   const { refreshUser } = useAuth();
   const { settings } = useSettings();
   const nav = useNavigate();
@@ -276,7 +273,6 @@ export default function AdminSetup() {
         <div className="auth-note">
           Once created, this account will have full access. Keep these credentials secure.
         </div>
-        <DebugPanel logs={logs} error={error} onClear={clearLogs} onCopy={copyLogs} />
       </div>
     </div>
   );

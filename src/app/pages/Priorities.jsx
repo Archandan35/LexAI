@@ -5,7 +5,6 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { priorityLogic } from '@/logic/priorityLogic.js';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'PR';
@@ -75,8 +74,6 @@ export default function Priorities() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const { logs } = useLogCapture(lastError, lastResult);
-
   const load = async () => {
     setLoading(true);
     const res = await priorityLogic.list();
@@ -923,7 +920,6 @@ export default function Priorities() {
             onCancel={confirmState.onCancel}
           />
         )}
-        <DebugPanel logs={logs} />
     </div>
   );
 }

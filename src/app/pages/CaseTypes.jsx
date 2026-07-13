@@ -5,7 +5,6 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import Card from '@/components/Card.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'CT';
@@ -35,7 +34,6 @@ const SUB_MODES = {
 export default function CaseTypes() {
   const { caseTypes, loading, refresh } = useCaseTypes();
   const toast = useToast();
-  const { logs, clearLogs, copyLogs } = useLogCapture();
   const [search, setSearch] = useState('');
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
@@ -855,7 +853,6 @@ export default function CaseTypes() {
       )}
       {!search && <div className="muted cmp-drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
 
-      <DebugPanel logs={logs} error={lastError} result={lastResult} onClear={clearLogs} onCopy={copyLogs} />
     </div>
   );
 }

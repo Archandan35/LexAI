@@ -6,7 +6,7 @@ import Bottombar from './Bottombar.jsx';
 import { keepAliveService } from '@/services/keepAliveService.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
-import DebugOverlay from '@/components/DebugOverlay.jsx';
+
 
 // AppLayout — the shell. Holds sidebar collapse/mobile state and renders the
 // active page via <Outlet/>. Contains zero business logic.
@@ -51,7 +51,6 @@ export default function AppLayout() {
             {settings.mainUrl && <span> · <a href={settings.mainUrl} target="_blank" rel="noopener noreferrer" className="app-footer__link">{settings.mainUrl}</a></span>}
           </footer>
         </div>
-        {debugMode && <DebugOverlay />}
       </div>
       <Bottombar />
     </>

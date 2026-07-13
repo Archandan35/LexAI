@@ -5,7 +5,6 @@ import Icon from '@/components/Icon.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { judgeLogic } from '@/logic/judgeLogic.js';
-import DebugPanel, { useLogCapture } from '@/components/DebugPanel.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const ENTITY_PREFIX = 'J';
@@ -72,7 +71,6 @@ export default function JudgeList() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [lastError, setLastError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const { logs } = useLogCapture(lastError, lastResult);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
 
@@ -895,7 +893,6 @@ export default function JudgeList() {
           onCancel={confirmState.onCancel}
         />
       )}
-      <DebugPanel logs={logs} />
     </div>
   );
 }
