@@ -13746,6 +13746,10 @@ kbd.cmd__kbd {
 
 /* ---- Dialogs & Popups ---- */
 @media (max-width: 991px) {
+  .modal-overlay {
+    padding-bottom: 100px;
+  }
+
   .modal {
     max-width: calc(100vw - 24px);
     margin: 12px;
@@ -13772,6 +13776,10 @@ kbd.cmd__kbd {
 }
 
 @media (max-width: 767px) {
+  .modal-overlay {
+    padding-bottom: 100px;
+  }
+
   .modal {
     max-width: calc(100vw - 12px);
     margin: 6px;
