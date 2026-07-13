@@ -251,7 +251,7 @@ export default function CreateCase() {
   }, [validate, buildPayload, form.document_folder, selectedFiles, user, toast, resetForm, autoCreateFolder]);
 
   /* Options */
-  const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.name }));
+  const caseTypeOptions = caseTypes.map((ct) => ({ value: ct.name, label: ct.short_code ? `${ct.short_code} - ${ct.name}` : ct.name }));
   const hierarchyOptions = courts.map((h) => ({ value: h, label: h }));
   const benchTypeOptions = benchTypes.map((b) => ({ value: b, label: b }));
   const jurisdictionOptions = jurisdictions.map((j) => ({ value: j, label: j }));
