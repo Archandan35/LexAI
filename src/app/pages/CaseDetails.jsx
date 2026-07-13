@@ -14,11 +14,7 @@ import NotesPanel from '@/components/NotesPanel.jsx';
 import CaseTimeline from '@/components/CaseTimeline.jsx';
 import RemindersPanel from '@/components/RemindersPanel.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
-import { Field, Input, Select, Textarea } from '@/components/Field.jsx';
-import FileDrop from '@/components/FileDrop.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
-import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
-import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { combinedCourt } from '@/utils/caseFormat.js';
@@ -26,6 +22,7 @@ import { exportJson } from '@/utils/exportData.js';
 import { formatDate, formatDateTime, stripHtml } from '@/utils/format.js';
 import { DateEngine } from '@/core/DateEngine.js';
 import { usePriorities } from '@/hooks/usePriorities.js';
+import HearingFormModal from '@/components/HearingFormModal.jsx';
 
 const TABS = ['Overview', 'Parties', 'Court Info', 'Case Tracking', 'Identifiers', 'Documents', 'Hearings', 'Timeline', 'Notes', 'History'];
 
@@ -60,34 +57,6 @@ export default function CaseDetails() {
   }, [params, setParams]);
 
   const [hearingOpen, setHearingOpen] = useState(false);
-  const [hearingForm, setHearingForm] = useState({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' });
-  const [hearingBusy, setHearingBusy] = useState(false);
-
-  const saveHearing = async () => {
-    if (!hearingForm.date) { toast.push('Date is required.', 'error'); return; }
-    setHearingBusy(true);
-    try {
-      const payload = { ...hearingForm, caseId: id };
-      const r = await orderSheetLogic.addHearing(payload);
-      if (!r.ok) { toast.push(r.error || 'Failed to add hearing.', 'error'); return; }
-      setHearingOpen(false);
-      setHearingForm({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' });
-      if (hearingForm.nextHearingDate) {
-        await caseLogic.update(id, { next_hearing: hearingForm.nextHearingDate }, user);
-      }
-      toast.push('Hearing added.', 'success');
-      load();
-    } catch (e) {
-      toast.push(e?.message || 'An unexpected error occurred.', 'error');
-    }
-    setHearingBusy(false);
-  };
-
-  const onHearingFile = async (file) => {
-    const rec = await fileLogic.uploadDocument(file, { caseId: id, folder: 'Hearing' });
-    setHearingForm((f) => ({ ...f, docRef: rec.ref, docName: rec.name }));
-    toast.push('File attached.', 'success');
-  };
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -808,55 +777,12 @@ export default function CaseDetails() {
         <CaseForm initial={c} onSubmit={saveEdit} onCancel={() => setEditing(false)} busy={busy} submitLabel="Update Case" caseDocuments={documents} />
       </Modal>
 
-      <Modal
+      <HearingFormModal
         open={hearingOpen}
-        title="Add Hearing"
-        onClose={() => { setHearingOpen(false); setHearingForm({ date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', judge: '', notes: '' }); }}
-        footer={<><Button variant="ghost" onClick={() => setHearingOpen(false)}>Cancel</Button><Button icon="save" onClick={saveHearing} busy={hearingBusy}>Add</Button></>}
-      >
-        <div className="hearing-form">
-          <div className="input-row">
-            <Field label="Hearing Date">
-              <Input type="date" value={hearingForm.date} onChange={(e) => setHearingForm({ ...hearingForm, date: e.target.value })} />
-            </Field>
-            <Field label="Status">
-              <Input value={hearingForm.status} onChange={(e) => setHearingForm({ ...hearingForm, status: e.target.value })} placeholder="e.g. Scheduled, Completed" />
-            </Field>
-          </div>
-          <div className="input-row">
-            <Field label="Purpose">
-              <Input value={hearingForm.purpose} onChange={(e) => setHearingForm({ ...hearingForm, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
-            </Field>
-            <Field label="Next Hearing Date">
-              <Input type="date" value={hearingForm.nextHearingDate} onChange={(e) => setHearingForm({ ...hearingForm, nextHearingDate: e.target.value })} />
-            </Field>
-          </div>
-          <div className="input-row">
-            <Field label="Posted For">
-              <Input value={hearingForm.postedFor} onChange={(e) => setHearingForm({ ...hearingForm, postedFor: e.target.value })} placeholder="e.g. Arguments" />
-            </Field>
-            <Field label="Judge">
-              <Input value={hearingForm.judge || c.judge || ''} onChange={(e) => setHearingForm({ ...hearingForm, judge: e.target.value })} placeholder="Judge name" />
-            </Field>
-          </div>
-          <Field label="Proceedings">
-            <Textarea value={hearingForm.notes} onChange={(e) => setHearingForm({ ...hearingForm, notes: e.target.value })} placeholder="Hearing proceedings, orders, or notes…" rows={4} />
-          </Field>
-          <Field label="Attachment">
-            {hearingForm.docName ? (
-              <div className="list-row">
-                <div className="list-row__icon"><Icon name="file" size={15} /></div>
-                <div className="flex-1">{hearingForm.docName}</div>
-                <button className="btn btn--danger btn--sm" onClick={() => setHearingForm({ ...hearingForm, docRef: null, docName: '' })}>
-                  <Icon name="close" size={13} />
-                </button>
-              </div>
-            ) : (
-              <FileDrop onFile={onHearingFile} hint="Attach hearing document" />
-            )}
-          </Field>
-        </div>
-      </Modal>
+        onClose={() => setHearingOpen(false)}
+        onSaved={load}
+        initialCaseId={id}
+      />
 
       <Modal
         open={showDeleteDlg}

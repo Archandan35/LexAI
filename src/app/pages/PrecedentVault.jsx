@@ -39,7 +39,7 @@ export default function PrecedentVault() {
       </div>
       <Card title="Saved Precedents">
         <div className="search-row"><Input className="search-row__input" placeholder="Search by title or citation..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
+        {loading ? <div className="loading-block"><span className="spinner" /></div> : filtered.length === 0 ? (
           <div className="empty-state"><Icon name="bookmark" /><p>No precedents saved yet.</p></div>
         ) : (
           <table className="data-table"><thead><tr><th>Title</th><th>Citation</th><th>Court</th><th>Date</th><th>Favorite</th></tr></thead>

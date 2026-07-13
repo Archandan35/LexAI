@@ -31,7 +31,7 @@ export default function VersionControl() {
       <PageHeader icon="history" title="Version Control" subtitle="Track revisions and document versions." />
       <Card title="Version History">
         {loading ? (
-          <p className="loading-text">Loading...</p>
+          <div className="loading-block"><span className="spinner" /></div>
         ) : versions.length === 0 ? (
           <div className="empty-state">
             <Icon name="history" size={24} />

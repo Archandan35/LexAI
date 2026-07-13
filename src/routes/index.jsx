@@ -85,7 +85,7 @@ const G = (module, element) => <RequireAuth module={module}>{element}</RequireAu
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading…</div>}>
+    <Suspense fallback={<div className="loading-block"><span className="spinner" /></div>}>
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login />} />

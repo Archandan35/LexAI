@@ -53,7 +53,7 @@ export default function PerformanceAnalytics() {
       <div className="grid-2">
         <Card title="System Metrics">
           {loading ? (
-            <p className="loading-text">Loading...</p>
+            <div className="loading-block"><span className="spinner" /></div>
           ) : (
             <table className="data-table">
               <thead>

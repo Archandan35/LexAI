@@ -43,7 +43,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
           <Button onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : addLabel}</Button>
         </div>
         {showForm && renderForm({ load, setShowForm })}
-        {loading ? <p className="loading-text">Loading...</p> : filtered.length === 0 ? (
+        {loading ? <div className="loading-block"><span className="spinner" /></div> : filtered.length === 0 ? (
           <div className="empty-state"><Icon name={icon} /><p>{emptyText}</p></div>
         ) : (
           <table className="data-table">

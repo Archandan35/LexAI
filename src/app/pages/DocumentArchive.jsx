@@ -42,7 +42,7 @@ export default function DocumentArchive() {
           />
         </div>
         {loading ? (
-          <p className="loading-text">Loading...</p>
+          <div className="loading-block"><span className="spinner" /></div>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
             <Icon name="folder" size={24} />

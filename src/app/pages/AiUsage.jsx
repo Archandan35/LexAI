@@ -77,7 +77,7 @@ export default function AiUsage() {
           </div>
           <Card title="Usage Log">
             {loading ? (
-              <p className="loading-text">Loading...</p>
+              <div className="loading-block"><span className="spinner" /></div>
             ) : logs.length === 0 ? (
               <div className="empty-state">
                 <Icon name="clock" size={24} />
@@ -137,7 +137,7 @@ export default function AiUsage() {
           <div className="grid-2">
             <Card title="Usage by Model">
               {loading ? (
-                <p className="loading-text">Loading...</p>
+                <div className="loading-block"><span className="spinner" /></div>
               ) : Object.keys(byModel).length === 0 ? (
                 <p>No data.</p>
               ) : (
