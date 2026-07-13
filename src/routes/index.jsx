@@ -1,89 +1,91 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout.jsx';
 import RequireAuth from '@/components/RequireAuth.jsx';
 
-import Login from '@/app/pages/Login.jsx';
-import Register from '@/app/pages/Register.jsx';
-import ForgotPassword from '@/app/pages/ForgotPassword.jsx';
-import ResetPassword from '@/app/pages/ResetPassword.jsx';
-import VerifyAccount from '@/app/pages/VerifyAccount.jsx';
-import AccessDenied from '@/app/pages/AccessDenied.jsx';
-import TemplatesLibrary from '@/app/pages/TemplatesLibrary.jsx';
-import LegalNotices from '@/app/pages/LegalNotices.jsx';
-import VersionControl from '@/app/pages/VersionControl.jsx';
-import DocumentArchive from '@/app/pages/DocumentArchive.jsx';
-import Calendar from '@/app/pages/Calendar.jsx';
-import Clients from '@/app/pages/Clients.jsx';
-import Advocates from '@/app/pages/Advocates.jsx';
-import Contacts from '@/app/pages/Contacts.jsx';
-import CaseDocuments from '@/app/pages/CaseDocuments.jsx';
-import ActLibrary from '@/app/pages/ActLibrary.jsx';
-import JudgmentLibrary from '@/app/pages/JudgmentLibrary.jsx';
-import PrecedentVault from '@/app/pages/PrecedentVault.jsx';
-import CreateCase from '@/app/pages/CreateCase.jsx';
+const Login = lazy(() => import('@/app/pages/Login.jsx'));
+const Register = lazy(() => import('@/app/pages/Register.jsx'));
+const ForgotPassword = lazy(() => import('@/app/pages/ForgotPassword.jsx'));
+const ResetPassword = lazy(() => import('@/app/pages/ResetPassword.jsx'));
+const VerifyAccount = lazy(() => import('@/app/pages/VerifyAccount.jsx'));
+const AccessDenied = lazy(() => import('@/app/pages/AccessDenied.jsx'));
+const TemplatesLibrary = lazy(() => import('@/app/pages/TemplatesLibrary.jsx'));
+const LegalNotices = lazy(() => import('@/app/pages/LegalNotices.jsx'));
+const VersionControl = lazy(() => import('@/app/pages/VersionControl.jsx'));
+const DocumentArchive = lazy(() => import('@/app/pages/DocumentArchive.jsx'));
+const Calendar = lazy(() => import('@/app/pages/Calendar.jsx'));
+const Clients = lazy(() => import('@/app/pages/Clients.jsx'));
+const Advocates = lazy(() => import('@/app/pages/Advocates.jsx'));
+const Contacts = lazy(() => import('@/app/pages/Contacts.jsx'));
+const CaseDocuments = lazy(() => import('@/app/pages/CaseDocuments.jsx'));
+const ActLibrary = lazy(() => import('@/app/pages/ActLibrary.jsx'));
+const JudgmentLibrary = lazy(() => import('@/app/pages/JudgmentLibrary.jsx'));
+const PrecedentVault = lazy(() => import('@/app/pages/PrecedentVault.jsx'));
+const CreateCase = lazy(() => import('@/app/pages/CreateCase.jsx'));
 
-import Dashboard from '@/app/pages/Dashboard.jsx';
-import DraftingStudio from '@/app/pages/DraftingStudio.jsx';
-import CitationSearch from '@/app/pages/CitationSearch.jsx';
-import CitationVerify from '@/app/pages/CitationVerify.jsx';
-import LegalResearch from '@/app/pages/LegalResearch.jsx';
-import CaseAnalysis from '@/app/pages/CaseAnalysis.jsx';
-import StrategyEngine from '@/app/pages/StrategyEngine.jsx';
-import CrossExamination from '@/app/pages/CrossExamination.jsx';
-import EvidenceGap from '@/app/pages/EvidenceGap.jsx';
-import DocumentReview from '@/app/pages/DocumentReview.jsx';
-import CaseTimeline from '@/app/pages/CaseTimeline.jsx';
-import HearingNotes from '@/app/pages/HearingNotes.jsx';
-import ManageCases from '@/app/pages/ManageCases.jsx';
-import CaseDetails from '@/app/pages/CaseDetails.jsx';
-import OrderSheet from '@/app/pages/OrderSheet.jsx';
+const Dashboard = lazy(() => import('@/app/pages/Dashboard.jsx'));
+const DraftingStudio = lazy(() => import('@/app/pages/DraftingStudio.jsx'));
+const CitationSearch = lazy(() => import('@/app/pages/CitationSearch.jsx'));
+const CitationVerify = lazy(() => import('@/app/pages/CitationVerify.jsx'));
+const LegalResearch = lazy(() => import('@/app/pages/LegalResearch.jsx'));
+const CaseAnalysis = lazy(() => import('@/app/pages/CaseAnalysis.jsx'));
+const StrategyEngine = lazy(() => import('@/app/pages/StrategyEngine.jsx'));
+const CrossExamination = lazy(() => import('@/app/pages/CrossExamination.jsx'));
+const EvidenceGap = lazy(() => import('@/app/pages/EvidenceGap.jsx'));
+const DocumentReview = lazy(() => import('@/app/pages/DocumentReview.jsx'));
+const CaseTimeline = lazy(() => import('@/app/pages/CaseTimeline.jsx'));
+const HearingNotes = lazy(() => import('@/app/pages/HearingNotes.jsx'));
+const ManageCases = lazy(() => import('@/app/pages/ManageCases.jsx'));
+const CaseDetails = lazy(() => import('@/app/pages/CaseDetails.jsx'));
+const OrderSheet = lazy(() => import('@/app/pages/OrderSheet.jsx'));
 
-import NotFound from '@/app/pages/NotFound.jsx';
+const NotFound = lazy(() => import('@/app/pages/NotFound.jsx'));
 
-import UserManagement from '@/app/pages/UserManagement.jsx';
-import UserDetails from '@/app/pages/UserDetails.jsx';
-import RoleManagement from '@/app/pages/RoleManagement.jsx';
-import RoleDetails from '@/app/pages/RoleDetails.jsx';
-import PermissionManager from '@/app/pages/PermissionManager.jsx';
-import StorageSettings from '@/app/pages/StorageSettings.jsx';
-import EnvApiManager from '@/app/pages/EnvApiManager.jsx';
-import SetupWizard from '@/app/pages/SetupWizard.jsx';
-import AdminSetup from '@/app/pages/AdminSetup.jsx';
-import SecuritySettings from '@/app/pages/SecuritySettings.jsx';
-import SystemSettings from '@/app/pages/SystemSettings.jsx';
-import CaseTypes from '@/app/pages/CaseTypes.jsx';
-import AiAssistant from '@/app/pages/AiAssistant.jsx';
-import PromptLibrary from '@/app/pages/PromptLibrary.jsx';
-import AiUsage from '@/app/pages/AiUsage.jsx';
-import CaseReports from '@/app/pages/CaseReports.jsx';
-import CourtReports from '@/app/pages/CourtReports.jsx';
-import UserActivity from '@/app/pages/UserActivity.jsx';
-import BenchTypes from '@/app/pages/BenchTypes.jsx';
-import Courts from '@/app/pages/Courts.jsx';
-import Jurisdictions from '@/app/pages/Jurisdictions.jsx';
-import CaseStages from '@/app/pages/CaseStages.jsx';
-import Priorities from '@/app/pages/Priorities.jsx';
-import CaseStatuses from '@/app/pages/CaseStatuses.jsx';
-import JudgeList from '@/app/pages/JudgeList.jsx';
-import PartyTypes from '@/app/pages/PartyTypes.jsx';
-import PerformanceAnalytics from '@/app/pages/PerformanceAnalytics.jsx';
-import CustomReports from '@/app/pages/CustomReports.jsx';
-import DatabaseCenter from '@/app/pages/database-center/DatabaseCenter.jsx';
-import DmcDashboard from '@/app/pages/database-center/DmcDashboard.jsx';
-import DmcDataExplorer from '@/app/pages/database-center/DmcDataExplorer.jsx';
-import DmcDeleteManager from '@/app/pages/database-center/DmcDeleteManager.jsx';
-import DmcImportCenter from '@/app/pages/database-center/DmcImportCenter.jsx';
-import DmcExportCenter from '@/app/pages/database-center/DmcExportCenter.jsx';
-import DmcBackupRecovery from '@/app/pages/database-center/DmcBackupRecovery.jsx';
-import DmcMaintenance from '@/app/pages/database-center/DmcMaintenance.jsx';
-import DmcMigration from '@/app/pages/database-center/DmcMigration.jsx';
-import DmcAuditActivity from '@/app/pages/database-center/DmcAuditActivity.jsx';
-import TestDesignPage from '@/app/pages/TestDesignPage.jsx';
+const UserManagement = lazy(() => import('@/app/pages/UserManagement.jsx'));
+const UserDetails = lazy(() => import('@/app/pages/UserDetails.jsx'));
+const RoleManagement = lazy(() => import('@/app/pages/RoleManagement.jsx'));
+const RoleDetails = lazy(() => import('@/app/pages/RoleDetails.jsx'));
+const PermissionManager = lazy(() => import('@/app/pages/PermissionManager.jsx'));
+const StorageSettings = lazy(() => import('@/app/pages/StorageSettings.jsx'));
+const EnvApiManager = lazy(() => import('@/app/pages/EnvApiManager.jsx'));
+const SetupWizard = lazy(() => import('@/app/pages/SetupWizard.jsx'));
+const AdminSetup = lazy(() => import('@/app/pages/AdminSetup.jsx'));
+const SecuritySettings = lazy(() => import('@/app/pages/SecuritySettings.jsx'));
+const SystemSettings = lazy(() => import('@/app/pages/SystemSettings.jsx'));
+const CaseTypes = lazy(() => import('@/app/pages/CaseTypes.jsx'));
+const AiAssistant = lazy(() => import('@/app/pages/AiAssistant.jsx'));
+const PromptLibrary = lazy(() => import('@/app/pages/PromptLibrary.jsx'));
+const AiUsage = lazy(() => import('@/app/pages/AiUsage.jsx'));
+const CaseReports = lazy(() => import('@/app/pages/CaseReports.jsx'));
+const CourtReports = lazy(() => import('@/app/pages/CourtReports.jsx'));
+const UserActivity = lazy(() => import('@/app/pages/UserActivity.jsx'));
+const BenchTypes = lazy(() => import('@/app/pages/BenchTypes.jsx'));
+const Courts = lazy(() => import('@/app/pages/Courts.jsx'));
+const Jurisdictions = lazy(() => import('@/app/pages/Jurisdictions.jsx'));
+const CaseStages = lazy(() => import('@/app/pages/CaseStages.jsx'));
+const Priorities = lazy(() => import('@/app/pages/Priorities.jsx'));
+const CaseStatuses = lazy(() => import('@/app/pages/CaseStatuses.jsx'));
+const JudgeList = lazy(() => import('@/app/pages/JudgeList.jsx'));
+const PartyTypes = lazy(() => import('@/app/pages/PartyTypes.jsx'));
+const PerformanceAnalytics = lazy(() => import('@/app/pages/PerformanceAnalytics.jsx'));
+const CustomReports = lazy(() => import('@/app/pages/CustomReports.jsx'));
+const DatabaseCenter = lazy(() => import('@/app/pages/database-center/DatabaseCenter.jsx'));
+const DmcDashboard = lazy(() => import('@/app/pages/database-center/DmcDashboard.jsx'));
+const DmcDataExplorer = lazy(() => import('@/app/pages/database-center/DmcDataExplorer.jsx'));
+const DmcDeleteManager = lazy(() => import('@/app/pages/database-center/DmcDeleteManager.jsx'));
+const DmcImportCenter = lazy(() => import('@/app/pages/database-center/DmcImportCenter.jsx'));
+const DmcExportCenter = lazy(() => import('@/app/pages/database-center/DmcExportCenter.jsx'));
+const DmcBackupRecovery = lazy(() => import('@/app/pages/database-center/DmcBackupRecovery.jsx'));
+const DmcMaintenance = lazy(() => import('@/app/pages/database-center/DmcMaintenance.jsx'));
+const DmcMigration = lazy(() => import('@/app/pages/database-center/DmcMigration.jsx'));
+const DmcAuditActivity = lazy(() => import('@/app/pages/database-center/DmcAuditActivity.jsx'));
+const TestDesignPage = lazy(() => import('@/app/pages/TestDesignPage.jsx'));
 
 const G = (module, element) => <RequireAuth module={module}>{element}</RequireAuth>;
 
 export default function AppRoutes() {
   return (
+    <Suspense fallback={<div className="page-loading">Loading…</div>}>
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
@@ -226,5 +228,6 @@ export default function AppRoutes() {
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }

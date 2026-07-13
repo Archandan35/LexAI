@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import Bottombar from './Bottombar.jsx';
-import { BackupManager } from '@/logic/BackupManager.js';
 import { keepAliveService } from '@/services/keepAliveService.js';
 import { useDebug } from '@/data-layer/DebugContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
@@ -18,7 +17,11 @@ export default function AppLayout() {
   const { settings } = useSettings();
 
   // Best-effort scheduled-backup catch-up once per authenticated session load.
-  useEffect(() => { BackupManager.runDue(null).catch(() => {}); }, []);
+  useEffect(() => {
+    import('@/logic/BackupManager.js').then(({ BackupManager }) => {
+      BackupManager.runDue(null).catch(() => {});
+    });
+  }, []);
 
   // Lightweight keep-alive ping to prevent Supabase project from becoming inactive.
   useEffect(() => { keepAliveService.start(); return () => keepAliveService.stop(); }, []);
