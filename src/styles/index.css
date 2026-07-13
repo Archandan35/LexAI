@@ -14596,7 +14596,7 @@ kbd.cmd__kbd {
   .order-sheet-preview-modal {
     max-width: 100%;
     border-radius: 24px 24px 0 0;
-    max-height: 90vh;
+    max-height: 70vh;
     align-self: end;
     margin-bottom: 0;
   }
@@ -14986,7 +14986,7 @@ kbd.cmd__kbd {
 /* ---- Hearing Preview Modal (Phone only) ---- */
 @media (max-width: 480px) {
   .order-sheet-preview-modal {
-    max-height: 94vh;
+    max-height: 70vh;
   }
 
   .hpm-drag-handle {
