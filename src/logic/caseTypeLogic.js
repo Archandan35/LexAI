@@ -26,6 +26,9 @@ export const caseTypeLogic = {
       if (existing.some((t) => t.short_code.toLowerCase() === shortCode.toLowerCase())) {
         return fail(`A case type with short code "${shortCode}" already exists.`);
       }
+      if (existing.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
+        return fail(`A case type with name "${name}" already exists.`);
+      }
       const order = existing.reduce((m, t) => Math.max(m, t.display_order ?? 0), 0) + 1;
       return ok(await caseTypeService.create({
         name,
@@ -40,7 +43,15 @@ export const caseTypeLogic = {
   async update(id, data) {
     try {
       const name = (data.name || '').trim();
+      const shortCode = (data.short_code || '').trim();
       if (!name) return fail('Case type name is required.');
+      const existing = await caseTypeService.list();
+      if (existing.some((t) => t.id !== id && t.name.toLowerCase() === name.toLowerCase())) {
+        return fail(`A case type with name "${name}" already exists.`);
+      }
+      if (shortCode && existing.some((t) => t.id !== id && t.short_code.toLowerCase() === shortCode.toLowerCase())) {
+        return fail(`A case type with short code "${shortCode}" already exists.`);
+      }
       return ok(await caseTypeService.update(id, {
         name,
         short_code: data.short_code,
@@ -75,6 +86,7 @@ export const caseTypeLogic = {
     try {
       const existing = await caseTypeService.list();
       const existingCodes = new Set(existing.map((t) => t.short_code.toLowerCase()));
+      const existingNames = new Set(existing.map((t) => t.name.toLowerCase()));
       let maxOrder = existing.reduce((m, t) => Math.max(m, t.display_order ?? 0), 0);
 
       const pending = records.map((r) => {
@@ -82,7 +94,9 @@ export const caseTypeLogic = {
         const shortCode = (r.short_code || '').trim();
         if (!name || !shortCode) return null;
         if (existingCodes.has(shortCode.toLowerCase())) return null;
+        if (existingNames.has(name.toLowerCase())) return null;
         existingCodes.add(shortCode.toLowerCase());
+        existingNames.add(name.toLowerCase());
         maxOrder += 1;
         return { name, short_code: shortCode, display_order: maxOrder, status: 'Active', createdAt: nowISO() };
       }).filter(Boolean);

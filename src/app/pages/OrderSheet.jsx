@@ -904,30 +904,82 @@ export default function OrderSheet() {
                 </div>
               )}
               {tab === 'templates' && (
-                <Card bodyClass="card__body--flush">
-                  <DataTable
-                    columns={tplColumns}
-                    rows={filteredTpls}
-                    pageSize={10}
-                    searchable
-                    searchKeys={['name', 'category', 'description']}
-                    searchPlaceholder="Search templates…"
-                    emptyIcon="file"
-                    emptyTitle="No templates yet."
-                    initialSort={{ key: 'name', dir: 'asc' }}
-                    toolbar={
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <Select value={tplCategory} onChange={(e) => { setTplCategory(e.target.value); setTplPage(1); }}>
-                          <option value="">All Categories</option>
-                          <option value="Hearing">Hearing</option>
-                          <option value="Order">Order</option>
-                          <option value="Notice">Notice</option>
-                        </Select>
-                        <Button icon="plus" size="sm" onClick={() => { setTplForm(EMPTY_TPL); setTplEditing(null); setTplOpen(true); }}>Add</Button>
+                <>
+                  <div className="order-sheet__templates-bar">
+                    <div className="order-sheet__search-wrapper">
+                      <Icon name="search" size={14} className="search-icon" />
+                      <input type="text" placeholder="Search templates..." value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} />
+                    </div>
+                    <select className="order-sheet__select-input" value={tplCategory} onChange={(e) => setTplCategory(e.target.value)}>
+                      <option value="">All Categories</option>
+                      <option value="Hearing">Hearing</option>
+                    </select>
+                    <div className="order-sheet__filter-actions">
+                      <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
+                      <button className="order-sheet__btn-apply" onClick={openTplNew}>
+                        <Icon name="plus" size={13} /> New Template
+                      </button>
+                    </div>
+                  </div>
+                  {paginatedTpls.length === 0 ? (
+                    <Card><EmptyState icon="file" title="No templates match the criteria." /></Card>
+                  ) : (
+                    <div className="order-sheet__templates-grid">
+                      {paginatedTpls.map((t) => {
+                        let iconColor = 'blue';
+                        const catLower = t.category?.toLowerCase() || '';
+                        if (catLower === 'hearing') iconColor = 'blue';
+                        else if (catLower.includes('plead')) iconColor = 'green';
+                        else if (catLower.includes('evid')) iconColor = 'blue';
+                        else if (catLower.includes('app')) iconColor = 'purple';
+                        else if (catLower.includes('crim')) iconColor = 'green';
+                        else if (catLower.includes('notic')) iconColor = 'blue';
+                        else if (catLower.includes('affid')) iconColor = 'blue';
+                        else iconColor = 'orange';
+                        return (
+                          <div className="order-sheet__tpl-card" key={t.id}>
+                            <div className={`order-sheet__tpl-icon-wrapper order-sheet__tpl-icon-wrapper--${iconColor}`}>
+                              <Icon name="file" size={20} />
+                            </div>
+                            <div className="order-sheet__tpl-card-content">
+                              <h3 className="order-sheet__tpl-card-title">{t.name}</h3>
+                              <p className="order-sheet__tpl-card-desc">{t.description || t.content || 'Drafting formatting guidelines.'}</p>
+                              <div className="order-sheet__tpl-card-footer">
+                                <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
+                                  {t.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="order-sheet__tpl-actions">
+                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
+                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {tplTotalPages > 1 && (
+                    <div className="order-sheet__footer-pagination">
+                      <div className="order-sheet__pagination-info">
+                        Showing {((tplPage - 1) * tplPageSize) + 1} to {Math.min(tplPage * tplPageSize, filteredTpls.length)} of {filteredTpls.length} templates
                       </div>
-                    }
-                  />
-                </Card>
+                      <div className="order-sheet__pagination-controls">
+                        <div className="order-sheet__page-buttons">
+                          <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.max(p - 1, 1))} disabled={tplPage === 1}>«</button>
+                          {Array.from({ length: tplTotalPages }).map((_, i) => (
+                            <button key={i} className={`order-sheet__page-btn ${tplPage === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setTplPage(i + 1)}>
+                              {i + 1}
+                            </button>
+                          ))}
+                          <button className="order-sheet__page-btn" onClick={() => setTplPage(p => Math.min(p + 1, tplTotalPages))} disabled={tplPage === tplTotalPages}>»</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
               {tab === 'timeline' && (
                 <Card bodyClass="card__body--flush">
@@ -1812,7 +1864,9 @@ export default function OrderSheet() {
         </Field>
         <Field label="Description"><Input value={tplForm.description} onChange={(e) => setTplForm({ ...tplForm, description: e.target.value })} placeholder="e.g. Template for drafting written statement by defendant." readOnly={tplViewMode} /></Field>
         <Field label="Template Content">
-          <DocEditor value={tplForm.content} onChange={(v) => setTplForm({ ...tplForm, content: v })} readOnly={tplViewMode} placeholders={templatePlaceholders} />
+          <div className="tpl-editor-wrapper">
+            <DocEditor value={tplForm.content} onChange={(v) => setTplForm({ ...tplForm, content: v })} readOnly={tplViewMode} placeholders={templatePlaceholders} />
+          </div>
         </Field>
       </Modal>
     </>

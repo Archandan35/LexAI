@@ -157,6 +157,13 @@ export default function CaseTypes() {
   const doEdit = async () => {
     if (!editId) { toast.push('Select a case type to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
+    const other = caseTypes.filter(i => i.id !== editId);
+    if (other.some(i => i.name.toLowerCase() === editName.trim().toLowerCase())) {
+      toast.push(`A case type with name "${editName.trim()}" already exists.`, 'error'); return;
+    }
+    if (other.some(i => i.short_code?.toLowerCase() === editCode.trim().toLowerCase())) {
+      toast.push(`A case type with short code "${editCode.trim()}" already exists.`, 'error'); return;
+    }
     setBusy(true);
     try {
       const item = caseTypes.find(x => x.id === editId);

@@ -11473,6 +11473,26 @@ kbd.cmd__kbd {
   font-family: 'Calibri', 'Arial', sans-serif;
 }
 
+.tpl-editor-wrapper .doc-canvas {
+  padding: 10px;
+  max-height: 40vh;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.tpl-editor-wrapper .doc-page {
+  width: 100%;
+  min-height: 80px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: 'Calibri', 'Arial', sans-serif;
+}
+
 .hearing-modal__editor-wrapper .doc-toolbar {
   padding: 6px 8px;
   gap: 4px;
