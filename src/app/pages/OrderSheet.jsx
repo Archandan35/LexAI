@@ -76,6 +76,7 @@ export default function OrderSheet() {
   const [showColumnsMenu, setShowColumnsMenu] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState('');
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -731,7 +732,9 @@ export default function OrderSheet() {
                 <div className="cl-hearings__bar">
                   <button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button>
                   <button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button>
-                  <button className="cl-hearings__btn" type="button" onClick={() => setShowColumnsMenu(!showColumnsMenu)}><Icon name="grid" size={13} /> Columns</button>
+                  <button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
+                    <Icon name="trash" size={13} /> Bulk Delete
+                  </button>
                 </div>
 
                 {paginatedRows.length === 0 ? (
@@ -741,43 +744,33 @@ export default function OrderSheet() {
                 ) : (
                   <>
                     {/* Bulk delete bar */}
-                    {selectedIds.size > 0 && (
+                    {bulkMode && (
                       <div className="cl-bulk-bar">
-                        <span className="cl-bulk-bar__count">{selectedIds.size} selected</span>
-                        <button className="cl-bulk-bar__delete" onClick={(e) => { e.stopPropagation(); deleteSelected(); }}>
-                          <Icon name="trash" size={14} /> Delete Selected
-                        </button>
+                        <div className="cl-bulk-bar__left">
+                          <input type="checkbox" checked={selectedIds.size === paginatedRows.length && paginatedRows.length > 0} onChange={selectAll} className="cl-bulk-bar__select-all" />
+                          <span className="cl-bulk-bar__count">{selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select All'}</span>
+                        </div>
+                        {selectedIds.size > 0 && (
+                          <button className="cl-bulk-bar__delete" onClick={(e) => { e.stopPropagation(); deleteSelected(); }}>
+                            <Icon name="trash" size={14} /> Delete
+                          </button>
+                        )}
                       </div>
                     )}
 
-                    {/* Table-like header */}
-                    <div className="cl-table-header">
-                      <div className="cl-table-header__check"><input type="checkbox" checked={selectedIds.size === paginatedRows.length && paginatedRows.length > 0} onChange={selectAll} /></div>
-                      <div className="cl-table-header__date"><Icon name="calendar" size={12} /> Date</div>
-                      <div className="cl-table-header__case">Case Number &amp; Title</div>
-                    </div>
-
                     {/* Hearing cards */}
                     {paginatedRows.map((h) => {
-                      const hDate = new Date(h.date);
-                      const dayNum = hDate.getDate();
                       const MON_ABB = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                      const mon = MON_ABB[hDate.getMonth()];
-                      const year = hDate.getFullYear();
                       return (
                         <div
                           key={h.id}
-                          className={`cl-card ${selectedCaseId === h.caseId ? 'selected' : ''}`}
-                          onClick={() => setSelectedCaseId(h.caseId)}
+                          className={`cl-card ${selectedIds.has(h.id) ? 'cl-card--selected' : ''}`}
                         >
-                          <div className="cl-card__check" onClick={(e) => e.stopPropagation()}>
-                            <input type="checkbox" checked={selectedIds.has(h.id)} onChange={() => toggleSelect(h.id)} className="order-sheet__checkbox" />
-                          </div>
-                          <div className="cl-card__date">
-                            <div className="cl-card__date-num">{dayNum}</div>
-                            <div className="cl-card__date-mon">{mon}</div>
-                            <div className="cl-card__date-yr">{year}</div>
-                          </div>
+                          {bulkMode && (
+                            <div className="cl-card__check" onClick={(e) => e.stopPropagation()}>
+                              <input type="checkbox" checked={selectedIds.has(h.id)} onChange={() => toggleSelect(h.id)} />
+                            </div>
+                          )}
                           <div className="cl-card__body">
                             <div className="cl-card__top">
                               <div className="cl-card__num">
@@ -794,42 +787,40 @@ export default function OrderSheet() {
                                   {h.caseNumber}
                                 </a>
                               </div>
-                              <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
+                              <span className="cl-card__badge" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
                                 <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
                                 {h.status}
                               </span>
                             </div>
                             <div className="cl-card__parties">{h.parties}</div>
                             <div className="cl-card__meta">
-                              <div className="cl-card__meta-item"><Icon name="building" size={11} /> {h.court}</div>
-                              <div className="cl-card__meta-item"><Icon name="users" size={11} /> {h.case?.bench_type || '—'}</div>
+                              <div className="cl-card__meta-item">🏛 {h.court}</div>
+                              <div className="cl-card__meta-item">👥 {h.case?.bench_type || '—'}</div>
+                              <div className="cl-card__meta-item">👨‍⚖ {h.case?.judge || h.judge || '—'}</div>
                             </div>
-                            <div className="cl-card__footer">
-                              <div className="cl-card__footer-item">
-                                <span className="cl-card__footer-label">Next Hearing Date</span>
-                                <span className="cl-card__footer-value">{formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</span>
+                            <div className="cl-card__dates">
+                              <div className="cl-card__dates-item cl-card__dates-item--next">
+                                <span className="cl-card__dates-label">Next Hearing</span>
+                                <span className="cl-card__dates-value">📅 {formatDate(h.nextHearingDate || h.next_hearing_date) || '—'}</span>
                               </div>
-                              <div className="cl-card__footer-item">
-                                <span className="cl-card__footer-label">Judge</span>
-                                <span className="cl-card__footer-value">{h.case?.judge || h.judge || '—'}</span>
+                              <div className="cl-card__dates-divider" />
+                              <div className="cl-card__dates-item cl-card__dates-item--last">
+                                <span className="cl-card__dates-label">Last Hearing</span>
+                                <span className="cl-card__dates-value">📅 {formatDate(h.date) || '—'}</span>
                               </div>
                             </div>
                             <div className="cl-card__actions">
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); setPreviewHearing(h); }} title="View">
-                                <Icon name="eye" size={16} />
-                                <span>View</span>
+                                👁 <span>View</span>
                               </button>
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
-                                <Icon name="edit" size={16} />
-                                <span>Edit</span>
+                                ✏ <span>Edit</span>
                               </button>
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); duplicateHearing(h); }} title="Duplicate">
-                                <Icon name="copy" size={15} />
-                                <span>Duplicate</span>
+                                📄 <span>Duplicate</span>
                               </button>
                               <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
-                                <Icon name="trash" size={16} />
-                                <span>Delete</span>
+                                🗑 <span>Delete</span>
                               </button>
                             </div>
                           </div>
@@ -948,13 +939,13 @@ export default function OrderSheet() {
                                 <span className={`order-sheet__tpl-tag order-sheet__tpl-tag--${catLower}`}>
                                   {t.category}
                                 </span>
+                                <div className="order-sheet__tpl-actions">
+                                  <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
+                                  <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
+                                  <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
+                                  <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
+                                </div>
                               </div>
-                            </div>
-                            <div className="order-sheet__tpl-actions">
-                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button>
-                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button>
                             </div>
                           </div>
                         );
