@@ -13353,6 +13353,31 @@ kbd.cmd__kbd {
   color: var(--text);
 }
 
+.hpm-section-title__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hpm-section-title__actions .linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.linkbtn--save {
+  color: var(--green, #16a34a) !important;
+}
+
+.hpm-proceedings--edit {
+  border-top: 1.5px solid var(--border, #e2e8f0);
+}
+
+.hpm-proceedings--empty {
+  padding: 12px 0;
+}
+
 /* ── Info Grid (2x2) ── */
 .hpm-grid--2x2 {
   display: grid;

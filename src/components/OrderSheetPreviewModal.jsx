@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
+import DocEditor from './DocEditor.jsx';
 import { useFormat } from '@/utils/format.js';
 import { extractJurisdiction, combinedCourt } from '@/utils/caseFormat.js';
 import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
@@ -32,6 +33,9 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   const [historical, setHistorical] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortDir, setSortDir] = useState('desc');
+  const [editNotes, setEditNotes] = useState(false);
+  const [editDraft, setEditDraft] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
   const [viewHearing, setViewHearing] = useState(hearing);
 
   const data = viewHearing || doc;
@@ -140,7 +144,31 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
 
   const handleHistoricalView = (h) => {
     setViewHearing(h);
+    setEditNotes(false);
     setTab('current');
+  };
+
+  const handleEditNotes = () => {
+    setEditDraft(data.notes || '');
+    setEditNotes(true);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!data.id) return;
+    setSavingNotes(true);
+    try {
+      const r = await orderSheetLogic.updateHearing(data.id, { notes: editDraft });
+      if (r?.ok === false) throw new Error(r.error || 'Save failed');
+      setViewHearing((prev) => ({ ...prev, notes: editDraft }));
+      setEditNotes(false);
+    } catch (e) {
+      console.error('Failed to save proceedings:', e);
+    }
+    setSavingNotes(false);
+  };
+
+  const handleCancelNotes = () => {
+    setEditNotes(false);
   };
 
   return (
@@ -325,20 +353,42 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 </div>
               </div>
 
-              {data.notes && (
-                <div className="hpm-card hpm-card--section">
-                  <div className="hpm-section-title">
-                    <div className="hpm-icon-circle hpm-icon-circle--md">
-                      <Icon name="doc" size={16} strokeWidth={2} />
-                    </div>
-                    <span>Proceedings</span>
-                    <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
+              <div className="hpm-card hpm-card--section">
+                <div className="hpm-section-title">
+                  <div className="hpm-icon-circle hpm-icon-circle--md">
+                    <Icon name="doc" size={16} strokeWidth={2} />
                   </div>
+                  <span>Proceedings</span>
+                  <div className="hpm-section-title__actions">
+                    {!editNotes ? (
+                      <button className="linkbtn" onClick={handleEditNotes}>
+                        <Icon name="edit" size={13} /> Edit
+                      </button>
+                    ) : (
+                      <>
+                        <button className="linkbtn" onClick={handleCancelNotes} disabled={savingNotes}>Cancel</button>
+                        <button className="linkbtn linkbtn--save" onClick={handleSaveNotes} disabled={savingNotes}>
+                          {savingNotes ? 'Saving...' : 'Save'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <Icon className="hpm-chevron" name="chevronDown" size={16} strokeWidth={2.5} />
+                </div>
+                {editNotes ? (
+                  <div className="hpm-proceedings hpm-proceedings--edit">
+                    <DocEditor value={editDraft} onChange={setEditDraft} />
+                  </div>
+                ) : data.notes ? (
                   <div className="hpm-proceedings">
                     <div className="hpm-proceedings__text" dangerouslySetInnerHTML={{ __html: data.notes }} />
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="hpm-proceedings hpm-proceedings--empty">
+                    <span className="muted">No proceedings recorded.</span>
+                  </div>
+                )}
+              </div>
             </div>
           )
         ) : (
