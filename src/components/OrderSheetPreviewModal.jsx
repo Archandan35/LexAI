@@ -24,7 +24,7 @@ const ACCENT_COLORS = {
 
 const statusColour = (s) => {
   const v = (s || '').toLowerCase();
-  if (/completed|done|finished|closed/.test(v)) return 'green';
+  if (/completed|done|finished|closed|allowed|granted/.test(v)) return 'green';
   if (/scheduled|reserved|upcoming|pending|part.heard/.test(v)) return 'blue';
   if (/active|progress|running|open/.test(v)) return 'green';
   if (/cancelled|dismissed|rejected|vacated|struck/.test(v)) return 'red';

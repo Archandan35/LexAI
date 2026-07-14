@@ -13372,7 +13372,59 @@ kbd.cmd__kbd {
 
 .hpm-proceedings--edit {
   border-top: 1.5px solid var(--border, #e2e8f0);
-  padding: 16px;
+  padding: 0;
+}
+
+.hpm-proceedings--edit .doceditor {
+  border: none;
+  border-radius: 0;
+}
+
+.hpm-proceedings--edit .doc-canvas {
+  padding: 12px;
+  max-height: 50vh;
+}
+
+.hpm-proceedings--edit .doc-page {
+  width: 100%;
+  min-height: 80px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'Calibri', 'Arial', sans-serif;
+}
+
+.hpm-proceedings--edit .doc-page:focus {
+  box-shadow: 0 0 0 2px var(--brand-soft);
+}
+
+.hpm-proceedings--edit .doc-toolbar {
+  padding: 6px 8px;
+  gap: 4px;
+  background: var(--surface-2);
+  position: relative;
+  z-index: 1;
+}
+
+.hpm-proceedings--edit .doc-toolbar button {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  font-size: 12px;
+}
+
+.hpm-proceedings--edit .doc-toolbar select {
+  height: 26px;
+  font-size: 11.5px;
+  padding: 0 4px;
+}
+
+.hpm-proceedings--edit .doc-tb-group {
+  gap: 1px;
+  padding-right: 6px;
 }
 
 .hpm-proceedings--empty {
