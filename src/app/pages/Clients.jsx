@@ -109,7 +109,7 @@ export default function Clients() {
         <div className="clients-grid">
           {filtered.map((c) => (
             <div key={c.id} className="client-card" onClick={() => setViewing(c)}>
-              <div className="client-card__avatar" style={{ background: colourFromName(c.name) }}>{initials(c.name)}</div>
+              <div className="client-card__avatar" style={{ '--avatar-bg': colourFromName(c.name) }}>{initials(c.name)}</div>
               <div className="client-card__body">
                 <div className="client-card__name">{c.name}</div>
                 <div className="client-card__meta">
@@ -180,7 +180,7 @@ export default function Clients() {
         {viewing && (
           <div>
             <div className="client-detail__header">
-              <div className="client-card__avatar client-detail__avatar" style={{ background: colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
+              <div className="client-card__avatar client-detail__avatar" style={{ '--avatar-bg': colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
               <div>
                 <h2 className="m-0">{viewing.name}</h2>
                 <p className="muted mt-4">{viewing.client_type || 'Individual'} · <span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'grey'}`}>{viewing.status || 'Active'}</span></p>

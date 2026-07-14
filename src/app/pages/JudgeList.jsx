@@ -7,6 +7,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { judgeLogic } from '@/logic/judgeLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'J';
 
@@ -50,12 +51,14 @@ export default function JudgeList() {
   const [newCode, setNewCode] = useState('');
   const [newDesignation, setNewDesignation] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
+  const [newColor, setNewColor] = useState('#6b7280');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
   const [editDesignation, setEditDesignation] = useState('');
   const [editStatus, setEditStatus] = useState('');
+  const [editColor, setEditColor] = useState('#6b7280');
 
   const [delId, setDelId] = useState('');
 
@@ -100,7 +103,7 @@ export default function JudgeList() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode(''); setNewDesignation(''); setNewStatus('Active');
+    setNewName(''); setNewCode(''); setNewDesignation(''); setNewStatus('Active'); setNewColor('#6b7280');
     setEditId(''); setEditName(''); setEditCode(''); setEditDesignation(''); setEditStatus('');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
@@ -129,9 +132,9 @@ export default function JudgeList() {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
-    const res = await judgeLogic.create({ name: newName, short_code: newCode, designation: newDesignation, status: newStatus });
+    const res = await judgeLogic.create({ name: newName, short_code: newCode, designation: newDesignation, status: newStatus, color: newColor });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewDesignation(''); setNewStatus('Active'); setDupTarget(null); toast.push('Judge added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewDesignation(''); setNewStatus('Active'); setNewColor('#6b7280'); setDupTarget(null); toast.push('Judge added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -170,7 +173,7 @@ export default function JudgeList() {
     if (!editId) { toast.push('Select a judge to edit.', 'error'); return; }
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     setBusy(true);
-    const res = await judgeLogic.update(editId, { name: editName, short_code: editCode, designation: editDesignation, status: editStatus });
+    const res = await judgeLogic.update(editId, { name: editName, short_code: editCode, designation: editDesignation, status: editStatus, color: editColor });
     setBusy(false);
     if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Judge updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -333,6 +336,7 @@ export default function JudgeList() {
     setEditCode(item.short_code || '');
     setEditDesignation(item.designation || '');
     setEditStatus(item.status || 'Active');
+    setEditColor(item.color || '#6b7280');
     setEditTarget(item);
   };
 
@@ -347,6 +351,7 @@ export default function JudgeList() {
     setNewCode(item.short_code || '');
     setNewDesignation(item.designation || '');
     setNewStatus(item.status || 'Active');
+    setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
 
@@ -528,6 +533,10 @@ export default function JudgeList() {
                     <option>Inactive</option>
                   </Select>
                 </div>
+                <div className="cmp-field cmp-field--full">
+                  <label className="cmp-label">Badge Color</label>
+                  <ColorPicker value={newColor} onChange={setNewColor} />
+                </div>
               </div>
             )}
             {activeAction === 'add' && subMode === 'bulk' && (
@@ -545,7 +554,7 @@ export default function JudgeList() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Judge <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditDesignation(item.designation || ''); setEditStatus(item.status || 'Active'); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditDesignation(item.designation || ''); setEditStatus(item.status || 'Active'); setEditColor(item.color || '#6b7280'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -570,6 +579,10 @@ export default function JudgeList() {
                         <option>Active</option>
                         <option>Inactive</option>
                       </Select>
+                    </div>
+                    <div className="cmp-field cmp-field--full">
+                      <label className="cmp-label">Badge Color</label>
+                      <ColorPicker value={editColor} onChange={setEditColor} />
                     </div>
                   </>
                 )}
@@ -674,10 +687,14 @@ export default function JudgeList() {
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Status</span>
-            <span className="cmp-status-pill" style={{ background: ((viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+            <span className={`cmp-status-pill cmp-status-pill--${(viewItem?.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
               <span className="cmp-status-dot"></span>
               {viewItem?.status || 'Active'}
             </span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Badge Color</span>
+            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Designation</span>
@@ -691,7 +708,7 @@ export default function JudgeList() {
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Judge" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -715,11 +732,15 @@ export default function JudgeList() {
               <option>Inactive</option>
             </Select>
           </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
         </div>
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Judge" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Judge'}</Button>
         </div>}>
@@ -742,6 +763,10 @@ export default function JudgeList() {
               <option>Active</option>
               <option>Inactive</option>
             </Select>
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
@@ -773,13 +798,14 @@ export default function JudgeList() {
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>
+                    <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
                     <span className="cmp-cell-name">{item.name}</span>
                   </div>
                 </td>
                 <td><span className="cmp-code-pill">{item.short_code}</span></td>
                 <td><span className="cmp-cell-name cmp-cell-name--soft">{item.designation || '—'}</span></td>
                 <td>
-                  <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                     <span className="cmp-status-dot"></span>
                     {item.status || 'Active'}
                   </span>
@@ -868,7 +894,7 @@ export default function JudgeList() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>
@@ -936,7 +962,7 @@ export default function JudgeList() {
                 <>
                   <div className="cmp-progress-info">{progress.itemName}</div>
                   <div className="cmp-progress-bar-track">
-                    <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                    <div className="cmp-progress-fill" style={{ '--fill': `${Math.max(5, progress?.percent ?? 0)}%` }} />
                   </div>
                   <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
                 </>

@@ -70,9 +70,9 @@ export default function ConnectionStep({ method, onConnected, back }) {
       </p>
 
       {!method && (
-        <div style={{ marginBottom: 16 }}>
-          <label className="wizard-form-label" style={{ marginBottom: 6 }}>Database Provider</label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="u-mb-16">
+          <label className="wizard-form-label u-mb-6">Database Provider</label>
+          <div className="u-row-wrap">
             {Object.keys(PROVIDER_FIELDS).map(p => (
               <button key={p} onClick={() => { setProvider(p); setFields({}); setStatus(null); }}
                 className={`wizard-provider-btn${provider === p ? ' wizard-provider-btn--active' : ' wizard-provider-btn--inactive'}`}
@@ -124,7 +124,7 @@ export default function ConnectionStep({ method, onConnected, back }) {
         </div>
       )}
 
-      <div className="wizard-actions" style={{ marginTop: 24 }}>
+      <div className="wizard-actions u-mt-24">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" icon="bolt" loading={testing} onClick={handleTest} disabled={!allFilled}>
           {testing ? 'Testing...' : 'Test Connection'}

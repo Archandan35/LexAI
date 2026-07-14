@@ -47,7 +47,7 @@ export default function VerifyStep({ onVerified, manualSql, back }) {
       <div className="wizard-center wizard-center--sm">
         <div className="wizard-check">✓</div>
         <h3 className="wizard-title--green">All checks passed</h3>
-        <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>{result?.present?.length} component(s) verified.</p>
+        <p className="wizard-verify-note">{result?.present?.length} component(s) verified.</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function VerifyStep({ onVerified, manualSql, back }) {
       {error && <div className="wizard-alert-box wizard-alert-box--red wizard-alert-box--sm wizard-alert-box--mb-sm">{error}</div>}
       {sqlText && (
         <div className="wizard-sql-section">
-          <div className="wizard-sql-header" style={{ marginBottom: 6 }}>
+          <div className="wizard-sql-header u-mb-6">
             <span className="wizard-sql-title">SQL for missing items</span>
             <Button variant="ghost" size="sm" onClick={() => navigator.clipboard?.writeText(sqlText)}>Copy SQL</Button>
           </div>

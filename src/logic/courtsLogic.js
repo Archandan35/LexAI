@@ -51,6 +51,7 @@ export const courtsLogic = {
         level: data.level ?? 1,
         parent_id,
         display_order: data.display_order ?? 0,
+        color: data.color || '#6b7280',
         status: 'Active',
         createdAt: nowISO(),
       }));
@@ -77,6 +78,7 @@ export const courtsLogic = {
         level: data.level,
         parent_id,
         display_order: data.display_order,
+        color: data.color,
         status: data.status,
       }));
     } catch (err) { return fail(err); }

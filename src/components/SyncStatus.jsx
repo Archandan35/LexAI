@@ -10,10 +10,10 @@ const MAP = {
 
 export default function SyncStatus({ status = 'synced', dot = false }) {
   const s = MAP[status] || MAP.synced;
-  if (dot) return <span className="dot" title={s.label} style={{ background: `var(--${s.cls})` }} />;
+  if (dot) return <span className="dot sync__dot--dyn" title={s.label} style={{ '--dot-bg': `var(--${s.cls})` }} />;
   return (
     <span className="syncstatus" title={s.label}>
-      <span className="dot" style={{ background: `var(--${s.cls})` }} />
+      <span className="dot sync__dot--dyn" style={{ '--dot-bg': `var(--${s.cls})` }} />
       <span className="syncstatus__label">{s.label}</span>
     </span>
   );

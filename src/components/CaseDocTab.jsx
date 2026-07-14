@@ -25,7 +25,7 @@ function FileTypeIcon({ name }) {
   };
   const cfg = map[ext] || { bg: 'var(--brand-soft)', color: 'var(--navy-700)', label: ext.slice(0, 2) || '?' };
   return (
-    <span className="cdoc__type-icon" style={{ background: cfg.bg, color: cfg.color }}>
+    <span className="cdoc__type-icon" style={{ '--ti-bg': cfg.bg, '--ti-color': cfg.color }}>
       {cfg.label}
     </span>
   );
@@ -368,7 +368,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   return (
     <div className="cdoc__layout">
       {ctxMenu && (
-        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
+        <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${ctxMenu.x}px`, '--menu-y': `${ctxMenu.y}px` }} onClick={(e) => e.stopPropagation()}>
           <div className="cdoc__ctx-item" onClick={() => { startRename(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Rename</div>
           <div className="cdoc__ctx-item" onClick={() => { cutFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Cut</div>
           <div className="cdoc__ctx-item" onClick={() => { copyFolder(caseFolders.find((f) => f.id === ctxMenu.id)); setCtxMenu(null); }}>Copy</div>
@@ -378,7 +378,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
         </div>
       )}
       {contentCtx && (
-        <div className="cdoc__ctx-menu" style={{ position: 'fixed', left: contentCtx.x, top: contentCtx.y }} onClick={(e) => e.stopPropagation()}>
+        <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${contentCtx.x}px`, '--menu-y': `${contentCtx.y}px` }} onClick={(e) => e.stopPropagation()}>
           <div className="cdoc__ctx-item" onClick={() => { setCreating(true); setContentCtx(null); }}>Add new folder</div>
           <div className="cdoc__ctx-divider" />
           <div className="cdoc__ctx-item cdoc__ctx-item--disabled">Redo</div>
@@ -426,8 +426,8 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
               return (
                 <div key={f.id}>
                   <div
-                    className={`cdoc__tree-row${activeFolder === f.id ? ' cdoc__tree-row--active' : ''}${isCut ? ' cdoc__tree-row--cut' : ''}`}
-                    style={{ paddingLeft: 12 + depth * 16 }}
+                    className={`cdoc__tree-row cmp-indent${activeFolder === f.id ? ' cdoc__tree-row--active' : ''}${isCut ? ' cdoc__tree-row--cut' : ''}`}
+                    style={{ '--indent': `${12 + depth * 16}px` }}
                     onClick={() => { if (!selectMode) { setActiveFolder(f.id); setDocSelected([]); } }}
                     onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ id: f.id, x: e.clientX, y: e.clientY }); }}
                     onMouseEnter={() => setHoveredId(f.id)}
@@ -435,7 +435,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                   >
                     {children.length > 0 && (
                       <span className="cdoc__tree-expand" onClick={(e) => { e.stopPropagation(); toggleExpand(f.id); }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className={`cdoc__tree-caret${open ? ' is-open' : ''}`}>
                           <polygon points="6 3 20 12 6 21 6 3" />
                         </svg>
                       </span>
@@ -448,7 +448,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
                     {editingId === f.id ? (
                       <input className="cdoc__rename-input" value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveRename(); if (e.key === 'Escape') cancelRename(); }} onBlur={saveRename} autoFocus onClick={(e) => e.stopPropagation()} />
                     ) : (
-                      <span className="cdoc__tree-name" style={{ fontWeight: activeFolder === f.id ? 700 : 450, opacity: isCut ? 0.4 : 1 }}>{f.name}</span>
+                      <span className={`cdoc__tree-name${activeFolder === f.id ? ' is-active' : ''}${isCut ? ' is-cut' : ''}`}>{f.name}</span>
                     )}
                     <span className="cdoc__tree-count">{docCounts[f.id] || docCounts[f.name] || 0}</span>
                     {hoveredId === f.id && editingId !== f.id && !selectMode && (

@@ -111,7 +111,7 @@ export default function Advocates() {
         <div className="clients-grid">
           {filtered.map((u) => (
             <div key={u.id} className="client-card" onClick={() => setViewing(u)}>
-              <div className="client-card__avatar" style={{ background: colourFromName(u.name) }}>{initials(u.name)}</div>
+              <div className="client-card__avatar" style={{ '--avatar-bg': colourFromName(u.name) }}>{initials(u.name)}</div>
               <div className="client-card__body">
                 <div className="client-card__name">{u.name}</div>
                 <div className="client-card__meta">
@@ -166,7 +166,7 @@ export default function Advocates() {
         {viewing && (
           <div>
             <div className="client-detail__header">
-              <div className="client-card__avatar client-detail__avatar" style={{ background: colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
+              <div className="client-card__avatar client-detail__avatar" style={{ '--avatar-bg': colourFromName(viewing.name) }}>{initials(viewing.name)}</div>
               <div>
                 <h2 className="m-0">{viewing.name}</h2>
                 <p className="muted mt-4"><span className={`badge badge--${viewing.status === 'Active' ? 'green' : 'grey'}`}>{viewing.status || 'Active'}</span></p>

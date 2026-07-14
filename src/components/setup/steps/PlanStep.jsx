@@ -16,7 +16,7 @@ export default function PlanStep({ scanResult, onPlanned, back }) {
       <p className="wizard-desc">
         Installation plan generated. {total} total component(s) in the blueprint.
       </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="u-col-gap12">
         {sections.map(s => (
           <div key={s.title} className="wizard-section-card">
             <div className="wizard-section-card__head">
@@ -34,7 +34,7 @@ export default function PlanStep({ scanResult, onPlanned, back }) {
           </div>
         ))}
       </div>
-      <div className="wizard-actions" style={{ marginTop: 24 }}>
+      <div className="wizard-actions u-mt-24">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" onClick={() => onPlanned(scanResult)}>
           {missing.length > 0 ? 'Continue to Review' : 'Continue'}

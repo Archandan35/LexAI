@@ -44,25 +44,25 @@ export default function DmcMaintenance() {
       <PageHeader icon="wrench" title="Maintenance" subtitle="Optimize, repair, and clean up your database." />
 
       <div className="dmc-grid">
-        <div className="dmc-card" onClick={() => run('validate')} className="dmc-card-clickable">
+          <div className="dmc-card dmc-card-clickable" onClick={() => run('validate')}>
           <div className="dmc-card__header">
             <span className="dmc-card__label">Health Check</span>
-            {results.validate && <span className="dmc-badge" style={{ background: results.validate.ok ? '#16a34a18' : '#dc262618', color: results.validate.ok ? '#16a34a' : '#dc2626', borderColor: results.validate.ok ? '#16a34a40' : '#dc262640' }}>{results.validate.ok ? 'Pass' : 'Fail'}</span>}
+            {results.validate && <span className={`dmc-badge dmc-badge--${results.validate.ok ? 'green' : 'red'}`}>{results.validate.ok ? 'Pass' : 'Fail'}</span>}
           </div>
-          <div className="dmc-card__value" className="dmc-card-value-lg">{running === 'validate' ? 'Running…' : 'Run Health Check'}</div>
+          <div className="dmc-card__value dmc-card-value-lg">{running === 'validate' ? 'Running…' : 'Run Health Check'}</div>
           <div className="dmc-card__sub">Validate schema integrity and connection status</div>
-          {results.validate && <div style={{ fontSize: 12, marginTop: 6, color: results.validate.ok ? 'var(--green)' : 'var(--red)' }}>{results.validate.message}</div>}
+          {results.validate && <div className={`dmc-result-msg${results.validate.ok ? ' dmc-result-msg--ok' : ' dmc-result-msg--fail'}`}>{results.validate.message}</div>}
         </div>
 
         {TASKS.map((t) => (
-          <div key={t.id} className="dmc-card" onClick={() => run(t.id)} className="dmc-card-clickable">
+          <div key={t.id} className="dmc-card dmc-card-clickable" onClick={() => run(t.id)}>
             <div className="dmc-card__header">
               <span className="dmc-card__label"><Icon name={t.icon} size={14} /> {t.label}</span>
-              {results[t.id] && <span className="dmc-badge" style={{ background: results[t.id].ok ? '#16a34a18' : '#dc262618', color: results[t.id].ok ? '#16a34a' : '#dc2626', borderColor: results[t.id].ok ? '#16a34a40' : '#dc262640' }}>{results[t.id].ok ? 'Done' : 'Error'}</span>}
+              {results[t.id] && <span className={`dmc-badge dmc-badge--${results[t.id].ok ? 'green' : 'red'}`}>{results[t.id].ok ? 'Done' : 'Error'}</span>}
             </div>
-            <div className="dmc-card__value" className="dmc-card-value-lg">{running === t.id ? 'Running…' : 'Run Task'}</div>
+            <div className="dmc-card__value dmc-card-value-lg">{running === t.id ? 'Running…' : 'Run Task'}</div>
             <div className="dmc-card__sub">{t.desc}</div>
-            {results[t.id] && <div style={{ fontSize: 12, marginTop: 6, color: results[t.id].ok ? 'var(--green)' : 'var(--red)' }}>{results[t.id].message}</div>}
+            {results[t.id] && <div className={`dmc-result-msg${results[t.id].ok ? ' dmc-result-msg--ok' : ' dmc-result-msg--fail'}`}>{results[t.id].message}</div>}
           </div>
         ))}
       </div>

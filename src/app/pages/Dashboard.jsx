@@ -183,7 +183,7 @@ export default function Dashboard() {
                 {donutSegments.map((s) => (
                   <div className="dash-donut-legend__item" key={s.label}>
                     <div className="dash-donut-legend__left">
-                      <span className="dash-donut-legend__dot" style={{ background: s.color }} />
+                      <span className="dash-donut-legend__dot" style={{ '--dot-bg': s.color }} />
                       {s.label}
                     </div>
                     <div className="flex-row gap-8 items-center">
@@ -278,8 +278,8 @@ export default function Dashboard() {
                     <div
                       className="dash-bar-fill"
                       style={{
-                        height: `${(cat.value / maxCat) * 100}%`,
-                        background: BAR_COLORS[i % BAR_COLORS.length],
+                        '--bar-h': `${(cat.value / maxCat) * 100}%`,
+                        '--bar-bg': BAR_COLORS[i % BAR_COLORS.length],
                       }}
                     />
                   </div>

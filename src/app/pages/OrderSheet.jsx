@@ -788,8 +788,8 @@ export default function OrderSheet() {
                                   {h.caseNumber}
                                 </a>
                               </div>
-                              <span className="cl-card__badge" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
-                                <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                              <span className="cl-card__badge badge--dyn" style={{ '--bd-bg': getStatusStyle(h.status).bg, '--bd-color': getStatusStyle(h.status).text, '--bd-border': getStatusStyle(h.status).border }}>
+                                <span className="cl-card__badge-dot sync__dot--dyn" style={{ '--dot-bg': getStatusStyle(h.status).dot }} />
                                 {h.status}
                               </span>
                             </div>
@@ -1207,8 +1207,8 @@ export default function OrderSheet() {
                             {visibleColumns.judge && <td>{h.case?.judge || h.judge || '—'}</td>}
                             {visibleColumns.status && (
                               <td>
-                                <span className="order-sheet__badge-status" style={{ background: getStatusStyle(h.status).bg, color: getStatusStyle(h.status).text, borderColor: getStatusStyle(h.status).border }}>
-                                  <span className="cl-card__badge-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                                <span className="order-sheet__badge-status" style={{ '--bd-bg': getStatusStyle(h.status).bg, '--bd-color': getStatusStyle(h.status).text, '--bd-border': getStatusStyle(h.status).border }}>
+                                  <span className="cl-card__badge-dot sync__dot--dyn" style={{ '--dot-bg': getStatusStyle(h.status).dot }} />
                                   {h.status}
                                 </span>
                               </td>
@@ -1562,7 +1562,7 @@ export default function OrderSheet() {
                                 <td className="order-sheet__timeline-event-date-cell text-nowrap">{formatDate(h.date)}</td>
                                 <td>
                                   <div className="flex align-center gap-8">
-                                    <span className="order-sheet__timeline-event-dot" style={{ background: getStatusStyle(h.status).dot }} />
+                                    <span className="order-sheet__timeline-event-dot sync__dot--dyn" style={{ '--dot-bg': getStatusStyle(h.status).dot }} />
                                     <span className="order-sheet__timeline-event-name">{h.purpose || 'Hearing'}</span>
                                   </div>
                                 </td>

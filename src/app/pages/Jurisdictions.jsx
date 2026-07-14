@@ -7,6 +7,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'JUR';
 
@@ -378,7 +379,7 @@ export default function Jurisdictions() {
       <div className="cmp-stats-row">
         {stats.map((s, i) => (
           <div key={i} className="cmp-statcard">
-            <div className="cmp-statcard-icon" style={{background:s.bg,color:s.color}}><Icon name={s.icon} size={20} /></div>
+            <div className="cmp-statcard-icon" style={{ '--sc-bg': s.bg, '--sc-color': s.color }}><Icon name={s.icon} size={20} /></div>
             <div className="cmp-statcard-body">
               <div className="cmp-statcard-label">{s.label}</div>
               <div className="cmp-statcard-value">{s.value}</div>
@@ -457,12 +458,7 @@ export default function Jurisdictions() {
                 </div>
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Badge Color</label>
-                  <div className="cmp-color-picker-wrap">
-                    {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                      <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-                    ))}
-                    <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-                  </div>
+                  <ColorPicker value={newColor} onChange={setNewColor} />
                 </div>
               </div>
             )}
@@ -552,7 +548,7 @@ export default function Jurisdictions() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className="badge" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span>
+                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -600,7 +596,7 @@ export default function Jurisdictions() {
         <div className="cmp-detail-body">
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Badge Color</span>
-            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ background: viewItem?.color || '#6b7280' }} /></span>
+            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Description</span>
@@ -614,7 +610,7 @@ export default function Jurisdictions() {
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Jurisdiction" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -636,18 +632,13 @@ export default function Jurisdictions() {
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>
-            <div className="cmp-color-picker-wrap">
-              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-              ))}
-              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-            </div>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Jurisdiction" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Jurisdiction'}</Button>
         </div>}>
@@ -674,12 +665,7 @@ export default function Jurisdictions() {
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>
-            <div className="cmp-color-picker-wrap">
-              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-              ))}
-              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-            </div>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
@@ -711,13 +697,13 @@ export default function Jurisdictions() {
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="users" size={15} /></span>
-                    <span className="cmp-color-swatch-sm" style={{ background: item.color || '#6b7280' }} />
+                    <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
                     <span className="cmp-cell-name">{item.name}</span>
                   </div>
                 </td>
                 <td><span className="cmp-code-pill">{item.short_code}</span></td>
                 <td>
-                  <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                     <span className="cmp-status-dot"></span>
                     {item.status || 'Active'}
                   </span>
@@ -806,7 +792,7 @@ export default function Jurisdictions() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>
@@ -873,7 +859,7 @@ export default function Jurisdictions() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  <div className="cmp-progress-fill" style={{ '--fill': `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
                 <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>

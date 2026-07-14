@@ -32,7 +32,8 @@ export const jurisdictionLogic = {
         short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         description: (data.description || '').trim(),
         display_order: data.display_order ?? 0,
-        status: 'Active',
+        color: data.color || '#6b7280',
+        status: data.status || 'Active',
         createdAt: nowISO(),
       }));
     } catch (err) { return fail(err); }
@@ -47,6 +48,7 @@ export const jurisdictionLogic = {
         short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         description: (data.description || '').trim(),
         display_order: data.display_order,
+        color: data.color,
         status: data.status,
       }));
     } catch (err) { return fail(err); }

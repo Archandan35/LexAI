@@ -62,19 +62,19 @@ export default function AnalysisStep({ onAnalyzed, back }) {
         ))}
       </div>
       {scanResult?.missing?.length > 0 && (
-        <div style={{ marginTop: 16 }}>
+        <div className="u-mt-16">
           <button onClick={() => setExpanded(expanded === 'missing' ? null : 'missing')}
             className="wizard-missing-toggle">
             {expanded === 'missing' ? 'Hide' : 'Show'} missing items ({scanResult.missing.length})
           </button>
           {expanded === 'missing' && (
-            <div className="wizard-tag-list" style={{ marginTop: 8 }}>
+            <div className="wizard-tag-list u-mt-8">
               {scanResult.missing.map(m => <span key={m} className="tag">{m}</span>)}
             </div>
           )}
         </div>
       )}
-      <div className="wizard-actions" style={{ marginTop: 24 }}>
+      <div className="wizard-actions u-mt-24">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" onClick={() => onAnalyzed(scanResult)}>Continue</Button>
       </div>

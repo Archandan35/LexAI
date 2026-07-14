@@ -8,6 +8,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'BT';
 
@@ -508,12 +509,7 @@ export default function BenchTypes() {
                 </div>
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Badge Color</label>
-                  <div className="cmp-color-picker-wrap">
-                    {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                      <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-                    ))}
-                    <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-                  </div>
+                  <ColorPicker value={newColor} onChange={setNewColor} />
                 </div>
               </div>
             )}
@@ -556,12 +552,7 @@ export default function BenchTypes() {
                   </div>
                   <div className="bench-types__field bench-types__field--full">
                     <label className="bench-types__label">Badge Color</label>
-                    <div className="cmp-color-picker-wrap">
-                      {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                        <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-                      ))}
-                      <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-                    </div>
+                    <ColorPicker value={newColor} onChange={setNewColor} />
                   </div>
                   </>
                 )}
@@ -612,7 +603,7 @@ export default function BenchTypes() {
                       <label key={item.id} className={`bench-types__checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="bench-types__checkbox-name">{item.name}</span>
-                        <span className="badge" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span>
+                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -684,7 +675,7 @@ export default function BenchTypes() {
         <div className="bench-types__detail-body">
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Badge Color</span>
-            <span className="bench-types__detail-value"><div className="cmp-color-swatch-lg" style={{ background: viewItem?.color || '#6b7280' }} /></span>
+            <span className="bench-types__detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Short Code</span>
@@ -692,7 +683,7 @@ export default function BenchTypes() {
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Status</span>
-            <span className="badge" style={{ background: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{viewItem?.status || 'Active'}</span>
+            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{viewItem?.status || 'Active'}</span>
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Description</span>
@@ -706,7 +697,7 @@ export default function BenchTypes() {
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Bench Type" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -728,18 +719,13 @@ export default function BenchTypes() {
           </div>
           <div className="bench-types__field bench-types__field--full">
             <label className="bench-types__label">Badge Color</label>
-            <div className="cmp-color-picker-wrap">
-              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-              ))}
-              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-            </div>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Bench Type" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Bench Type'}</Button>
         </div>}>
@@ -766,12 +752,7 @@ export default function BenchTypes() {
           </div>
           <div className="bench-types__field bench-types__field--full">
             <label className="bench-types__label">Badge Color</label>
-            <div className="cmp-color-picker-wrap">
-              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
-                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
-              ))}
-              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
-            </div>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
@@ -803,14 +784,14 @@ export default function BenchTypes() {
                 <td>
                   <div className="bench-types__name-cell">
                     <span className="bench-types__name-avatar"><Icon name="users" size={15} /></span>
-                    <span className="cmp-color-swatch-sm" style={{ background: item.color || '#6b7280' }} />
+                    <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
                     <span className="bench-types__cell-name">{item.name}</span>
                   </div>
                 </td>
                 <td><span className="bench-types__code-pill">{item.short_code}</span></td>
                 <td>
-                  <span className="bench-types__status-pill" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#ECFDF5' : '#FFF7ED', color: (item.status || '').toLowerCase() === 'active' ? '#16A34A' : '#D97706' }}>
-                    <span className="bench-types__status-dot" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#22C55E' : '#F59E0B' }}></span>
+                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="bench-types__status-dot"></span>
                     {item.status || 'Active'}
                   </span>
                 </td>
@@ -870,8 +851,8 @@ export default function BenchTypes() {
               <div className="bench-types__mobile-card-info">
                 <div className="bench-types__mobile-card-top">
                   <span className="bench-types__mobile-card-name">{item.name}</span>
-                  <span className="bench-types__status-pill" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#ECFDF5' : '#FFF7ED', color: (item.status || '').toLowerCase() === 'active' ? '#16A34A' : '#D97706' }}>
-                    <span className="bench-types__status-dot" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#22C55E' : '#F59E0B' }}></span>
+                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="bench-types__status-dot"></span>
                     {item.status || 'Active'}
                   </span>
                 </div>
@@ -953,7 +934,7 @@ export default function BenchTypes() {
             {progress ? (
               <>
                 <div className="bench-types__progress-bar-track">
-                  <div className="bench-types__progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                  <div className="bench-types__progress-bar-fill" style={{ '--fill': `${progress.percent}%` }} />
                 </div>
                 <div className="bench-types__progress-info">
                   <span className="bench-types__progress-item">{progress.itemName}</span>

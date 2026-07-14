@@ -63,10 +63,9 @@ export default function ProgressTimeline({ currentStep, goToStep }) {
             `wizard-step-btn${isDone ? ' wizard-step-btn--done' : ''}${isCurrent ? ' wizard-step-btn--active' : ''}${collapsed && !mobile ? ' wizard-step-btn--collapsed' : ''}`;
           return (
             <button key={label}
-              className={btnClass}
+              className={`${btnClass}${isFuture ? ' wizard-timeline-step--future' : ''}`}
               onClick={() => isDone && handleGoToStep(idx)}
               disabled={!isDone}
-              style={{ opacity: isFuture ? 0.45 : 1 }}
             >
               <span className={`wizard-step-btn__circle ${circleClass}`}>
                 {isDone ? '✓' : idx}

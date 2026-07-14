@@ -151,7 +151,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
               <div>
                 <div className="em-field-label"><span>Status</span><span className="required-star">*</span></div>
                 <div className="em-select-wrapper">
-                  <span className="em-select-status-dot" style={{ background: newStatus === 'Active' ? 'var(--green)' : 'var(--text-faint)' }} />
+                  <span className={`em-select-status-dot${newStatus === 'Active' ? ' is-active' : ''}`} />
                   <Select className="select" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
                     <option>Active</option>
                     <option>Inactive</option>
@@ -214,7 +214,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
                   <div>
                     <div className="em-field-label">Status</div>
                     <div className="em-select-wrapper">
-                      <span className="em-select-status-dot" style={{ background: editStatus === 'Active' ? 'var(--green)' : 'var(--text-faint)' }} />
+                      <span className={`em-select-status-dot${editStatus === 'Active' ? ' is-active' : ''}`} />
                       <Select className="select" value={editStatus} onChange={(e) => setEditStatus(e.target.value)}>
                         <option>Active</option>
                         <option>Inactive</option>

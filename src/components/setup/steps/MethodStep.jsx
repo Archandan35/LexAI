@@ -9,10 +9,10 @@ const METHODS = [
 export default function MethodStep({ onSelect, back }) {
   return (
     <div>
-      <p className="wizard-desc" style={{ marginBottom: 20 }}>
+      <p className="wizard-desc u-mb-20">
         Choose how you want to connect your database. Simple Setup is the fastest path for Supabase users.
       </p>
-      <div className="wizard-info-grid" style={{ gap: 14 }}>
+      <div className="wizard-info-grid u-gap-14">
         {METHODS.map((m) => (
           <button key={m.id} onClick={() => onSelect(m.id)}
             tabIndex={0}

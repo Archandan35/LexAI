@@ -34,6 +34,7 @@ export const judgeLogic = {
         court: (data.court || '').trim(),
         status: data.status || 'Active',
         display_order: data.display_order ?? 0,
+        color: data.color || '#6b7280',
         createdAt: nowISO(),
       }));
     } catch (err) { return fail(err); }
@@ -50,6 +51,7 @@ export const judgeLogic = {
         court: (data.court || '').trim(),
         status: data.status,
         display_order: data.display_order,
+        color: data.color,
       }));
     } catch (err) { return fail(err); }
   },

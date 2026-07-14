@@ -19,7 +19,7 @@ export default function FinishStep({ health, onLaunch, onExport, onBackup }) {
         </div>
         <div className="wizard-finish-item">
           <div className="wizard-finish-item__label">Health Score</div>
-          <div className="wizard-finish-item__value" style={{ color: health?.overallScore >= 80 ? 'var(--green)' : 'var(--amber)' }}>{health?.overallScore || 0}/100</div>
+          <div className={`wizard-finish-item__value ${health?.overallScore >= 80 ? 'wizard-finish-item__value--good' : 'wizard-finish-item__value--warn'}`}>{health?.overallScore || 0}/100</div>
         </div>
         <div className="wizard-finish-item">
           <div className="wizard-finish-item__label">Objects Installed</div>

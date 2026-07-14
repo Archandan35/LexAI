@@ -68,14 +68,10 @@ export default function ApiDebugLog({ entries, onClear }) {
                 <span className="api-debug-log__time">
                   {DateEngine.formatTime(e.ts, '24h')}
                 </span>
-                <span style={{
-                  fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
-                  background: e.type === 'error' ? '#450a0a' : e.type === 'warn' ? '#451a03' : e.type === 'success' ? '#052e16' : '#1e293b',
-                  color: e.type === 'error' ? '#fca5a5' : e.type === 'warn' ? '#fdba74' : e.type === 'success' ? '#86efac' : '#94a3b8',
-                }}>
+                <span className={`api-debug-log__tag api-debug-log__tag--${e.type === 'error' ? 'error' : e.type === 'warn' ? 'warn' : e.type === 'success' ? 'success' : 'info'}`}>
                   {e.type.toUpperCase()}
                 </span>
-                <span style={{ wordBreak: 'break-all', color: e.type === 'error' ? '#fca5a5' : '#e2e8f0' }}>{e.msg}</span>
+                <span className={`api-debug-log__msg${e.type === 'error' ? ' api-debug-log__msg--error' : ''}`}>{e.msg}</span>
               </div>
               {e.detail && (
                 <pre className="api-debug-log__detail">

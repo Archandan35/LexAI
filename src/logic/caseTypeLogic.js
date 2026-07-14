@@ -42,6 +42,7 @@ export const caseTypeLogic = {
         name,
         short_code: shortCode,
         display_order: order,
+        color: data.color || '#6b7280',
         status: 'Active',
         createdAt: nowISO(),
       }));
@@ -65,6 +66,7 @@ export const caseTypeLogic = {
         name,
         short_code: data.short_code,
         display_order: data.display_order,
+        color: data.color,
         status: data.status,
       }));
     } catch (err) { return fail(err); }

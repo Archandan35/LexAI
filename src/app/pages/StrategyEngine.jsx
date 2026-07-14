@@ -51,7 +51,7 @@ export default function StrategyEngine() {
                 <div><strong>{result.triggeredCount}</strong> threshold issue(s) flagged.</div>
               </div>
               {result.flags.map((f) => (
-                <div key={f.id} className="card mb-12" style={{ borderLeft: `4px solid ${f.triggered ? 'var(--red)' : 'var(--green)'}` }}>
+                <div key={f.id} className={`card mb-12 strategy-flag${f.triggered ? ' strategy-flag--triggered' : ''}`}>
                   <div className="card__body strategy-engine__card-body">
                     <div className="flex-row items-center gap-10">
                       <strong className="fs-14">{f.label}</strong>

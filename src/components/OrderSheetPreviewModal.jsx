@@ -18,10 +18,6 @@ function fmtCaseNumber(c) {
   return c.case_display_number || c.caseNumber || String(cn || '') || '—';
 }
 
-const ACCENT_COLORS = {
-  green: '#16a05a', blue: '#1e40af', red: '#991b1b', orange: '#9a3412', grey: '#475569',
-};
-
 const statusColour = (s) => {
   const v = (s || '').toLowerCase();
   if (/completed|done|finished|closed|allowed|granted/.test(v)) return 'green';
@@ -194,12 +190,12 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
           </div>
           <div className="hpm-header__right">
             {!isDoc && data.date && (
-              <span className="hpm-pill" style={{ background: '#47556918', color: '#475569', border: '1px solid #47556940' }}>
+              <span className="hpm-pill hpm-pill--date">
                 <Icon name="calendar" size={12} strokeWidth={2} /> {formatDate(data.date)}
               </span>
             )}
             {data.status && (
-              <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
+              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
             )}
             <button className="hpm-close-btn" onClick={onClose} aria-label="Close">
               <Icon name="close" size={18} strokeWidth={2} />
@@ -210,12 +206,12 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
         {!isDoc && (data.date || data.status) && (
           <div className="hpm-mobile-badges">
             {data.date && (
-              <span className="hpm-pill" style={{ background: '#47556918', color: '#475569', border: '1px solid #47556940' }}>
+              <span className="hpm-pill hpm-pill--date">
                 <Icon name="calendar" size={13} strokeWidth={2.2} /> {formatDate(data.date)}
               </span>
             )}
             {data.status && (
-              <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
+              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
             )}
           </div>
         )}
@@ -345,7 +341,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     <div className="hpm-hcell__body">
                       <span className="hpm-hcell__label">Status</span>
                       <span className="hpm-hcell__value">
-                        <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
+                        <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
                       </span>
                     </div>
                   </div>
@@ -411,7 +407,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 <div className="hpm-historical-toolbar">
                   <span className="hpm-historical-count">{historical.length} hearing{historical.length !== 1 ? 's' : ''}</span>
                   <button className="hpm-historical-sort" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
-                    <Icon name="arrowUp" size={12} strokeWidth={2.5} style={{ transform: sortDir === 'asc' ? 'none' : 'rotate(180deg)' }} />
+                    <Icon name="arrowUp" size={12} strokeWidth={2.5} className={sortDir === 'asc' ? '' : 'icon-flip-180'} />
                     {sortDir === 'asc' ? 'Low to High' : 'High to Low'}
                   </button>
                 </div>
@@ -425,13 +421,13 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                       className="hpm-historical-card"
                       onClick={() => handleHistoricalView(h)}
                     >
-                      <div className="hpm-historical-card__accent" style={{ background: ACCENT_COLORS[tone] || ACCENT_COLORS.grey }} />
+                      <div className={`hpm-historical-card__accent hpm-pill--${tone || 'grey'}`} />
                       <div className="hpm-historical-card__body">
                         <div className="hpm-historical-card__header">
                           <span className="hpm-historical-card__date">
                             <Icon name="calendar" size={14} strokeWidth={2} /> {formatDate(h.date)}
                           </span>
-                          <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[tone]}18`, color: ACCENT_COLORS[tone], border: `1px solid ${ACCENT_COLORS[tone]}40` }}>
+                          <span className={`hpm-pill hpm-pill--${tone}`}>
                             <span className="dot" />
                             {h.status}
                           </span>

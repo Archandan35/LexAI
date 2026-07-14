@@ -693,7 +693,7 @@ export default function SystemSettings() {
           </div>
         </div>
         <div className="gs-topbar__right">
-          <label className="gs-debug-label" style={{ color: debugMode ? '#22c55e' : '#64748b', fontWeight: debugMode ? 600 : 400 }}>
+          <label className={`gs-debug-label${debugMode ? ' is-on' : ''}`}>
             <input type="checkbox" checked={debugMode} onChange={(e) => toggleDebug(e.target.checked)} className="gs-debug-checkbox" />
             <span>🐛 Dev Mode</span>
           </label>

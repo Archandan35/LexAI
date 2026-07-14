@@ -17,15 +17,15 @@ export default function Badge({ children, tone, dot, style: externalStyle }) {
   const textColor = contrastText(hex);
   return (
     <span
-      className="badge"
+      className="badge badge--dyn"
       style={{
-        background: `${hex}18`,
-        color: textColor,
-        borderColor: `${hex}40`,
+        '--bd-bg': `${hex}18`,
+        '--bd-color': textColor,
+        '--bd-border': `${hex}40`,
         ...externalStyle,
       }}
     >
-      {dot && <span className="dot" style={{ background: hex }} />}
+      {dot && <span className="dot sync__dot--dyn" style={{ '--dot-bg': hex }} />}
       {children}
     </span>
   );

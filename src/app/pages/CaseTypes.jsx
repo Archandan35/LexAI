@@ -8,6 +8,7 @@ import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'CT';
 
@@ -48,12 +49,14 @@ export default function CaseTypes() {
   const [newCode, setNewCode] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
   const [newDesc, setNewDesc] = useState('');
+  const [newColor, setNewColor] = useState('#6b7280');
   const [bulkAddText, setBulkAddText] = useState('');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
   const [editStatus, setEditStatus] = useState('Active');
+  const [editColor, setEditColor] = useState('#6b7280');
   const [bulkEditText, setBulkEditText] = useState('');
 
   const [delId, setDelId] = useState('');
@@ -95,7 +98,7 @@ export default function CaseTypes() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
+    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setNewColor('#6b7280');
     setBulkAddText(''); setBulkEditText('');
     setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
@@ -126,9 +129,9 @@ export default function CaseTypes() {
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
     try {
-      const res = await caseTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
+      const res = await caseTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc, color: newColor });
       setBusy(false);
-      if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Case type added.', 'success'); await refresh(); }
+      if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setNewColor('#6b7280'); setDupTarget(null); toast.push('Case type added.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
     } catch (err) { setBusy(false); setLastError(err?.message || String(err)); toast.push(err?.message || 'Failed to create case type.', 'error'); }
   };
@@ -172,7 +175,7 @@ export default function CaseTypes() {
     setBusy(true);
     try {
       const item = caseTypes.find(x => x.id === editId);
-      const res = await caseTypeLogic.update(editId, { name: editName, short_code: editCode, status: editStatus, description: item?.description || '' });
+      const res = await caseTypeLogic.update(editId, { name: editName, short_code: editCode, status: editStatus, description: item?.description || '', color: editColor });
       setBusy(false);
       if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Case type updated.', 'success'); await refresh(); }
       else { setLastError(res.error); toast.push(res.error, 'error'); }
@@ -312,6 +315,7 @@ export default function CaseTypes() {
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
+    setEditColor(item.color || '#6b7280');
     setEditTarget(item);
   };
 
@@ -319,6 +323,7 @@ export default function CaseTypes() {
     setNewName(item.name + ' (copy)');
     setNewCode(item.short_code || '');
     setNewStatus(item.status || 'Active');
+    setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
 
@@ -394,7 +399,7 @@ export default function CaseTypes() {
           { label: 'Total', value: caseTypes.length, icon: 'grid', bg: '#F0F9FF', color: '#0EA5E9', sub: 'All case types' },
         ].map((s, i) => (
           <div key={i} className="cmp-statcard">
-            <div className="cmp-statcard-icon" style={{ background: s.bg, color: s.color }}><Icon name={s.icon} size={20} /></div>
+            <div className="cmp-statcard-icon" style={{ '--sc-bg': s.bg, '--sc-color': s.color }}><Icon name={s.icon} size={20} /></div>
             <div className="cmp-statcard-body">
               <div className="cmp-statcard-label">{s.label}</div>
               <div className="cmp-statcard-value">{s.value}</div>
@@ -475,6 +480,10 @@ export default function CaseTypes() {
                     <label className="cmp-label">Description</label>
                     <Input value={newDesc} placeholder="Optional description" onChange={e => setNewDesc(e.target.value)} />
                   </div>
+                  <div className="cmp-field cmp-field--full">
+                    <label className="cmp-label">Badge Color</label>
+                    <ColorPicker value={newColor} onChange={setNewColor} />
+                  </div>
                 </div>
               )}
               {activeAction === 'add' && subMode === 'bulk' && (
@@ -492,7 +501,7 @@ export default function CaseTypes() {
                 <div className="cmp-form-grid">
                   <div className="cmp-field cmp-field--full">
                     <label className="cmp-label">Select Case Type <span className="cmp-required">*</span></label>
-                    <Select value={editId} onChange={e => { setEditId(e.target.value); const item = caseTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
+                    <Select value={editId} onChange={e => { setEditId(e.target.value); const item = caseTypes.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); setEditColor(item.color || '#6b7280'); } }}>
                       <option value="">— choose —</option>
                       {caseTypes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                     </Select>
@@ -513,6 +522,10 @@ export default function CaseTypes() {
                           <option value="Active">Active</option>
                           <option value="Inactive">Inactive</option>
                         </Select>
+                      </div>
+                      <div className="cmp-field cmp-field--full">
+                        <label className="cmp-label">Badge Color</label>
+                        <ColorPicker value={editColor} onChange={setEditColor} />
                       </div>
                     </>
                   )}
@@ -614,9 +627,13 @@ export default function CaseTypes() {
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Status</span>
-            <span className="cmp-status-pill" style={{ background: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+            <span className={`cmp-status-pill cmp-status-pill--${(viewItem?.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
               <span className="cmp-status-dot"></span>{viewItem?.status || 'Active'}
             </span>
+          </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Badge Color</span>
+            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Display Order</span>
@@ -630,7 +647,7 @@ export default function CaseTypes() {
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Case Type" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -650,11 +667,15 @@ export default function CaseTypes() {
               <option value="Inactive">Inactive</option>
             </Select>
           </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
         </div>
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Case Type" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Case Type'}</Button>
         </div>}>
@@ -677,6 +698,10 @@ export default function CaseTypes() {
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Description</label>
             <Input value={newDesc} placeholder="Optional description" onChange={e => setNewDesc(e.target.value)} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
         </div>
       </Modal>
@@ -722,13 +747,14 @@ export default function CaseTypes() {
                   <td>
                     <div className="cmp-name-cell">
                       <span className="cmp-name-avatar"><Icon name="grid" size={15} /></span>
+                      <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
                       <span className="cmp-cell-name">{item.name}</span>
                     </div>
                   </td>
                   <td><span className="cmp-code-pill">{item.short_code}</span></td>
                   <td>{item.display_order ?? '—'}</td>
                   <td>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>
                       {item.status || 'Active'}
                     </span>
@@ -818,7 +844,7 @@ export default function CaseTypes() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>
@@ -885,7 +911,7 @@ export default function CaseTypes() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  <div className="cmp-progress-fill" style={{ '--fill': `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
                 <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>

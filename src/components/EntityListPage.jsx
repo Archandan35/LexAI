@@ -111,7 +111,7 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
                   )}
                 </td>
                 <td>{item.display_order ?? '—'}</td>
-                <td><span className="badge" style={{ background: item.status === 'Active' ? '#16a34a18' : '#6b728018', color: item.status === 'Active' ? '#16a34a' : '#6b7280', borderColor: item.status === 'Active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span></td>
+                <td><span className={`badge badge--${item.status === 'Active' ? 'active' : 'inactive'}`}>{item.status}</span></td>
                 <td>
                   <div className="row-actions">
                     {editId === item.id ? (

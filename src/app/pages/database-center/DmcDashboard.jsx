@@ -60,11 +60,11 @@ export default function DmcDashboard() {
             <tr><th>Metric</th><th>Status</th><th>Details</th></tr>
           </thead>
           <tbody>
-            <tr><td>Database Connection</td><td><span className="dmc-badge" style={{ background: health.status === 'connected' ? '#16a34a18' : '#dc262618', color: health.status === 'connected' ? '#16a34a' : '#dc2626', borderColor: health.status === 'connected' ? '#16a34a40' : '#dc262640' }}>{health.status}</span></td><td>{health.provider} · {health.version}</td></tr>
-            <tr><td>Schema Integrity</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Valid</span></td><td>{health.collections} collections deployed</td></tr>
-            <tr><td>Backup Status</td><td><span className="dmc-badge" style={{ background: backups.length ? '#16a34a18' : '#d9770618', color: backups.length ? '#16a34a' : '#d97706', borderColor: backups.length ? '#16a34a40' : '#d9770640' }}>{backups.length ? 'Active' : 'None'}</span></td><td>{backups.length} backup(s), {stats?.protectedCount} protected</td></tr>
-            <tr><td>File Storage</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Operational</span></td><td>Provider-agnostic</td></tr>
-            <tr><td>Last Backup</td><td><span className="dmc-badge" style={{ background: stats?.lastBackup ? '#16a34a18' : '#d9770618', color: stats?.lastBackup ? '#16a34a' : '#d97706', borderColor: stats?.lastBackup ? '#16a34a40' : '#d9770640' }}>{stats?.lastBackup ? 'Completed' : 'Never'}</span></td><td>{stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'No backup recorded'}</td></tr>
+            <tr><td>Database Connection</td><td><span className={`dmc-badge dmc-badge--${health.status === 'connected' ? 'green' : 'red'}`}>{health.status}</span></td><td>{health.provider} · {health.version}</td></tr>
+            <tr><td>Schema Integrity</td><td><span className="dmc-badge dmc-badge--green">Valid</span></td><td>{health.collections} collections deployed</td></tr>
+            <tr><td>Backup Status</td><td><span className={`dmc-badge dmc-badge--${backups.length ? 'green' : 'amber'}`}>{backups.length ? 'Active' : 'None'}</span></td><td>{backups.length} backup(s), {stats?.protectedCount} protected</td></tr>
+            <tr><td>File Storage</td><td><span className="dmc-badge dmc-badge--green">Operational</span></td><td>Provider-agnostic</td></tr>
+            <tr><td>Last Backup</td><td><span className={`dmc-badge dmc-badge--${stats?.lastBackup ? 'green' : 'amber'}`}>{stats?.lastBackup ? 'Completed' : 'Never'}</span></td><td>{stats?.lastBackup ? formatDateTime(stats.lastBackup) : 'No backup recorded'}</td></tr>
           </tbody>
         </table>
       </div>

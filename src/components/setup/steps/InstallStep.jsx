@@ -93,11 +93,8 @@ export default function InstallStep({ scanResult, onInstalled, onManualSql }) {
           } />
         </div>
         <div className="wizard-progress__track">
-          <div className="wizard-progress__fill"
-            style={{
-              width: `${progress.pct}%`,
-              background: phase === 'failed' ? 'var(--red)' : phase === 'done' ? 'var(--green)' : 'var(--brand)',
-            }} />
+          <div className={`wizard-progress__fill${phase === 'failed' ? ' wizard-progress__fill--failed' : phase === 'done' ? ' wizard-progress__fill--done' : ''}`}
+            style={{ '--fill': `${progress.pct}%` }} />
         </div>
         <div className="wizard-progress__info">
           <span className="wizard-progress__label">{progress.label}</span>
@@ -120,9 +117,7 @@ export default function InstallStep({ scanResult, onInstalled, onManualSql }) {
       {showLogs && (
         <div ref={logRef} className="wizard-log">
           {logs.map((l, i) => (
-            <div key={i} style={{
-              color: l.status === 'ok' ? 'var(--green)' : l.status === 'fail' ? 'var(--red)' : l.status === 'warn' ? 'var(--amber)' : '#b4c2e0',
-            }}>
+            <div key={i} className={`wizard-log-line--${l.status === 'ok' ? 'ok' : l.status === 'fail' ? 'fail' : l.status === 'warn' ? 'warn' : 'info'}`}>
               <span className="wizard-log__time">[{l.time}]</span> {l.msg}
             </div>
           ))}

@@ -81,7 +81,7 @@ export default function RestoreStep({ onComplete, back }) {
             )}
           </div>
           {error && <div className="wizard-dropzone__error">{error}</div>}
-          <div className="wizard-actions" style={{ marginTop: 24 }}>
+          <div className="wizard-actions u-mt-24">
             <Button variant="ghost" onClick={back}>Back</Button>
             <Button variant="primary" icon="upload" loading={phase === 'restoring'} onClick={handleRestore} disabled={!file}>
               {phase === 'restoring' ? 'Restoring...' : 'Restore'}

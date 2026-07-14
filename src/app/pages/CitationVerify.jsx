@@ -51,11 +51,7 @@ export default function CitationVerify() {
               const passed = result?.checks?.[c.key];
               return (
                 <div key={c.key} className="citation-verify__check-row">
-                  <span className="citation-verify__check-icon"
-                    style={{
-                      background: result ? (passed ? 'var(--green-soft)' : 'var(--red-soft)') : 'var(--surface-2)',
-                      color: passed ? 'var(--green)' : 'var(--red)',
-                    }}>
+                  <span className={`citation-verify__check-icon${result ? (passed ? ' citation-verify__check-icon--pass' : ' citation-verify__check-icon--fail') : ''}`}>
                     <Icon name={result ? (passed ? 'check' : 'close') : 'alert'} size={13} />
                   </span>
                   <span className="citation-verify__check-label">{c.label}</span>

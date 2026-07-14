@@ -117,12 +117,9 @@ export default function DebugPanel({ logs, error, result, onClear, onCopy, colla
       >
         {logs.length === 0 && <span className="debug-panel__empty-msg">No logs captured yet.</span>}
         {logs.map((l, i) => (
-          <div key={i} style={{
-            color: l.level === 'error' ? 'var(--error)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text)',
-            marginBottom: 2,
-          }}>
+          <div key={i} className={`debug-panel__log-line debug-panel__log-line--${l.level === 'error' ? 'error' : l.level === 'warn' ? 'warn' : 'info'}`}>
             <span className="debug-panel__log-time">{DateEngine.formatTime(l.t)}</span>
-            <span style={{ fontWeight: l.level === 'error' ? 600 : 400 }}>{l.level.toUpperCase()}</span>
+            <span className={l.level === 'error' ? 'debug-panel__log-level--error' : 'debug-panel__log-level'}>{l.level.toUpperCase()}</span>
             <span>{' '}{l.msg}</span>
           </div>
         ))}

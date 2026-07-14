@@ -7,6 +7,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'COU';
 
@@ -47,12 +48,14 @@ export default function Courts() {
   const [newParent, setNewParent] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
   const [newDesc, setNewDesc] = useState('');
+  const [newColor, setNewColor] = useState('#6b7280');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
   const [editParent, setEditParent] = useState('');
   const [editStatus, setEditStatus] = useState('Active');
+  const [editColor, setEditColor] = useState('#6b7280');
 
   const [delId, setDelId] = useState('');
 
@@ -134,9 +137,9 @@ export default function Courts() {
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
     const order = items.reduce((m, i) => Math.max(m, i.display_order ?? 0), 0) + 1;
-    const res = await courtsLogic.create({ name: newName, short_code: newCode, parent_id: newParent || null, display_order: order, status: newStatus, description: newDesc });
+    const res = await courtsLogic.create({ name: newName, short_code: newCode, parent_id: newParent || null, display_order: order, status: newStatus, description: newDesc, color: newColor });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewParent(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Court added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewParent(''); setNewStatus('Active'); setNewDesc(''); setNewColor('#6b7280'); setDupTarget(null); toast.push('Court added.', 'success'); load(); }
     else { toast.push(res.error, 'error'); }
   };
 
@@ -169,7 +172,7 @@ export default function Courts() {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     setBusy(true);
     const item = items.find(x => x.id === editId);
-    const res = await courtsLogic.update(editId, { name: editName, short_code: editCode, parent_id: editParent || null, display_order: item?.display_order, status: editStatus });
+    const res = await courtsLogic.update(editId, { name: editName, short_code: editCode, parent_id: editParent || null, display_order: item?.display_order, status: editStatus, color: editColor });
     setBusy(false);
     if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Court updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -271,6 +274,7 @@ export default function Courts() {
     setEditCode(item.short_code || '');
     setEditParent(item.parent_id || '');
     setEditStatus(item.status || 'Active');
+    setEditColor(item.color || '#6b7280');
     setEditTarget(item);
   };
 
@@ -279,6 +283,7 @@ export default function Courts() {
     setNewCode(item.short_code || '');
     setNewParent(item.parent_id || '');
     setNewStatus('Active');
+    setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
 
@@ -452,8 +457,11 @@ export default function Courts() {
                 onClick={stopRowDnD}
               />
             </td>
-            <td style={{ paddingLeft: 16 + depth * 24 }}>
-              <span className="courts__name">{item.name}</span>
+            <td className="cmp-indent" style={{ '--indent': `${16 + depth * 24}px` }}>
+              <div className="cmp-name-cell">
+                <span className="cmp-color-swatch-sm" style={{ '--swatch-color': item.color || '#6b7280' }} />
+                <span className="courts__name">{item.name}</span>
+              </div>
             </td>
             <td>
               <code className="courts__code">{item.short_code || '—'}</code>
@@ -532,7 +540,7 @@ export default function Courts() {
           { label: 'Max Depth', value: '—', icon: 'maximize', bg: '#F0F9FF', color: '#0EA5E9', sub: 'Deepest level' },
         ].map((s, i) => (
           <div key={i} className="cmp-statcard">
-            <div className="cmp-statcard-icon" style={{ background: s.bg, color: s.color }}><Icon name={s.icon} size={20} /></div>
+            <div className="cmp-statcard-icon" style={{ '--sc-bg': s.bg, '--sc-color': s.color }}><Icon name={s.icon} size={20} /></div>
             <div className="cmp-statcard-body">
               <div className="cmp-statcard-label">{s.label}</div>
               <div className="cmp-statcard-value">{s.value}</div>
@@ -615,6 +623,10 @@ export default function Courts() {
                   <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
                   <span className="cmp-char-count">{newDesc.length} / 250</span>
                 </div>
+                <div className="cmp-field cmp-field--full">
+                  <label className="cmp-label">Badge Color</label>
+                  <ColorPicker value={newColor} onChange={setNewColor} />
+                </div>
               </div>
             )}
             {activeAction === 'add' && subMode === 'bulk' && (
@@ -632,7 +644,7 @@ export default function Courts() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Court <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditParent(item.parent_id || ''); setEditStatus(item.status || 'Active'); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditParent(item.parent_id || ''); setEditStatus(item.status || 'Active'); setEditColor(item.color || '#6b7280'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -657,6 +669,10 @@ export default function Courts() {
                         <option>Active</option>
                         <option>Inactive</option>
                       </Select>
+                    </div>
+                    <div className="cmp-field cmp-field--full">
+                      <label className="cmp-label">Badge Color</label>
+                      <ColorPicker value={editColor} onChange={setEditColor} />
                     </div>
                   </>
                 )}
@@ -762,6 +778,10 @@ export default function Courts() {
             <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem?.status || 'Active'}</span>
           </div>
           <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Badge Color</span>
+            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
+          </div>
+          <div className="cmp-detail-row">
             <span className="cmp-detail-label">Parent</span>
             <span className="cmp-detail-value">{viewItem?.parent_id ? (items.find(i => i.id === viewItem.parent_id)?.name || viewItem.parent_id) : '—'}</span>
           </div>
@@ -781,7 +801,7 @@ export default function Courts() {
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Court" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -805,11 +825,15 @@ export default function Courts() {
               <option>Inactive</option>
             </Select>
           </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
         </div>
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Court" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Court'}</Button>
         </div>}>
@@ -838,6 +862,10 @@ export default function Courts() {
             <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
             <span className="cmp-char-count">{newDesc.length} / 250</span>
           </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={newColor} onChange={setNewColor} />
+          </div>
         </div>
       </Modal>
 
@@ -847,7 +875,7 @@ export default function Courts() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  <div className="cmp-progress-fill" style={{ '--fill': `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
                 <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>
@@ -963,7 +991,7 @@ export default function Courts() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>

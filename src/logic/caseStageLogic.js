@@ -32,6 +32,7 @@ export const caseStageLogic = {
       short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(n),
       description: (data.description || '').trim(),
       display_order: data.display_order ?? order,
+      color: data.color || '#6b7280',
       status: data.status || 'Active',
       createdAt: nowISO(),
     }));
@@ -44,12 +45,16 @@ export const caseStageLogic = {
   },
 
   async update(id, data) {
-    return ok(await caseStageService.update(id, {
-      name: data.name,
-      short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(data.name || ''),
-      description: (data.description || '').trim(),
-      status: data.status,
-    }));
+    try {
+      return ok(await caseStageService.update(id, {
+        name: data.name,
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(data.name || ''),
+        description: (data.description || '').trim(),
+        display_order: data.display_order,
+        color: data.color,
+        status: data.status,
+      }));
+    } catch (err) { return fail(err); }
   },
 
   async remove(id) {

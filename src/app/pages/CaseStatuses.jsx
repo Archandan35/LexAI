@@ -8,10 +8,10 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
+import ColorPicker from '@/components/ColorPicker.jsx';
 
 const ENTITY_PREFIX = 'CS';
 
-const COLOR_OPTIONS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'];
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -499,13 +499,7 @@ export default function CaseStatuses() {
                 </div>
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Badge Color</label>
-                  <div className="cmp-color-picker-wrap">
-                    {COLOR_OPTIONS.map((c) => (
-                      <button key={c} className="cmp-color-btn" onClick={() => setNewColor(c)}
-                        style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }}
-                      />
-                    ))}
-                  </div>
+                  <ColorPicker value={newColor} onChange={setNewColor} />
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Status</label>
@@ -553,13 +547,7 @@ export default function CaseStatuses() {
                     </div>
                     <div className="cmp-field cmp-field--full">
                       <label className="cmp-label">Badge Color</label>
-                      <div className="cmp-color-picker-wrap">
-                        {COLOR_OPTIONS.map((c) => (
-                          <button key={c} className="cmp-color-btn" onClick={() => setEditColor(c)}
-                            style={{ background: c, border: editColor === c ? '2px solid #fff' : '2px solid transparent', outline: editColor === c ? '2px solid var(--brand)' : 'none' }}
-                          />
-                        ))}
-                      </div>
+                      <ColorPicker value={editColor} onChange={setEditColor} />
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Status</label>
@@ -617,7 +605,7 @@ export default function CaseStatuses() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className="badge" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span>
+                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -675,11 +663,15 @@ export default function CaseStatuses() {
             <span className="cmp-detail-label">Display Order</span>
             <span className="cmp-detail-value">{viewItem?.display_order ?? '—'}</span>
           </div>
+          <div className="cmp-detail-row">
+            <span className="cmp-detail-label">Color</span>
+            <span className="cmp-detail-value"><div className="cmp-color-swatch-lg" style={{ '--swatch-color': viewItem?.color || '#6b7280' }} /></span>
+          </div>
         </div>
       </Modal>
 
       <Modal open={!!editTarget} title="Edit Case Status" onClose={() => setEditTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setEditTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>
         </div>}>
@@ -692,6 +684,10 @@ export default function CaseStatuses() {
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
             <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
           </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={editColor} onChange={setEditColor} />
+          </div>
           <div className="cmp-field">
             <label className="cmp-label">Status</label>
             <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
@@ -703,7 +699,7 @@ export default function CaseStatuses() {
       </Modal>
 
       <Modal open={!!dupTarget} title="Duplicate Case Status" onClose={() => setDupTarget(null)}
-        footer={<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
           <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Case Status'}</Button>
         </div>}>
@@ -715,6 +711,10 @@ export default function CaseStatuses() {
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
             <Input value={newCode} placeholder="e.g., ACTIVE" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+          </div>
+          <div className="cmp-field cmp-field--full">
+            <label className="cmp-label">Badge Color</label>
+            <ColorPicker value={newColor} onChange={setNewColor} />
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Status</label>
@@ -756,7 +756,7 @@ export default function CaseStatuses() {
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
-                <td><div className="cmp-color-swatch-lg" style={{ background: item.color || '#6b7280' }} /></td>
+                <td><div className="cmp-color-swatch-lg" style={{ '--swatch-color': item.color || '#6b7280' }} /></td>
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="toggle" size={15} /></span>
@@ -765,7 +765,7 @@ export default function CaseStatuses() {
                 </td>
                 <td><span className="cmp-code-pill">{item.short_code}</span></td>
                 <td>
-                  <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                     <span className="cmp-status-dot"></span>
                     {item.status || 'Active'}
                   </span>
@@ -854,7 +854,7 @@ export default function CaseStatuses() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
+                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>
@@ -921,7 +921,7 @@ export default function CaseStatuses() {
               {progress ? (
                 <>
                   <div className="cmp-progress-bar-track">
-                    <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                    <div className="cmp-progress-fill" style={{ '--fill': `${Math.max(5, progress?.percent ?? 0)}%` }} />
                   </div>
                   <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
                 </>

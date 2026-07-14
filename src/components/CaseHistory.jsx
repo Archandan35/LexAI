@@ -72,7 +72,7 @@ export default function CaseHistory({ caseId, onChanged }) {
         <Input type="date" placeholder="dd-mm-yyyy" className="case-history__date-input" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} />
         <div className="case-history__spacer" />
         <button className="btn btn--ghost btn--sm" onClick={() => setOrder((o) => (o === 'desc' ? 'asc' : 'desc'))}>
-          <Icon name="arrow" size={14} style={{ transform: order === 'desc' ? 'rotate(90deg)' : 'rotate(-90deg)' }} /> {order === 'desc' ? 'Newest' : 'Oldest'}
+          <Icon name="arrow" size={14} className={order === 'desc' ? 'icon-rot-90' : 'icon-rot-neg90'} /> {order === 'desc' ? 'Newest' : 'Oldest'}
         </button>
       </div>
 

@@ -26,6 +26,7 @@ export const caseStatusLogic = {
         short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(name),
         description: (data.description || '').trim(),
         display_order: data.display_order ?? 0,
+        color: data.color || '#6b7280',
         status: data.status || 'Active',
         createdAt: nowISO(),
       }));
@@ -34,7 +35,7 @@ export const caseStatusLogic = {
 
   async update(id, data) {
     try {
-      return ok(await caseStatusService.update(id, { name: data.name, display_order: data.display_order, status: data.status }));
+      return ok(await caseStatusService.update(id, { name: data.name, short_code: data.short_code, description: data.description, display_order: data.display_order, color: data.color, status: data.status }));
     } catch (err) { return fail(err); }
   },
 

@@ -37,7 +37,7 @@ export default function NotificationsBell() {
             {items.length === 0 && <div className="cmd__empty">You’re all caught up.</div>}
             {items.map((n) => (
               <button key={n.id} className={`notif__item ${n.read ? 'notif__item--read' : ''}`} onClick={() => open1(n)}>
-                <span className={`notif__dot dot`} style={{ background: `var(--${TONE[n.level] === 'red' ? 'red' : TONE[n.level] === 'amber' ? 'amber' : 'navy-700'})` }} />
+                <span className="notif__dot dot notif__dot--dyn" style={{ '--dot-bg': `var(--${TONE[n.level] === 'red' ? 'red' : TONE[n.level] === 'amber' ? 'amber' : 'navy-700'})` }} />
                 <span className="notif__body">
                   <span className="notif__title">{n.message}</span>
                   <span className="notif__meta">{n.type} · {formatDate(n.date)}</span>

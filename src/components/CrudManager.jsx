@@ -34,7 +34,7 @@ function ProgressBar({ current, total }) {
   return (
     <div className="crud-progress">
       <div className="crud-progress__bar">
-        <div className="crud-progress__fill" style={{ width: `${pct}%` }} />
+        <div className="crud-progress__fill" style={{ '--fill': `${pct}%` }} />
       </div>
       <div className="crud-progress__text">{current} / {total} ({pct}%)</div>
     </div>
@@ -107,7 +107,7 @@ function renderField(f, values, setValues) {
           <span>{f.label}</span><span className="req">*</span>
         </div>
         <div className="crud-status-select">
-          <span className="crud-status-dot" style={{ background: active ? 'var(--green)' : 'var(--text-faint)' }} />
+          <span className={`crud-status-dot${active ? ' is-active' : ''}`} />
           <Select value={val} onChange={(e) => set(e.target.value)}>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>

@@ -125,7 +125,7 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
                 className={dragId === s.id ? 'row--selected' : ''}
               >
                 <td><input type="checkbox" checked={selected.has(s.id)} onChange={() => toggleSel(s.id)} /></td>
-                <td style={{ cursor: search ? 'default' : 'grab', color: 'var(--text-faint)' }}>⋮⋮</td>
+                <td className={`stage-drag-cell${search ? ' stage-drag-cell--nodrag' : ''}`}>⋮⋮</td>
                 <td>
                   {editId === s.id ? (
                     <Input value={editName} autoFocus onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} />

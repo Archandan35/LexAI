@@ -17,8 +17,8 @@ export default function StatusBadge({ status, label, size }) {
   const s = size === 'sm' ? 11 : 12;
   return (
     <span className={`wizard-badge${size === 'sm' ? ' wizard-badge--sm' : ''}`}
-      style={{ fontSize: s, color: c, background: b }}>
-      <span className="wizard-badge__dot" style={{ background: c }} />
+      style={{ '--sb-size': `${s}px`, '--sb-color': c, '--sb-bg': b }}>
+      <span className="wizard-badge__dot" />
       {label || status}
     </span>
   );

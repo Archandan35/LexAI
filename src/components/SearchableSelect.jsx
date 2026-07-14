@@ -73,13 +73,12 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
     <div ref={wrapperRef} style={style} className="searchable-select">
       <input
         ref={inputRef}
-        className="input"
+        className={`input${open ? '' : ' is-caret-hidden'}`}
         value={open ? query : selectedLabel}
         placeholder={placeholder}
         onFocus={() => { setOpen(true); }}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); setFocusedIdx(-1); }}
         onKeyDown={handleKey}
-        style={{ caretColor: open ? 'auto' : 'transparent' }}
         readOnly={!open}
       />
       {open && (

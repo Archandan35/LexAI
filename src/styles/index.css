@@ -13211,6 +13211,38 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
+/* ── Pill / Badge colour variants ── */
+
+.hpm-pill--date { background: #47556918; color: #475569; border: 1px solid #47556940; }
+.hpm-pill--green { background: #16a05a18; color: #16a05a; border: 1px solid #16a05a40; }
+.hpm-pill--blue  { background: #1e40af18; color: #1e40af; border: 1px solid #1e40af40; }
+.hpm-pill--red   { background: #991b1b18; color: #991b1b; border: 1px solid #991b1b40; }
+.hpm-pill--orange { background: #9a341218; color: #9a3412; border: 1px solid #9a341240; }
+.hpm-pill--grey  { background: #47556918; color: #475569; border: 1px solid #47556940; }
+
+.hpm-historical-card__accent.hpm-pill--green { background: #16a05a; }
+.hpm-historical-card__accent.hpm-pill--blue  { background: #1e40af; }
+.hpm-historical-card__accent.hpm-pill--red   { background: #991b1b; }
+.hpm-historical-card__accent.hpm-pill--orange { background: #9a3412; }
+.hpm-historical-card__accent.hpm-pill--grey  { background: #475569; }
+
+.dmc-badge--green { background: #16a34a18; color: #16a34a; border-color: #16a34a40; }
+.dmc-badge--red   { background: #dc262618; color: #dc2626; border-color: #dc262640; }
+.dmc-badge--amber { background: #d9770618; color: #d97706; border-color: #d9770640; }
+.dmc-badge--navy  { background: #1e3a5f18; color: #1e3a5f; border-color: #1e3a5f40; }
+
+.cmp-status-pill--active { background: #16a34a18; color: #16a34a; border-color: #16a34a40; }
+.cmp-status-pill--inactive { background: #6b728018; color: #6b7280; border-color: #6b728040; }
+
+.bench-types__status-pill--active { background: #ECFDF5; color: #16A34A; }
+.bench-types__status-pill--inactive { background: #FFF7ED; color: #D97706; }
+.bench-types__status-pill--active .bench-types__status-dot { background: #22C55E; }
+.bench-types__status-pill--inactive .bench-types__status-dot { background: #F59E0B; }
+
+.badge--active { background: #16a34a18; color: #16a34a; border-color: #16a34a40; }
+.badge--inactive { background: #6b728018; color: #6b7280; border-color: #6b728040; }
+.badge--admin { background: #1e40af18; color: #1e40af; border-color: #1e40af40; }
+
 /* Blinking dot animation */
 @keyframes blink-dot {
   0%, 100% { opacity: 1; }
@@ -21811,7 +21843,6 @@ kbd.cmd__kbd {
 .em-import-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
 .em-import-input-hidden { display: none; }
 .em-import-button-section { margin-top: 18px; }
-}
 
 /* ── CaseDocTab moved from inline styles ── */
 
@@ -21945,18 +21976,172 @@ kbd.cmd__kbd {
 .cmp-code-pill--ml8 { margin-left: 8px; }
 .cmp-mt8 { margin-top: 8px; }
 .cmp-cell-name--soft { color: var(--text-soft); }
-.cmp-color-picker-wrap { display: flex; gap: 6px; flex-wrap: wrap; }
+.cmp-color-picker-wrap { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 
-/* Color swatches - static sizing for priority color indicators */
-.cmp-color-swatch-sm { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
-.cmp-color-swatch-md { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
-.cmp-color-swatch-lg { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+/* Color swatches - circular colour indicators (rows + view modals) */
+.cmp-color-swatch-sm { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; display: inline-block; border: 1px solid rgba(0,0,0,.12); }
+.cmp-color-swatch-md { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: inline-block; border: 1px solid rgba(0,0,0,.12); }
+.cmp-color-swatch-lg { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: inline-block; border: 1px solid rgba(0,0,0,.12); }
 
-/* Color picker swatch button */
-.cmp-color-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; padding: 0; border-style: solid; }
+/* Color picker swatch button (preset palette) */
+.cmp-color-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; padding: 0; border: 2px solid transparent; outline: none; transition: transform .08s ease; }
+.cmp-color-btn:hover { transform: scale(1.1); }
+.cmp-color-btn--active { border-color: #fff; outline: 2px solid var(--brand); }
+
+/* Color picker native custom-colour input */
+.cmp-color-picker__custom { width: 26px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 50%; cursor: pointer; background: none; overflow: hidden; }
+.cmp-color-picker__custom::-webkit-color-swatch-wrapper { padding: 0; }
+.cmp-color-picker__custom::-webkit-color-swatch { border: none; border-radius: 50%; }
+.cmp-color-picker__custom::-moz-color-swatch { border: none; border-radius: 50%; }
 
 /* Mobile avatar with dynamic background */
 .cmp-mobile-avatar--import { color: #fff; }
 
 /* OrderSheet */
 .order-sheet__tpl-actions { display: flex; gap: 2px; }
+
+/* ==================================================================
+   Inline-style elimination — shared classes & CSS-var hooks
+   ================================================================== */
+
+/* Modal footer (master maintenance pages) */
+.cmp-modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Dynamic colour swatch (per-record colour via --swatch-color) */
+.cmp-color-swatch-sm,
+.cmp-color-swatch-md,
+.cmp-color-swatch-lg { background: var(--swatch-color, #6b7280); }
+
+/* Statcard icon (per-card colours via --sc-bg / --sc-color) */
+.cmp-statcard-icon { background: var(--sc-bg, transparent); color: var(--sc-color, inherit); }
+
+/* Progress fill width (via --fill) */
+.cmp-progress-fill { width: var(--fill, 5%); }
+.bench-types__progress-bar-fill { width: var(--fill, 0%); }
+.crud-progress__fill { width: var(--fill, 0%); }
+
+/* Dynamic backgrounds via CSS vars */
+.cmp-mobile-avatar--import { background: var(--avatar-bg, #EEF1FB); }
+.client-card__avatar { background: var(--avatar-bg, var(--brand-soft)); }
+.cmp-color-btn { background: var(--btn-color, transparent); }
+.doc-colour-swatch { background: var(--sw, transparent); }
+.doc-hilite { background: var(--sw, #fff); }
+.doc-colour-swatch--bordered { border: 1px solid #d4d4d4; }
+.dash-donut-legend__dot { background: var(--dot-bg, var(--brand)); }
+.dash-bar-fill { height: var(--bar-h, 0%); background: var(--bar-bg, var(--brand)); }
+
+/* Type icon (CaseDocTab / CaseDocuments) */
+.cdoc__type-icon { background: var(--ti-bg, var(--surface-2)); color: var(--ti-color, var(--text)); }
+
+/* Indentation (tree depth) via --indent */
+.cmp-indent { padding-left: var(--indent, 0); }
+
+/* Context menu position via --menu-x / --menu-y */
+.cdoc__ctx-menu--fixed { position: fixed; left: var(--menu-x, 0); top: var(--menu-y, 0); }
+
+/* Tree caret + name states (CaseDocTab) */
+.cdoc__tree-caret { transition: transform 0.15s; }
+.cdoc__tree-caret.is-open { transform: rotate(90deg); }
+.cdoc__tree-name { font-weight: 450; }
+.cdoc__tree-name.is-active { font-weight: 700; }
+.cdoc__tree-name.is-cut { opacity: 0.4; }
+
+/* Icon rotation helpers */
+.icon-flip-180 { transform: rotate(180deg); }
+.icon-rot-90 { transform: rotate(90deg); }
+.icon-rot-neg90 { transform: rotate(-90deg); }
+
+/* Dynamic badge colours (OrderSheet + Badge component) */
+.cl-card__badge,
+.order-sheet__badge-status { background: var(--bd-bg, transparent); color: var(--bd-color, inherit); border-color: var(--bd-border, transparent); }
+.badge--dyn { background: var(--bd-bg, transparent); color: var(--bd-color, inherit); border-color: var(--bd-border, transparent); }
+
+/* Dynamic dot colour (via --dot-bg) */
+.cl-card__badge-dot,
+.order-sheet__timeline-event-dot,
+.badge__dot-dyn,
+.notif__dot--dyn,
+.sync__dot--dyn { background: var(--dot-bg, currentColor); }
+
+/* Status dot active state */
+.crud-status-dot { background: var(--text-faint); }
+.crud-status-dot.is-active { background: var(--green); }
+.em-select-status-dot { background: var(--text-faint); }
+.em-select-status-dot.is-active { background: var(--green); }
+
+/* SearchableSelect caret */
+.is-caret-hidden { caret-color: transparent; }
+
+/* StageManager drag cell */
+.stage-drag-cell { color: var(--text-faint); cursor: grab; }
+.stage-drag-cell--nodrag { cursor: default; }
+
+/* StrategyEngine flag */
+.strategy-flag { border-left: 4px solid var(--green); }
+.strategy-flag--triggered { border-left-color: var(--red); }
+
+/* SystemSettings debug toggle label */
+.gs-debug-label { color: #64748b; font-weight: 400; }
+.gs-debug-label.is-on { color: #22c55e; font-weight: 600; }
+
+/* FileDrop dashed dropzone */
+.filedrop { cursor: pointer; text-align: center; padding: 30px 20px; border-style: dashed; border-color: var(--border-strong); background: var(--surface-2); transition: all 0.2s; }
+.filedrop.is-over { border-color: var(--navy-600); background: var(--brand-soft); }
+
+/* Debug overlay / panel / api log level colours */
+.debug-overlay__toggle-btn { position: fixed; bottom: 12px; right: 12px; z-index: 9999; width: 36px; height: 36px; border-radius: 50%; border: none; background: #1e293b; color: #fff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.debug-overlay__toggle-btn.has-error { background: #dc2626; }
+.debug-overlay__action-btn { background: #334155; border: none; color: #e2e8f0; cursor: pointer; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+.debug-log-line { margin-bottom: 2px; white-space: pre-wrap; word-break: break-all; }
+.debug-log-line--error { color: #ef4444; }
+.debug-log-line--warn { color: #f59e0b; }
+.debug-log-line--info { color: #94a3b8; }
+.debug-panel__log-line { margin-bottom: 2px; }
+.debug-panel__log-line--error { color: var(--error); }
+.debug-panel__log-line--warn { color: var(--warning); }
+.debug-panel__log-line--info { color: var(--text); }
+.debug-panel__log-level--error { font-weight: 600; }
+.debug-panel__log-level { font-weight: 400; }
+.api-debug-log__tag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+.api-debug-log__tag--error { background: #450a0a; color: #fca5a5; }
+.api-debug-log__tag--warn { background: #451a03; color: #fdba74; }
+.api-debug-log__tag--success { background: #052e16; color: #86efac; }
+.api-debug-log__tag--info { background: #1e293b; color: #94a3b8; }
+.api-debug-log__msg { word-break: break-all; color: #e2e8f0; }
+.api-debug-log__msg--error { color: #fca5a5; }
+
+/* Setup wizard — static spacing utilities */
+.u-mt-8 { margin-top: 8px; }
+.u-mt-16 { margin-top: 16px; }
+.u-mt-20 { margin-top: 20px; }
+.u-mt-24 { margin-top: 24px; }
+.u-mb-6 { margin-bottom: 6px; }
+.u-mb-16 { margin-bottom: 16px; }
+.u-mb-20 { margin-bottom: 20px; }
+.u-row-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+.u-col-gap12 { display: flex; flex-direction: column; gap: 12px; }
+.u-gap-14 { gap: 14px; }
+
+/* Setup wizard — conditional colours */
+.wizard-finish-item__value--good { color: var(--green); }
+.wizard-finish-item__value--warn { color: var(--amber); }
+.wizard-verify-note { color: var(--text-soft); font-size: 14px; }
+.wizard-health-ring { transition: stroke-dashoffset 0.8s var(--ease); }
+.wizard-timeline-step--future { opacity: 0.45; }
+.wizard-badge { font-size: var(--sb-size, 12px); color: var(--sb-color, inherit); background: var(--sb-bg, transparent); }
+.wizard-badge__dot { background: var(--sb-color, currentColor); }
+.wizard-progress__fill { width: var(--fill, 0%); background: var(--pf-bg, var(--brand)); }
+.wizard-progress__fill--failed { --pf-bg: var(--red); }
+.wizard-progress__fill--done { --pf-bg: var(--green); }
+.wizard-log-line--ok { color: var(--green); }
+.wizard-log-line--fail { color: var(--red); }
+.wizard-log-line--warn { color: var(--amber); }
+.wizard-log-line--info { color: #b4c2e0; }
+.citation-verify__check-icon { background: var(--surface-2); color: var(--red); }
+.citation-verify__check-icon--pass { background: var(--green-soft); color: var(--green); }
+.citation-verify__check-icon--fail { background: var(--red-soft); color: var(--red); }
+
+/* DMC maintenance result message */
+.dmc-result-msg { font-size: 12px; margin-top: 6px; }
+.dmc-result-msg--ok { color: var(--green); }
+.dmc-result-msg--fail { color: var(--red); }

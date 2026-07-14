@@ -11,7 +11,7 @@ function ScoreRing({ score, label, color }) {
       <svg width={90} height={90} viewBox="0 0 90 90">
         <circle cx={45} cy={45} r={r} fill="none" stroke="var(--border)" strokeWidth={6} />
         <circle cx={45} cy={45} r={r} fill="none" stroke={color || 'var(--brand)'} strokeWidth={6}
-          strokeDasharray={circ} strokeDashoffset={offset} transform="rotate(-90 45 45)" strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s var(--ease)' }} />
+          strokeDasharray={circ} strokeDashoffset={offset} transform="rotate(-90 45 45)" strokeLinecap="round" className="wizard-health-ring" />
         <text x={45} y={45} textAnchor="middle" dominantBaseline="central" fontSize={22} fontWeight={800} fill="var(--text)">{score}</text>
       </svg>
       <div className="wizard-score-label">{label}</div>
@@ -63,7 +63,7 @@ export default function HealthReport({ onComplete, back }) {
           {health.recommendations.map((r, i) => <div key={i} className="wizard-health-item wizard-health-item--brand">{r}</div>)}
         </div>
       )}
-      <div className="wizard-actions" style={{ marginTop: 20 }}>
+      <div className="wizard-actions u-mt-20">
         <Button variant="ghost" onClick={back}>Back</Button>
         <Button variant="primary" onClick={() => onComplete(health)}>Finish</Button>
       </div>
