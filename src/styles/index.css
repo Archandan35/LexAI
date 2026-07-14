@@ -13483,6 +13483,156 @@ kbd.cmd__kbd {
   font-family: inherit;
 }
 
+/* ── Order Sheet Preview Modal — Tabs ── */
+.hpm-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  padding: 0 24px;
+  background: var(--bg-card, #fff);
+}
+
+.hpm-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.hpm-tab:hover {
+  color: var(--text, #1e293b);
+}
+
+.hpm-tab--active {
+  color: var(--primary, #2563eb);
+  border-bottom-color: var(--primary, #2563eb);
+}
+
+.hpm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.hpm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--text-muted, #64748b);
+}
+
+.hpm-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ── Historical Tab — Order Sheet Cards ── */
+.hpm-historical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hpm-historical-card {
+  display: flex;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  background: var(--bg-card, #fff);
+}
+
+.hpm-historical-card:hover {
+  border-color: var(--primary-light, #93c5fd);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.hpm-historical-card__accent {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.hpm-historical-card__body {
+  flex: 1;
+  padding: 16px 20px;
+  min-width: 0;
+}
+
+.hpm-historical-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hpm-historical-card__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text, #1e293b);
+  white-space: nowrap;
+}
+
+.hpm-historical-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.hpm-historical-card__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hpm-historical-card__notes {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #475569);
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hpm-historical-card__notes p {
+  margin: 0 0 6px;
+}
+
+.hpm-historical-card__notes p:last-child {
+  margin-bottom: 0;
+}
+
+.hpm-historical-card__notes--empty {
+  -webkit-line-clamp: unset;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+}
+
+.hpm-historical-card__footer {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+}
+
 /* ── Smart Order Sheet Builder ── */
 .sosb {
   display: flex;
