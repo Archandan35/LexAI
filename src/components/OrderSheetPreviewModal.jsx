@@ -459,10 +459,16 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                   return (
                     <div
                       key={h.id}
-                      className="hpm-historical-card"
+                      className={`hpm-historical-card hpm-tone--${tone || 'grey'}`}
                       onClick={() => handleHistoricalView(h)}
                     >
                       <div className={`hpm-historical-card__accent hpm-pill--${tone || 'grey'}`} />
+                      <div className="hpm-timeline-rail">
+                        <div className="hpm-timeline-rail__dot">
+                          <Icon name="calendar" size={18} strokeWidth={1.9} />
+                        </div>
+                        <div className="hpm-timeline-rail__line" />
+                      </div>
                       <div className="hpm-historical-card__body">
                         <div className="hpm-historical-card__header">
                           <span className="hpm-historical-card__date">
@@ -481,7 +487,10 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                           </div>
                         )}
                         <div className="hpm-historical-card__footer">
-                          Last Updated : {formatDateTime(updatedAt)}
+                          <span className="hpm-historical-card__updated">
+                            <Icon className="hpm-hc-clock" name="clock" size={13} strokeWidth={1.8} /> Last Updated : {formatDateTime(updatedAt)}
+                          </span>
+                          <Icon className="hpm-hc-chevron" name="chevron" size={16} strokeWidth={2} />
                         </div>
                       </div>
                     </div>
