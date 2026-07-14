@@ -5,6 +5,7 @@ import { useFormat } from '@/utils/format.js';
 import { extractJurisdiction, combinedCourt } from '@/utils/caseFormat.js';
 import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
 import { caseService } from '@/services/caseService.js';
+import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 function fmtCaseNumber(c) {
@@ -67,31 +68,27 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
       setLoading(true);
       const fetchHistorical = async () => {
         try {
-          const res = await orderSheetLogic.caseHistory(caseId);
-          if (res.ok !== false && res.data) {
-            const { case: theCase, hearings } = res.data;
-            const enriched = (hearings || [])
-              .filter((h) => h.id !== data.id && h.id !== data._id)
-              .map((h) => ({
-                ...h,
-                caseId: h.caseId || h.case_id,
-                case: theCase,
-                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
-                parties: theCase?.title || '—',
-                court: theCase ? combinedCourt(theCase) : '—',
-                stage: theCase?.stage || '—',
-              }));
-            setHistorical(enriched);
-          } else {
-            const [caseRes, hearingsRes] = await Promise.all([
-              caseService.getCase(caseId).catch(() => null),
-              caseService.listHearings(caseId).catch(() => null),
-            ]);
-            const theCase = caseRes?.data || caseRes;
-            const hearings = hearingsRes?.data?.hearings || hearingsRes?.data || [];
-            const enriched = (Array.isArray(hearings) ? hearings : [])
-              .filter((h) => h.id !== data.id && h.id !== data._id)
-              .map((h) => ({
+          const [caseRes, hearingsRes, historyRows] = await Promise.all([
+            caseService.getCase(caseId).catch(() => null),
+            caseService.listHearings(caseId).catch(() => []),
+            caseHistoryService.list(caseId).catch(() => []),
+          ]);
+          const theCase = caseRes?.data || caseRes;
+
+          const seen = new Set();
+          const merged = [];
+
+          const addItem = (item) => {
+            const key = item.id || item._id;
+            if (seen.has(key)) return;
+            seen.add(key);
+            merged.push(item);
+          };
+
+          (Array.isArray(hearingsRes) ? hearingsRes : [])
+            .filter((h) => h.id !== data.id && h.id !== data._id)
+            .forEach((h) => {
+              addItem({
                 ...h,
                 caseId: h.caseId || h.case_id || caseId,
                 case: theCase,
@@ -99,9 +96,25 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 parties: theCase?.title || '—',
                 court: theCase ? combinedCourt(theCase) : '—',
                 stage: theCase?.stage || '—',
-              }));
-            setHistorical(enriched);
-          }
+              });
+            });
+
+          (Array.isArray(historyRows) ? historyRows : [])
+            .filter((h) => h.id !== data.id && h.id !== data._id)
+            .forEach((h) => {
+              addItem({
+                ...h,
+                notes: h.text || h.notes,
+                caseId: h.caseId || caseId,
+                case: theCase,
+                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
+                parties: theCase?.title || '—',
+                court: theCase ? combinedCourt(theCase) : '—',
+                stage: theCase?.stage || '—',
+              });
+            });
+
+          setHistorical(merged);
         } catch {
           setHistorical([]);
         }
