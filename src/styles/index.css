@@ -13493,6 +13493,7 @@ kbd.cmd__kbd {
 }
 
 .hpm-tab {
+  flex: 1;
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 500;
@@ -13502,6 +13503,7 @@ kbd.cmd__kbd {
   border-bottom: 2px solid transparent;
   cursor: pointer;
   font-family: inherit;
+  text-align: center;
   transition: color 0.15s, border-color 0.15s;
 }
 
@@ -13512,6 +13514,39 @@ kbd.cmd__kbd {
 .hpm-tab--active {
   color: var(--primary, #2563eb);
   border-bottom-color: var(--primary, #2563eb);
+}
+
+.hpm-historical-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.hpm-historical-count {
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+}
+
+.hpm-historical-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.hpm-historical-sort:hover {
+  border-color: var(--primary-light, #93c5fd);
+  color: var(--text, #1e293b);
 }
 
 .hpm-loading {

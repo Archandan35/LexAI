@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Modal from './Modal.jsx';
 import Icon from './Icon.jsx';
 import { useFormat } from '@/utils/format.js';
 import { extractJurisdiction, combinedCourt } from '@/utils/caseFormat.js';
 import { orderSheetLogic } from '@/logic/orderSheetLogic.js';
+import { caseService } from '@/services/caseService.js';
 import { DateEngine } from '@/core/DateEngine.js';
 
 function fmtCaseNumber(c) {
@@ -48,13 +49,14 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   const [tab, setTab] = useState('current');
   const [historical, setHistorical] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sortDir, setSortDir] = useState('desc');
   const [viewHearing, setViewHearing] = useState(hearing);
 
   const data = viewHearing || doc;
   if (!data) return null;
 
   const isDoc = !!doc;
-  const caseId = !isDoc ? (data.caseId || data.case_id) : null;
+  const caseId = !isDoc ? (data.caseId || data.case_id || data.case?.caseId || data.case?._id) : null;
 
   const linkedCase = !isDoc && data.caseId && allCases
     ? allCases.find((c) => c.id === data.caseId)
@@ -63,27 +65,59 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
   useEffect(() => {
     if (tab === 'historical' && caseId && !isDoc) {
       setLoading(true);
-      orderSheetLogic.caseHistory(caseId).then((res) => {
-        if (res.ok !== false && res.data) {
-          const { case: theCase, hearings } = res.data;
-          const enriched = hearings
-            .filter((h) => h.id !== data.id)
-            .sort((a, b) => DateEngine.compare(a.date, b.date))
-            .map((h) => ({
-              ...h,
-              caseId: h.caseId || h.case_id,
-              case: theCase,
-              caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
-              parties: theCase?.title || '—',
-              court: theCase ? combinedCourt(theCase) : '—',
-              stage: theCase?.stage || '—',
-            }));
-          setHistorical(enriched);
+      const fetchHistorical = async () => {
+        try {
+          const res = await orderSheetLogic.caseHistory(caseId);
+          if (res.ok !== false && res.data) {
+            const { case: theCase, hearings } = res.data;
+            const enriched = (hearings || [])
+              .filter((h) => h.id !== data.id && h.id !== data._id)
+              .map((h) => ({
+                ...h,
+                caseId: h.caseId || h.case_id,
+                case: theCase,
+                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
+                parties: theCase?.title || '—',
+                court: theCase ? combinedCourt(theCase) : '—',
+                stage: theCase?.stage || '—',
+              }));
+            setHistorical(enriched);
+          } else {
+            const [caseRes, hearingsRes] = await Promise.all([
+              caseService.getCase(caseId).catch(() => null),
+              caseService.listHearings(caseId).catch(() => null),
+            ]);
+            const theCase = caseRes?.data || caseRes;
+            const hearings = hearingsRes?.data?.hearings || hearingsRes?.data || [];
+            const enriched = (Array.isArray(hearings) ? hearings : [])
+              .filter((h) => h.id !== data.id && h.id !== data._id)
+              .map((h) => ({
+                ...h,
+                caseId: h.caseId || h.case_id || caseId,
+                case: theCase,
+                caseNumber: theCase ? fmtCaseNumber(theCase) : '—',
+                parties: theCase?.title || '—',
+                court: theCase ? combinedCourt(theCase) : '—',
+                stage: theCase?.stage || '—',
+              }));
+            setHistorical(enriched);
+          }
+        } catch {
+          setHistorical([]);
         }
         setLoading(false);
-      }).catch(() => setLoading(false));
+      };
+      fetchHistorical();
     }
-  }, [tab, caseId, isDoc, data.id]);
+  }, [tab, caseId, isDoc, data?.id, data?._id]);
+
+  const sortedHistorical = useMemo(() => {
+    const sorted = [...historical].sort((a, b) => {
+      const cmp = DateEngine.compare(a.date, b.date);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [historical, sortDir]);
 
   const courtName = linkedCase
     ? [linkedCase.court, extractJurisdiction(linkedCase)].filter(Boolean).join(', ')
@@ -305,8 +339,16 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 <p>No other order sheets found for this case.</p>
               </div>
             ) : (
-              <div className="hpm-historical-list">
-                {historical.map((h) => {
+              <div>
+                <div className="hpm-historical-toolbar">
+                  <span className="hpm-historical-count">{historical.length} hearing{historical.length !== 1 ? 's' : ''}</span>
+                  <button className="hpm-historical-sort" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
+                    <Icon name="arrowUp" size={12} strokeWidth={2.5} style={{ transform: sortDir === 'asc' ? 'none' : 'rotate(180deg)' }} />
+                    {sortDir === 'asc' ? 'Low to High' : 'High to Low'}
+                  </button>
+                </div>
+                <div className="hpm-historical-list">
+                {sortedHistorical.map((h) => {
                   const st = getStatusStyle(h.status);
                   const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
                   return (
@@ -340,6 +382,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     </div>
                   );
                 })}
+              </div>
               </div>
             )}
           </div>
