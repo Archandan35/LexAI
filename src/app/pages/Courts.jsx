@@ -743,38 +743,36 @@ export default function Courts() {
 
       {/* View Detail Card */}
       {viewItem && (
-        <Card className="cmp-view-detail">
-          <div className="cmp-view-detail-header">
-            <div className="cmp-view-detail-avatar"><Icon name="building" size={22} /></div>
-            <div className="cmp-view-detail-info">
-              <div className="cmp-view-detail-name">{viewItem.name}</div>
-              <div className="cmp-view-detail-code">{viewItem.short_code}</div>
-            </div>
-            <button className="iconbtn" onClick={() => setViewItem(null)} title="Close"><Icon name="close" size={18} /></button>
+        <Card className="cmp-detail">
+          <div className="cmp-detail-header">
+            <span className="cmp-detail-title">{viewItem.name}</span>
+            <span className="cmp-detail-code">{viewItem.short_code}</span>
+            <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
+            <button className="iconbtn cmp-detail-close" onClick={() => setViewItem(null)} title="Close"><Icon name="close" size={16} /></button>
           </div>
-          <div className="cmp-view-detail-body">
-            <div className="cmp-view-detail-row">
-              <span className="cmp-view-detail-label">Status</span>
+          <div className="cmp-detail-body">
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Status</span>
               <span className={`badge badge--${(viewItem.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem.status}</span>
             </div>
-            <div className="cmp-view-detail-row">
-              <span className="cmp-view-detail-label">Parent</span>
-              <span>{viewItem.parent_id ? (items.find(i => i.id === viewItem.parent_id)?.name || viewItem.parent_id) : '—'}</span>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Parent</span>
+              <span className="cmp-detail-value">{viewItem.parent_id ? (items.find(i => i.id === viewItem.parent_id)?.name || viewItem.parent_id) : '—'}</span>
             </div>
-            <div className="cmp-view-detail-row">
-              <span className="cmp-view-detail-label">Description</span>
-              <span>{viewItem.description || '—'}</span>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Description</span>
+              <span className="cmp-detail-value">{viewItem.description || '—'}</span>
             </div>
-            <div className="cmp-view-detail-row">
-              <span className="cmp-view-detail-label">Display Order</span>
-              <span>{viewItem.display_order ?? '—'}</span>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">Display Order</span>
+              <span className="cmp-detail-value">{viewItem.display_order ?? '—'}</span>
             </div>
-            <div className="cmp-view-detail-row">
-              <span className="cmp-view-detail-label">ID</span>
-              <span className="cmp-mono">{viewItem.id}</span>
+            <div className="cmp-detail-row">
+              <span className="cmp-detail-label">ID</span>
+              <span className="cmp-detail-value">{viewItem.id}</span>
             </div>
           </div>
-          <div className="cmp-view-detail-footer">
+          <div className="cmp-detail-footer">
             <Button variant="ghost" size="sm" icon="edit" onClick={() => { setViewItem(null); activate('edit'); setEditId(viewItem.id); setEditName(viewItem.name); setEditCode(viewItem.short_code || ''); setEditParent(viewItem.parent_id || ''); setEditStatus(viewItem.status || 'Active'); }}>Edit</Button>
             <Button variant="ghost" size="sm" icon="trash" className="cmp-btn-danger-outline" onClick={() => { setViewItem(null); startDelete(viewItem); }}>Delete</Button>
             <Button variant="ghost" size="sm" icon="copy" onClick={() => { setViewItem(null); const newName = `${viewItem.name} (copy)`; setNewName(newName); setNewCode(viewItem.short_code ? `${viewItem.short_code}C` : ''); setNewParent(viewItem.parent_id || ''); setNewStatus('Active'); activate('add'); }}>Duplicate</Button>
@@ -788,13 +786,9 @@ export default function Courts() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
-                <div className="cmp-progress-info">
-                  <span className="cmp-progress-item">{progress.itemName}</span>
-                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
-                  <span className="cmp-progress-pct">{progress.percent}%</span>
-                </div>
+                <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>
             ) : (
               <><div className="spinner" /><span>Please wait…</span></>

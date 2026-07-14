@@ -472,7 +472,7 @@ export default function Priorities() {
         </div>
       </div>
 
-      <button className="cmp-import-mobile cmp-mobile-only" onClick={() => activate('import')}>
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
       </button>
 
@@ -517,8 +517,8 @@ export default function Priorities() {
                   <label className="cmp-label">Color</label>
                   <div className="cmp-color-picker-wrap">
                     {COLOR_OPTIONS.map((c) => (
-                      <button key={c} onClick={() => setNewColor(c)}
-                        style={{ width: 24, height: 24, borderRadius: '50%', border: newColor === c ? '2px solid #fff' : '2px solid transparent', background: c, cursor: 'pointer', outline: newColor === c ? '2px solid var(--brand)' : 'none' }}
+                      <button key={c} className="cmp-color-btn" onClick={() => setNewColor(c)}
+                        style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }}
                       />
                     ))}
                   </div>
@@ -571,8 +571,8 @@ export default function Priorities() {
                       <label className="cmp-label">Color</label>
 <div className="cmp-color-picker-wrap">
                         {COLOR_OPTIONS.map((c) => (
-                          <button key={c} onClick={() => setEditColor(c)}
-                            style={{ width: 24, height: 24, borderRadius: '50%', border: editColor === c ? '2px solid #fff' : '2px solid transparent', background: c, cursor: 'pointer', outline: editColor === c ? '2px solid var(--brand)' : 'none' }}
+                          <button key={c} className="cmp-color-btn" onClick={() => setEditColor(c)}
+                            style={{ background: c, border: editColor === c ? '2px solid #fff' : '2px solid transparent', outline: editColor === c ? '2px solid var(--brand)' : 'none' }}
                           />
                         ))}
                       </div>
@@ -632,7 +632,7 @@ export default function Priorities() {
                     ) : filtered.map(item => (
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
-                        <div style={{ width: 14, height: 14, borderRadius: 3, background: item.color || '#6b7280', flexShrink: 0 }} />
+                        <div className="cmp-color-swatch-sm" style={{ background: item.color || '#6b7280' }} />
                         <span className="cmp-checkbox-name">{item.name}</span>
                         <span className={`cmp-checkbox-status cmp-checkbox-status--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
                       </label>
@@ -683,7 +683,7 @@ export default function Priorities() {
       {viewItem && (
         <Card className="cmp-detail">
           <div className="cmp-detail-header">
-            <div style={{ width: 16, height: 16, borderRadius: 4, background: viewItem.color || '#6b7280' }} />
+            <div className="cmp-color-swatch-md" style={{ background: viewItem.color || '#6b7280' }} />
             <span className="cmp-detail-title">{viewItem.name}</span>
             <span className="cmp-code-pill">{viewItem.short_code}</span>
             <span className={`cmp-status-pill cmp-status-pill--${(viewItem.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
@@ -730,7 +730,7 @@ export default function Priorities() {
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
-                <td><div style={{ width: 18, height: 18, borderRadius: 4, background: item.color || '#6b7280' }} /></td>
+                <td><div className="cmp-color-swatch-lg" style={{ background: item.color || '#6b7280' }} /></td>
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="flag" size={15} /></span>
@@ -824,7 +824,7 @@ export default function Priorities() {
             <div key={item.id} className="cmp-mobile-card">
               <div className="cmp-mobile-card-row1">
                 <span className="cmp-mobile-drag-handle"><Icon name="grip" size={15} /></span>
-                <span className="cmp-mobile-avatar" style={{ background: item.color || '#EEF1FB', color: '#fff' }}><Icon name="flag" size={18} /></span>
+                <span className="cmp-mobile-avatar cmp-mobile-avatar--import" style={{ background: item.color || '#EEF1FB' }}><Icon name="flag" size={18} /></span>
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>

@@ -8,6 +8,7 @@ import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
+import { extractJurisdiction } from '@/utils/caseFormat.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { clientLogic } from '@/logic/clientLogic.js';
@@ -177,7 +178,7 @@ export default function CaseForm({ initial, onSubmit, onCancel, busy, submitLabe
       ...mapField('case_summary', 'case_summary'),
       ...mapField('internal_notes', 'internal_notes'),
       ...mapField('document_folder', 'document_folder'),
-      ...mapField('jurisdiction', 'jurisdiction'),
+      jurisdiction: initial.jurisdiction || extractJurisdiction(initial) || '',
       plaintiffs: initialPlaintiffs,
       defendants: initialDefendants,
     };

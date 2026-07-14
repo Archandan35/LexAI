@@ -393,12 +393,15 @@ export default function Jurisdictions() {
           </button>
         </div>
       </div>
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+        <Icon name="upload" size={16} /> Import
+      </button>
 
       {activeAction && (
         <Card className="cmp-form">
           <div className="cmp-form-header">
             <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
-            <span>{ACTIONS.find(a => a.key === activeAction)?.label} Jurisdiction</span>
+            <span className="cmp-form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Jurisdiction</span>
             {SUB_MODES[activeAction] && (
               <div className="cmp-toggle">
                 {SUB_MODES[activeAction].map(m => (
@@ -413,7 +416,7 @@ export default function Jurisdictions() {
                 ))}
               </div>
             )}
-            <button className="iconbtn" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
+            <button className="iconbtn cmp-form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
           <div className="cmp-form-body">
             {activeAction === 'add' && subMode === 'single' && (
@@ -733,8 +736,8 @@ export default function Jurisdictions() {
                   <span className="cmp-mobile-action-icon"><Icon name="copy" size={15} /></span>
                   <span className="cmp-mobile-action-label">Duplicate</span>
                 </button>
-                <button className="cmp-mobile-action" title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'} onClick={() => handleToggle(item)}>
-                  <span className="cmp-mobile-action-icon" style={{ color: item.status === 'Active' ? 'var(--green, #22c55e)' : 'var(--red, #ef4444)' }}>
+                <button className={`cmp-mobile-action${item.status === 'Active' ? ' cmp-mobile-action--toggle-on' : ' cmp-mobile-action--toggle-off'}`} title={item.status === 'Active' ? 'Set Inactive' : 'Set Active'} onClick={() => handleToggle(item)}>
+                  <span className="cmp-mobile-action-icon">
                     {item.status === 'Active' ? <Icon name="toggle-right" size={15} /> : <Icon name="toggle-left" size={15} />}
                   </span>
                   <span className="cmp-mobile-action-label">{item.status === 'Active' ? 'Active' : 'Inactive'}</span>
@@ -779,13 +782,9 @@ export default function Jurisdictions() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
-                <div className="cmp-progress-info">
-                  <span className="cmp-progress-item">{progress.itemName}</span>
-                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
-                  <span className="cmp-progress-pct">{progress.percent}%</span>
-                </div>
+                <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>
             ) : (
               <><div className="spinner" /><span>Please wait…</span></>

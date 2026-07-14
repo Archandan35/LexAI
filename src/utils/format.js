@@ -37,7 +37,13 @@ export function bytes(n) {
 
 export function stripHtml(str) {
   if (!str) return '';
-  return str.replace(/<[^>]*>/g, '');
+  return str
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\n{3,}/g, '\n\n');
 }
 
 export function truncate(str, len = 120) {

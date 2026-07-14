@@ -446,7 +446,7 @@ export default function CaseStatuses() {
         </div>
       </div>
 
-      <button className="cmp-import-mobile cmp-mobile-only" onClick={() => activate('import')}>
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
       </button>
 
@@ -834,14 +834,13 @@ export default function CaseStatuses() {
             <div className="cmp-busy-box">
               {progress ? (
                 <>
-                  <div className="cmp-busy-box-title">{progress.itemName}</div>
-                  <div className="cmp-busy-bar">
-                    <div className="cmp-busy-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
+                  <div className="cmp-progress-bar-track">
+                    <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
                   </div>
-                  <div className="cmp-busy-text">{progress.current}/{progress.total}</div>
+                  <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
                 </>
               ) : (
-                <div className="cmp-busy-spinner"><div className="spinner" /></div>
+                <div className="spinner" />
               )}
             </div>
           </div>

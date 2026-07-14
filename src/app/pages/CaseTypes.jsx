@@ -833,13 +833,9 @@ export default function CaseTypes() {
             {progress ? (
               <>
                 <div className="cmp-progress-bar-track">
-                  <div className="cmp-progress-bar-fill" style={{ width: `${progress.percent}%` }} />
+                  <div className="cmp-progress-fill" style={{ width: `${Math.max(5, progress?.percent ?? 0)}%` }} />
                 </div>
-                <div className="cmp-progress-info">
-                  <span className="cmp-progress-item">{progress.itemName}</span>
-                  <span className="cmp-progress-count">{progress.current} / {progress.total}</span>
-                  <span className="cmp-progress-pct">{progress.percent}%</span>
-                </div>
+                <div className="cmp-progress-text">{progress.current}/{progress.total} ({progress.percent}%)</div>
               </>
             ) : (
               <><div className="spinner" /><span>Please wait…</span></>

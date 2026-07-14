@@ -465,7 +465,7 @@ export default function JudgeList() {
         </div>
       </div>
 
-      <button className="cmp-import-mobile cmp-mobile-only" onClick={() => activate('import')}>
+      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
         <Icon name="upload" size={16} /> Import
       </button>
 

@@ -2436,6 +2436,7 @@ select {
   font-size: 11.5px;
   color: var(--text-faint);
   margin-top: 3px;
+  white-space: pre-wrap;
 }
 
 .timeline-item__source p,
@@ -10823,6 +10824,7 @@ kbd.cmd__kbd {
   font-size: 13.5px;
   color: var(--text-soft);
   margin-top: 6px;
+  white-space: pre-wrap;
 }
 
 .order-sheet__timeline-v-desc p,
@@ -11306,6 +11308,10 @@ kbd.cmd__kbd {
 .order-sheet__timeline-event-detail {
   font-size: 13px;
   color: var(--text-soft);
+}
+
+.order-sheet__timeline-event-detail-inner {
+  white-space: pre-wrap;
 }
 
 .order-sheet__timeline-event-detail-inner p,
@@ -20338,6 +20344,178 @@ kbd.cmd__kbd {
   display: none;
 }
 
+/* ==================== TABLET (≤ 1024px) ==================== */
+@media (max-width: 1024px) {
+  .cmp-hero {
+    padding: 24px 26px;
+    min-height: 100px;
+    margin-bottom: 20px;
+  }
+
+  .cmp-hero-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .cmp-hero-text h2 {
+    font-size: 24px;
+  }
+
+  .cmp-hero-text p {
+    font-size: 13px;
+    max-width: 380px;
+  }
+
+  .cmp-hero-watermark {
+    display: block;
+    right: 16px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .cmp-toolbar {
+    gap: 10px;
+  }
+
+  .cmp-toolbar .btn {
+    padding: 11px 18px;
+    font-size: 14px;
+    border-radius: 9px;
+  }
+
+  .cmp-search {
+    width: 100%;
+  }
+
+  .cmp-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-table thead {
+    display: none;
+  }
+
+  .cmp-table,
+  .cmp-table tbody,
+  .cmp-table tr {
+    display: block;
+  }
+
+  .cmp-table tr {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .cmp-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .cmp-row--dragging {
+    opacity: 0.35;
+  }
+
+  .cmp-table td {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .cmp-drag-cell {
+    order: -1;
+  }
+
+  .cmp-drag-handle {
+    color: #c4c9d4;
+  }
+
+  .cmp-name-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+  }
+
+  .cmp-cell-name {
+    font-size: 15px;
+  }
+
+  .cmp-code-pill {
+    font-size: 11.5px;
+    padding: 4px 10px;
+    background: #eef2ff;
+    color: #3b4ee0;
+    border: 1px solid #dde3fb;
+    border-radius: 7px;
+  }
+
+  .cmp-status-pill {
+    font-size: 12px;
+    padding: 5px 12px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .cmp-status-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .cmp-actions {
+    gap: 6px;
+  }
+
+  .cmp-act-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+  }
+
+  .cmp-act-btn--view {
+    color: var(--brand);
+  }
+
+  .cmp-act-btn--edit {
+    color: var(--brand);
+  }
+
+  .cmp-act-btn--del {
+    color: var(--red);
+  }
+
+  .cmp-table-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 8px 4px 0;
+  }
+
+  .cmp-table-footer > div:first-child {
+    margin-right: auto;
+  }
+
+  .cmp-pagination {
+    gap: 6px;
+  }
+
+  .cmp-page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .cmp-toolbar-right {
+    display: none;
+  }
+}
+
+/* ==================== MOBILE (≤ 600px) ==================== */
 @media (max-width: 600px) {
   .cmp-stats-row {
     display: none;
@@ -20806,13 +20984,19 @@ kbd.cmd__kbd {
     gap: 6px;
   }
 
-  .cmp-toggle {
+  .cmp-toggle,
+  .cmp-form-toggle {
     flex-wrap: wrap;
   }
 
-  .cmp-toggle-btn {
+  .cmp-toggle-btn,
+  .cmp-form-toggle-btn {
     font-size: 11.5px;
     padding: 4px 10px;
+  }
+
+  .cmp-form-collapse {
+    padding: 6px;
   }
 
   .cmp-detail {
@@ -21563,6 +21747,17 @@ kbd.cmd__kbd {
 .cmp-mt8 { margin-top: 8px; }
 .cmp-cell-name--soft { color: var(--text-soft); }
 .cmp-color-picker-wrap { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Color swatches - static sizing for priority color indicators */
+.cmp-color-swatch-sm { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.cmp-color-swatch-md { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+.cmp-color-swatch-lg { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+
+/* Color picker swatch button */
+.cmp-color-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; padding: 0; border-style: solid; }
+
+/* Mobile avatar with dynamic background */
+.cmp-mobile-avatar--import { color: #fff; }
 
 /* OrderSheet */
 .order-sheet__tpl-actions { display: flex; gap: 2px; }
