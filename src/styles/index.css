@@ -784,52 +784,12 @@ select {
   white-space: nowrap;
 }
 
-.badge--green {
-  background: var(--green-soft);
-  color: var(--green);
-}
-
-.badge--red {
-  background: var(--red-soft);
-  color: var(--red);
-}
-
-.badge--amber {
-  background: var(--amber-soft);
-  color: var(--amber);
-}
-
-.badge--navy {
-  background: var(--brand-soft);
-  color: var(--navy-700);
-}
-
-.badge--grey {
-  background: #eef0f5;
-  color: var(--text-soft);
-}
-
-.badge--info {
-  background: var(--brand-soft, #eef2ff);
-  color: var(--navy-600, #4f46e5);
-}
-
-.badge--success {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.badge--muted {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
 .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   display: inline-block;
-  background: currentColor;
+  flex-shrink: 0;
 }
 
 /* ---------- Shared page components ---------- */
@@ -13371,7 +13331,8 @@ kbd.cmd__kbd {
 }
 
 .hpm-proceedings--edit {
-  border-top: 1.5px solid var(--border, #e2e8f0);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 6px;
   padding: 0;
 }
 
@@ -13382,7 +13343,9 @@ kbd.cmd__kbd {
 
 .hpm-proceedings--edit .doc-canvas {
   padding: 12px;
-  max-height: 50vh;
+  max-height: none;
+  overflow-y: visible;
+  justify-content: flex-start;
 }
 
 .hpm-proceedings--edit .doc-page {

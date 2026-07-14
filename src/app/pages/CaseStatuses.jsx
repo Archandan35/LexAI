@@ -11,6 +11,8 @@ import Modal from '@/components/Modal.jsx';
 
 const ENTITY_PREFIX = 'CS';
 
+const COLOR_OPTIONS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'];
+
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
   { key: 'edit', label: 'Edit', icon: 'edit', variant: 'outline' },
@@ -46,12 +48,14 @@ export default function CaseStatuses() {
 
   const [newName, setNewName] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [newColor, setNewColor] = useState('#6b7280');
   const [newStatus, setNewStatus] = useState('Active');
   const [newDesc, setNewDesc] = useState('');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editColor, setEditColor] = useState('#6b7280');
   const [editStatus, setEditStatus] = useState('');
 
   const [delId, setDelId] = useState('');
@@ -94,8 +98,8 @@ export default function CaseStatuses() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
-    setEditId(''); setEditName(''); setEditCode(''); setEditStatus('');
+    setNewName(''); setNewCode(''); setNewColor('#6b7280'); setNewStatus('Active'); setNewDesc('');
+    setEditId(''); setEditName(''); setEditCode(''); setEditColor('#6b7280'); setEditStatus('');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
     setBulkAddText(''); setBulkEditText(''); setBulkDelSelected(new Set());
@@ -112,9 +116,9 @@ export default function CaseStatuses() {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
-    const res = await caseStatusLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
+    const res = await caseStatusLogic.create({ name: newName, short_code: newCode, color: newColor, status: newStatus, description: newDesc });
     setBusy(false);
-    if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Case status added.', 'success'); load(); }
+    if (res.ok) { setNewName(''); setNewCode(''); setNewColor('#6b7280'); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Case status added.', 'success'); load(); }
     else toast.push(res.error, 'error');
   };
 
@@ -162,7 +166,7 @@ export default function CaseStatuses() {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     setBusy(true);
     const item = items.find(x => x.id === editId);
-    const res = await caseStatusLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
+    const res = await caseStatusLogic.update(editId, { name: editName, short_code: editCode, color: editColor, description: item?.description, display_order: item?.display_order, status: editStatus });
     setBusy(false);
     if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Case status updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -310,6 +314,7 @@ export default function CaseStatuses() {
     setEditId(item.id);
     setEditName(item.name);
     setEditCode(item.short_code || '');
+    setEditColor(item.color || '#6b7280');
     setEditStatus(item.status || 'Active');
     setEditTarget(item);
   };
@@ -323,6 +328,7 @@ export default function CaseStatuses() {
   const startDuplicate = (item) => {
     setNewName(item.name + ' (copy)');
     setNewCode(item.short_code || '');
+    setNewColor('#6b7280');
     setDupTarget(item);
   };
 
@@ -491,6 +497,16 @@ export default function CaseStatuses() {
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                   <Input value={newCode} placeholder="e.g., ACTIVE" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                 </div>
+                <div className="cmp-field cmp-field--full">
+                  <label className="cmp-label">Badge Color</label>
+                  <div className="cmp-color-picker-wrap">
+                    {COLOR_OPTIONS.map((c) => (
+                      <button key={c} className="cmp-color-btn" onClick={() => setNewColor(c)}
+                        style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Status</label>
                   <Select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
@@ -520,7 +536,7 @@ export default function CaseStatuses() {
               <div className="cmp-form-grid">
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Select Case Status <span className="cmp-required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditColor(item.color || '#6b7280'); setEditStatus(item.status || 'Active'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -534,6 +550,16 @@ export default function CaseStatuses() {
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
                       <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                    </div>
+                    <div className="cmp-field cmp-field--full">
+                      <label className="cmp-label">Badge Color</label>
+                      <div className="cmp-color-picker-wrap">
+                        {COLOR_OPTIONS.map((c) => (
+                          <button key={c} className="cmp-color-btn" onClick={() => setEditColor(c)}
+                            style={{ background: c, border: editColor === c ? '2px solid #fff' : '2px solid transparent', outline: editColor === c ? '2px solid var(--brand)' : 'none' }}
+                          />
+                        ))}
+                      </div>
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Status</label>
@@ -591,7 +617,7 @@ export default function CaseStatuses() {
                       <label key={item.id} className={`cmp-checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="cmp-checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
+                        <span className="badge" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -710,6 +736,7 @@ export default function CaseStatuses() {
           <thead>
             <tr>
               <th className="cmp-th--w32"></th>
+              <th className="cmp-th--w40">CLR</th>
               <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
               <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
@@ -718,7 +745,7 @@ export default function CaseStatuses() {
           </thead>
           <tbody>
             {paged.length === 0 ? (
-              <tr><td className="cmp-empty" colSpan={5}>No case statuses found.</td></tr>
+              <tr><td className="cmp-empty" colSpan={6}>No case statuses found.</td></tr>
             ) : paged.map((item, idx) => (
               <tr key={item.id} draggable={!search}
                 onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -729,6 +756,7 @@ export default function CaseStatuses() {
                 <td className="cmp-drag-cell">
                   <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                 </td>
+                <td><div className="cmp-color-swatch-lg" style={{ background: item.color || '#6b7280' }} /></td>
                 <td>
                   <div className="cmp-name-cell">
                     <span className="cmp-name-avatar"><Icon name="toggle" size={15} /></span>

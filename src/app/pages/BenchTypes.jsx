@@ -47,6 +47,7 @@ export default function BenchTypes() {
   const [newCode, setNewCode] = useState('');
   const [newStatus, setNewStatus] = useState('Active');
   const [newDesc, setNewDesc] = useState('');
+  const [newColor, setNewColor] = useState('#6b7280');
 
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
@@ -104,7 +105,7 @@ export default function BenchTypes() {
   const reset = () => {
     setActiveAction(null);
     setSubMode('single');
-    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc('');
+    setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setNewColor('#6b7280');
     setEditId(''); setEditName(''); setEditCode(''); setEditStatus('Active');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
@@ -125,7 +126,7 @@ export default function BenchTypes() {
     if (!newName.trim() || !newCode.trim()) { toast.push('Name and code are required.', 'error'); return; }
     if (exists(newName, newCode)) { toast.push(`"${newName.trim()}" already exists.`, 'error'); return; }
     setBusy(true);
-    const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc });
+    const res = await benchTypeLogic.create({ name: newName, short_code: newCode, status: newStatus, description: newDesc, color: newColor });
     setBusy(false);
     if (res.ok) { setNewName(''); setNewCode(''); setNewStatus('Active'); setNewDesc(''); setDupTarget(null); toast.push('Bench type added.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -165,7 +166,7 @@ export default function BenchTypes() {
     if (!editName.trim() || !editCode.trim()) { toast.push('Name and code cannot be empty.', 'error'); return; }
     setBusy(true);
     const item = items.find(x => x.id === editId);
-    const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus });
+    const res = await benchTypeLogic.update(editId, { name: editName, short_code: editCode, description: item?.description, display_order: item?.display_order, status: editStatus, color: newColor });
     setBusy(false);
     if (res.ok) { setEditId(''); setEditTarget(null); toast.push('Bench type updated.', 'success'); load(); }
     else toast.push(res.error, 'error');
@@ -302,6 +303,7 @@ export default function BenchTypes() {
     setEditName(item.name);
     setEditCode(item.short_code || '');
     setEditStatus(item.status || 'Active');
+    setNewColor(item.color || '#6b7280');
     setEditTarget(item);
   };
 
@@ -316,6 +318,7 @@ export default function BenchTypes() {
     setNewCode(item.short_code || '');
     setNewStatus(item.status || 'Active');
     setNewDesc(item.description || '');
+    setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
 
@@ -503,6 +506,15 @@ export default function BenchTypes() {
                   <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
                   <span className="bench-types__char-count">{newDesc.length} / 250</span>
                 </div>
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Badge Color</label>
+                  <div className="cmp-color-picker-wrap">
+                    {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
+                      <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
+                    ))}
+                    <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
+                  </div>
+                </div>
               </div>
             )}
             {activeAction === 'add' && subMode === 'bulk' && (
@@ -520,7 +532,7 @@ export default function BenchTypes() {
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Select Bench Type <span className="bench-types__required">*</span></label>
-                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); } }}>
+                  <Select value={editId} onChange={e => { setEditId(e.target.value); const item = items.find(x => x.id === e.target.value); if (item) { setEditName(item.name); setEditCode(item.short_code || ''); setEditStatus(item.status || 'Active'); setNewColor(item.color || '#6b7280'); } }}>
                     <option value="">— choose —</option>
                     {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                   </Select>
@@ -537,11 +549,20 @@ export default function BenchTypes() {
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Status</label>
-                      <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
-                        <option>Active</option>
-                        <option>Inactive</option>
-                      </Select>
+                    <Select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                      <option>Active</option>
+                      <option>Inactive</option>
+                    </Select>
+                  </div>
+                  <div className="bench-types__field bench-types__field--full">
+                    <label className="bench-types__label">Badge Color</label>
+                    <div className="cmp-color-picker-wrap">
+                      {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
+                        <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
+                      ))}
+                      <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
                     </div>
+                  </div>
                   </>
                 )}
               </div>
@@ -591,7 +612,7 @@ export default function BenchTypes() {
                       <label key={item.id} className={`bench-types__checkbox-row${bulkDelSelected.has(item.id) ? ' checked' : ''}`}>
                         <input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} />
                         <span className="bench-types__checkbox-name">{item.name}</span>
-                        <span className={`badge badge--${(item.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{item.status}</span>
+                        <span className="badge" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{item.status}</span>
                       </label>
                     ))}
                   </div>
@@ -662,12 +683,16 @@ export default function BenchTypes() {
       <Modal open={!!viewItem} title={viewItem?.name} onClose={() => setViewItem(null)}>
         <div className="bench-types__detail-body">
           <div className="bench-types__detail-row">
+            <span className="bench-types__detail-label">Badge Color</span>
+            <span className="bench-types__detail-value"><div className="cmp-color-swatch-lg" style={{ background: viewItem?.color || '#6b7280' }} /></span>
+          </div>
+          <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Short Code</span>
             <span className="bench-types__detail-value">{viewItem?.short_code || '—'}</span>
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Status</span>
-            <span className={`badge badge--${(viewItem?.status || '').toLowerCase() === 'active' ? 'green' : 'grey'}`}>{viewItem?.status || 'Active'}</span>
+            <span className="badge" style={{ background: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018', color: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280', borderColor: (viewItem?.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040' }}>{viewItem?.status || 'Active'}</span>
           </div>
           <div className="bench-types__detail-row">
             <span className="bench-types__detail-label">Description</span>
@@ -701,6 +726,15 @@ export default function BenchTypes() {
               <option>Inactive</option>
             </Select>
           </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Badge Color</label>
+            <div className="cmp-color-picker-wrap">
+              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
+                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
+              ))}
+              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
+            </div>
+          </div>
         </div>
       </Modal>
 
@@ -729,6 +763,15 @@ export default function BenchTypes() {
             <label className="bench-types__label">Description <span className="bench-types__optional">(optional)</span></label>
             <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={250} />
             <span className="bench-types__char-count">{newDesc.length} / 250</span>
+          </div>
+          <div className="bench-types__field bench-types__field--full">
+            <label className="bench-types__label">Badge Color</label>
+            <div className="cmp-color-picker-wrap">
+              {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
+                <button key={c} type="button" className="cmp-color-swatch" style={{ background: c, border: newColor === c ? '2px solid #fff' : '2px solid transparent', outline: newColor === c ? '2px solid var(--brand)' : 'none' }} onClick={() => setNewColor(c)} />
+              ))}
+              <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} className="cmp-color-picker__custom" />
+            </div>
           </div>
         </div>
       </Modal>
@@ -760,6 +803,7 @@ export default function BenchTypes() {
                 <td>
                   <div className="bench-types__name-cell">
                     <span className="bench-types__name-avatar"><Icon name="users" size={15} /></span>
+                    <span className="cmp-color-swatch-sm" style={{ background: item.color || '#6b7280' }} />
                     <span className="bench-types__cell-name">{item.name}</span>
                   </div>
                 </td>

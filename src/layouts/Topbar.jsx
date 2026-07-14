@@ -65,7 +65,7 @@ export default function Topbar({ onToggle }) {
             <div className="usermenu__head">
               <div className="usermenu__name">{user?.name}</div>
               <div className="usermenu__meta">{user?.email || user?.username}</div>
-              <div className="badge badge--navy topbar__role-badge">{roleName}</div>
+              <div className="badge topbar__role-badge" style={{ background: '#1e40af18', color: '#1e40af', borderColor: '#1e40af40' }}>{roleName}</div>
             </div>
             {canViewModule('users') && (
               <button className="usermenu__item" onClick={() => { setMenuOpen(false); nav(`/admin/users/${user?.id}`); }}>
