@@ -194,12 +194,12 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
           </div>
           <div className="hpm-header__right">
             {!isDoc && data.date && (
-              <span className="hpm-pill hpm-pill--date">
+              <span className="hpm-pill" style={{ background: '#47556918', color: '#475569', border: '1px solid #47556940' }}>
                 <Icon name="calendar" size={12} strokeWidth={2} /> {formatDate(data.date)}
               </span>
             )}
             {data.status && (
-              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
+              <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
             )}
             <button className="hpm-close-btn" onClick={onClose} aria-label="Close">
               <Icon name="close" size={18} strokeWidth={2} />
@@ -210,12 +210,12 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
         {!isDoc && (data.date || data.status) && (
           <div className="hpm-mobile-badges">
             {data.date && (
-              <span className="hpm-pill hpm-pill--date">
+              <span className="hpm-pill" style={{ background: '#47556918', color: '#475569', border: '1px solid #47556940' }}>
                 <Icon name="calendar" size={13} strokeWidth={2.2} /> {formatDate(data.date)}
               </span>
             )}
             {data.status && (
-              <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
+              <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
             )}
           </div>
         )}
@@ -345,7 +345,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                     <div className="hpm-hcell__body">
                       <span className="hpm-hcell__label">Status</span>
                       <span className="hpm-hcell__value">
-                        <span className={`hpm-pill hpm-pill--${statusColour(data.status)}`}>{data.status}</span>
+                        <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[statusColour(data.status)]}18`, color: ACCENT_COLORS[statusColour(data.status)], border: `1px solid ${ACCENT_COLORS[statusColour(data.status)]}40` }}>{data.status}</span>
                       </span>
                     </div>
                   </div>
@@ -431,7 +431,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                           <span className="hpm-historical-card__date">
                             <Icon name="calendar" size={14} strokeWidth={2} /> {formatDate(h.date)}
                           </span>
-                          <span className={`hpm-pill hpm-pill--${tone}`}>
+                          <span className="hpm-pill" style={{ background: `${ACCENT_COLORS[tone]}18`, color: ACCENT_COLORS[tone], border: `1px solid ${ACCENT_COLORS[tone]}40` }}>
                             <span className="dot" />
                             {h.status}
                           </span>

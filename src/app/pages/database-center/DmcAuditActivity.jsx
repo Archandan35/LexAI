@@ -61,7 +61,7 @@ export default function DmcAuditActivity() {
               const actionColor = l.action?.startsWith('backup') ? 'green' : l.action?.startsWith('restore') ? 'navy' : l.action?.startsWith('delete') ? 'red' : l.action?.startsWith('import') ? 'amber' : 'navy';
               return (
                 <tr key={l.id || i}>
-                  <td><span className={`dmc-badge dmc-badge--${actionColor}`}>{l.action || '—'}</span></td>
+                  <td><span className="dmc-badge" style={{ background: actionColor === 'green' ? '#16a34a18' : actionColor === 'red' ? '#dc262618' : actionColor === 'amber' ? '#d9770618' : '#1e3a5f18', color: actionColor === 'green' ? '#16a34a' : actionColor === 'red' ? '#dc2626' : actionColor === 'amber' ? '#d97706' : '#1e3a5f', borderColor: actionColor === 'green' ? '#16a34a40' : actionColor === 'red' ? '#dc262640' : actionColor === 'amber' ? '#d9770640' : '#1e3a5f40' }}>{l.action || '—'}</span></td>
                   <td>{l.user || l.userName || 'system'}</td>
                   <td>{l.module || '—'}</td>
                   <td>{formatDate(l.createdAt || l.created_at || l.timestamp)}</td>

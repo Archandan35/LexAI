@@ -119,10 +119,10 @@ export default function DmcImportCenter() {
                 <thead><tr><th>Property</th><th>Value</th></tr></thead>
                 <tbody>
                   <tr><td>File</td><td>{fileName}</td></tr>
-                  <tr><td>Detected Format</td><td><span className={`dmc-badge dmc-badge--${detectedFormat === 'Unknown' ? 'red' : 'navy'}`}>{detectedFormat}</span></td></tr>
-                  <tr><td>Validation</td><td><span className={`dmc-badge dmc-badge--${validation?.ok ? 'green' : 'red'}`}>{validation?.ok ? 'Passed' : 'Failed'}</span></td></tr>
+                  <tr><td>Detected Format</td><td><span className="dmc-badge" style={{ background: detectedFormat === 'Unknown' ? '#dc262618' : '#1e3a5f18', color: detectedFormat === 'Unknown' ? '#dc2626' : '#1e3a5f', borderColor: detectedFormat === 'Unknown' ? '#dc262640' : '#1e3a5f40' }}>{detectedFormat}</span></td></tr>
+                  <tr><td>Validation</td><td><span className="dmc-badge" style={{ background: validation?.ok ? '#16a34a18' : '#dc262618', color: validation?.ok ? '#16a34a' : '#dc2626', borderColor: validation?.ok ? '#16a34a40' : '#dc262640' }}>{validation?.ok ? 'Passed' : 'Failed'}</span></td></tr>
                   <tr><td>Details</td><td>{validation?.reason || '—'}</td></tr>
-                  {result && <tr><td>Import Result</td><td><span className={`dmc-badge dmc-badge--${result.success ? 'green' : 'red'}`}>{result.success ? 'Imported' : 'Failed'}</span></td></tr>}
+                  {result && <tr><td>Import Result</td><td><span className="dmc-badge" style={{ background: result.success ? '#16a34a18' : '#dc262618', color: result.success ? '#16a34a' : '#dc2626', borderColor: result.success ? '#16a34a40' : '#dc262640' }}>{result.success ? 'Imported' : 'Failed'}</span></td></tr>}
                 </tbody>
               </table>
 

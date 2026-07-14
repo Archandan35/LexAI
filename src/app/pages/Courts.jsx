@@ -963,7 +963,7 @@ export default function Courts() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="cmp-status-pill" style={{ background: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || 'Active').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>

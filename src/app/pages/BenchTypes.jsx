@@ -809,8 +809,8 @@ export default function BenchTypes() {
                 </td>
                 <td><span className="bench-types__code-pill">{item.short_code}</span></td>
                 <td>
-                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
-                    <span className="bench-types__status-dot"></span>
+                  <span className="bench-types__status-pill" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#ECFDF5' : '#FFF7ED', color: (item.status || '').toLowerCase() === 'active' ? '#16A34A' : '#D97706' }}>
+                    <span className="bench-types__status-dot" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#22C55E' : '#F59E0B' }}></span>
                     {item.status || 'Active'}
                   </span>
                 </td>
@@ -870,8 +870,8 @@ export default function BenchTypes() {
               <div className="bench-types__mobile-card-info">
                 <div className="bench-types__mobile-card-top">
                   <span className="bench-types__mobile-card-name">{item.name}</span>
-                  <span className={`bench-types__status-pill bench-types__status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
-                    <span className="bench-types__status-dot"></span>
+                  <span className="bench-types__status-pill" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#ECFDF5' : '#FFF7ED', color: (item.status || '').toLowerCase() === 'active' ? '#16A34A' : '#D97706' }}>
+                    <span className="bench-types__status-dot" style={{ background: (item.status || '').toLowerCase() === 'active' ? '#22C55E' : '#F59E0B' }}></span>
                     {item.status || 'Active'}
                   </span>
                 </div>

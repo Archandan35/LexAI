@@ -625,7 +625,7 @@ export default function CaseStages() {
           </div>
           <div className="cmp-detail-row">
             <span className="cmp-detail-label">Status</span>
-            <span className={`cmp-status-pill cmp-status-pill--${(viewItem?.status || 'Active').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+            <span className="cmp-status-pill" style={{ background: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((viewItem?.status || 'Active').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
               <span className="cmp-status-dot"></span>{viewItem?.status || 'Active'}
             </span>
           </div>
@@ -732,7 +732,7 @@ export default function CaseStages() {
                   </div>
                 </td>
                 <td>
-                  <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                  <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
                     <span className="cmp-status-dot"></span>
                     {item.status || 'Active'}
                   </span>
@@ -821,7 +821,7 @@ export default function CaseStages() {
                 <div className="cmp-mobile-card-info">
                   <div className="cmp-mobile-card-top">
                     <span className="cmp-mobile-card-name">{item.name}</span>
-                    <span className={`cmp-status-pill cmp-status-pill--${(item.status || '').toLowerCase() === 'active' ? 'active' : 'inactive'}`}>
+                    <span className="cmp-status-pill" style={{ background: ((item.status || '').toLowerCase() === 'active' ? '#16a34a18' : '#6b728018'), color: ((item.status || '').toLowerCase() === 'active' ? '#16a34a' : '#6b7280'), borderColor: ((item.status || '').toLowerCase() === 'active' ? '#16a34a40' : '#6b728040') }}>
                       <span className="cmp-status-dot"></span>{item.status || 'Active'}
                     </span>
                   </div>

@@ -13211,42 +13211,6 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
-.hpm-pill--date {
-  background: var(--brand-soft);
-  color: var(--navy-700);
-  border: 1px solid #b8c8f0;
-}
-
-.hpm-pill--green {
-  background: #e6f9ef;
-  color: #16a05a;
-  border: 1.5px solid #a8e8c8;
-}
-
-.hpm-pill--blue {
-  background: #dbeafe;
-  color: #1e40af;
-  border: 1.5px solid #93c5fd;
-}
-
-.hpm-pill--red {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1.5px solid #fca5a5;
-}
-
-.hpm-pill--orange {
-  background: #ffedd5;
-  color: #9a3412;
-  border: 1.5px solid #fdba74;
-}
-
-.hpm-pill--grey {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1.5px solid #cbd5e1;
-}
-
 /* Blinking dot animation */
 @keyframes blink-dot {
   0%, 100% { opacity: 1; }
@@ -15531,64 +15495,8 @@ kbd.cmd__kbd {
     padding: 6px 18px 16px;
   }
 
-  .hpm-mobile-badges .hpm-pill--date {
-    display: inline-flex;
-    border: 1.5px solid #cdd2e8;
-    border-radius: 9px;
-    padding: 5px 11px;
-    color: #2c3d85;
-    font-weight: 700;
-    background: transparent;
-    gap: 5px;
-  }
-
   .hpm-mobile-badges .hpm-pill {
     display: inline-flex;
-  }
-
-  .hpm-mobile-badges .hpm-pill--green {
-    background: #e6f9ef;
-    color: #16a05a;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-weight: 700;
-    border: 1.5px solid #a8e8c8;
-  }
-
-  .hpm-mobile-badges .hpm-pill--blue {
-    background: #dbeafe;
-    color: #1e40af;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-weight: 700;
-    border: 1.5px solid #93c5fd;
-  }
-
-  .hpm-mobile-badges .hpm-pill--red {
-    background: #fee2e2;
-    color: #991b1b;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-weight: 700;
-    border: 1.5px solid #fca5a5;
-  }
-
-  .hpm-mobile-badges .hpm-pill--orange {
-    background: #ffedd5;
-    color: #9a3412;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-weight: 700;
-    border: 1.5px solid #fdba74;
-  }
-
-  .hpm-mobile-badges .hpm-pill--grey {
-    background: #f1f5f9;
-    color: #475569;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-weight: 700;
-    border: 1.5px solid #cbd5e1;
   }
 
   .hpm-body {
@@ -15762,36 +15670,6 @@ kbd.cmd__kbd {
     font-size: 11.5px;
     font-weight: 700;
     border: 1.5px solid #a8e8c8;
-  }
-
-  .hpm-hcell .hpm-pill--green {
-    background: #e6f9ef;
-    color: #16a05a;
-    border: 1.5px solid #a8e8c8;
-  }
-
-  .hpm-hcell .hpm-pill--blue {
-    background: #dbeafe;
-    color: #1e40af;
-    border: 1.5px solid #93c5fd;
-  }
-
-  .hpm-hcell .hpm-pill--red {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1.5px solid #fca5a5;
-  }
-
-  .hpm-hcell .hpm-pill--orange {
-    background: #ffedd5;
-    color: #9a3412;
-    border: 1.5px solid #fdba74;
-  }
-
-  .hpm-hcell .hpm-pill--grey {
-    background: #f1f5f9;
-    color: #475569;
-    border: 1.5px solid #cbd5e1;
   }
 
   .hpm-proceedings {
@@ -17270,26 +17148,6 @@ kbd.cmd__kbd {
   font-weight: 600;
 }
 
-.dmc-badge--green {
-  background: var(--green-soft);
-  color: var(--green);
-}
-
-.dmc-badge--red {
-  background: var(--red-soft);
-  color: var(--red);
-}
-
-.dmc-badge--amber {
-  background: var(--amber-soft);
-  color: var(--amber);
-}
-
-.dmc-badge--navy {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
 .dmc-wizard {
   max-width: 720px;
   margin: 0 auto;
@@ -18684,24 +18542,6 @@ kbd.cmd__kbd {
   height: 7px;
   border-radius: 50%;
   display: inline-block;
-}
-
-.bench-types__status-pill--active {
-  background: #ECFDF5;
-  color: #16A34A;
-}
-
-.bench-types__status-pill--active .bench-types__status-dot {
-  background: #22C55E;
-}
-
-.bench-types__status-pill--inactive {
-  background: #FFF7ED;
-  color: #D97706;
-}
-
-.bench-types__status-pill--inactive .bench-types__status-dot {
-  background: #F59E0B;
 }
 
 .bench-types__watermark-icon {
@@ -20504,24 +20344,6 @@ kbd.cmd__kbd {
   height: 7px;
   border-radius: 50%;
   display: inline-block;
-}
-
-.cmp-status-pill--active {
-  background: #ECFDF5;
-  color: #16A34A;
-}
-
-.cmp-status-pill--active .cmp-status-dot {
-  background: #22C55E;
-}
-
-.cmp-status-pill--inactive {
-  background: #FFF7ED;
-  color: #D97706;
-}
-
-.cmp-status-pill--inactive .cmp-status-dot {
-  background: #F59E0B;
 }
 
 .cmp-actions {

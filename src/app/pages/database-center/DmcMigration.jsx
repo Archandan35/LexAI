@@ -109,11 +109,11 @@ export default function DmcMigration() {
               <table className="dmc-table dmc-migration-table">
                 <thead><tr><th>Source Type</th><th>Target Type</th><th>Status</th></tr></thead>
                 <tbody>
-                  <tr><td>String / Text</td><td>String / Text</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                  <tr><td>Number / Integer</td><td>Number / Integer</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                  <tr><td>Boolean</td><td>Boolean</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                  <tr><td>Date / DateTime</td><td>Date / DateTime</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
-                  <tr><td>JSON / Object</td><td>JSON / Object</td><td><span className="dmc-badge dmc-badge--green">Compatible</span></td></tr>
+                  <tr><td>String / Text</td><td>String / Text</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Compatible</span></td></tr>
+                  <tr><td>Number / Integer</td><td>Number / Integer</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Compatible</span></td></tr>
+                  <tr><td>Boolean</td><td>Boolean</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Compatible</span></td></tr>
+                  <tr><td>Date / DateTime</td><td>Date / DateTime</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Compatible</span></td></tr>
+                  <tr><td>JSON / Object</td><td>JSON / Object</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>Compatible</span></td></tr>
                 </tbody>
               </table>
               <Button size="sm" variant="ghost" onClick={startValidation}>Validate Mapping</Button>
@@ -131,7 +131,7 @@ export default function DmcMigration() {
                     <tr><td>Target</td><td>{report.target}</td></tr>
                     <tr><td>Schema Version</td><td>{report.schemaVersion}</td></tr>
                     <tr><td>Collections</td><td>{report.collections}</td></tr>
-                    <tr><td>Status</td><td><span className="dmc-badge dmc-badge--green">{report.status}</span></td></tr>
+                    <tr><td>Status</td><td><span className="dmc-badge" style={{ background: '#16a34a18', color: '#16a34a', borderColor: '#16a34a40' }}>{report.status}</span></td></tr>
                   </tbody>
                 </table>
               ) : (
