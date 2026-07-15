@@ -11465,6 +11465,7 @@ kbd.cmd__kbd {
 
 .hh-view__preview-status {
   display: flex;
+  justify-content: flex-end;
 }
 
 .hh-view__preview-text {

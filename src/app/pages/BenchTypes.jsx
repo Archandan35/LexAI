@@ -487,7 +487,7 @@ export default function BenchTypes() {
                 </div>
                 <div className="bench-types__field">
                   <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
-                  <Input value={newCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                   <span className="bench-types__hint">Example: BENT-DIVISION-BENCH</span>
                 </div>
                 <div className="bench-types__field">
@@ -536,7 +536,7 @@ export default function BenchTypes() {
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
-                      <Input value={editCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setEditCode(e.target.value.toUpperCase())} />
                       <span className="bench-types__hint">Example: BENT-DIVISION-BENCH</span>
                     </div>
                     <div className="bench-types__field">
@@ -694,7 +694,7 @@ export default function BenchTypes() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
-            <Input value={editCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setEditCode(e.target.value.toUpperCase())} />
             <span className="bench-types__hint">Example: BENT-DIVISION-BENCH</span>
           </div>
           <div className="bench-types__field">
@@ -723,7 +723,7 @@ export default function BenchTypes() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code <span className="bench-types__required">*</span></label>
-            <Input value={newCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={newCode} placeholder="BENT-DIVISION-BENCH" onChange={e => setNewCode(e.target.value.toUpperCase())} />
             <span className="bench-types__hint">Example: BENT-DIVISION-BENCH</span>
           </div>
           <div className="bench-types__field">

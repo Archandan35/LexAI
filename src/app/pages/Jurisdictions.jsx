@@ -434,7 +434,7 @@ export default function Jurisdictions() {
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                  <Input value={newCode} placeholder="JURT-CIVIL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="JURT-CIVIL" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                   <span className="cmp-hint">Example: JURT-CIVIL</span>
                 </div>
                 <div className="cmp-field">
@@ -483,7 +483,7 @@ export default function Jurisdictions() {
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                      <Input value={editCode} placeholder="JURT-CIVIL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="JURT-CIVIL" onChange={e => setEditCode(e.target.value.toUpperCase())} />
                       <span className="cmp-hint">Example: JURT-CIVIL</span>
                     </div>
                     <div className="cmp-field">
@@ -605,7 +605,7 @@ export default function Jurisdictions() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={editCode} placeholder="JURT-CIVIL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="JURT-CIVIL" onChange={e => setEditCode(e.target.value.toUpperCase())} />
             <span className="cmp-hint">Example: JURT-CIVIL</span>
           </div>
           <div className="cmp-field">
@@ -634,7 +634,7 @@ export default function Jurisdictions() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={newCode} placeholder="JURT-CIVIL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+            <Input value={newCode} placeholder="JURT-CIVIL" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
             <span className="cmp-hint">Example: JURT-CIVIL</span>
           </div>
           <div className="cmp-field">

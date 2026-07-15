@@ -142,7 +142,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
                 <div className="em-field-label"><span>Short Code</span><span className="required-star">*</span></div>
                 <div className="em-input-icon">
                   <span className="em-input-icon__ico em-input-icon__ico--code">Aa</span>
-                  <Input className="input" value={newCode} placeholder="e.g., CIV" onChange={(e) => setNewCode(e.target.value.toUpperCase().slice(0, 10))} onKeyDown={(e) => e.key === 'Enter' && add()} />
+                  <Input className="input" value={newCode} placeholder="e.g., CIV" onChange={(e) => setNewCode(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === 'Enter' && add()} />
                 </div>
                 <div className="em-field-hint">Short code or abbreviation (max 10 characters)</div>
               </div>
@@ -207,7 +207,7 @@ export default function EntityManager({ open, onClose, title, logic, items: prop
                 {hasCode && (
                   <div>
                     <div className="em-field-label">Short Code</div>
-                    <Input className="input" value={editCode} onChange={(e) => setEditCode(e.target.value.toUpperCase().slice(0, 10))} />
+                    <Input className="input" value={editCode} onChange={(e) => setEditCode(e.target.value.toUpperCase())} />
                   </div>
                 )}
                 {hasCode && (

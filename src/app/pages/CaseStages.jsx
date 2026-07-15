@@ -461,7 +461,7 @@ export default function CaseStages() {
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                  <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                   <span className="cmp-hint">Example: CSTT-TRIAL</span>
                 </div>
                 <div className="cmp-field cmp-field--full">
@@ -505,7 +505,7 @@ export default function CaseStages() {
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                      <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase())} />
                       <span className="cmp-hint">Example: CSTT-TRIAL</span>
                     </div>
                     <div className="cmp-field cmp-field--full">
@@ -637,7 +637,7 @@ export default function CaseStages() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code</label>
-            <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase())} />
             <span className="cmp-hint">Example: CSTT-TRIAL</span>
           </div>
           <div className="cmp-field cmp-field--full">
@@ -666,7 +666,7 @@ export default function CaseStages() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+            <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
             <span className="cmp-hint">Example: CSTT-TRIAL</span>
           </div>
           <div className="cmp-field cmp-field--full">

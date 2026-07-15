@@ -514,7 +514,7 @@ export default function Priorities() {
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                  <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase())} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                   <span className="cmp-hint">Example: PRIT-HIGH</span>
                 </div>
                 <div className="cmp-field cmp-field--full">
@@ -563,7 +563,7 @@ export default function Priorities() {
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                      <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase())} />
                       <span className="cmp-hint">Example: PRIT-HIGH</span>
                     </div>
                     <div className="cmp-field cmp-field--full">
@@ -699,7 +699,7 @@ export default function Priorities() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase())} />
             <span className="cmp-hint">Example: PRIT-HIGH</span>
           </div>
           <div className="cmp-field cmp-field--full">
@@ -728,7 +728,7 @@ export default function Priorities() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase())} />
             <span className="cmp-hint">Example: PRIT-HIGH</span>
           </div>
           <div className="cmp-field cmp-field--full">

@@ -51,7 +51,7 @@ export default function HearingHistoryView({
       <>
         <div className="hh-wire__card-head">
           <div className="hh-wire__date">
-            <span className="hh-wire__ic" style={{ color: st.dot }}><Icon name="calendar" size={14} /></span>
+            <span className="hh-wire__ic"><Icon name="calendar" size={14} /></span>
             <span>{formatDate(h.date)}</span>
           </div>
           {h.status && (
@@ -73,7 +73,7 @@ export default function HearingHistoryView({
 
         <div className="hh-wire__foot">
           <div className="hh-wire__updated">
-            <span className="hh-wire__ic" style={{ color: st.dot }}><Icon name="clock" size={14} /></span>
+            <span className="hh-wire__ic"><Icon name="clock" size={14} /></span>
             <span>Last Updated: {lastUpdated(h)}</span>
           </div>
           <div className="hh-wire__foot-actions">
