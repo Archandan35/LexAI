@@ -22791,12 +22791,14 @@ kbd.cmd__kbd {
 .doc-colour-pop {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  right: 0;
+  left: auto;
   z-index: 40;
   display: grid;
   grid-template-columns: repeat(5, auto);
   gap: 7px;
   padding: 9px;
+  max-width: calc(100vw - 24px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 9px;
@@ -22810,6 +22812,7 @@ kbd.cmd__kbd {
   border-radius: 50% !important;
   padding: 0 !important;
   border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: var(--sw, transparent) !important;
 }
 .doc-colour-pop .doc-colour-swatch:hover { transform: scale(1.15); box-shadow: 0 0 0 2px var(--accent); }
 .doc-colour-pop .doc-hilite {
@@ -22818,6 +22821,7 @@ kbd.cmd__kbd {
   border-radius: 6px !important;
   font-size: 13px;
   color: var(--text-soft);
+  background: var(--sw, #fff) !important;
 }
 .dash-donut-legend__dot { background: var(--dot-bg, var(--brand)); }
 .dash-bar-fill { height: var(--bar-h, 0%); background: var(--bar-bg, var(--brand)); }
