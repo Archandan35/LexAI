@@ -9205,6 +9205,12 @@ kbd.cmd__kbd {
   text-decoration: underline;
 }
 
+.dash-card-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 /* ---- Case status donut chart ---- */
 .dash-donut-wrap {
   padding: 18px;

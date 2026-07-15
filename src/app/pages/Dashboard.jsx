@@ -267,7 +267,10 @@ export default function Dashboard() {
         <div className="card dash-reminders-card">
           <div className="dash-card-head">
             <span className="dash-card-head__title">Upcoming Reminders</span>
-            <span className="dash-card-head__link" onClick={() => nav('/cases')}>View All <Icon name="arrow" size={13} /></span>
+            <span className="dash-card-head__actions">
+              <span className="dash-card-head__link" onClick={() => nav('/reminders', { state: { addReminder: true } })}><Icon name="plus" size={13} /> Add Reminder</span>
+              <span className="dash-card-head__link" onClick={() => nav('/reminders')}>View All <Icon name="arrow" size={13} /></span>
+            </span>
           </div>
           {upcomingReminders.length === 0 ? (
             <div className="dash-padded-content">
@@ -487,7 +490,7 @@ export default function Dashboard() {
         <div className="lexm-card">
           <div className="lexm-card-head">
             <span className="lexm-card-head__title">Upcoming Reminders</span>
-            <span className="lexm-card-head__link" onClick={() => nav('/cases')}>View All</span>
+            <span className="lexm-card-head__link" onClick={() => nav('/reminders')}>View All</span>
           </div>
           {upcomingReminders.length === 0 ? (
             <div className="lexm-empty">

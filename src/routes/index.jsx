@@ -18,6 +18,7 @@ const Calendar = lazy(() => import('@/app/pages/Calendar.jsx'));
 const Clients = lazy(() => import('@/app/pages/Clients.jsx'));
 const Advocates = lazy(() => import('@/app/pages/Advocates.jsx'));
 const Contacts = lazy(() => import('@/app/pages/Contacts.jsx'));
+const Reminders = lazy(() => import('@/app/pages/Reminders.jsx'));
 const CaseDocuments = lazy(() => import('@/app/pages/CaseDocuments.jsx'));
 const ActLibrary = lazy(() => import('@/app/pages/ActLibrary.jsx'));
 const JudgmentLibrary = lazy(() => import('@/app/pages/JudgmentLibrary.jsx'));
@@ -111,6 +112,7 @@ export default function AppRoutes() {
         <Route path="/cases/case-timeline" element={G('timeline', <CaseTimeline />)} />
         <Route path="/cases" element={G('manageCase', <ManageCases />)} />
         <Route path="/cases/:id" element={G('manageCase', <CaseDetails />)} />
+        <Route path="/reminders" element={G('manageCase', <Reminders />)} />
 
         {/* ── Calendar / Clients / Contacts ── */}
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
