@@ -11549,6 +11549,21 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
+/* Mobile: keep toggle + sort on one row (shrink toggle, drop "Sort:" label) */
+@media (max-width: 575px) {
+  .hh-wire__bar {
+    flex-wrap: nowrap;
+  }
+
+  .hh-wire__sort-label {
+    display: none;
+  }
+
+  .hh-seg button {
+    padding: 7px 12px;
+  }
+}
+
 /* Timeline / Cards toggle — card-style pill with hover animation */
 .hh-seg {
   display: inline-flex;
