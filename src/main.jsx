@@ -43,3 +43,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+// Signal a successful boot so the index.html watchdog stands down, and strip the
+// cache-bust marker from the URL once we're running the fresh build.
+window.__appMounted = true;
+if (window.__lexWatchdog) {
+  clearTimeout(window.__lexWatchdog);
+  window.__lexWatchdog = null;
+}
+try {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('_cr')) {
+    url.searchParams.delete('_cr');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+} catch { /* ignore */ }

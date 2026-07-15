@@ -28,6 +28,40 @@
       }
       @keyframes app-splash-spin { to { transform: rotate(360deg); } }
     </style>
+    <script>
+      /* Boot recovery: after a new deploy a stale cached index.html can point at
+         asset hashes that no longer exist, so the entry bundle 404s and nothing
+         boots (endless splash). Reload once with a cache-busting query so a fresh
+         index.html + assets are fetched. The marker lives in the URL so it
+         survives the reload and prevents an infinite loop. */
+      (function () {
+        var RP = '_cr';
+        function retried() {
+          try { return new URLSearchParams(location.search).has(RP); } catch (e) { return false; }
+        }
+        window.__lexRecover = function () {
+          if (retried()) return;
+          try {
+            var u = new URL(location.href);
+            u.searchParams.set(RP, Date.now().toString(36));
+            location.replace(u.toString());
+          } catch (e) { location.reload(); }
+        };
+        // Fast path: a build asset (entry bundle / css) failed to load.
+        window.addEventListener('error', function (e) {
+          var t = e && e.target;
+          if (!t || !t.tagName) return;
+          var url = t.src || t.href || '';
+          if ((t.tagName === 'SCRIPT' || t.tagName === 'LINK') && url.indexOf('/assets/') !== -1) {
+            window.__lexRecover();
+          }
+        }, true);
+        // Fallback: nothing booted at all within the window.
+        window.__lexWatchdog = setTimeout(function () {
+          if (!window.__appMounted) window.__lexRecover();
+        }, 10000);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"><div id="app-splash"><div class="spin"></div></div></div>
