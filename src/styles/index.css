@@ -11542,6 +11542,7 @@ kbd.cmd__kbd {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .hh-wire__add {
@@ -11641,8 +11642,8 @@ kbd.cmd__kbd {
 }
 
 .hh-wire__node {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--surface);
   border: 3px solid var(--border);
@@ -11652,6 +11653,11 @@ kbd.cmd__kbd {
   box-shadow: var(--shadow-sm);
   z-index: 2;
   flex-shrink: 0;
+}
+
+.hh-wire__ic {
+  display: inline-flex;
+  align-items: center;
 }
 
 .hh-wire__line {
