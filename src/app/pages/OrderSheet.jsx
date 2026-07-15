@@ -773,7 +773,6 @@ export default function OrderSheet() {
 
                     {/* Hearing cards */}
                     {paginatedRows.map((h) => {
-                      const MON_ABB = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                       return (
                         <div
                           key={h.id}

@@ -16186,7 +16186,9 @@ kbd.cmd__kbd {
   gap: 10px;
 }
 
-.cl-filters__search input {
+.cl-filters__search input,
+.cl-filters__search select,
+.order-sheet__filter-select {
   border: none;
   outline: none;
   font-size: 13px;
@@ -16194,6 +16196,28 @@ kbd.cmd__kbd {
   flex: 1;
   background: transparent;
   font-family: inherit;
+  min-width: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.order-sheet__date-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 13px;
+  color: var(--text-faint);
+  background: var(--surface);
+  font-family: inherit;
+  outline: none;
+}
+
+.order-sheet__date-input:focus,
+.cl-filters__search:focus-within {
+  border-color: var(--navy-500, var(--navy-700));
 }
 
 .cl-filters__actions {
