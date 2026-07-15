@@ -53,9 +53,19 @@ export default function CaseDetails() {
     const full = hex.length === 4 ? `#${hex.slice(1).split('').map((ch) => ch + ch).join('')}` : hex;
     return { bg: `${full}1a`, text: full, border: `${full}55`, dot: full };
   };
+  const STATUS_FALLBACK_COLORS = ['#0066cc', '#d97706', '#0ca678', '#e03131', '#7048e8', '#c2255c', '#0b7285', '#e8590c', '#5c940d', '#364fc7'];
+  const hashColor = (s) => {
+    const str = String(s || '');
+    let h = 0;
+    for (let i = 0; i < str.length; i += 1) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return STATUS_FALLBACK_COLORS[h % STATUS_FALLBACK_COLORS.length];
+  };
   const getStatusStyle = useCallback((status) => {
-    const item = (statusItems || []).find((s) => s.name === status);
-    return hexToStyle(item?.color);
+    const key = String(status || '').trim().toLowerCase();
+    const item = (statusItems || []).find((s) => String(s.name || '').trim().toLowerCase() === key);
+    if (item?.color) return hexToStyle(item.color);
+    // No configured status match — use a deterministic colour so badges never fall back to grey.
+    return hexToStyle(hashColor(status));
   }, [statusItems]);
 
   const shareHearing = useCallback((h) => {

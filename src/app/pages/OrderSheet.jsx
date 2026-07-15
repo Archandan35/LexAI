@@ -35,7 +35,7 @@ export default function OrderSheet() {
   const toast = useToast();
   const { user } = useAuth();
   const { cases } = useAppData();
-  const { statuses: caseStatuses, refresh: refreshStatuses } = useCaseStatuses();
+  const { statuses: caseStatuses, items: statusItems, refresh: refreshStatuses } = useCaseStatuses();
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState('list'); // list | history | templates | timeline
   const [open, setOpen] = useState(false);
@@ -608,22 +608,25 @@ export default function OrderSheet() {
   const tplTotalPages = Math.ceil(filteredTpls.length / tplPageSize);
   const paginatedTpls = filteredTpls.slice((tplPage - 1) * tplPageSize, tplPage * tplPageSize);
 
-  const STATUS_COLORS = [
-    { bg: '#e7f5ff', text: '#0066cc', border: '#a5d8ff', dot: '#0066cc' },
-    { bg: '#fff9db', text: '#d97706', border: '#ffe066', dot: '#d97706' },
-    { bg: '#ebfbee', text: '#0ca678', border: '#b2f2bb', dot: '#0ca678' },
-    { bg: '#fff5f5', text: '#e03131', border: '#ffc9c9', dot: '#e03131' },
-    { bg: '#f3f0ff', text: '#7048e8', border: '#d0bfff', dot: '#7048e8' },
-    { bg: '#fff0f6', text: '#c2255c', border: '#faa2c1', dot: '#c2255c' },
-    { bg: '#e6fcf5', text: '#0b7285', border: '#96f2d7', dot: '#0b7285' },
-    { bg: '#fff4e6', text: '#e8590c', border: '#ffc078', dot: '#e8590c' },
-    { bg: '#f4fce3', text: '#5c940d', border: '#c0eb75', dot: '#5c940d' },
-    { bg: '#edf2ff', text: '#364fc7', border: '#bac8ff', dot: '#364fc7' },
-  ];
+  const STATUS_FALLBACK_COLORS = ['#0066cc', '#d97706', '#0ca678', '#e03131', '#7048e8', '#c2255c', '#0b7285', '#e8590c', '#5c940d', '#364fc7'];
+  const hexToStatusStyle = (hex) => {
+    let h = hex;
+    if (!h || !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h)) h = '#868e96';
+    const full = h.length === 4 ? `#${h.slice(1).split('').map((ch) => ch + ch).join('')}` : h;
+    return { bg: `${full}1a`, text: full, border: `${full}55`, dot: full };
+  };
+  const hashColor = (s) => {
+    const str = String(s || '');
+    let n = 0;
+    for (let i = 0; i < str.length; i += 1) n = (n * 31 + str.charCodeAt(i)) >>> 0;
+    return STATUS_FALLBACK_COLORS[n % STATUS_FALLBACK_COLORS.length];
+  };
   const getStatusStyle = (status) => {
-    const idx = caseStatuses.indexOf(status);
-    if (idx === -1) return STATUS_COLORS[9];
-    return STATUS_COLORS[idx % 10];
+    const key = String(status || '').trim().toLowerCase();
+    const item = (statusItems || []).find((s) => String(s.name || '').trim().toLowerCase() === key);
+    if (item?.color) return hexToStatusStyle(item.color);
+    // No configured status match — deterministic colour so badges never fall back to grey.
+    return hexToStatusStyle(hashColor(status));
   };
 
   return (
