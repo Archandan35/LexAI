@@ -32,7 +32,7 @@ const SUB_MODES = {
   ],
 };
 
-const ENTITY_PREFIX = 'ST';
+const ENTITY_PREFIX = 'CSTT';
 
 
 export default function CaseStages() {
@@ -459,6 +459,11 @@ export default function CaseStages() {
                   <label className="cmp-label">Name <span className="cmp-required">*</span></label>
                   <Input value={newName} placeholder="e.g., Filing" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
                 </div>
+                <div className="cmp-field">
+                  <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+                  <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <span className="cmp-hint">Example: CSTT-TRIAL</span>
+                </div>
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Badge Color</label>
                   <ColorPicker value={newColor} onChange={setNewColor} />
@@ -497,6 +502,11 @@ export default function CaseStages() {
                     <div className="cmp-field">
                       <label className="cmp-label">Name <span className="cmp-required">*</span></label>
                       <Input value={editName} onChange={e => setEditName(e.target.value)} />
+                    </div>
+                    <div className="cmp-field">
+                      <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+                      <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <span className="cmp-hint">Example: CSTT-TRIAL</span>
                     </div>
                     <div className="cmp-field cmp-field--full">
                       <label className="cmp-label">Badge Color</label>
@@ -627,7 +637,8 @@ export default function CaseStages() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code</label>
-            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="CSTT-TRIAL" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <span className="cmp-hint">Example: CSTT-TRIAL</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>
@@ -652,6 +663,11 @@ export default function CaseStages() {
           <div className="cmp-field">
             <label className="cmp-label">Name <span className="cmp-required">*</span></label>
             <Input value={newName} placeholder="e.g., Filing" onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+          </div>
+          <div className="cmp-field">
+            <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
+            <Input value={newCode} placeholder="CSTT-TRIAL" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+            <span className="cmp-hint">Example: CSTT-TRIAL</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>

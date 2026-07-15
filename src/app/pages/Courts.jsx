@@ -10,7 +10,7 @@ import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 
-const ENTITY_PREFIX = 'COU';
+const ENTITY_PREFIX = 'COUT';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -555,7 +555,8 @@ export default function Courts() {
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                  <Input value={newCode} placeholder="e.g., SC" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="COUT-HIGH-COURT" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <span className="cmp-hint">Example: COUT-HIGH-COURT</span>
                 </div>
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Parent Court</label>
@@ -607,7 +608,8 @@ export default function Courts() {
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                      <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="COUT-HIGH-COURT" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <span className="cmp-hint">Example: COUT-HIGH-COURT</span>
                     </div>
                     <div className="cmp-field cmp-field--full">
                       <label className="cmp-label">Parent Court</label>
@@ -752,7 +754,8 @@ export default function Courts() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="COUT-HIGH-COURT" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <span className="cmp-hint">Example: COUT-HIGH-COURT</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Parent Court</label>
@@ -784,7 +787,8 @@ export default function Courts() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={newCode} placeholder="e.g., SC" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+            <Input value={newCode} placeholder="COUT-HIGH-COURT" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+            <span className="cmp-hint">Example: COUT-HIGH-COURT</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Parent Court</label>

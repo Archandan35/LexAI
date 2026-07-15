@@ -10,7 +10,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 
-const ENTITY_PREFIX = 'PR';
+const ENTITY_PREFIX = 'PRIT';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -514,7 +514,8 @@ export default function Priorities() {
                 </div>
                 <div className="cmp-field">
                   <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                  <Input value={newCode} placeholder="e.g., URG" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} onKeyDown={e => e.key === 'Enter' && doAdd()} />
+                  <span className="cmp-hint">Example: PRIT-HIGH</span>
                 </div>
                 <div className="cmp-field cmp-field--full">
                   <label className="cmp-label">Badge Color</label>
@@ -562,7 +563,8 @@ export default function Priorities() {
                     </div>
                     <div className="cmp-field">
                       <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-                      <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+                      <span className="cmp-hint">Example: PRIT-HIGH</span>
                     </div>
                     <div className="cmp-field cmp-field--full">
                       <label className="cmp-label">Badge Color</label>
@@ -697,7 +699,8 @@ export default function Priorities() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={editCode} onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={editCode} placeholder="PRIT-HIGH" onChange={e => setEditCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <span className="cmp-hint">Example: PRIT-HIGH</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>
@@ -725,7 +728,8 @@ export default function Priorities() {
           </div>
           <div className="cmp-field">
             <label className="cmp-label">Short Code <span className="cmp-required">*</span></label>
-            <Input value={newCode} placeholder="e.g., URG" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <Input value={newCode} placeholder="PRIT-HIGH" onChange={e => setNewCode(e.target.value.toUpperCase().slice(0, 6))} />
+            <span className="cmp-hint">Example: PRIT-HIGH</span>
           </div>
           <div className="cmp-field cmp-field--full">
             <label className="cmp-label">Badge Color</label>

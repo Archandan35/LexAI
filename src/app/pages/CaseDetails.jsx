@@ -8,7 +8,7 @@ import Modal from '@/components/Modal.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import CaseForm from '@/components/CaseForm.jsx';
-import CaseHistory from '@/components/CaseHistory.jsx';
+import HearingHistoryView from '@/components/HearingHistoryView.jsx';
 import CaseDocTab from '@/components/CaseDocTab.jsx';
 import NotesPanel from '@/components/NotesPanel.jsx';
 import CaseTimeline from '@/components/CaseTimeline.jsx';
@@ -48,6 +48,15 @@ export default function CaseDetails() {
   const stageTone = Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy']));
   const { items: statusItems } = useCaseStatuses();
   const statusTone = Object.fromEntries((statusItems || []).map((s) => [s.name, s.color || 'grey']));
+  const hexToStyle = (hex) => {
+    if (!hex || !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) hex = '#868e96';
+    const full = hex.length === 4 ? `#${hex.slice(1).split('').map((ch) => ch + ch).join('')}` : hex;
+    return { bg: `${full}1a`, text: full, border: `${full}55`, dot: full };
+  };
+  const getStatusStyle = useCallback((status) => {
+    const item = (statusItems || []).find((s) => s.name === status);
+    return hexToStyle(item?.color);
+  }, [statusItems]);
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
   const [tab, setTab] = useState(params.get('tab') || 'Overview');
@@ -72,6 +81,7 @@ export default function CaseDetails() {
   }, [params, setParams]);
 
   const [hearingOpen, setHearingOpen] = useState(false);
+  const [editingHearing, setEditingHearing] = useState(null);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -498,29 +508,78 @@ export default function CaseDetails() {
           )}
 
           {tab === 'Hearings' && (
-            <Card
-              title="Hearing History"
-              actions={<Button size="sm" icon="plus" onClick={() => setHearingOpen(true)}>Add Hearing</Button>}
-            >
-              {hearings.length === 0 ? <EmptyState icon="calendar" title="No hearings recorded." /> : (
-                <div className="timeline">
-                  {hearings.map((h) => (
-                    <div className="timeline-item" key={h.id}>
-                      <div className="timeline-item__date">{formatDate(h.date)} <Badge dot>{h.status}</Badge></div>
-                      <div className="timeline-item__event">{h.purpose || '—'}</div>
-                      {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
+            <div className="flex-col gap-16">
+              <div className="order-sheet__case-info-card">
+                <div className="order-sheet__case-info-header">
+                  <div className="order-sheet__case-icon-box">
+                    <Icon name="balance" size={24} />
+                  </div>
+                  <div className="order-sheet__case-title-area">
+                    <div className="order-sheet__case-title-row">
+                      <h2 className="order-sheet__case-title">{c.case_display_number || c.caseNumber}</h2>
+                      {c.status && <span className="order-sheet__case-badge-active">{c.status}</span>}
                     </div>
-                  ))}
+                    <p className="order-sheet__case-subtitle">{c.title}</p>
+                    <div className="order-sheet__header-court">{combinedCourt(c)}</div>
+                  </div>
                 </div>
-              )}
-            </Card>
+                <div className="order-sheet__details-grid">
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Case Type</span>
+                    <span className="order-sheet__details-value">{c.case_type || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Filing Date</span>
+                    <span className="order-sheet__details-value">{formatDate(c.filingDate) || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Current Stage</span>
+                    <span className="order-sheet__details-value">{c.stage || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Next Hearing</span>
+                    <span className="order-sheet__details-value">{formatDate(c.nextHearing) || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Judge</span>
+                    <span className="order-sheet__details-value">{c.judge || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Card
+                title="History Timeline"
+                sub="Chronological proceedings logs and order sheets"
+                actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+              >
+                <HearingHistoryView
+                  hearings={hearings}
+                  onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  getStatusStyle={getStatusStyle}
+                />
+              </Card>
+            </div>
           )}
 
           {tab === 'Timeline' && <CaseTimeline caseId={id} refreshKey={activityKey} />}
 
           {tab === 'Notes' && <NotesPanel caseId={id} notes={notes} onChanged={load} />}
 
-          {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
+          {tab === 'History' && (
+            <Card
+              title="Hearing History"
+              sub="Complete proceedings history — full text, imported from the order sheet"
+              actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+            >
+              <HearingHistoryView
+                hearings={hearings}
+                onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                getStatusStyle={getStatusStyle}
+                emptyTitle="No history yet."
+                emptyIcon="history"
+              />
+            </Card>
+          )}
         </div>
       )}
 
@@ -763,29 +822,78 @@ export default function CaseDetails() {
           )}
 
           {tab === 'Hearings' && (
-            <Card
-              title="Hearing History"
-              actions={<Button size="sm" icon="plus" onClick={() => setHearingOpen(true)}>Add Hearing</Button>}
-            >
-              {hearings.length === 0 ? <EmptyState icon="calendar" title="No hearings recorded." /> : (
-                <div className="timeline">
-                  {hearings.map((h) => (
-                    <div className="timeline-item" key={h.id}>
-                      <div className="timeline-item__date">{formatDate(h.date)} <Badge dot>{h.status}</Badge></div>
-                      <div className="timeline-item__event">{h.purpose || '—'}</div>
-                      {h.notes && <div className="timeline-item__source">{stripHtml(h.notes)}</div>}
+            <div className="flex-col gap-16">
+              <div className="order-sheet__case-info-card">
+                <div className="order-sheet__case-info-header">
+                  <div className="order-sheet__case-icon-box">
+                    <Icon name="balance" size={24} />
+                  </div>
+                  <div className="order-sheet__case-title-area">
+                    <div className="order-sheet__case-title-row">
+                      <h2 className="order-sheet__case-title">{c.case_display_number || c.caseNumber}</h2>
+                      {c.status && <span className="order-sheet__case-badge-active">{c.status}</span>}
                     </div>
-                  ))}
+                    <p className="order-sheet__case-subtitle">{c.title}</p>
+                    <div className="order-sheet__header-court">{combinedCourt(c)}</div>
+                  </div>
                 </div>
-              )}
-            </Card>
+                <div className="order-sheet__details-grid">
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Case Type</span>
+                    <span className="order-sheet__details-value">{c.case_type || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Filing Date</span>
+                    <span className="order-sheet__details-value">{formatDate(c.filingDate) || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Current Stage</span>
+                    <span className="order-sheet__details-value">{c.stage || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Next Hearing</span>
+                    <span className="order-sheet__details-value">{formatDate(c.nextHearing) || '—'}</span>
+                  </div>
+                  <div className="order-sheet__details-item">
+                    <span className="order-sheet__details-label">Judge</span>
+                    <span className="order-sheet__details-value">{c.judge || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Card
+                title="History Timeline"
+                sub="Chronological proceedings logs and order sheets"
+                actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+              >
+                <HearingHistoryView
+                  hearings={hearings}
+                  onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  getStatusStyle={getStatusStyle}
+                />
+              </Card>
+            </div>
           )}
 
           {tab === 'Timeline' && <CaseTimeline caseId={id} refreshKey={activityKey} />}
 
           {tab === 'Notes' && <NotesPanel caseId={id} notes={notes} onChanged={load} />}
 
-          {tab === 'History' && <CaseHistory caseId={id} onChanged={load} />}
+          {tab === 'History' && (
+            <Card
+              title="Hearing History"
+              sub="Complete proceedings history — full text, imported from the order sheet"
+              actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+            >
+              <HearingHistoryView
+                hearings={hearings}
+                onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                getStatusStyle={getStatusStyle}
+                emptyTitle="No history yet."
+                emptyIcon="history"
+              />
+            </Card>
+          )}
         </div>
       )}
 
@@ -796,9 +904,10 @@ export default function CaseDetails() {
 
       <HearingFormModal
         open={hearingOpen}
-        onClose={() => setHearingOpen(false)}
+        onClose={() => { setHearingOpen(false); setEditingHearing(null); }}
         onSaved={load}
         initialCaseId={id}
+        editing={editingHearing}
       />
 
       <Modal
