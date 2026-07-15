@@ -11415,6 +11415,70 @@ kbd.cmd__kbd {
   white-space: nowrap;
 }
 
+/* Card view toolbar (search / status filter / sort) */
+.hh-view__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hh-view__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+}
+
+.hh-view__search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.hh-view__select {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* Read-only proceedings preview */
+.hh-view__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hh-view__preview-status {
+  display: flex;
+}
+
+.hh-view__preview-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
 /* Tablet: 2 columns for cards */
 @media (max-width: 991px) {
   .hh-view__cards {

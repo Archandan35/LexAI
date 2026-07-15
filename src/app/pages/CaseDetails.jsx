@@ -554,7 +554,7 @@ export default function CaseDetails() {
               >
                 <HearingHistoryView
                   hearings={hearings}
-                  onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
                   getStatusStyle={getStatusStyle}
                 />
               </Card>
@@ -868,7 +868,7 @@ export default function CaseDetails() {
               >
                 <HearingHistoryView
                   hearings={hearings}
-                  onView={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
                   getStatusStyle={getStatusStyle}
                 />
               </Card>
