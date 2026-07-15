@@ -420,6 +420,8 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
           logic: partyTypeLogic,
           fields: [
             { key: 'name', label: 'Party Type Name', placeholder: 'e.g. Appellant, Respondent' },
+            { key: 'short_code', label: 'Short Code', placeholder: 'PART-<PARTY-TYPE>', hint: 'Example: PART-PLAINTIFF' },
+            { key: 'color', label: 'Color', type: 'color', default: '#6b7280' },
             { key: 'type', label: 'Type', placeholder: 'e.g. Individual, Organization' },
             { key: 'display_order', label: 'Display Order', type: 'number' },
           ],
@@ -436,6 +438,8 @@ export default function SmartOrderSheetBuilder({ hearing, partyTypes = [], caseS
           logic: caseStatusLogic,
           fields: [
             { key: 'name', label: 'Status Name', placeholder: 'e.g. Active, Disposed' },
+            { key: 'short_code', label: 'Short Code', placeholder: 'CASS-<CASE-STATUS>', hint: 'Example: CASS-PENDING' },
+            { key: 'color', label: 'Color', type: 'color', default: '#6b7280' },
             { key: 'display_order', label: 'Display Order', type: 'number' },
           ],
           defaults: { display_order: 0, status: 'Active' },

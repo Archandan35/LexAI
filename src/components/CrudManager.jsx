@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
+import ColorPicker from './ColorPicker.jsx';
 import { Input, Textarea, Select } from './Field.jsx';
 
 /* ------------------------------------------------------------------ */
@@ -85,16 +86,14 @@ function renderField(f, values, setValues) {
   const set = (v) => setValues({ ...values, [f.key]: v });
 
   if (f.type === 'color') {
+    const colorVal = val || f.default || '#6b7280';
     return (
       <div key={f.key} className="crud-field-group">
         <div className="crud-field-label">
           <span>{f.label}</span>
         </div>
-        <div className="crud-field-row">
-          <input type="color" className="input crud-color-input"
-            value={val || f.default || '#6b7280'} onChange={(e) => set(e.target.value)} />
-          <span className="crud-color-value">{val || f.default || '#6b7280'}</span>
-        </div>
+        <ColorPicker value={colorVal} onChange={(c) => set(c)} />
+        {f.hint && <div className="crud-field-hint">{f.hint}</div>}
       </div>
     );
   }
@@ -174,7 +173,13 @@ function renderField(f, values, setValues) {
 /* Single Add                                                           */
 /* ------------------------------------------------------------------ */
 function SingleAdd({ config, entity }) {
-  const [values, setValues] = useState({ ...config.defaults });
+  const [values, setValues] = useState(() => {
+    const v = { ...config.defaults };
+    (config.fields || []).forEach((f) => {
+      if (f.default !== undefined && v[f.key] === undefined) v[f.key] = f.default;
+    });
+    return v;
+  });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
