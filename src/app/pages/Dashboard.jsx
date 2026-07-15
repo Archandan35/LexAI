@@ -273,26 +273,30 @@ export default function Dashboard() {
             <div className="dash-padded-content">
               <EmptyState icon="bell" title="No reminders due." />
             </div>
-          ) : upcomingReminders.map((r) => {
-            const urgent = r.daysLeft <= 3;
-            return (
-              <div className="dash-hearing-row" key={r.id} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
-                <div className={`dash-hearing-icon dash-hearing-icon--${urgent ? 'red' : 'amber'}`}>
-                  <Icon name="bell" size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="dash-hearing__title">{r.title}</div>
-                  <div className="dash-hearing__sub">{r.caseTitle}{r.type ? ` • ${r.type}` : ''}</div>
-                </div>
-                <div className="dash-hearing__date-col">
-                  <div className="dash-hearing__date">{formatDate(r.date)}</div>
-                  <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
-                    {r.daysLeft === 0 ? 'Today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`}
+          ) : (
+            <div className="dash-reminders-scroll">
+              {upcomingReminders.map((r) => {
+                const urgent = r.daysLeft <= 3;
+                return (
+                  <div className="dash-hearing-row" key={r.id} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
+                    <div className={`dash-hearing-icon dash-hearing-icon--${urgent ? 'red' : 'amber'}`}>
+                      <Icon name="bell" size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="dash-hearing__title">{r.title}</div>
+                      <div className="dash-hearing__sub">{r.caseTitle}{r.type ? ` • ${r.type}` : ''}</div>
+                    </div>
+                    <div className="dash-hearing__date-col">
+                      <div className="dash-hearing__date">{formatDate(r.date)}</div>
+                      <div className={urgent ? 'dash-reminder__urgent' : 'dash-reminder__soon'}>
+                        {r.daysLeft === 0 ? 'Today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

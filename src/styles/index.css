@@ -9333,6 +9333,35 @@ kbd.cmd__kbd {
   border-bottom: 1px solid var(--border);
 }
 
+.dash-reminders-card .dash-hearing__title {
+  text-align: justify;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.dash-reminders-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dash-reminders-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dash-reminders-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dash-reminders-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+
+.dash-reminders-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
 /* ---- Task summary donut ---- */
 
 /* ---- Recent cases table inside card ---- */
@@ -17316,7 +17345,7 @@ kbd.cmd__kbd {
   color: #fff;
   background: var(--navy-700);
   box-shadow: 0 0 0 5px var(--brand-soft), 0 6px 14px rgba(30, 58, 138, 0.22);
-  margin-top: -64px;
+  margin-top: -56px;
   margin-bottom: 10px;
 }
 
