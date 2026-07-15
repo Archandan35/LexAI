@@ -6,11 +6,9 @@ import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
 
-// HearingHistoryView — reusable hearing history view (matches the case-history
-// wireframe): a "Sort" control on top, a left timeline rail with node circles,
-// and each hearing rendered as a connected card showing date, status, the
-// proceedings text (Read More opens the read-only editor text), last-updated
-// timestamp and Edit/Share actions. Responsive across desktop, tablet, mobile.
+// HearingHistoryView — reusable hearing history view. Desktop shows the
+// timeline/cards on the left beside an "Add Hearing" action (layout handled by
+// the parent); mobile shows a full-width 50/50 Timeline/Cards toggle.
 // Props:
 //   hearings        : array of hearing records (id, date, status, purpose, notes, next_hearing_date, updated_at)
 //   onEdit(hearing) : opens the hearing in the edit modal
@@ -27,6 +25,7 @@ export default function HearingHistoryView({
 }) {
   const { formatDate, formatDateTime } = useFormat();
   const [sortDir, setSortDir] = useState('desc'); // desc = Recent
+  const [view, setView] = useState('timeline'); // timeline | cards
   const [preview, setPreview] = useState(null);
 
   const styleFor = (status) => {
@@ -45,91 +44,119 @@ export default function HearingHistoryView({
   }, [hearings, sortDir]);
 
   const lastUpdated = (h) => (h.updated_at ? formatDateTime(h.updated_at) : formatDate(h.date));
-  const truncated = (txt) => {
-    const t = stripHtml(txt || '');
-    if (t.length <= 180) return t;
-    return `${t.slice(0, 180).trimEnd()}…`;
-  };
 
   if (!hearings || hearings.length === 0) {
     return <EmptyState icon={emptyIcon} title={emptyTitle} />;
   }
 
+  const renderCard = (h) => {
+    const st = styleFor(h.status);
+    return (
+      <>
+        <div className="hh-wire__card-head">
+          <div className="hh-wire__date">
+            <Icon name="calendar" size={14} />
+            <span>{formatDate(h.date)}</span>
+          </div>
+          {h.status && (
+            <span
+              className="hh-wire__badge badge--dyn"
+              style={{ '--bd-bg': st.bg, '--bd-color': st.text, '--bd-border': st.border }}
+            >
+              <span className="cl-card__badge-dot sync__dot--dyn" style={{ '--dot-bg': st.dot }} />
+              {h.status}
+            </span>
+          )}
+        </div>
+
+        <div className="hh-wire__text">{stripHtml(h.notes) || 'No proceedings recorded.'}</div>
+
+        <button className="hh-wire__readmore" onClick={() => setPreview(h)}>
+          Read More <Icon name="chevron" size={13} />
+        </button>
+
+        <div className="hh-wire__foot">
+          <div className="hh-wire__updated">
+            <Icon name="clock" size={13} />
+            <span>Last Updated: {lastUpdated(h)}</span>
+          </div>
+          <div className="hh-wire__foot-actions">
+            {onEdit && (
+              <button className="hh-wire__foot-btn" onClick={() => onEdit(h)}>
+                <Icon name="edit" size={14} /> Edit
+              </button>
+            )}
+            <button className="hh-wire__foot-btn" onClick={() => (onShare ? onShare(h) : setPreview(h))}>
+              <Icon name="share" size={14} /> Share
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="hh-wire">
       {/* Sort control */}
-      <div className="hh-wire__sort">
-        <span className="hh-wire__sort-label">Sort:</span>
-        <div className="hh-wire__sort-select">
-          <select value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
-            <option value="desc">Recent</option>
-            <option value="asc">Oldest</option>
-          </select>
-          <Icon name="chevronDown" size={13} />
+      <div className="hh-wire__bar">
+        <div className="hh-wire__sort">
+          <span className="hh-wire__sort-label">Sort:</span>
+          <div className="hh-wire__sort-select">
+            <select value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
+              <option value="desc">Recent</option>
+              <option value="asc">Oldest</option>
+            </select>
+            <Icon name="chevronDown" size={13} />
+          </div>
         </div>
       </div>
 
-      {/* Timeline rail + cards */}
-      <div className="hh-wire__list">
-        {sorted.map((h, i) => {
-          const st = styleFor(h.status);
-          const isLast = i === sorted.length - 1;
-          return (
-            <div className="hh-wire__item" key={h.id || i}>
-              <div className="hh-wire__rail">
-                <div
-                  className="hh-wire__node"
-                  style={{ borderColor: st.dot, color: st.dot }}
-                >
-                  {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
-                </div>
-                {!isLast && <div className="hh-wire__line" />}
-              </div>
-
-              <div className="hh-wire__card">
-                <div className="hh-wire__card-head">
-                  <div className="hh-wire__date">
-                    <Icon name="calendar" size={14} />
-                    <span>{formatDate(h.date)}</span>
-                  </div>
-                  {h.status && (
-                    <span
-                      className="hh-wire__badge badge--dyn"
-                      style={{ '--bd-bg': st.bg, '--bd-color': st.text, '--bd-border': st.border }}
-                    >
-                      <span className="cl-card__badge-dot sync__dot--dyn" style={{ '--dot-bg': st.dot }} />
-                      {h.status}
-                    </span>
-                  )}
-                </div>
-
-                <div className="hh-wire__text">{truncated(h.notes) || 'No proceedings recorded.'}</div>
-
-                <button className="hh-wire__readmore" onClick={() => setPreview(h)}>
-                  Read More <Icon name="chevron" size={13} />
-                </button>
-
-                <div className="hh-wire__foot">
-                  <div className="hh-wire__updated">
-                    <Icon name="clock" size={13} />
-                    <span>Last Updated: {lastUpdated(h)}</span>
-                  </div>
-                  <div className="hh-wire__foot-actions">
-                    {onEdit && (
-                      <button className="hh-wire__foot-btn" onClick={() => onEdit(h)}>
-                        <Icon name="edit" size={14} /> Edit
-                      </button>
-                    )}
-                    <button className="hh-wire__foot-btn" onClick={() => (onShare ? onShare(h) : setPreview(h))}>
-                      <Icon name="share" size={14} /> Share
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      {/* Full-width 50/50 Timeline / Cards toggle */}
+      <div className="hh-seg">
+        <button
+          type="button"
+          className={view === 'timeline' ? 'active' : ''}
+          onClick={() => setView('timeline')}
+        >
+          <Icon name="activity" size={14} /> Timeline
+        </button>
+        <button
+          type="button"
+          className={view === 'cards' ? 'active' : ''}
+          onClick={() => setView('cards')}
+        >
+          <Icon name="grid" size={14} /> Cards
+        </button>
       </div>
+
+      {view === 'timeline' ? (
+        <div className="hh-wire__list">
+          {sorted.map((h, i) => {
+            const st = styleFor(h.status);
+            const isLast = i === sorted.length - 1;
+            return (
+              <div className="hh-wire__item" key={h.id || i}>
+                <div className="hh-wire__rail">
+                  <div
+                    className="hh-wire__node"
+                    style={{ borderColor: st.dot, color: st.dot }}
+                  >
+                    {h.status === 'Completed' ? <Icon name="check" size={13} /> : <Icon name="clock" size={13} />}
+                  </div>
+                  {!isLast && <div className="hh-wire__line" />}
+                </div>
+                <div className="hh-wire__card">{renderCard(h)}</div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="hh-cards">
+          {sorted.map((h, i) => (
+            <div className="hh-cards__card" key={h.id || i}>{renderCard(h)}</div>
+          ))}
+        </div>
+      )}
 
       {/* Read-only proceedings preview — shows only the text entered in the editor field */}
       {preview && (

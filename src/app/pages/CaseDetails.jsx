@@ -564,14 +564,20 @@ export default function CaseDetails() {
               <Card
                 title="History Timeline"
                 sub="Chronological proceedings logs and order sheets"
-                actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
               >
-                <HearingHistoryView
-                  hearings={hearings}
-                  onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
-                  onShare={shareHearing}
-                  getStatusStyle={getStatusStyle}
-                />
+                <div className="hh-layout">
+                  <div className="hh-layout__main">
+                    <HearingHistoryView
+                      hearings={hearings}
+                      onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                      onShare={shareHearing}
+                      getStatusStyle={getStatusStyle}
+                    />
+                  </div>
+                  <div className="hh-layout__side">
+                    <Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }} className="hh-layout__add">Add Hearing</Button>
+                  </div>
+                </div>
               </Card>
             </div>
           )}
@@ -584,16 +590,22 @@ export default function CaseDetails() {
             <Card
               title="Hearing History"
               sub="Complete proceedings history — full text, imported from the order sheet"
-              actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
             >
-              <HearingHistoryView
-                hearings={hearings}
-                onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
-                onShare={shareHearing}
-                getStatusStyle={getStatusStyle}
-                emptyTitle="No history yet."
-                emptyIcon="history"
-              />
+              <div className="hh-layout">
+                <div className="hh-layout__main">
+                  <HearingHistoryView
+                    hearings={hearings}
+                    onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                    onShare={shareHearing}
+                    getStatusStyle={getStatusStyle}
+                    emptyTitle="No history yet."
+                    emptyIcon="history"
+                  />
+                </div>
+                <div className="hh-layout__side">
+                  <Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }} className="hh-layout__add">Add Hearing</Button>
+                </div>
+              </div>
             </Card>
           )}
         </div>
@@ -882,14 +894,20 @@ export default function CaseDetails() {
               <Card
                 title="History Timeline"
                 sub="Chronological proceedings logs and order sheets"
-                actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
               >
-                <HearingHistoryView
-                  hearings={hearings}
-                  onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
-                  onShare={shareHearing}
-                  getStatusStyle={getStatusStyle}
-                />
+                <div className="hh-layout">
+                  <div className="hh-layout__main">
+                    <HearingHistoryView
+                      hearings={hearings}
+                      onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                      onShare={shareHearing}
+                      getStatusStyle={getStatusStyle}
+                    />
+                  </div>
+                  <div className="hh-layout__side">
+                    <Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }} className="hh-layout__add">Add Hearing</Button>
+                  </div>
+                </div>
               </Card>
             </div>
           )}
@@ -902,16 +920,22 @@ export default function CaseDetails() {
             <Card
               title="Hearing History"
               sub="Complete proceedings history — full text, imported from the order sheet"
-              actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
             >
-              <HearingHistoryView
-                hearings={hearings}
-                onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
-                onShare={shareHearing}
-                getStatusStyle={getStatusStyle}
-                emptyTitle="No history yet."
-                emptyIcon="history"
-              />
+              <div className="hh-layout">
+                <div className="hh-layout__main">
+                  <HearingHistoryView
+                    hearings={hearings}
+                    onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                    onShare={shareHearing}
+                    getStatusStyle={getStatusStyle}
+                    emptyTitle="No history yet."
+                    emptyIcon="history"
+                  />
+                </div>
+                <div className="hh-layout__side">
+                  <Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }} className="hh-layout__add">Add Hearing</Button>
+                </div>
+              </div>
             </Card>
           )}
         </div>

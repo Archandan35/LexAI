@@ -11471,6 +11471,7 @@ kbd.cmd__kbd {
   font-size: 14px;
   line-height: 1.7;
   color: var(--text-soft);
+  text-align: justify;
   white-space: pre-wrap;
   word-break: break-word;
   background: var(--surface-2);
@@ -11525,6 +11526,93 @@ kbd.cmd__kbd {
   right: 10px;
   pointer-events: none;
   color: var(--text-faint);
+}
+
+/* Full-width 50/50 Timeline / Cards toggle */
+.hh-seg {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.hh-seg button {
+  flex: 1 1 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hh-seg button + button {
+  border-left: 1px solid var(--border);
+}
+
+.hh-seg button.active {
+  background: var(--brand-soft);
+  color: var(--navy-700);
+}
+
+/* Cards grid view */
+.hh-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.hh-cards__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+
+/* Desktop two-column layout: timeline cards left, Add Hearing right */
+.hh-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 20px;
+  align-items: start;
+}
+
+.hh-layout__side {
+  position: sticky;
+  top: 20px;
+  display: flex;
+}
+
+.hh-layout__add {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 991px) {
+  .hh-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hh-layout__side {
+    position: static;
+    order: -1;
+  }
+
+  .hh-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 .hh-wire__list {
@@ -11612,10 +11700,15 @@ kbd.cmd__kbd {
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--text-soft);
+  text-align: justify;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .hh-wire__readmore {
-  align-self: flex-start;
+  align-self: flex-end;
   display: inline-flex;
   align-items: center;
   gap: 4px;
