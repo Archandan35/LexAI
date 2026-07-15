@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import Icon from './Icon.jsx';
-import Badge from './Badge.jsx';
 import EmptyState from './EmptyState.jsx';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
@@ -146,7 +145,7 @@ export default function HearingHistoryView({
                   >
                     {h.status === 'Completed' ? <Icon name="check" size={14} /> : <Icon name="clock" size={14} />}
                   </div>
-                  {!isLast && <div className="hh-wire__line" />}
+                  {!isLast && <div className="hh-wire__line" style={{ background: st.dot }} />}
                 </div>
                 <div className="hh-wire__card">{renderCard(h)}</div>
               </div>
@@ -181,7 +180,18 @@ export default function HearingHistoryView({
           <div className="hh-view__preview">
             {preview.status && (
               <div className="hh-view__preview-status">
-                <Badge dot>{preview.status}</Badge>
+                {(() => {
+                  const stp = styleFor(preview.status);
+                  return (
+                    <span
+                      className="hh-wire__badge badge--dyn"
+                      style={{ '--bd-bg': stp.bg, '--bd-color': stp.text, '--bd-border': stp.border }}
+                    >
+                      <span className="cl-card__badge-dot sync__dot--dyn" style={{ '--dot-bg': stp.dot }} />
+                      {preview.status}
+                    </span>
+                  );
+                })()}
               </div>
             )}
             <div className="hh-view__preview-text">
