@@ -11479,6 +11479,222 @@ kbd.cmd__kbd {
   padding: 16px;
 }
 
+/* ===== Hearing History wireframe design (rail + cards) ===== */
+.hh-wire {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hh-wire__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+.hh-wire__sort-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.hh-wire__sort-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hh-wire__sort-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 7px 30px 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.hh-wire__sort-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--text-faint);
+}
+
+.hh-wire__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.hh-wire__item {
+  display: flex;
+  gap: 16px;
+}
+
+.hh-wire__rail {
+  width: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.hh-wire__node {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.hh-wire__line {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+  margin-top: 4px;
+  margin-bottom: -22px;
+}
+
+.hh-wire__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  margin-bottom: 22px;
+}
+
+.hh-wire__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hh-wire__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hh-wire__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hh-wire__text {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.hh-wire__readmore {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-600);
+  cursor: pointer;
+}
+
+.hh-wire__readmore:hover {
+  text-decoration: underline;
+}
+
+.hh-wire__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 2px;
+}
+
+.hh-wire__updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.hh-wire__foot-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.hh-wire__foot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hh-wire__foot-btn:hover {
+  background: var(--brand-soft);
+  border-color: var(--navy-600);
+  color: var(--navy-700);
+}
+
+@media (max-width: 575px) {
+  .hh-wire__foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hh-wire__foot-actions {
+    width: 100%;
+  }
+
+  .hh-wire__foot-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 /* Tablet: 2 columns for cards */
 @media (max-width: 991px) {
   .hh-view__cards {

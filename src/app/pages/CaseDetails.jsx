@@ -57,6 +57,18 @@ export default function CaseDetails() {
     const item = (statusItems || []).find((s) => s.name === status);
     return hexToStyle(item?.color);
   }, [statusItems]);
+
+  const shareHearing = useCallback((h) => {
+    const url = `${window.location.origin}/cases/${id}?tab=Hearings`;
+    const text = `${h.purpose || 'Hearing'} — ${formatDate(h.date)}\n${stripHtml(h.notes || '')}\n${url}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => toast.push('Hearing copied to clipboard.', 'success'))
+        .catch(() => toast.push('Could not copy hearing.', 'error'));
+    } else {
+      toast.push('Sharing is not supported on this device.', 'info');
+    }
+  }, [id, formatDate, toast]);
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
   const [tab, setTab] = useState(params.get('tab') || 'Overview');
@@ -555,6 +567,7 @@ export default function CaseDetails() {
                 <HearingHistoryView
                   hearings={hearings}
                   onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  onShare={shareHearing}
                   getStatusStyle={getStatusStyle}
                 />
               </Card>
@@ -869,6 +882,7 @@ export default function CaseDetails() {
                 <HearingHistoryView
                   hearings={hearings}
                   onEdit={(h) => { setEditingHearing(h); setHearingOpen(true); }}
+                  onShare={shareHearing}
                   getStatusStyle={getStatusStyle}
                 />
               </Card>
