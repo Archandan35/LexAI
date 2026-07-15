@@ -14575,7 +14575,7 @@ kbd.cmd__kbd {
 }
 
 .hpm-historical-sort {
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 9px 14px;
   font-size: 13px;
   font-weight: 600;
