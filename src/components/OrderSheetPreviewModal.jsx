@@ -444,7 +444,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 <p>No other order sheets found for this case.</p>
               </div>
             ) : (
-              <div>
+              <div className="hpm-historical-panel">
                 <div className="hpm-historical-toolbar">
                   <span className="hpm-historical-count">{historical.length} hearing{historical.length !== 1 ? 's' : ''}</span>
                   <button className="hpm-historical-sort" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>

@@ -11,6 +11,7 @@ const SIZES = [
   { label: '18', v: 5 }, { label: '24', v: 6 }, { label: '36', v: 7 },
 ];
 const HILITES = ['#fff59d', '#a5d6a7', '#90caf9', '#f48fb1', '#ffcc80', 'transparent'];
+const TEXT_COLOURS = ['#000000', '#dc2626', '#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#ea580c', '#0891b2', '#78716c', '#ffffff'];
 
 const looksLikeHtml = (s) => typeof s === 'string' && /<[a-z][\s\S]*>/i.test(s);
 const escapeHtml = (s) => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
@@ -20,6 +21,14 @@ export default function DocEditor({
 }) {
   const ref = useRef(null);
   const [, force] = useState(0);
+  const [menu, setMenu] = useState(null);
+
+  useEffect(() => {
+    if (!menu) return undefined;
+    const close = () => setMenu(null);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menu]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -82,14 +91,58 @@ export default function DocEditor({
             <Btn cmd="subscript" label="x₂" title="Subscript" />
           </div>
           <div className="doc-tb-group">
-            <span className="doc-colours" title="Text colour">
-              {['#000000', '#dc2626', '#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#ea580c', '#0891b2', '#78716c', '#ffffff'].map((c) => (
-                <button key={c} type="button" className={`doc-colour-swatch${c === '#ffffff' ? ' doc-colour-swatch--bordered' : ''}`} style={{ '--sw': c }} onMouseDown={(e) => { e.preventDefault(); exec('foreColor', c); }} />
-              ))}
-            </span>
-            <span className="doc-hilites">
-              {HILITES.map((h) => <button key={h} type="button" title="Highlight" className="doc-hilite" style={{ '--sw': h === 'transparent' ? '#fff' : h }} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', h); }}>{h === 'transparent' ? '×' : ''}</button>)}
-            </span>
+            <div className="doc-menu-wrap">
+              <button
+                type="button"
+                className={`doc-menu-btn${menu === 'color' ? ' doc-menu-btn--open' : ''}`}
+                title="Text colour"
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setMenu(menu === 'color' ? null : 'color'); }}
+              >
+                <span className="doc-menu-btn__a">A</span>
+                <span className="doc-menu-btn__caret">▾</span>
+              </button>
+              {menu === 'color' && (
+                <div className="doc-colour-pop" onMouseDown={(e) => e.stopPropagation()}>
+                  {TEXT_COLOURS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      title={c}
+                      className={`doc-colour-swatch${c === '#ffffff' ? ' doc-colour-swatch--bordered' : ''}`}
+                      style={{ '--sw': c }}
+                      onMouseDown={(e) => { e.preventDefault(); exec('foreColor', c); setMenu(null); }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="doc-menu-wrap">
+              <button
+                type="button"
+                className={`doc-menu-btn${menu === 'hilite' ? ' doc-menu-btn--open' : ''}`}
+                title="Highlight colour"
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setMenu(menu === 'hilite' ? null : 'hilite'); }}
+              >
+                <span className="doc-menu-btn__hl">H</span>
+                <span className="doc-menu-btn__caret">▾</span>
+              </button>
+              {menu === 'hilite' && (
+                <div className="doc-colour-pop doc-colour-pop--hilite" onMouseDown={(e) => e.stopPropagation()}>
+                  {HILITES.map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      title={h === 'transparent' ? 'No highlight' : 'Highlight'}
+                      className="doc-hilite"
+                      style={{ '--sw': h === 'transparent' ? '#fff' : h }}
+                      onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', h); setMenu(null); }}
+                    >
+                      {h === 'transparent' ? '×' : ''}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="doc-tb-group">
             <Btn cmd="justifyLeft" label="⯇" title="Align left" />
