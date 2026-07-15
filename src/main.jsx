@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import App from './app/App.jsx';
+import { recoverFromChunkError } from './utils/lazyWithRetry.js';
 import './styles/index.css';
 
 function preconnectBackend(origin) {
@@ -23,18 +24,9 @@ for (const key of ['VITE_SUPABASE_URL', 'VITE_MONGO_DATA_API_URL', 'VITE_BACKEND
 }
 if (env.VITE_FIREBASE_PROJECT_ID) preconnectBackend('https://firestore.googleapis.com');
 
-const CHUNK_RELOAD_FLAG = 'lexai:chunk-reloaded';
-
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
-  let alreadyReloaded = false;
-  try {
-    alreadyReloaded = sessionStorage.getItem(CHUNK_RELOAD_FLAG) === '1';
-    sessionStorage.setItem(CHUNK_RELOAD_FLAG, '1');
-  } catch {
-    // ignore storage errors
-  }
-  if (!alreadyReloaded) window.location.reload();
+  recoverFromChunkError();
 });
 
 function ScrollToTop() {

@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-const RELOAD_FLAG = 'lexai:chunk-reloaded';
+const RETRY_PARAM = '_cr';
 
 function isChunkLoadError(err) {
   const msg = String(err && (err.message || err)) || '';
@@ -12,44 +12,52 @@ function isChunkLoadError(err) {
   );
 }
 
-function forceReloadOnce() {
-  let alreadyReloaded = false;
+function alreadyRetried() {
   try {
-    alreadyReloaded = sessionStorage.getItem(RELOAD_FLAG) === '1';
+    return new URLSearchParams(window.location.search).has(RETRY_PARAM);
   } catch {
-    alreadyReloaded = false;
+    return false;
   }
-  if (alreadyReloaded) return false;
+}
+
+/**
+ * Reload the page exactly once to recover from a stale/missing chunk after a
+ * new deployment. The retry marker lives in the URL (not sessionStorage) so it
+ * survives the reload even where storage is blocked, and the changed URL also
+ * forces the browser to re-fetch a fresh index.html instead of a cached one.
+ * If a chunk still fails after the retry, we stop (no infinite loop).
+ */
+export function recoverFromChunkError() {
+  if (alreadyRetried()) return false;
   try {
-    sessionStorage.setItem(RELOAD_FLAG, '1');
+    const url = new URL(window.location.href);
+    url.searchParams.set(RETRY_PARAM, Date.now().toString(36));
+    window.location.replace(url.toString());
   } catch {
-    // ignore storage errors
+    window.location.reload();
   }
-  window.location.reload();
   return true;
 }
 
-export function clearChunkReloadFlag() {
+function cleanRetryParam() {
+  if (!alreadyRetried()) return;
   try {
-    sessionStorage.removeItem(RELOAD_FLAG);
+    const url = new URL(window.location.href);
+    url.searchParams.delete(RETRY_PARAM);
+    window.history.replaceState(window.history.state, '', url.toString());
   } catch {
     // ignore
   }
 }
 
-/**
- * Wraps React.lazy so that when a dynamically imported chunk fails to load
- * (typically after a new deployment made the old hashed file 404), the app
- * performs a single hard reload to fetch the fresh index.html + chunk hashes.
- */
 export function lazyWithRetry(factory) {
   return lazy(async () => {
     try {
       const mod = await factory();
-      clearChunkReloadFlag();
+      cleanRetryParam();
       return mod;
     } catch (err) {
-      if (isChunkLoadError(err) && forceReloadOnce()) {
+      if (isChunkLoadError(err) && recoverFromChunkError()) {
         return new Promise(() => {});
       }
       throw err;
