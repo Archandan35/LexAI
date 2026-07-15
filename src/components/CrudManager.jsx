@@ -187,7 +187,7 @@ function SingleAdd({ config, entity }) {
     setSaving(true); setMsg(null);
     try {
       const r = entity === 'Stage'
-        ? await config.logic.add(values.name)
+        ? await config.logic.add(values)
         : await config.logic.create(values, config.actor);
       if (tryOk(r)) {
         setMsg({ type: 'success', text: `${entity} added successfully.` });
@@ -637,7 +637,7 @@ function BulkImport({ config, entity }) {
         const headerRow = lines[0].split(',').map((h) => h.trim().toLowerCase());
         headerRow.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
         try {
-          const r = entity === 'Stage' ? await config.logic.add(obj.name) : await config.logic.create(obj, config.actor);
+          const r = entity === 'Stage' ? await config.logic.add(obj) : await config.logic.create(obj, config.actor);
           if (tryOk(r)) imported++;
           else setErrors((prev) => [...prev, `Row ${i}: ${tryErr(r)}`]);
         } catch (e) { setErrors((prev) => [...prev, `Row ${i}: ${e.message}`]); }

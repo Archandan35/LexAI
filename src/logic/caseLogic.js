@@ -136,11 +136,12 @@ export const caseLogic = {
   // Dashboard data aggregation across collections.
   async dashboard() {
     try {
-      const [cases, drafts, documents, hearings] = await Promise.all([
+      const [cases, drafts, documents, hearings, reminders] = await Promise.all([
         caseService.listCases(),
         draftingService.listDrafts(),
         caseService.listDocuments(),
         caseService.listHearings(),
+        reminderService.list(),
       ]);
       const live = cases.filter((c) => !c.archived);
       const now = new Date(); now.setHours(0, 0, 0, 0);
@@ -160,6 +161,7 @@ export const caseLogic = {
           return {
             id: `hearing-${h.id}`, caseId: cid,
             caseTitle: c?.title || h.caseTitle || h.parties || '—',
+            caseNumber: c?.case_display_number || c?.caseNumber || h.caseNumber || '—',
             date: h.date, time: h.time, purpose: h.purpose || 'Hearing',
             status: h.status || 'Scheduled',
           };
@@ -169,10 +171,35 @@ export const caseLogic = {
       const caseNext = live
         .filter((c) => isFuture(c.nextHearing))
         .filter((c) => !seen.has(`${c.id}|${(c.nextHearing || '').slice(0, 10)}`))
-        .map((c) => ({ id: `next-${c.id}`, caseId: c.id, caseTitle: c.title, date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
+        .map((c) => ({ id: `next-${c.id}`, caseId: c.id, caseTitle: c.title, caseNumber: c.case_display_number || c.caseNumber || '—', date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
       const upcoming = [...futureHearings, ...caseNext]
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
         .slice(0, 6);
+
+      /* Upcoming reminders (pending, future-dated) across all cases. */
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const upcomingReminders = (reminders || [])
+        .filter((r) => !r.done && r.status !== 'completed' && r.status !== 'dismissed')
+        .map((r) => {
+          const d = new Date(r.date);
+          return { raw: r, ts: d.getTime() };
+        })
+        .filter((x) => !Number.isNaN(x.ts) && x.ts >= today.getTime())
+        .sort((a, b) => a.ts - b.ts)
+        .slice(0, 8)
+        .map(({ raw }) => {
+          const c = caseMap[raw.case_id];
+          const daysLeft = Math.round((new Date(raw.date).setHours(0, 0, 0, 0) - today.getTime()) / 86400000);
+          return {
+            id: raw.id,
+            title: raw.title,
+            type: raw.type || 'Reminder',
+            date: raw.date,
+            caseId: raw.case_id,
+            caseTitle: c?.title || c?.caseNumber || '—',
+            daysLeft,
+          };
+        });
       let recentCitations = [];
       try { recentCitations = (await citationService.searchCases({ keywords: 'contract limitation title' })).slice(0, 4); }
       catch { recentCitations = []; }
@@ -198,6 +225,7 @@ export const caseLogic = {
         recentDrafts: [...drafts].sort(byUpdated).slice(0, 5),
         recentDocuments: [...documents].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)).slice(0, 5),
         upcomingHearings: upcoming,
+        upcomingReminders,
         recentCitations,
         caseTypeDistribution,
       });
