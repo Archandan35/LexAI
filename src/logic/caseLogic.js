@@ -6,6 +6,8 @@ import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { reminderService } from '@/services/reminderService.js';
+import { reminderLogic } from '@/logic/reminderLogic.js';
+import { invalidateQuery } from '@/data-layer/queryCache.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 
@@ -34,6 +36,8 @@ export const caseLogic = {
     const row = await caseService.createCase({ ...enriched, archived: false, watch: false, stageHistory: [], createdAt: nowISO() });
     await caseFolderService.create({ caseId: row.id, name: caseFolderName(row), kind: 'document', order: 0, system: true, createdAt: nowISO() });
     await caseActivityService.record(row.id, 'case.create', `Case created: ${row.caseNumber}`, user);
+    if (row.nextHearing) await reminderLogic.syncHearingReminders(row.id, user).catch(() => {});
+    invalidateQuery('dashboard');
     return row;
   },
 
@@ -66,6 +70,9 @@ export const caseLogic = {
     delete enriched.stageRemarks;
     const row = await caseService.updateCase(id, enriched);
     await caseActivityService.record(id, 'case.update', 'Case updated', user);
+    const touchedHearing = 'next_hearing' in patch || 'nextHearing' in patch || 'status' in patch;
+    if (touchedHearing) await reminderLogic.syncHearingReminders(id, user).catch(() => {});
+    invalidateQuery('dashboard');
     return row;
   },
 
@@ -136,14 +143,35 @@ export const caseLogic = {
         caseService.listHearings(),
       ]);
       const live = cases.filter((c) => !c.archived);
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const hearingDates = new Set(hearings.map((h) => h.caseId || h.case_id));
+      const now = new Date(); now.setHours(0, 0, 0, 0);
+      const isFuture = (d) => {
+        if (!d) return false;
+        const x = new Date(d); if (Number.isNaN(x.getTime())) return false;
+        x.setHours(0, 0, 0, 0);
+        return x >= now;
+      };
+      const caseMap = Object.fromEntries(cases.map((c) => [c.id, c]));
+      // Future hearing records (order-sheet entries dated in the future).
+      const futureHearings = hearings
+        .filter((h) => isFuture(h.date))
+        .map((h) => {
+          const cid = h.caseId || h.case_id;
+          const c = caseMap[cid];
+          return {
+            id: `hearing-${h.id}`, caseId: cid,
+            caseTitle: c?.title || h.caseTitle || h.parties || '—',
+            date: h.date, time: h.time, purpose: h.purpose || 'Hearing',
+            status: h.status || 'Scheduled',
+          };
+        });
+      const seen = new Set(futureHearings.map((h) => `${h.caseId}|${(h.date || '').slice(0, 10)}`));
+      // Each live case's next hearing date (the canonical upcoming hearing).
       const caseNext = live
-        .filter((c) => c.nextHearing && (c.nextHearing || '').slice(0, 10) >= todayStr && !hearingDates.has(c.id))
-        .map((c) => ({ id: `next-${c.id}`, caseTitle: c.title, date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
-      const upcoming = [...hearings
-        .filter((h) => (h.date || '').slice(0, 10) >= todayStr)
-        .sort((a, b) => (a.date || '').localeCompare(b.date || '')), ...caseNext]
+        .filter((c) => isFuture(c.nextHearing))
+        .filter((c) => !seen.has(`${c.id}|${(c.nextHearing || '').slice(0, 10)}`))
+        .map((c) => ({ id: `next-${c.id}`, caseId: c.id, caseTitle: c.title, date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }));
+      const upcoming = [...futureHearings, ...caseNext]
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
         .slice(0, 6);
       let recentCitations = [];
       try { recentCitations = (await citationService.searchCases({ keywords: 'contract limitation title' })).slice(0, 4); }

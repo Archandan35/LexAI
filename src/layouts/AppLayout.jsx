@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import Bottombar from './Bottombar.jsx';
@@ -15,6 +15,12 @@ export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { debugMode } = useDebug();
   const { settings } = useSettings();
+  const location = useLocation();
+
+  // Auto-close the mobile sidebar whenever the route changes so the newly
+  // opened page is immediately visible (desktop is unaffected — it uses
+  // `collapsed`, not `mobileOpen`).
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   // Best-effort scheduled-backup catch-up once per authenticated session load.
   useEffect(() => {

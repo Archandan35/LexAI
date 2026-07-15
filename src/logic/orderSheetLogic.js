@@ -4,6 +4,7 @@ import { FieldMapper } from '@/core/FieldMapper.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 import { combinedCourt } from '@/utils/caseFormat.js';
+import { invalidateQuery } from '@/data-layer/queryCache.js';
 
 function fmtCaseNumber(c) {
   if (!c) return '—';
@@ -78,13 +79,13 @@ export const orderSheetLogic = {
     } catch (e) { return fail(e); }
   },
   async addHearing(data) {
-    try { return ok(await caseService.addHearing(data)); } catch (e) { return fail(e); }
+    try { const r = await caseService.addHearing(data); invalidateQuery('dashboard'); return ok(r); } catch (e) { return fail(e); }
   },
   async updateHearing(id, patch) {
-    try { return ok(await caseService.updateHearing(id, patch)); } catch (e) { return fail(e); }
+    try { const r = await caseService.updateHearing(id, patch); invalidateQuery('dashboard'); return ok(r); } catch (e) { return fail(e); }
   },
   async deleteHearing(id) {
-    try { return ok(await caseService.deleteHearing(id)); } catch (e) { return fail(e); }
+    try { const r = await caseService.deleteHearing(id); invalidateQuery('dashboard'); return ok(r); } catch (e) { return fail(e); }
   },
 
   // Template CRUD
