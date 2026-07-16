@@ -745,7 +745,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                           <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
                           <span className="task-card__dt-label">DUE DATE & TIME</span>
                         </div>
-                        <span className="task-card__dt-value task-card__dt-value--due">
+                        <span className="task-card__dt-value">
                           {t.due_date ? formatDate(t.due_date) : '—'}
                           {t.due_time ? ` ${fmtTime(t.due_time)}` : ''}
                         </span>

@@ -21237,6 +21237,7 @@ kbd.cmd__kbd {
 .task-card__dt-label-wrap svg { color: var(--text-muted); flex-shrink: 0; }
 .task-card__dt-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
 .task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; padding-left: 26px; }
+.task-card__dt-value--range { color: var(--teal, #0d9488); }
 
 .task-card__tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .task-card__tags-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
@@ -21392,13 +21393,14 @@ kbd.cmd__kbd {
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.task-card__dt-value--due { color: var(--red-600, #dc2626); }
-.task-card__dt-value--range { color: var(--amber-600, #d97706); }
 .task-card__dt-value {
   font-size: 12px;
   font-weight: 500;
   color: var(--navy-700);
   padding-left: 26px;
+}
+.task-card__dt-value--range {
+  color: var(--teal, #0d9488);
 }
 .task-card__tags {
   display: flex;
