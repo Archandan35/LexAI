@@ -22466,7 +22466,8 @@ kbd.cmd__kbd {
 
 @media (min-width: 1025px) {
   .jd-prose {
-    min-height: 695px;
+    max-height: 695px;
+    overflow-y: auto;
   }
 }
 
@@ -23128,6 +23129,13 @@ kbd.cmd__kbd {
   overflow-y: auto;
 }
 
+/* Judgment Summary rich editor surface — match the textarea sizing */
+.ajm-summary-editor .editor-surface {
+  resize: vertical;
+  min-height: 350px;
+  overflow-y: auto;
+}
+
 .ajm-input-readonly {
   background: var(--surface-2);
   color: var(--text-soft);
@@ -23416,6 +23424,9 @@ kbd.cmd__kbd {
     flex-wrap: wrap;
   }
   .ajm-summary-textarea {
+    min-height: 160px;
+  }
+  .ajm-summary-editor .editor-surface {
     min-height: 160px;
   }
 }

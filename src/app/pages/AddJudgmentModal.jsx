@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
+import RichTextEditor from '@/components/RichTextEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
@@ -477,12 +478,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
                   <label>Judgment Summary</label>
-                  <textarea
-                    className="ajm-input ajm-textarea ajm-summary-textarea"
-                    placeholder="Enter a brief summary of the judgment..."
-                    value={form.summary}
-                    onChange={(e) => set('summary', e.target.value)}
-                  />
+                  <div className="ajm-summary-editor">
+                    <RichTextEditor
+                      value={form.summary}
+                      onChange={(text) => set('summary', text)}
+                    />
+                  </div>
                   <div className="ajm-char-count">{characterCount} characters</div>
                 </div>
               </div>
