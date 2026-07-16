@@ -96,6 +96,8 @@ export default function Calendar() {
     return num || title || 'Case';
   }, []);
 
+  const caseNumberOnly = useCallback((c) => c.case_display_number || c.caseNumber || c.title || 'Case', []);
+
   const events = useMemo(() => {
     const out = [];
     // Scheduled case hearings — driven by each case's next hearing date.
@@ -106,7 +108,7 @@ export default function Calendar() {
       out.push({
         id: `case-hearing-${c.id}`,
         kind: 'hearing',
-        title: `${caseLabel(c)} — ${statusName}`,
+        title: `${caseNumberOnly(c)} — ${statusName}`,
         caseId: c.id,
         date: due,
         color: caseStatusColor[(statusName || '').toLowerCase()] || '#3b82f6',
@@ -781,34 +783,34 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
         </div>
         <div className="task-field">
-          <label className="cmp-label cmp-label--gear">
-            <span>Category</span>
+          <label className="cmp-label">Category</label>
+          <div className="task-field-row">
+            <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
+              <option value="">— select —</option>
+              {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </Select>
             <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
-          </label>
-          <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
-            <option value="">— select —</option>
-            {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </Select>
+          </div>
         </div>
         <div className="task-field">
-          <label className="cmp-label cmp-label--gear">
-            <span>Priority</span>
+          <label className="cmp-label">Priority</label>
+          <div className="task-field-row">
+            <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
+              {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
+                : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+            </Select>
             <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
-          </label>
-          <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
-            {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
-              : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
-          </Select>
+          </div>
         </div>
         <div className="task-field">
-          <label className="cmp-label cmp-label--gear">
-            <span>Status</span>
+          <label className="cmp-label">Status</label>
+          <div className="task-field-row">
+            <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
+              {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
+                : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+            </Select>
             <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
-          </label>
-          <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
-            {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
-              : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
-          </Select>
+          </div>
         </div>
         <div className="task-field">
           <label className="cmp-label">Active / Inactive</label>

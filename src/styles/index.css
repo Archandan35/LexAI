@@ -21100,7 +21100,9 @@ kbd.cmd__kbd {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -21108,18 +21110,20 @@ kbd.cmd__kbd {
   margin: 0 14px 12px;
 }
 .tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
-.tasks-search .input {
+.tasks-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
   border: none;
   background: none;
   outline: none;
-  flex: 1;
   font-size: 14px;
   color: var(--text);
-  padding: 0;
+  padding: 2px 0;
   box-shadow: none;
 }
-.tasks-search .input::placeholder { color: var(--text-faint); }
-.tasks-search .tasks-arch-toggle { margin-left: auto; }
+.tasks-search input::placeholder { color: var(--text-faint); }
+.tasks-search .tasks-arch-toggle { flex: 0 0 auto; margin-left: auto; }
 .tasks-arch-toggle {
   display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
   border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
@@ -21141,12 +21145,14 @@ kbd.cmd__kbd {
 .task-field { display: flex; flex-direction: column; gap: 5px; }
 .task-field--full { grid-column: 1 / -1; }
 .cmp-label--gear { display: flex; align-items: center; justify-content: space-between; }
+.task-field-row { display: flex; align-items: center; gap: 8px; }
+.task-field-row .select { flex: 1 1 auto; min-width: 0; }
 .task-field-gear {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text-muted); cursor: pointer; padding: 0;
 }
-.task-field-gear:hover { background: var(--surface-2); color: var(--navy-700); }
+.task-field-gear:hover { background: var(--surface-2); color: var(--navy-700); border-color: var(--navy-700); }
 
 /* responsive calendar/tasks */
 @media (max-width: 768px) {
