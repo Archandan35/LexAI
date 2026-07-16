@@ -942,7 +942,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
           <div className="task-field">
             <label className="cmp-label">Last Updated</label>
-            <Input value={task?.updated_at ? new Date(task.updated_at).toLocaleString() : '—'} disabled />
+            <Input value="—" disabled />
           </div>
           <div className="task-field task-field--full">
             <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
