@@ -2529,8 +2529,8 @@ select {
   display: inline-flex;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 3px;
+  border-radius: 12px;
+  padding: 4px;
   gap: 2px;
 }
 
@@ -2541,9 +2541,9 @@ select {
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 11px 22px;
+  border-radius: 9px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-soft);
   transition: all 0.16s var(--ease);
@@ -15886,6 +15886,9 @@ kbd.cmd__kbd {
   opacity: 1;
 }
 
+.cv-action-btn--danger { color: var(--red); }
+.cv-action-btn--danger:hover { color: var(--red); background: var(--red-soft); }
+
 /* ── Loading / Empty ── */
 .cv-spinner-wrap {
   display: flex;
@@ -21143,6 +21146,7 @@ kbd.cmd__kbd {
 .task-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
 .task-tag { background: var(--surface-2); border-radius: 5px; padding: 1px 6px; font-size: 11px; color: var(--text-muted); }
 .task-row--archived { opacity: .65; }
+.tasks-cards { display: none; }
 .task-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .task-field { display: flex; flex-direction: column; gap: 5px; }
 .task-field--full { grid-column: 1 / -1; }
@@ -21171,10 +21175,12 @@ kbd.cmd__kbd {
   .tasks-toolbar { flex-direction: column; align-items: stretch; }
   .tasks-toolbar-right { flex-direction: row; align-items: stretch; flex-wrap: wrap; }
   .tasks-toolbar-right .btn { flex: 1 1 0; width: auto; justify-content: center; }
-  .tasks-search { margin: 0 12px 12px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding-right: 12px; flex-wrap: nowrap; }
-  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; }
+  .tasks-search { margin: 0 12px 12px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding-right: 12px; flex-wrap: wrap; gap: 8px; }
+  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; width: 100%; }
   .tasks-search svg { order: 2; }
-  .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; justify-content: center; margin-left: 0; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); }
+  .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; width: 100%; justify-content: center; margin-left: 0; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
   .cmp-pagination { flex-wrap: wrap; }
+  .tasks-table-card .table-scroll { display: none; }
+  .tasks-cards { display: block; padding: 12px 12px 4px; }
 }

@@ -678,6 +678,60 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                 </tbody>
               </table>
             </div>
+            <div className="tasks-cards">
+              {paged.map((t) => {
+                const cat = categories.find((c) => c.name === t.category);
+                const color = t.color || cat?.color || '#6b7280';
+                const linkedCase = t.case_id ? cases.find((c) => c.id === t.case_id) : null;
+                return (
+                  <article key={t.id} className={`cv-case-card${t.archived ? ' cv-case-card--archived' : ''}`}>
+                    <div className="cv-case-card__row1">
+                      <div className="cv-case-card__left">
+                        <span className="cal-event-dot" style={{ '--dot': color, width: '10px', height: '10px', marginTop: '3px' }} />
+                        <div className="cv-case-card__title-row">
+                          <button className="link-btn cv-case-card__title" onClick={() => openView(t)}>{t.title}</button>
+                          {t.tags && <div className="task-tags">{t.tags.split(',').slice(0, 3).map((tg) => <span key={tg} className="task-tag">{tg.trim()}</span>)}</div>}
+                        </div>
+                      </div>
+                      <div className="cv-case-card__right">
+                        <span className="cv-case-card__badge">
+                          <span className="cv-case-card__badge-dot" />
+                          {t.status || '—'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="cv-case-card__meta-row">
+                      <span><Icon name="flag" size={13} /> {t.priority || '—'}</span>
+                      <span>{t.category ? <Badge tone="grey">{t.category}</Badge> : '—'}</span>
+                    </div>
+                    <div className="cv-case-card__court-row">
+                      <Icon name="clock" size={13} /> Due: {t.due_date ? formatDate(t.due_date) : '—'}{t.due_time ? ` ${fmtTime(t.due_time)}` : ''}
+                    </div>
+                    {linkedCase && (
+                      <div className="cv-case-card__court-row">
+                        <Icon name="link" size={13} /> {linkedCase.case_display_number || linkedCase.caseNumber || 'Linked'}
+                      </div>
+                    )}
+                    <div className="cv-case-card__dates">
+                      <div className="cv-case-card__dates-item">
+                        <span className="cv-case-card__dates-label">State</span>
+                        <span className="cv-case-card__dates-value">{t.active ? 'Active' : 'Inactive'}{t.archived ? ' · Archived' : ''}</span>
+                      </div>
+                    </div>
+                    <div className="cv-case-card__actions" role="toolbar" aria-label="Task actions">
+                      <button className="cv-action-btn" onClick={() => openView(t)} aria-label="View"><Icon name="eye" size={16} /><span>View</span></button>
+                      <button className="cv-action-btn" onClick={() => openEdit(t)} aria-label="Edit"><Icon name="edit" size={16} /><span>Edit</span></button>
+                      <button className="cv-action-btn" onClick={() => doAction(taskLogic.duplicate(t.id).then(() => onChanged()))} aria-label="Duplicate"><Icon name="copy" size={16} /><span>Duplicate</span></button>
+                      {t.status !== 'Completed'
+                        ? <button className="cv-action-btn" onClick={() => doAction(taskLogic.markComplete(t.id))} aria-label="Complete"><Icon name="check-circle" size={16} /><span>Done</span></button>
+                        : <button className="cv-action-btn" onClick={() => doAction(taskLogic.markPending(t.id))} aria-label="Pending"><Icon name="refresh" size={16} /><span>Pending</span></button>}
+                      <button className="cv-action-btn" onClick={() => doAction(t.archived ? taskLogic.restore(t.id) : taskLogic.archive(t.id))} aria-label={t.archived ? 'Restore' : 'Archive'}><Icon name={t.archived ? 'refresh' : 'archive'} size={16} /><span>{t.archived ? 'Restore' : 'Archive'}</span></button>
+                      <button className="cv-action-btn cv-action-btn--danger" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })} aria-label="Delete"><Icon name="trash" size={16} /><span>Delete</span></button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
             <div className="cmp-table-footer">
               <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} tasks</div>
               {totalPages > 1 && (
