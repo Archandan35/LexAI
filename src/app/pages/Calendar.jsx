@@ -633,12 +633,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                 <thead>
                   <tr>
                     <th className="w40"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                    <th>Title</th>
+                    <th>Case</th>
+                    <th>Task Title</th>
                     <th>Category</th>
                     <th>Priority</th>
                     <th>Status</th>
                     <th>Due</th>
-                    <th>Case / Hearing</th>
                     <th>State</th>
                     <th className="w160">Actions</th>
                   </tr>
@@ -650,6 +650,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     return (
                       <tr key={t.id} className={t.archived ? 'task-row--archived' : ''}>
                         <td><input type="checkbox" checked={selected.includes(t.id)} onChange={() => toggleOne(t.id)} /></td>
+                        <td>{(t.case_id || t.caseId) ? (caseDisplayMap[t.case_id || t.caseId] || 'Linked') : '—'}</td>
                         <td>
                           <div className="task-title-cell">
                             <span className="cal-event-dot" style={{ '--dot': color }} />
@@ -662,7 +663,6 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                         <td>{t.priority ? <Badge tone={priorityTone(t.priority)}>{t.priority}</Badge> : '—'}</td>
                         <td>{t.status ? <Badge tone={statusTone(t.status)}>{t.status}</Badge> : '—'}</td>
                         <td>{t.due_date ? formatDate(t.due_date) : '—'}{t.due_time && <div className="task-due-time">{fmtTime(t.due_time)}</div>}</td>
-                        <td>{(t.case_id || t.caseId) ? (cases.find((c) => c.id === (t.case_id || t.caseId))?.title || 'Linked') : '—'}</td>
                         <td>{t.active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Inactive</Badge>}{t.archived && <Badge tone="grey">Archived</Badge>}</td>
                         <td>
                           <div className="cmp-actions">
