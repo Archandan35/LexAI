@@ -21171,8 +21171,8 @@ kbd.cmd__kbd {
   .tasks-toolbar-right { flex-direction: row; align-items: stretch; flex-wrap: wrap; }
   .tasks-toolbar-right .btn { flex: 1 1 0; width: auto; justify-content: center; }
   .tasks-search { margin: 0 12px 12px; }
-  .tasks-search input { flex: 1 1 100%; order: 1; }
-  .tasks-search svg { order: 2; }
+  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; }
+  .tasks-search svg { order: 2; flex: 0 0 auto; }
   .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; justify-content: center; margin-left: 0; }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
   .cmp-pagination { flex-wrap: wrap; }
