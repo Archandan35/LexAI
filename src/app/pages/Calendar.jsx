@@ -596,9 +596,9 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
           </div>
         )}
 
-        <div className="tasks-search tasks-search--icon-right">
-          <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+        <div className="tasks-search">
           <Icon name="search" size={18} />
+          <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
           <button className={`tasks-arch-toggle${showArchived ? ' active' : ''}`} onClick={() => setShowArchived((s) => !s)}>
             <Icon name="history" size={15} /> {showArchived ? 'Hide Archived' : 'Show Archived'}
           </button>
@@ -766,13 +766,14 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
   };
   const blank = {
     title: '', description: '', notes: '', category: '', priority: 'Medium', status: 'Pending',
-    active: true, due_date: '', due_time: '', start_date: '', end_date: '', reminder: false,
+    active: true, due_date: '', due_time: '', has_date_range: false, start_date: '', end_date: '', reminder: false,
     reminder_time: '', color: '#6b7280', case_id: '', hearing_id: '', tags: '', attachments: '',
   };
   const [form, setForm] = useState(() => task ? {
     title: task.title || '', description: task.description || '', notes: task.notes || '', category: task.category || '',
     priority: task.priority || 'Medium', status: task.status || 'Pending', active: task.active !== false,
     due_date: task.due_date ? task.due_date.slice(0, 10) : '', due_time: task.due_time || '',
+    has_date_range: !!(task.start_date || task.end_date),
     start_date: task.start_date ? task.start_date.slice(0, 10) : '', end_date: task.end_date ? task.end_date.slice(0, 10) : '',
     reminder: !!task.reminder, reminder_time: task.reminder_time || '', color: task.color || '#6b7280',
     case_id: task.case_id || '', hearing_id: task.hearing_id || '', tags: task.tags || '', attachments: task.attachments || '',
@@ -862,14 +863,23 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <Input type="time" value={form.due_time} onChange={(e) => set('due_time', e.target.value)} />
         </div>
         <div className="task-field">
-          <label className="cmp-label">Start Date</label>
-          <Input type="date" value={form.start_date} onChange={(e) => { set('start_date', e.target.value); if (!e.target.value) set('end_date', ''); }} />
+          <label className="cmp-label">Start / End Date</label>
+          <Select value={form.has_date_range ? 'yes' : 'no'} onChange={(e) => { const v = e.target.value === 'yes'; set('has_date_range', v); if (!v) { set('start_date', ''); set('end_date', ''); } }}>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </Select>
         </div>
-        {form.start_date && (
-          <div className="task-field">
-            <label className="cmp-label">End Date</label>
-            <Input type="date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
-          </div>
+        {form.has_date_range && (
+          <>
+            <div className="task-field">
+              <label className="cmp-label">Start Date</label>
+              <Input type="date" value={form.start_date} onChange={(e) => set('start_date', e.target.value)} />
+            </div>
+            <div className="task-field">
+              <label className="cmp-label">End Date</label>
+              <Input type="date" value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
+            </div>
+          </>
         )}
         <div className="task-field">
           <label className="cmp-label">Reminder</label>
@@ -884,32 +894,72 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
             <Input type="time" value={form.reminder_time} onChange={(e) => set('reminder_time', e.target.value)} />
           </div>
         )}
-        <div className="task-field task-field--full">
-          <label className="cmp-label">Color Swatch</label>
-          <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Linked Case</label>
-          <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
-            <option value="">— none —</option>
-            {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
-          </Select>
-        </div>
-        <div className="task-field task-field--full">
-          <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
-          <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
-        </div>
-        <div className="task-field task-field--full">
-          <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
-          <input type="file" className="input" onChange={(e) => {
-            const names = Array.from(e.target.files || []).map((f) => f.name);
-            set('attachments', names.join(', '));
-          }} />
-          {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
-        </div>
-        <div className="task-field">
-          <label className="cmp-label">Last Updated</label>
-          <Input value={task?.updated_at ? new Date(task.updated_at).toLocaleString() : '—'} disabled />
+
+        <div className="task-form-grid task-form-grid--two task-field--full">
+          <div className="task-field">
+            <label className="cmp-label">Category</label>
+            <div className="task-field-row">
+              <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
+                <option value="">— select —</option>
+                {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </Select>
+              <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
+            </div>
+          </div>
+          <div className="task-field">
+            <label className="cmp-label">Priority</label>
+            <div className="task-field-row">
+              <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
+                {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
+                  : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+              </Select>
+              <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
+            </div>
+          </div>
+          <div className="task-field">
+            <label className="cmp-label">Status</label>
+            <div className="task-field-row">
+              <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
+                {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
+                  : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+              </Select>
+              <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
+            </div>
+          </div>
+          <div className="task-field">
+            <label className="cmp-label">Active / Inactive</label>
+            <Select value={form.active ? 'active' : 'inactive'} onChange={(e) => set('active', e.target.value === 'active')}>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </Select>
+          </div>
+          <div className="task-field">
+            <label className="cmp-label">Linked Case</label>
+            <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
+              <option value="">— none —</option>
+              {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
+            </Select>
+          </div>
+          <div className="task-field">
+            <label className="cmp-label">Last Updated</label>
+            <Input value={task?.updated_at ? new Date(task.updated_at).toLocaleString() : '—'} disabled />
+          </div>
+          <div className="task-field task-field--full">
+            <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
+            <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
+          </div>
+          <div className="task-field task-field--full">
+            <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
+            <input type="file" className="input task-attach-input" onChange={(e) => {
+              const names = Array.from(e.target.files || []).map((f) => f.name);
+              set('attachments', names.join(', '));
+            }} />
+            {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
+          </div>
+          <div className="task-field task-field--full">
+            <label className="cmp-label">Color Swatch</label>
+            <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
+          </div>
         </div>
       </div>
     </Modal>
