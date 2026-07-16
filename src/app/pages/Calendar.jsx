@@ -104,11 +104,11 @@ export default function Calendar() {
     cases.forEach((c) => {
       const due = c.nextHearing || c.next_hearing;
       if (!due) return;
-      const statusName = c.status || 'Active';
+      const statusName = c.status || '';
       out.push({
         id: `case-hearing-${c.id}`,
         kind: 'hearing',
-        title: `${caseNumberOnly(c)} — ${statusName}`,
+        title: `${caseNumberOnly(c)}${statusName ? ` — ${statusName}` : ''}`,
         caseId: c.id,
         date: due,
         color: caseStatusColor[(statusName || '').toLowerCase()] || '#3b82f6',

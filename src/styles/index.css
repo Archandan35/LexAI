@@ -21095,7 +21095,7 @@ kbd.cmd__kbd {
   display: flex; flex-wrap: wrap; gap: 10px; padding: 0 14px 12px; border-top: 1px solid var(--border);
   align-items: center; padding-top: 12px;
 }
-.tasks-filter-row .select, .tasks-filter-row .input { min-width: 140px; }
+.tasks-filter-row .select, .tasks-filter-row .input { flex: 1 1 160px; min-width: 0; max-width: 100%; }
 .tasks-search {
   display: flex;
   align-items: center;
@@ -21108,10 +21108,11 @@ kbd.cmd__kbd {
   background: var(--surface);
   color: var(--text-faint);
   margin: 0 14px 12px;
+  flex-wrap: wrap;
 }
 .tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
 .tasks-search input {
-  flex: 1 1 auto;
+  flex: 1 1 200px;
   min-width: 0;
   width: 100%;
   border: none;
