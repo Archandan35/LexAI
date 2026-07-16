@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
-import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { useFormat } from '@/utils/format.js';

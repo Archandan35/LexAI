@@ -298,6 +298,30 @@ export default function ManageCases() {
             </PermissionGate>
           </div>
 
+          <div className="bench-types__stat-cards bench-types__mobile-only">
+            <div className="bench-types__stat-card bench-types__stat-card--total">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
+                <span className="bench-types__stat-card-num">{cases.length}</span>
+              </div>
+              <div className="bench-types__stat-card-label">TOTAL CASES</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--active">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="check-circle" size={18} /></div>
+                <span className="bench-types__stat-card-num">{cases.filter(c => !c.archived).length}</span>
+              </div>
+              <div className="bench-types__stat-card-label">ACTIVE</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--inactive">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="vault" size={18} /></div>
+                <span className="bench-types__stat-card-num">{cases.filter(c => c.archived).length}</span>
+              </div>
+              <div className="bench-types__stat-card-label">ARCHIVED</div>
+            </div>
+          </div>
+
           <div className="cv-search-wrap">
             <span className="cv-search-icon"><Icon name="search" size={16} /></span>
             <input
