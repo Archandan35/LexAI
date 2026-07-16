@@ -731,8 +731,8 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     <div className="task-card__datetime-row">
                       <div className="task-card__dt-item">
                         <div className="task-card__dt-label-wrap">
-                          <Icon name="clock" size={13} />
-                          <span className="task-card__dt-label">Due Date & Time</span>
+                          <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
+                          <span className="task-card__dt-label">DUE DATE & TIME</span>
                         </div>
                         <span className="task-card__dt-value">
                           {t.due_date ? formatDate(t.due_date) : '—'}
@@ -742,7 +742,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       {(t.start_date || t.end_date) && (
                         <div className="task-card__dt-item">
                           <div className="task-card__dt-label-wrap">
-                            <Icon name="calendar" size={13} />
+                            <span className="task-card__field-icon"><Icon name="calendar" size={13} /></span>
                             <span className="task-card__dt-label">Start / End</span>
                           </div>
                           <span className="task-card__dt-value">
@@ -762,10 +762,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       </div>
                     )}
 
-                    {t.updated_at && (
+                    {t.updatedAt && (
                       <div className="task-card__updated">
-                        <Icon name="clock" size={13} />
-                        Last Updated: {new Date(t.updated_at).toLocaleString()}
+                        <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
+                        Last Updated: {new Date(t.updatedAt).toLocaleString()}
                       </div>
                     )}
 
@@ -915,24 +915,69 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <label className="cmp-label">Task Title <span className="cmp-required">*</span></label>
           <Input value={form.title} placeholder="e.g., Draft Written Statement" onChange={(e) => set('title', e.target.value)} />
         </div>
+
         <div className="task-field task-field--full">
           <label className="cmp-label">Description</label>
           <Textarea value={form.description} placeholder="Brief description…" onChange={(e) => set('description', e.target.value)} maxLength={250} />
         </div>
+
         <div className="task-field task-field--full">
           <label className="cmp-label">Notes</label>
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Category <span className="cmp-required">*</span></label>
+          <div className="task-field-row">
+            <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
+              <option value="">— select —</option>
+              {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </Select>
+            <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
+          </div>
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Priority <span className="cmp-required">*</span></label>
+          <div className="task-field-row">
+            <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
+              {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
+                : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+            </Select>
+            <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
+          </div>
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Status <span className="cmp-required">*</span></label>
+          <div className="task-field-row">
+            <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
+              {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
+                : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+            </Select>
+            <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
+          </div>
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Active / Inactive <span className="cmp-required">*</span></label>
+          <Select value={form.active ? 'active' : 'inactive'} onChange={(e) => set('active', e.target.value === 'active')}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </Select>
         </div>
 
         <div className="task-field">
           <label className="cmp-label">Due Date</label>
           <Input type="date" value={form.due_date} onChange={(e) => set('due_date', e.target.value)} />
         </div>
+
         <div className="task-field">
           <label className="cmp-label">Due Time</label>
           <Input type="time" value={form.due_time} onChange={(e) => set('due_time', e.target.value)} />
         </div>
-        <div className="task-field">
+
+        <div className="task-field task-field--full">
           <label className="cmp-label">Start / End Date</label>
           <Select value={form.has_date_range ? 'yes' : 'no'} onChange={(e) => { const v = e.target.value === 'yes'; set('has_date_range', v); if (!v) { set('start_date', ''); set('end_date', ''); } }}>
             <option value="no">No</option>
@@ -951,7 +996,8 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
             </div>
           </>
         )}
-        <div className="task-field">
+
+        <div className="task-field task-field--full">
           <label className="cmp-label">Reminder</label>
           <Select value={form.reminder ? 'yes' : 'no'} onChange={(e) => set('reminder', e.target.value === 'yes')}>
             <option value="no">No</option>
@@ -965,71 +1011,46 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
         )}
 
-        <div className="task-form-grid task-form-grid--two task-field--full">
-          <div className="task-field">
-            <label className="cmp-label">Category</label>
-            <div className="task-field-row">
-              <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
-                <option value="">— select —</option>
-                {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
-              </Select>
-              <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
-            </div>
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Linked Case</label>
+          <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
+            <option value="">— none —</option>
+            {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
+          </Select>
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Metadata</label>
+          <div className="task-field-row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
+            {task?.created_by && <span className="cmp-text-sm">Created by: {task.created_by}</span>}
+            {task?.created_at && <span className="cmp-text-sm">Created: {new Date(task.created_at).toLocaleDateString()}</span>}
+            {task?.updated_at && <span className="cmp-text-sm">Updated: {new Date(task.updated_at).toLocaleDateString()}</span>}
+            {!task && <span className="cmp-text-muted">—</span>}
           </div>
-          <div className="task-field">
-            <label className="cmp-label">Priority</label>
-            <div className="task-field-row">
-              <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
-                {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
-                  : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
-              </Select>
-              <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
-            </div>
-          </div>
-          <div className="task-field">
-            <label className="cmp-label">Status</label>
-            <div className="task-field-row">
-              <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
-                {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
-                  : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
-              </Select>
-              <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
-            </div>
-          </div>
-          <div className="task-field">
-            <label className="cmp-label">Active / Inactive</label>
-            <Select value={form.active ? 'active' : 'inactive'} onChange={(e) => set('active', e.target.value === 'active')}>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Select>
-          </div>
-          <div className="task-field">
-            <label className="cmp-label">Linked Case</label>
-            <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
-              <option value="">— none —</option>
-              {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
-            </Select>
-          </div>
-          <div className="task-field">
-            <label className="cmp-label">Last Updated</label>
-            <Input value="—" disabled />
-          </div>
-          <div className="task-field task-field--full">
-            <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
-            <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
-          </div>
-          <div className="task-field task-field--full">
-            <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
-            <input type="file" className="input task-attach-input" onChange={(e) => {
-              const names = Array.from(e.target.files || []).map((f) => f.name);
-              set('attachments', names.join(', '));
-            }} />
-            {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
-          </div>
-          <div className="task-field task-field--full">
-            <label className="cmp-label">Color Swatch</label>
-            <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
-          </div>
+        </div>
+
+        <div className="task-field">
+          <label className="cmp-label">Last Updated</label>
+          <Input value={task?.updated_at ? new Date(task.updated_at).toLocaleDateString() : '—'} disabled />
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
+          <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
+          <input type="file" className="input task-attach-input" onChange={(e) => {
+            const names = Array.from(e.target.files || []).map((f) => f.name);
+            set('attachments', names.join(', '));
+          }} />
+          {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
+        </div>
+
+        <div className="task-field task-field--full">
+          <label className="cmp-label">Color Swatch</label>
+          <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
         </div>
       </div>
     </Modal>
