@@ -23129,18 +23129,11 @@ kbd.cmd__kbd {
   overflow-y: auto;
 }
 
-/* Judgment Summary rich editor surface — match the textarea sizing */
-.ajm-summary-editor .editor-surface {
-  resize: vertical;
+/* Judgment Summary & Headnotes rich editors — match the prior textarea sizing */
+.ajm-doc-editor .doc-page {
+  width: 100%;
   min-height: 350px;
-  overflow-y: auto;
-}
-
-/* Headnotes textarea — draggable (bottom-right handle), taller on desktop */
-.ajm-headnotes-textarea {
-  resize: vertical;
-  min-height: 220px;
-  overflow-y: auto;
+  font-family: 'Calibri', 'Arial', sans-serif;
 }
 
 .ajm-input-readonly {
@@ -23433,11 +23426,8 @@ kbd.cmd__kbd {
   .ajm-summary-textarea {
     min-height: 160px;
   }
-  .ajm-summary-editor .editor-surface {
-    min-height: 160px;
-  }
-  .ajm-headnotes-textarea {
-    min-height: 140px;
+  .ajm-doc-editor .doc-page {
+    min-height: 200px;
   }
 }
 

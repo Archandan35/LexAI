@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import RichTextEditor from '@/components/RichTextEditor.jsx';
+import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
@@ -257,8 +257,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const priorityOpts = useMemo(() => makeOpts(priorities), [priorities]);
   const partyTypeOpts = useMemo(() => makeOpts(partyTypes), [partyTypes]);
 
-  const characterCount = form.summary.length;
-
   const progressPercent = useMemo(() => {
     if (selectedTabIndex < 0) return 0;
     const totalSteps = PROGRESS_STEPS.length;
@@ -479,12 +477,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
                   <label>Headnotes</label>
-                  <textarea
-                    className="ajm-input ajm-textarea ajm-headnotes-textarea"
-                    placeholder="Enter the headnotes of the judgment..."
-                    value={form.headnotes}
-                    onChange={(e) => set('headnotes', e.target.value)}
-                  />
+                  <div className="ajm-doc-editor">
+                    <DocEditor
+                      value={form.headnotes}
+                      onChange={(html) => set('headnotes', html)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -496,13 +494,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
                   <label>Judgment Summary</label>
-                  <div className="ajm-summary-editor">
-                    <RichTextEditor
+                  <div className="ajm-doc-editor">
+                    <DocEditor
                       value={form.summary}
-                      onChange={(text) => set('summary', text)}
+                      onChange={(html) => set('summary', html)}
                     />
                   </div>
-                  <div className="ajm-char-count">{characterCount} characters</div>
                 </div>
               </div>
             </div>
