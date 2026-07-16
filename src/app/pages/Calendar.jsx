@@ -113,13 +113,29 @@ export default function Calendar() {
 
   const caseNumberOnly = useCallback((c) => c.case_display_number || c.caseNumber || c.title || 'Case', []);
 
+  // Latest hearing status per case (mirrors the Order Sheet page's per-case status).
+  const caseHearingStatusMap = useMemo(() => {
+    const byCase = {};
+    hearings.forEach((h) => {
+      const cid = h.case_id || h.caseId;
+      if (!cid) return;
+      const d = h.date || h.next_hearing_date;
+      if (!d) return;
+      const prev = byCase[cid];
+      if (!prev || d > prev.date) byCase[cid] = { date: d, status: h.status || 'Scheduled' };
+    });
+    const map = {};
+    Object.keys(byCase).forEach((cid) => { map[cid] = byCase[cid].status; });
+    return map;
+  }, [hearings]);
+
   const events = useMemo(() => {
     const out = [];
     // Scheduled case hearings — driven by each case's next hearing date.
     cases.forEach((c) => {
       const due = c.nextHearing || c.next_hearing;
       if (!due) return;
-      const statusName = c.status || 'Active';
+      const statusName = caseHearingStatusMap[c.id] || c.status || 'Active';
       out.push({
         id: `case-hearing-${c.id}`,
         kind: 'hearing',
