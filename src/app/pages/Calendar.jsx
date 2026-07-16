@@ -654,7 +654,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                         <td>{t.priority ? <Badge tone={priorityTone(t.priority)}>{t.priority}</Badge> : '—'}</td>
                         <td>{t.status ? <Badge tone={statusTone(t.status)}>{t.status}</Badge> : '—'}</td>
                         <td>{t.due_date ? formatDate(t.due_date) : '—'}{t.due_time && <div className="task-due-time">{fmtTime(t.due_time)}</div>}</td>
-                        <td>{t.case_id ? (cases.find((c) => c.id === t.case_id)?.title || 'Linked') : '—'}</td>
+                        <td>{(t.case_id || t.caseId) ? (cases.find((c) => c.id === (t.case_id || t.caseId))?.title || 'Linked') : '—'}</td>
                         <td>{t.active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Inactive</Badge>}{t.archived && <Badge tone="grey">Archived</Badge>}</td>
                         <td>
                           <div className="cmp-actions">
@@ -684,15 +684,16 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
               {paged.map((t) => {
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
-                const linkedCase = t.case_id ? cases.find((c) => c.id === t.case_id) : null;
-                const caseNum = linkedCase?.case_display_number || linkedCase?.caseNumber || t.case_id || '';
+                const cid = t.case_id || t.caseId || '';
+                const linkedCase = cid ? cases.find((c) => c.id === cid) : null;
+                const caseNum = linkedCase ? (linkedCase.case_display_number || linkedCase.caseNumber || linkedCase.title || cid) : (cid || '—');
                 const caseTitle = linkedCase?.title || '';
                 return (
                   <article key={t.id} className={`task-card${t.archived ? ' task-card--archived' : ''}`}>
                     <div className="task-card__header">
                       <div className="task-card__case-row">
                         <span className="task-card__case-num">{caseNum || '—'}</span>
-                        <span className="task-card__status-badge" style={{ '--dot': color }}>
+                        <span className="task-card__status-badge">
                           <span className="task-card__badge-dot" />
                           {t.status || 'Pending'}
                         </span>
@@ -725,7 +726,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       <div className="task-card__dt-item">
                         <div className="task-card__dt-label-wrap">
                           <Icon name="clock" size={13} />
-                          <span className="task-card__dt-label">Due</span>
+                          <span className="task-card__dt-label">Due Date & Time</span>
                         </div>
                         <span className="task-card__dt-value">
                           {t.due_date ? formatDate(t.due_date) : '—'}
