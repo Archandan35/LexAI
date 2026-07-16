@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -64,26 +63,26 @@ export default function CaseTimeline() {
   return (
     <div className="fade-in">
       {!isMobile ? (
-        <PageHeader
-          icon="clock"
-          title="Case Timeline"
-          subtitle="Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline."
-          actions={events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
-        />
-      ) : (
-        <div className="cl-header">
-          <div className="cl-header__left">
-            <div className="cl-header__icon"><Icon name="clock" size={22} /></div>
-            <div>
-              <div className="cl-header__title">Case Timeline</div>
-              <div className="cl-header__sub">Auto-create a chronology from case documents.</div>
-            </div>
+        <div className="bench-types__hero">
+          <div className="bench-types__hero-icon"><Icon name="clock" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Case Timeline</h2>
+            <p>Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline.</p>
+            <div className="bench-types__hero-accent" />
           </div>
-          {events?.length > 0 && (
-            <button className="cl-header__add" type="button" onClick={exportTimeline}>
-              <Icon name="download" size={15} /> Export
-            </button>
-          )}
+          {events?.length > 0 && <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }} onClick={exportTimeline}>Export</Button>}
+          <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
+        </div>
+      ) : (
+        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero-icon"><Icon name="clock" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Case Timeline</h2>
+            <p>Auto-create a chronology from case documents.</p>
+            <div className="bench-types__hero-accent" />
+            {events?.length > 0 && <Button variant="ghost" icon="download" style={{ marginTop: '12px' }} onClick={exportTimeline}>Export</Button>}
+          </div>
+          <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       )}
 

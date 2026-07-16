@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import PageHeader from '@/components/PageHeader.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -133,29 +132,107 @@ export default function Reminders() {
   return (
     <div className="fade-in">
       {!isMobile ? (
-        <PageHeader icon="bell" title="Reminders" subtitle="All hearing, filing, evidence & compliance deadlines."
-          actions={<Button onClick={openAdd}><Icon name="plus" size={15} /> Add Reminder</Button>} />
-      ) : (
-        <div className="cl-header">
-          <div className="cl-header__left">
-            <div className="cl-header__icon"><Icon name="bell" size={22} /></div>
-            <div>
-              <div className="cl-header__title">Reminders</div>
-              <div className="cl-header__sub">All hearing, filing, evidence & compliance deadlines.</div>
+        <>
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="bell" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Reminders</h2>
+              <p>All hearing, filing, evidence & compliance deadlines.</p>
+              <div className="bench-types__hero-accent" />
+            </div>
+            <Button icon="plus" onClick={openAdd} style={{ marginLeft: 'auto' }}>Add Reminder</Button>
+            <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
+
+          <div className="bench-types__stats-row">
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="bell" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Total</div>
+                <div className="bench-types__statcard-value">{stats.total}</div>
+                <div className="bench-types__statcard-sub">All reminders</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--active"><Icon name="clock" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Pending</div>
+                <div className="bench-types__statcard-value">{stats.pending}</div>
+                <div className="bench-types__statcard-sub">Awaiting action</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--inactive"><Icon name="alert" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Overdue</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{stats.overdue}</div>
+                <div className="bench-types__statcard-sub">Past due date</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--most-used"><Icon name="check-circle" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Done</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{stats.done}</div>
+                <div className="bench-types__statcard-sub">Completed</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--created-month"><Icon name="calendar" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Due Today</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(r => !r.done && dayDiff(r.date) === 0).length}</div>
+                <div className="bench-types__statcard-sub">Due today</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--assignments"><Icon name="layers" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Due This Week</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(r => !r.done && dayDiff(r.date) >= 0 && dayDiff(r.date) <= 7).length}</div>
+                <div className="bench-types__statcard-sub">Next 7 days</div>
+              </div>
             </div>
           </div>
-          <button className="cl-header__add" type="button" onClick={openAdd}>
-            <Icon name="plus" size={15} /> Add
-          </button>
-        </div>
-      )}
+        </>
+      ) : (
+        <>
+          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+            <div className="bench-types__hero-icon"><Icon name="bell" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Reminders</h2>
+              <p>All hearing, filing, evidence & compliance deadlines.</p>
+              <div className="bench-types__hero-accent" />
+              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Reminder</Button>
+            </div>
+            <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
 
-      <div className="stats-row">
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="bell" size={20} /></div><div className="stat-card__value">{stats.total}</div><div className="stat-card__label">Total</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="clock" size={20} /></div><div className="stat-card__value">{stats.pending}</div><div className="stat-card__label">Pending</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="alert" size={20} /></div><div className="stat-card__value">{stats.overdue}</div><div className="stat-card__label">Overdue</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="check-circle" size={20} /></div><div className="stat-card__value">{stats.done}</div><div className="stat-card__label">Done</div></div>
-      </div>
+          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+            <div className="bench-types__stat-card bench-types__stat-card--total">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="bell" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.total}</span>
+              </div>
+              <div className="bench-types__stat-card-label">TOTAL</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--active">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="clock" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.pending}</span>
+              </div>
+              <div className="bench-types__stat-card-label">PENDING</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--inactive">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="alert" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.overdue}</span>
+              </div>
+              <div className="bench-types__stat-card-label">OVERDUE</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="toolbar-row">
         <Input className="search-row__input" placeholder="Search by title, type or case…" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -214,6 +291,28 @@ export default function Reminders() {
       </Modal>
 
       <CrudManager open={typeMgr} onClose={() => { setTypeMgr(false); loadTypes(); }} entity="Reminder Type" config={{ logic: reminderTypesLogic, fields: [{ key: 'name', label: 'Reminder Type Name', placeholder: 'e.g., Hearing Date' }, { key: 'description', label: 'Description', placeholder: 'Optional description' }], defaults: {}, refresh: loadTypes }} />
+
+      <nav className="bench-types__bottom-nav bench-types__mobile-only">
+        <button className="bench-types__nav-tab bench-types__nav-tab--active">
+          <Icon name="home" size={20} />
+          <span>Dashboard</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="briefcase" size={20} />
+          <span>Matters</span>
+        </button>
+        <button className="bench-types__nav-fab">
+          <Icon name="plus" size={24} />
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="file" size={20} />
+          <span>Order Sheet</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="calendar" size={20} />
+          <span>Calendar</span>
+        </button>
+      </nav>
     </div>
   );
 }

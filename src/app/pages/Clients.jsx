@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -33,6 +32,15 @@ export default function Clients() {
   const [viewing, setViewing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -87,14 +95,108 @@ export default function Clients() {
 
   return (
     <div className="fade-in">
-      <PageHeader icon="users" title="Clients" subtitle="Manage your clients and contacts." />
+      {!isMobile ? (
+        <>
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="users" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Clients</h2>
+              <p>Manage your clients and contacts.</p>
+              <div className="bench-types__hero-accent" />
+            </div>
+            <Button icon="plus" onClick={openAdd} style={{ marginLeft: 'auto' }}>Add Client</Button>
+            <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
 
-      <div className="stats-row">
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="users" size={20} /></div><div className="stat-card__value">{stats.totalClients ?? 0}</div><div className="stat-card__label">Total Clients</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="folder" size={20} /></div><div className="stat-card__value">{stats.activeMatters ?? 0}</div><div className="stat-card__label">Active Matters</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="credit-card" size={20} /></div><div className="stat-card__value">{stats.pendingPayments ?? 0}</div><div className="stat-card__label">Pending Payments</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="trending-up" size={20} /></div><div className="stat-card__value">{stats.newThisMonth ?? 0}</div><div className="stat-card__label">New This Month</div></div>
-      </div>
+          <div className="bench-types__stats-row">
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="users" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Total Clients</div>
+                <div className="bench-types__statcard-value">{stats.totalClients ?? 0}</div>
+                <div className="bench-types__statcard-sub">All registered clients</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--active"><Icon name="folder" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Active Matters</div>
+                <div className="bench-types__statcard-value">{stats.activeMatters ?? 0}</div>
+                <div className="bench-types__statcard-sub">Currently open</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--inactive"><Icon name="credit-card" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Pending Payments</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{stats.pendingPayments ?? 0}</div>
+                <div className="bench-types__statcard-sub">Outstanding dues</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--most-used"><Icon name="trending-up" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">New This Month</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{stats.newThisMonth ?? 0}</div>
+                <div className="bench-types__statcard-sub">This calendar month</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--created-month"><Icon name="check-circle" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Active Clients</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(c => c.status === 'Active').length}</div>
+                <div className="bench-types__statcard-sub">Currently active</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--assignments"><Icon name="ban" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Inactive</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(c => c.status !== 'Active').length}</div>
+                <div className="bench-types__statcard-sub">Not active</div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+            <div className="bench-types__hero-icon"><Icon name="users" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Clients</h2>
+              <p>Manage your clients and contacts.</p>
+              <div className="bench-types__hero-accent" />
+              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Client</Button>
+            </div>
+            <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
+
+          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+            <div className="bench-types__stat-card bench-types__stat-card--total">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="users" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.totalClients ?? 0}</span>
+              </div>
+              <div className="bench-types__stat-card-label">TOTAL</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--active">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="folder" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.activeMatters ?? 0}</span>
+              </div>
+              <div className="bench-types__stat-card-label">ACTIVE MATTERS</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--inactive">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="trending-up" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.newThisMonth ?? 0}</span>
+              </div>
+              <div className="bench-types__stat-card-label">NEW THIS MONTH</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="toolbar-row">
         <Input className="search-row__input" placeholder="Search by name, email, phone, type…" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -202,6 +304,28 @@ export default function Clients() {
           <Button variant="primary" icon="edit" onClick={() => { const c = viewing; setViewing(null); openEdit(c); }}>Edit Client</Button>
         </div>
       </Modal>
+
+      <nav className="bench-types__bottom-nav bench-types__mobile-only">
+        <button className="bench-types__nav-tab bench-types__nav-tab--active">
+          <Icon name="home" size={20} />
+          <span>Dashboard</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="briefcase" size={20} />
+          <span>Matters</span>
+        </button>
+        <button className="bench-types__nav-fab">
+          <Icon name="plus" size={24} />
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="file" size={20} />
+          <span>Order Sheet</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="calendar" size={20} />
+          <span>Calendar</span>
+        </button>
+      </nav>
     </div>
   );
 }

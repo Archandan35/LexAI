@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -29,6 +30,7 @@ const FILTER_DEFAULTS = {
 };
 
 export default function JudgmentLibrary() {
+  const navigate = useNavigate();
   const { formatDate } = useFormat();
   const [judgments, setJudgments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -338,7 +340,7 @@ export default function JudgmentLibrary() {
                       <td className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
                       <td>
                         <div className="jl-actions">
-                          <button title="View"><Icon name="eye" size={15} /></button>
+                          <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
                           <button title="Edit"><Icon name="pen" size={15} /></button>
                           <button title="Copy"><Icon name="copy" size={15} /></button>
                           <button title="More"><Icon name="more-vertical" size={14} /></button>

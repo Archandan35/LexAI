@@ -26,7 +26,6 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
-import PageHeader from '@/components/PageHeader.jsx';
 import Button from '@/components/Button.jsx';
 
 
@@ -304,22 +303,26 @@ export default function CreateCase() {
 
       {/* ---- Top bar ---- */}
       {!isMobile ? (
-        <PageHeader
-          icon="pen"
-          title="Create Cases"
-          subtitle="Fill in the details below to create a new case"
-          actions={<Button variant="ghost" icon="download">Load from Template</Button>}
-        />
-      ) : (
-        <div className="cl-header">
-          <div className="cl-header__left">
-            <div className="cl-header__icon"><Icon name="pen" size={22} /></div>
-            <div>
-              <div className="cl-header__title">Create Cases</div>
-              <div className="cl-header__sub">Fill in the details below to create a new case</div>
-            </div>
+        <div className="bench-types__hero">
+          <div className="bench-types__hero-icon"><Icon name="pen" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Create Cases</h2>
+            <p>Fill in the details below to create a new case</p>
+            <div className="bench-types__hero-accent" />
           </div>
-          <Button variant="ghost"><Icon name="download" size={15} /> Load</Button>
+          <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }}>Load from Template</Button>
+          <Icon name="pen" className="bench-types__hero-watermark bench-types__watermark-icon" />
+        </div>
+      ) : (
+        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero-icon"><Icon name="pen" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Create Cases</h2>
+            <p>Fill in the details below to create a new case</p>
+            <div className="bench-types__hero-accent" />
+            <Button variant="ghost" icon="download" style={{ marginTop: '12px' }}>Load</Button>
+          </div>
+          <Icon name="pen" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       )}
 

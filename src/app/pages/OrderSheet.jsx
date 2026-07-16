@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Modal from '@/components/Modal.jsx';
@@ -634,16 +633,15 @@ export default function OrderSheet() {
       {/* Mobile View */}
       {isMobile && (
         <div className="cl-mobile-view">
-          {/* Header Card */}
-          <div className="cl-header">
-            <div className="cl-header__left">
-              <div className="cl-header__icon"><Icon name="calendar" size={22} /></div>
-              <div>
-                <div className="cl-header__title">Cases</div>
-                <div className="cl-header__sub">View and manage all hearings across your matters.</div>
-              </div>
+          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+            <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Cases</h2>
+              <p>View and manage all hearings across your matters.</p>
+              <div className="bench-types__hero-accent" />
+              <Button icon="plus" onClick={openNew} style={{ marginTop: '12px' }}>Add</Button>
             </div>
-            <button className="cl-header__add" type="button" onClick={openNew}><Icon name="plus" size={15} /> Add</button>
+            <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
           {/* Tabs */}
@@ -995,22 +993,44 @@ export default function OrderSheet() {
               )}
             </div>
           )}
+
+          <nav className="bench-types__bottom-nav bench-types__mobile-only">
+            <button className="bench-types__nav-tab bench-types__nav-tab--active">
+              <Icon name="home" size={20} />
+              <span>Dashboard</span>
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="briefcase" size={20} />
+              <span>Matters</span>
+            </button>
+            <button className="bench-types__nav-fab">
+              <Icon name="plus" size={24} />
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="file" size={20} />
+              <span>Order Sheet</span>
+            </button>
+            <button className="bench-types__nav-tab">
+              <Icon name="calendar" size={20} />
+              <span>Calendar</span>
+            </button>
+          </nav>
         </div>
       )}
 
       {/* Desktop View */}
       {!isMobile && (
         <div className="cl-desktop-view fade-in">
-          <PageHeader
-            icon="calendar"
-            title="Order Sheet"
-            subtitle="View and manage all hearings across your matters."
-            actions={
-              <div className="order-sheet__header-actions">
-                <Button icon="plus" onClick={openNew}>Add Order Sheet</Button>
-              </div>
-            }
-          />
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Order Sheet</h2>
+              <p>View and manage all hearings across your matters.</p>
+              <div className="bench-types__hero-accent" />
+            </div>
+            <Button icon="plus" onClick={openNew} style={{ marginLeft: 'auto' }}>Add Order Sheet</Button>
+            <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
 
           <div className="tabs">
             <div className={`tab ${tab === 'list' ? 'active' : ''}`} onClick={() => setTab('list')}>Cases</div>

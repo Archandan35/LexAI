@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -32,6 +31,15 @@ export default function Advocates() {
   const [viewing, setViewing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -90,13 +98,108 @@ export default function Advocates() {
 
   return (
     <div className="fade-in">
-      <PageHeader icon="users" title="Advocates" subtitle="Manage advocates in your practice." />
+      {!isMobile ? (
+        <>
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="users" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Advocates</h2>
+              <p>Manage advocates in your practice.</p>
+              <div className="bench-types__hero-accent" />
+            </div>
+            <Button icon="plus" onClick={openAdd} style={{ marginLeft: 'auto' }}>Add Advocate</Button>
+            <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
 
-      <div className="stats-row">
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="users" size={20} /></div><div className="stat-card__value">{stats.total}</div><div className="stat-card__label">Total Advocates</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="check-circle" size={20} /></div><div className="stat-card__value">{stats.active}</div><div className="stat-card__label">Active</div></div>
-        <div className="stat-card"><div className="stat-card__icon"><Icon name="ban" size={20} /></div><div className="stat-card__value">{stats.inactive}</div><div className="stat-card__label">Inactive</div></div>
-      </div>
+          <div className="bench-types__stats-row">
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--total"><Icon name="users" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Total Advocates</div>
+                <div className="bench-types__statcard-value">{stats.total}</div>
+                <div className="bench-types__statcard-sub">All advocates</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--active"><Icon name="check-circle" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Active</div>
+                <div className="bench-types__statcard-value">{stats.active}</div>
+                <div className="bench-types__statcard-sub">Currently active</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--inactive"><Icon name="ban" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Inactive</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{stats.inactive}</div>
+                <div className="bench-types__statcard-sub">Not active</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--most-used"><Icon name="mail" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">With Email</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(u => u.email).length}</div>
+                <div className="bench-types__statcard-sub">Has email address</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--created-month"><Icon name="phone" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">With Phone</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">{items.filter(u => u.phone).length}</div>
+                <div className="bench-types__statcard-sub">Has phone number</div>
+              </div>
+            </div>
+            <div className="bench-types__statcard">
+              <div className="bench-types__statcard-icon bench-types__statcard-icon--assignments"><Icon name="briefcase" size={16} /></div>
+              <div className="bench-types__statcard-body">
+                <div className="bench-types__statcard-label">Assignments</div>
+                <div className="bench-types__statcard-value bench-types__statcard-value--sm">—</div>
+                <div className="bench-types__statcard-sub">Case assignments</div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+            <div className="bench-types__hero-icon"><Icon name="users" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Advocates</h2>
+              <p>Manage advocates in your practice.</p>
+              <div className="bench-types__hero-accent" />
+              <Button icon="plus" onClick={openAdd} style={{ marginTop: '12px' }}>Add Advocate</Button>
+            </div>
+            <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          </div>
+
+          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
+            <div className="bench-types__stat-card bench-types__stat-card--total">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="users" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.total}</span>
+              </div>
+              <div className="bench-types__stat-card-label">TOTAL</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--active">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="check-circle" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.active}</span>
+              </div>
+              <div className="bench-types__stat-card-label">ACTIVE</div>
+            </div>
+            <div className="bench-types__stat-card bench-types__stat-card--inactive">
+              <div className="bench-types__stat-card-row1">
+                <div className="bench-types__stat-card-icon"><Icon name="ban" size={18} /></div>
+                <span className="bench-types__stat-card-num">{stats.inactive}</span>
+              </div>
+              <div className="bench-types__stat-card-label">INACTIVE</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="toolbar-row">
         <Input className="search-row__input" placeholder="Search by name, email, phone..." value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -184,6 +287,28 @@ export default function Advocates() {
           <Button variant="primary" icon="edit" onClick={() => { const u = viewing; setViewing(null); openEdit(u); }}>Edit Advocate</Button>
         </div>
       </Modal>
+
+      <nav className="bench-types__bottom-nav bench-types__mobile-only">
+        <button className="bench-types__nav-tab bench-types__nav-tab--active">
+          <Icon name="home" size={20} />
+          <span>Dashboard</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="briefcase" size={20} />
+          <span>Matters</span>
+        </button>
+        <button className="bench-types__nav-fab">
+          <Icon name="plus" size={24} />
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="file" size={20} />
+          <span>Order Sheet</span>
+        </button>
+        <button className="bench-types__nav-tab">
+          <Icon name="calendar" size={20} />
+          <span>Calendar</span>
+        </button>
+      </nav>
     </div>
   );
 }

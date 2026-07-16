@@ -15,7 +15,6 @@ function tint(hex) {
   _tintCache[hex] = out;
   return out;
 }
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Modal from '@/components/Modal.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -168,10 +167,39 @@ export default function Calendar() {
 
   /* ---------- modal state for event view ---------- */
   const [viewEvent, setViewEvent] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   return (
     <div className="fade-in">
-      <PageHeader icon="calendar" title="Calendar & Tasks" subtitle="Manage hearings, events, reminders and tasks in one place." />
+      {!isMobile ? (
+        <div className="bench-types__hero">
+          <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Calendar & Tasks</h2>
+            <p>Manage hearings, events, reminders and tasks in one place.</p>
+            <div className="bench-types__hero-accent" />
+          </div>
+          <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
+        </div>
+      ) : (
+        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Calendar & Tasks</h2>
+            <p>Manage hearings, events, reminders and tasks in one place.</p>
+            <div className="bench-types__hero-accent" />
+          </div>
+          <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
+        </div>
+      )}
 
       <div className="seg mb-18">
         {TABS.map((t) => (

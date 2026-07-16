@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -53,26 +52,26 @@ export default function HearingNotes() {
   return (
     <div className="fade-in">
       {!isMobile ? (
-        <PageHeader
-          icon="notes"
-          title="Hearing Notes"
-          subtitle="Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date."
-          actions={notes && <Button variant="ghost" icon="download" onClick={exportNotes}>Export PDF</Button>}
-        />
-      ) : (
-        <div className="cl-header">
-          <div className="cl-header__left">
-            <div className="cl-header__icon"><Icon name="notes" size={22} /></div>
-            <div>
-              <div className="cl-header__title">Hearing Notes</div>
-              <div className="cl-header__sub">Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points.</div>
-            </div>
+        <div className="bench-types__hero">
+          <div className="bench-types__hero-icon"><Icon name="notes" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Hearing Notes</h2>
+            <p>Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date.</p>
+            <div className="bench-types__hero-accent" />
           </div>
-          {notes && (
-            <button className="cl-header__add" type="button" onClick={exportNotes}>
-              <Icon name="download" size={15} /> Export
-            </button>
-          )}
+          {notes && <Button variant="ghost" icon="download" style={{ marginLeft: 'auto' }} onClick={exportNotes}>Export PDF</Button>}
+          <Icon name="notes" className="bench-types__hero-watermark bench-types__watermark-icon" />
+        </div>
+      ) : (
+        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero-icon"><Icon name="notes" size={34} /></div>
+          <div className="bench-types__hero-text">
+            <h2>Hearing Notes</h2>
+            <p>Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points.</p>
+            <div className="bench-types__hero-accent" />
+            {notes && <Button variant="ghost" icon="download" style={{ marginTop: '12px' }} onClick={exportNotes}>Export PDF</Button>}
+          </div>
+          <Icon name="notes" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       )}
 
