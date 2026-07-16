@@ -440,6 +440,12 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
   const priorityOptions = priorities.map((p) => ({ value: p.name, label: p.name }));
   const caseOptions = cases.map((c) => ({ value: c.id, label: caseLabelFor(c) }));
 
+  const caseDisplayMap = useMemo(() => {
+    const map = {};
+    cases.forEach((c) => { map[c.id] = c.case_display_number || c.caseNumber || c.title || ''; });
+    return map;
+  }, [cases]);
+
   const openCrudFor = (type) => {
     if (type === 'category') setCrud('category');
     else if (type === 'status') setCrud('status');
@@ -686,9 +692,8 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const cid = t.case_id || t.caseId || '';
-                const linkedCase = cid ? cases.find((c) => String(c.id) === String(cid)) : null;
-                const caseNum = linkedCase ? (linkedCase.case_display_number || linkedCase.caseNumber || linkedCase.title || cid) : (cid || '—');
-                const caseTitle = linkedCase?.title || '';
+                const caseNum = cid ? (caseDisplayMap[cid] || cid) : '—';
+                const caseTitle = cid ? cases.find((c) => String(c.id) === String(cid))?.title || '' : '';
                 return (
                   <article key={t.id} className={`task-card${t.archived ? ' task-card--archived' : ''}`}>
                     <div className="task-card__header">
