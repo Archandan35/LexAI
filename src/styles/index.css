@@ -21178,7 +21178,7 @@ kbd.cmd__kbd {
   .tasks-search { margin: 0 12px 12px; padding: 0; background: none; border: none; box-shadow: none; position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .tasks-search input { flex: 1 1 100%; min-width: 0; width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 14px; padding: 10px 44px 10px 14px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); box-sizing: border-box; outline: none; }
   .tasks-search input::placeholder { color: var(--text-faint); }
-  .tasks-search svg { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
+  .tasks-search svg { position: absolute; right: 24px; top: 12px; color: var(--text-faint); pointer-events: none; }
   .tasks-search .tasks-arch-toggle { flex: 1 1 100%; width: 100%; justify-content: center; margin-left: 0; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding: 9px 12px; }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
   .cmp-pagination { flex-wrap: wrap; }
