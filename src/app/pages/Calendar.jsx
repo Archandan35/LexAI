@@ -704,21 +704,18 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       {t.title && (
                         <div className="task-card__field">
                           <Icon name="edit" size={14} className="task-card__field-icon" />
-                          <span className="task-card__field-label">Title</span>
                           <span className="task-card__field-value">{t.title}</span>
                         </div>
                       )}
                       {t.description && (
                         <div className="task-card__field">
                           <Icon name="file" size={14} className="task-card__field-icon" />
-                          <span className="task-card__field-label">Description</span>
                           <span className="task-card__field-value">{t.description}</span>
                         </div>
                       )}
                       {t.notes && (
                         <div className="task-card__field">
                           <Icon name="notes" size={14} className="task-card__field-icon" />
-                          <span className="task-card__field-label">Notes</span>
                           <span className="task-card__field-value">{t.notes}</span>
                         </div>
                       )}
@@ -728,18 +725,24 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
                     <div className="task-card__datetime-row">
                       <div className="task-card__dt-item">
-                        <Icon name="clock" size={13} />
-                        <span className="task-card__dt-label">Due Time</span>
+                        <div className="task-card__dt-label-wrap">
+                          <Icon name="clock" size={13} />
+                          <span className="task-card__dt-label">Due Time</span>
+                        </div>
                         <span className="task-card__dt-value">{t.due_time ? fmtTime(t.due_time) : '—'}</span>
                       </div>
-                      <div className="task-card__dt-item">
-                        <Icon name="calendar" size={13} />
-                        <span className="task-card__dt-label">Start / End</span>
-                        <span className="task-card__dt-value">
-                          {t.start_date ? formatDate(t.start_date) : '—'}
-                          {t.end_date ? ` → ${formatDate(t.end_date)}` : ''}
-                        </span>
-                      </div>
+                      {(t.start_date || t.end_date) && (
+                        <div className="task-card__dt-item">
+                          <div className="task-card__dt-label-wrap">
+                            <Icon name="calendar" size={13} />
+                            <span className="task-card__dt-label">Start / End</span>
+                          </div>
+                          <span className="task-card__dt-value">
+                            {t.start_date ? formatDate(t.start_date) : '—'}
+                            {t.end_date ? ` → ${formatDate(t.end_date)}` : ''}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {t.tags && (
