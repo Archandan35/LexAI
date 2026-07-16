@@ -21596,6 +21596,26 @@ kbd.cmd__kbd {
   margin-left: 8px;
 }
 
+.jl-filter-select--native {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  padding: 9px 14px;
+}
+
+.jl-filter-select--native option {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text);
+}
+
 .jl-search-box {
   padding: 9px 16px;
 }
