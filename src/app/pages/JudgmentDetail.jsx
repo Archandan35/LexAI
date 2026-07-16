@@ -18,7 +18,7 @@ import AddJudgmentModal from './AddJudgmentModal.jsx';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
-  { key: 'legalPrinciples', label: 'Legal Principles' },
+  { key: 'legalPrinciples', label: 'Judgment' },
   { key: 'acts', label: 'Acts & Sections' },
   { key: 'applicability', label: 'Applicability' },
   { key: 'documents', label: 'Documents' },
@@ -390,14 +390,6 @@ export default function JudgmentDetail() {
                     {judgment.headnotes
                       ? <span dangerouslySetInnerHTML={{ __html: judgment.headnotes }} />
                       : 'No headnotes recorded for this judgment.'}
-                  </div>
-                </div>
-                <div className="jd-prose-card">
-                  <h3 className="jd-panel-title">Judgment Summary</h3>
-                  <div className="jd-prose">
-                    {summary
-                      ? <span dangerouslySetInnerHTML={{ __html: summary }} />
-                      : (paragraphs?.length ? paragraphs.join('\n\n') : 'No summary available for this judgment.')}
                   </div>
                 </div>
               </div>
