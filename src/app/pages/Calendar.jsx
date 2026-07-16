@@ -167,6 +167,7 @@ export default function Calendar() {
 
   /* ---------- modal state for event view ---------- */
   const [viewEvent, setViewEvent] = useState(null);
+  const [taskAddOpen, setTaskAddOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
 
   useEffect(() => {
@@ -188,6 +189,7 @@ export default function Calendar() {
             <div className="bench-types__hero-accent" />
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
+          <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} style={{ marginLeft: 'auto' }}>Add Task</Button>
         </div>
       ) : (
         <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
@@ -196,6 +198,7 @@ export default function Calendar() {
             <h2>Calendar & Tasks</h2>
             <p>Manage hearings, events, reminders and tasks in one place.</p>
             <div className="bench-types__hero-accent" />
+            <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} style={{ marginTop: '12px' }}>Add Task</Button>
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
@@ -220,6 +223,7 @@ export default function Calendar() {
           priorities={priorities} categories={categories} statuses={statuses}
           cases={cases} onReloadMaster={loadAll}
           toast={toast} user={user} formatDate={formatDate} formatDateTime={formatDateTime}
+          taskAddOpen={taskAddOpen} setTaskAddOpen={setTaskAddOpen}
         />
       )}
 
@@ -442,7 +446,7 @@ function EventViewModal({ event, onClose, cases }) {
 /* ================================================================== */
 /*  TASKS VIEW                                                         */
 /* ================================================================== */
-function TasksView({ tasks, loading, onChanged, priorities, categories, statuses, cases, onReloadMaster, toast, user, formatDate, formatDateTime }) {
+function TasksView({ tasks, loading, onChanged, priorities, categories, statuses, cases, onReloadMaster, toast, user, formatDate, formatDateTime, taskAddOpen, setTaskAddOpen }) {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ category: '', priority: '', status: '', active: '', caseId: '', date: '' });
   const [showFilter, setShowFilter] = useState(false);
@@ -530,6 +534,8 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
   const allSelected = paged.length > 0 && paged.every((t) => selected.includes(t.id));
   const toggleAll = () => setSelected(allSelected ? selected.filter((id) => !paged.find((t) => t.id === id)) : [...new Set([...selected, ...paged.map((t) => t.id)])]);
   const toggleOne = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+
+  useEffect(() => { if (taskAddOpen) { openAdd(); setTaskAddOpen(false); } }, [taskAddOpen]);
 
   const openAdd = () => { setEditing(null); setModal('add'); };
   const openEdit = (t) => { setEditing(t); setModal('edit'); };

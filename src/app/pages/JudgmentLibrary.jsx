@@ -171,6 +171,7 @@ export default function JudgmentLibrary() {
               <p>Browse, search, and manage archived judgments and case precedents.</p>
               <div className="bench-types__hero-accent" />
             </div>
+            <Button icon="plus" style={{ marginLeft: 'auto' }}>Add Judgment</Button>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -260,6 +261,7 @@ export default function JudgmentLibrary() {
               <h2>Case Precedents</h2>
               <p>Browse, search, and manage archived judgments.</p>
               <div className="bench-types__hero-accent" />
+              <Button icon="plus" style={{ marginTop: '12px' }}>Add Judgment</Button>
             </div>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
