@@ -87,7 +87,7 @@ export const backupLogic = {
     };
   },
 
-  async create({ type = 'manual', note = '' } = {}, actor) {
+  async create({ type = 'manual', note = '', skipFileStorage = false } = {}, actor) {
     try {
       const started = Date.now();
       const snap = await buildSnapshot();
@@ -111,16 +111,20 @@ export const backupLogic = {
       };
 
       // Optional: store a copy of the UDB in the file storage Backup folder.
-      try {
-        await backupFileService.ensureBackupRoot();
-        const dbResult = await backupFileService.createDatabaseBackup(snap);
-        record.dbBackupRef = dbResult.ref;
-        record.dbBackupFolder = dbResult.folder;
-        const fileResult = await backupFileService.createDatafileBackup();
-        record.fileBackupRef = fileResult.ref;
-        record.fileBackupFolder = fileResult.folder;
-      } catch (fileErr) {
-        // File-storage backup is best-effort; DB backup always succeeds.
+      // Skipped for scheduled/on-load catch-up backups (no destination chosen)
+      // to avoid unnecessary Storage writes — manual backups handle delivery.
+      if (!skipFileStorage) {
+        try {
+          await backupFileService.ensureBackupRoot();
+          const dbResult = await backupFileService.createDatabaseBackup(snap);
+          record.dbBackupRef = dbResult.ref;
+          record.dbBackupFolder = dbResult.folder;
+          const fileResult = await backupFileService.createDatafileBackup();
+          record.fileBackupRef = fileResult.ref;
+          record.fileBackupFolder = fileResult.folder;
+        } catch (fileErr) {
+          // File-storage backup is best-effort; DB backup always succeeds.
+        }
       }
 
       const list = backupService.listBackups();

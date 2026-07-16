@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -51,6 +51,8 @@ export default function JudgmentLibrary() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+  const [showFilters, setShowFilters] = useState(true);
+  const fileInputRef = useRef(null);
 
   const [courts, setCourts] = useState([]);
   const [benchTypes, setBenchTypes] = useState([]);
@@ -230,6 +232,95 @@ export default function JudgmentLibrary() {
     setPage(1);
   };
 
+  const exportCsv = useCallback(() => {
+    const headers = ['caseName', 'title', 'citation', 'court', 'bench', 'judges', 'date', 'caseNumber', 'status', 'subjectMatter'];
+    const labelMap = {
+      caseName: 'Case Name', title: 'Title', citation: 'Citation', court: 'Court',
+      bench: 'Bench', judges: 'Judges', date: 'Judgment Date', caseNumber: 'Case Number',
+      status: 'Status', subjectMatter: 'Subject Matter',
+    };
+    const rows = filtered.map((j) => ({
+      ...j,
+      status: j.archived ? 'Archived' : 'Active',
+      court: resolveName(nameMap.court, j.court),
+      bench: resolveName(nameMap.bench, j.bench),
+      judges: resolveName(nameMap.judge, j.judges || j.judge),
+    }));
+    const escape = (v) => {
+      const s = v == null ? '' : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [
+      headers.map((h) => escape(labelMap[h])).join(','),
+      ...rows.map((r) => headers.map((h) => escape(r[h])).join(',')),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'judgments-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [filtered, nameMap]);
+
+  const parseCsv = (text) => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+    if (!lines.length) return [];
+    const split = (line) => {
+      const out = [];
+      let cur = '';
+      let inQ = false;
+      for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        if (inQ) {
+          if (ch === '"' && line[i + 1] === '"') { cur += '"'; i += 1; }
+          else if (ch === '"') inQ = false;
+          else cur += ch;
+        } else if (ch === '"') inQ = true;
+        else if (ch === ',') { out.push(cur); cur = ''; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out;
+    };
+    const headers = split(lines[0]).map((h) => h.trim());
+    return lines.slice(1).map((l) => {
+      const cells = split(l);
+      const rec = {};
+      headers.forEach((h, i) => { rec[h] = (cells[i] ?? '').trim(); });
+      return rec;
+    });
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const records = parseCsv(String(reader.result || ''))
+        .filter((r) => r.title || r.caseName || r.citation)
+        .map((r) => ({
+          ...r,
+          status: 'Active',
+          date: r.date || null,
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          keywords: [],
+          acts: [],
+          paragraphs: [],
+        }));
+      if (records.length) {
+        judgmentsRepository.bulkCreate(records)
+          .then(() => { loadJudgments(); setPage(1); })
+          .catch(() => {});
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
   const pageNumbers = useMemo(() => {
     const total = totalPages;
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -252,7 +343,7 @@ export default function JudgmentLibrary() {
   }
 
   return (
-    <div className="fade-in">
+    <div className="fade-in jl-page">
       {!isMobile ? (
         <>
           <div className="bench-types__hero">
@@ -352,7 +443,7 @@ export default function JudgmentLibrary() {
               <h2>Case Precedents</h2>
               <p>Browse, search, and manage archived judgments.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus">Add Judgment</Button>
+              <Button icon="plus" onClick={() => setShowAddModal(true)}>Add Judgment</Button>
             </div>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -392,43 +483,46 @@ export default function JudgmentLibrary() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        <Button variant="ghost" icon="download">Import</Button>
-        <Button variant="ghost" icon="upload">Export</Button>
-        <Button variant="ghost" icon="more-horizontal">More</Button>
+        <Button variant="ghost" icon="download" onClick={() => fileInputRef.current && fileInputRef.current.click()}>Import</Button>
+        <Button variant="ghost" icon="upload" onClick={exportCsv}>Export</Button>
+        <Button variant="ghost" icon="more-horizontal" onClick={() => setShowFilters((s) => !s)}>More</Button>
+        <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="jl-file-input" onChange={handleImportFile} />
       </div>
 
-      <div className="jl-filter-row">
-        <select className="jl-filter-select jl-filter-select--native" value={filters.court} onChange={(e) => setFilter('court', e.target.value)}>
-          <option value="">All Courts</option>
-          {uniqueValues.courts.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-        </select>
-        <select className="jl-filter-select jl-filter-select--native" value={filters.judge} onChange={(e) => setFilter('judge', e.target.value)}>
-          <option value="">All Judges</option>
-          {uniqueValues.judges.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
-        </select>
-        <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
-          <option value="">All Types</option>
-          {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select className="jl-filter-select jl-filter-select--native" value={filters.matterType} onChange={(e) => setFilter('matterType', e.target.value)}>
-          <option value="">All Matter Types</option>
-          {uniqueValues.matterTypes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-        </select>
-        <select className="jl-filter-select jl-filter-select--native" value={filters.act} onChange={(e) => setFilter('act', e.target.value)}>
-          <option value="">All Acts</option>
-          {uniqueValues.acts.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
-        </select>
-        <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
-          <option value="">All Years</option>
-          {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
-        </select>
-        <Button variant="ghost" icon="filter">More Filters</Button>
-        <Button variant="ghost" onClick={clearFilters}>Clear</Button>
-      </div>
+      {showFilters && (
+        <div className="jl-filter-row">
+          <select className="jl-filter-select jl-filter-select--native" value={filters.court} onChange={(e) => setFilter('court', e.target.value)}>
+            <option value="">All Courts</option>
+            {uniqueValues.courts.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.judge} onChange={(e) => setFilter('judge', e.target.value)}>
+            <option value="">All Judges</option>
+            {uniqueValues.judges.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
+            <option value="">All Types</option>
+            {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.matterType} onChange={(e) => setFilter('matterType', e.target.value)}>
+            <option value="">All Matter Types</option>
+            {uniqueValues.matterTypes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.act} onChange={(e) => setFilter('act', e.target.value)}>
+            <option value="">All Acts</option>
+            {uniqueValues.acts.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
+            <option value="">All Years</option>
+            {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+          <Button variant="ghost" icon="filter" onClick={() => setShowFilters(false)}>Hide Filters</Button>
+          <Button variant="ghost" onClick={clearFilters}>Clear</Button>
+        </div>
+      )}
 
       <Card bodyClass="card__body--flush">
         <div className="table-scroll">
-          <table className="table">
+          <table className="table jl-table">
             <thead className="jl-thead">
               <tr>
                 {TABLE_HEADERS.map((h) => (
@@ -443,55 +537,55 @@ export default function JudgmentLibrary() {
               </tr>
             </thead>
             <tbody>
-              {paged.length === 0 ? (
-                <tr>
-                  <td colSpan={TABLE_HEADERS.length} className="jl-empty-cell">
-                    <Icon name="book" size={24} />
-                    <p className="jl-empty-text">No judgments found.</p>
-                  </td>
-                </tr>
-              ) : (
-                paged.map((j) => {
-                  const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
-                  return (
-                    <tr key={j.id}>
-                      <td><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
-                      <td>
-                        <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
-                        {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
-                        {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
-                      </td>
-                      <td className="jl-cell-muted">{j.citation || '—'}</td>
-                      <td className="jl-cell-strong">
-                        {resolveName(nameMap.court, j.court)}
-                        {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
-                      </td>
-                      <td className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
-                      <td className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
-                      <td className="jl-cell-muted">{j.caseNumber || '—'}</td>
-                      <td>
-                        <span className={`jl-status-pill ${j.archived ? 'jl-status--archived' : 'jl-status--active'}`}>
-                          {j.archived ? 'Archived' : 'Active'}
-                        </span>
-                      </td>
-                      <td className="jl-fav-cell">
-                        <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
-                          <Icon name="heart" size={15} fill={isFav} />
-                        </button>
-                      </td>
-                      <td className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
-                      <td>
-                        <div className="jl-actions">
-                          <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
-                          <button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button>
-                          <button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button>
-                          <button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+                {paged.length === 0 ? (
+                  <tr>
+                    <td colSpan={TABLE_HEADERS.length} className="jl-empty-cell">
+                      <Icon name="book" size={24} />
+                      <p className="jl-empty-text">No judgments found.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  paged.map((j) => {
+                    const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
+                    return (
+                      <tr key={j.id}>
+                        <td data-label=""><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
+                        <td data-label="Case Title">
+                          <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
+                          {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
+                          {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
+                        </td>
+                        <td data-label="Citation" className="jl-cell-muted">{j.citation || '—'}</td>
+                        <td data-label="Court / Bench" className="jl-cell-strong">
+                          {resolveName(nameMap.court, j.court)}
+                          {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
+                        </td>
+                        <td data-label="Judge(s)" className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
+                        <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
+                        <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
+                        <td data-label="Status">
+                          <span className={`jl-status-pill ${j.archived ? 'jl-status--archived' : 'jl-status--active'}`}>
+                            {j.archived ? 'Archived' : 'Active'}
+                          </span>
+                        </td>
+                        <td data-label="Favourite" className="jl-fav-cell">
+                          <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
+                            <Icon name="heart" size={15} fill={isFav} />
+                          </button>
+                        </td>
+                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
+                        <td data-label="Actions">
+                          <div className="jl-actions">
+                            <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
+                            <button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button>
+                            <button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button>
+                            <button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
             </tbody>
           </table>
         </div>
@@ -518,22 +612,22 @@ export default function JudgmentLibrary() {
       </Card>
 
       <nav className="bench-types__bottom-nav bench-types__mobile-only">
-        <button className="bench-types__nav-tab bench-types__nav-tab--active">
+        <button className="bench-types__nav-tab" onClick={() => navigate('/dashboard')}>
           <Icon name="home" size={20} />
           <span>Dashboard</span>
         </button>
-        <button className="bench-types__nav-tab">
+        <button className="bench-types__nav-tab" onClick={() => navigate('/cases')}>
           <Icon name="briefcase" size={20} />
           <span>Matters</span>
         </button>
-        <button className="bench-types__nav-fab">
+        <button className="bench-types__nav-fab" onClick={() => setShowAddModal(true)}>
           <Icon name="plus" size={24} />
         </button>
-        <button className="bench-types__nav-tab">
+        <button className="bench-types__nav-tab" onClick={() => navigate('/cases/order-sheet')}>
           <Icon name="file" size={20} />
           <span>Order Sheet</span>
         </button>
-        <button className="bench-types__nav-tab">
+        <button className="bench-types__nav-tab" onClick={() => navigate('/calendar')}>
           <Icon name="calendar" size={20} />
           <span>Calendar</span>
         </button>

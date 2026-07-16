@@ -57,7 +57,7 @@ export const BackupManager = {
       const interval = INTERVAL_MS[s.frequency] || INTERVAL_MS.daily;
       const last = s.lastRunAt ? new Date(s.lastRunAt).getTime() : 0;
       if (last && (Date.now() - last) < interval) return { ran: false, reason: 'not-due' };
-      const res = await backupLogic.create({ type: 'scheduled' }, actor);
+      const res = await backupLogic.create({ type: 'scheduled', skipFileStorage: true }, actor);
       await backupLogic.saveSettings({ lastRunAt: new Date().toISOString() }, actor);
       return { ran: res.ok, result: res };
     } catch (e) { return { ran: false, error: e.message }; }
