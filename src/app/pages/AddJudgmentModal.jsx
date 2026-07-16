@@ -478,13 +478,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 <div className="ajm-field">
                   <label>Judgment Summary</label>
                   <textarea
-                    className="ajm-input ajm-textarea"
+                    className="ajm-input ajm-textarea ajm-summary-textarea"
                     placeholder="Enter a brief summary of the judgment..."
                     value={form.summary}
                     onChange={(e) => set('summary', e.target.value)}
-                    maxLength={500}
                   />
-                  <div className="ajm-char-count">{characterCount}/500</div>
+                  <div className="ajm-char-count">{characterCount} characters</div>
                 </div>
               </div>
             </div>

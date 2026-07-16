@@ -22464,6 +22464,12 @@ kbd.cmd__kbd {
   white-space: pre-wrap;
 }
 
+@media (min-width: 1025px) {
+  .jd-prose {
+    min-height: 695px;
+  }
+}
+
 .jd-empty-text {
   color: var(--text-faint);
 }
@@ -23115,6 +23121,13 @@ kbd.cmd__kbd {
   line-height: 1.55;
 }
 
+/* Judgment Summary — draggable (bottom-right handle), taller on desktop */
+.ajm-summary-textarea {
+  resize: vertical;
+  min-height: 350px;
+  overflow-y: auto;
+}
+
 .ajm-input-readonly {
   background: var(--surface-2);
   color: var(--text-soft);
@@ -23401,6 +23414,9 @@ kbd.cmd__kbd {
   .ajm-actions-right {
     width: 100%;
     flex-wrap: wrap;
+  }
+  .ajm-summary-textarea {
+    min-height: 160px;
   }
 }
 
