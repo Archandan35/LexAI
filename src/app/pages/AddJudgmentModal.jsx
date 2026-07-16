@@ -50,21 +50,9 @@ const INITIAL_FORM = {
   uploadDate: '',
   jurisdiction: '',
   stage: '',
-  language: '',
   source: '',
   summary: '',
 };
-
-const LANGUAGES = [
-  'English', 'Hindi', 'Arabic', 'Bengali', 'Chinese', 'French',
-  'German', 'Italian', 'Japanese', 'Korean', 'Portuguese', 'Russian',
-  'Spanish', 'Tamil', 'Telugu', 'Urdu',
-];
-
-const SOURCES = [
-  'Indian Kanoon', 'SCC Online', 'Manupatra', 'Legal Crystal',
-  'Court Website', 'Law Commission', 'High Court Library', 'Other',
-];
 
 function SelectWithCrud({ label, required, value, onChange, placeholder, options, crudPath }) {
   const navigate = useNavigate();
@@ -167,8 +155,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
   const caseStatusOpts = useMemo(() => makeOpts(caseStatuses), [caseStatuses]);
   const priorityOpts = useMemo(() => makeOpts(priorities), [priorities]);
   const partyTypeOpts = useMemo(() => makeOpts(partyTypes), [partyTypes]);
-  const langOpts = useMemo(() => LANGUAGES.map((l) => ({ value: l, label: l })), []);
-  const sourceOpts = useMemo(() => SOURCES.map((s) => ({ value: s, label: s })), []);
+
 
   const characterCount = form.summary.length;
 
@@ -231,138 +218,140 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
     );
   };
 
-  const renderSelectField = (label, fieldKey, placeholder, opts = {}) => {
-    const { required } = opts;
-    return (
-      <div className="ajm-field">
-        <label>
-          {label}
-          {required && <span className="ajm-req">*</span>}
-        </label>
-        <div className="ajm-select-wrap">
-          <select
-            className="ajm-select"
-            value={form[fieldKey] || ''}
-            onChange={(e) => set(fieldKey, e.target.value)}
-          >
-            <option value="">{placeholder}</option>
-            {opts.options?.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-          <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
-        </div>
-      </div>
-    );
-  };
-
   const renderTabContent = () => {
     switch (tab) {
       case 'general':
         return (
           <>
-            <div className="ajm-form-title">General Information</div>
-
-            <div className="ajm-grid ajm-grid-2">
-              {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
-              {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="users" size={15} /> Parties &amp; Case Title
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-2">
+                  {renderField('Plaintiff / Applicant Name', 'plaintiff', 'Enter plaintiff or applicant name', { required: true })}
+                  {renderField('Defendant / Respondent Name', 'defendant', 'Enter defendant or respondent name', { required: true })}
+                </div>
+                <div className="ajm-grid ajm-grid-1">
+                  {renderField('Judgment Title', 'title', 'Auto-generated from party names', {
+                    readonly: true,
+                    hint: 'This field is locked — it will be auto-generated once party names are entered.',
+                  })}
+                </div>
+              </div>
             </div>
 
-            <div className="ajm-grid ajm-grid-1">
-              {renderField('Judgment Title', 'title', 'Auto-generated from party names', {
-                readonly: true,
-                hint: 'This field is locked — it will be auto-generated once party names are entered.',
-              })}
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="info" size={15} /> Citation &amp; Case Information
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-3">
+                  {renderField('Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
+                  {renderField('Neutral Citation', 'neutralCitation', 'e.g. 2024 INSC 1')}
+                  {renderField('Reporter Citation', 'reporterCitation', 'e.g. AIR 2024 SC 1')}
+                </div>
+                <div className="ajm-grid ajm-grid-2">
+                  {renderField('Case Number', 'caseNumber', 'e.g. Civil Appeal No. 1234 of 2024', { required: true })}
+                  <SelectWithCrud
+                    label="Case Type"
+                    required
+                    value={form.caseType}
+                    onChange={(e) => set('caseType', e.target.value)}
+                    placeholder="Select case type"
+                    options={caseTypeOpts}
+                    crudPath="/court-management/case-types"
+                  />
+                </div>
+                <div className="ajm-grid ajm-grid-3">
+                  <SelectWithCrud
+                    label="Court"
+                    required
+                    value={form.court}
+                    onChange={(e) => set('court', e.target.value)}
+                    placeholder="Select court"
+                    options={courtsOpts}
+                    crudPath="/court-management/courts"
+                  />
+                  <SelectWithCrud
+                    label="Bench"
+                    required
+                    value={form.bench}
+                    onChange={(e) => set('bench', e.target.value)}
+                    placeholder="Select bench"
+                    options={benchOpts}
+                    crudPath="/court-management/bench-types"
+                  />
+                  <SelectWithCrud
+                    label="Judge(s)"
+                    required
+                    value={form.judges}
+                    onChange={(e) => set('judges', e.target.value)}
+                    placeholder="Select one or more judges"
+                    options={judgesOpts}
+                    crudPath="/court-management/judges"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="ajm-grid ajm-grid-3">
-              {renderField('Citation', 'citation', 'e.g. (2024) 1 SCC 1', { required: true })}
-              {renderField('Neutral Citation', 'neutralCitation', 'e.g. 2024 INSC 1')}
-              {renderField('Reporter Citation', 'reporterCitation', 'e.g. AIR 2024 SC 1')}
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="calendar" size={15} /> Judgment Dates
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-3">
+                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
+                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
+                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
+                </div>
+              </div>
             </div>
 
-            <div className="ajm-grid ajm-grid-2">
-              {renderField('Case Number', 'caseNumber', 'e.g. Civil Appeal No. 1234 of 2024', { required: true })}
-              <SelectWithCrud
-                label="Case Type"
-                required
-                value={form.caseType}
-                onChange={(e) => set('caseType', e.target.value)}
-                placeholder="Select case type"
-                options={caseTypeOpts}
-                crudPath="/court-management/case-types"
-              />
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="gear" size={15} /> Other Details
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-4">
+                  <SelectWithCrud
+                    label="Jurisdiction"
+                    value={form.jurisdiction}
+                    onChange={(e) => set('jurisdiction', e.target.value)}
+                    placeholder="Select jurisdiction"
+                    options={jurisdictionOpts}
+                    crudPath="/court-management/jurisdictions"
+                  />
+                  <SelectWithCrud
+                    label="Stage"
+                    value={form.stage}
+                    onChange={(e) => set('stage', e.target.value)}
+                    placeholder="Select stage"
+                    options={stageOpts}
+                    crudPath="/court-management/case-stages"
+                  />
+                  {renderField('Source', 'source', 'Enter source')}
+                </div>
+              </div>
             </div>
 
-            <div className="ajm-grid ajm-grid-3">
-              <SelectWithCrud
-                label="Court"
-                required
-                value={form.court}
-                onChange={(e) => set('court', e.target.value)}
-                placeholder="Select court"
-                options={courtsOpts}
-                crudPath="/court-management/courts"
-              />
-              <SelectWithCrud
-                label="Bench"
-                required
-                value={form.bench}
-                onChange={(e) => set('bench', e.target.value)}
-                placeholder="Select bench"
-                options={benchOpts}
-                crudPath="/court-management/bench-types"
-              />
-              <SelectWithCrud
-                label="Judge(s)"
-                required
-                value={form.judges}
-                onChange={(e) => set('judges', e.target.value)}
-                placeholder="Select one or more judges"
-                options={judgesOpts}
-                crudPath="/court-management/judges"
-              />
-            </div>
-
-            <div className="ajm-grid ajm-grid-3">
-              {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
-              {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
-              {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
-            </div>
-
-            <div className="ajm-section-title">Other Details</div>
-
-            <div className="ajm-grid ajm-grid-4">
-              <SelectWithCrud
-                label="Jurisdiction"
-                value={form.jurisdiction}
-                onChange={(e) => set('jurisdiction', e.target.value)}
-                placeholder="Select jurisdiction"
-                options={jurisdictionOpts}
-                crudPath="/court-management/jurisdictions"
-              />
-              <SelectWithCrud
-                label="Stage"
-                value={form.stage}
-                onChange={(e) => set('stage', e.target.value)}
-                placeholder="Select stage"
-                options={stageOpts}
-                crudPath="/court-management/case-stages"
-              />
-              {renderSelectField('Language', 'language', 'Select language', { options: langOpts })}
-              {renderSelectField('Source', 'source', 'Select source', { options: sourceOpts })}
-            </div>
-
-            <div className="ajm-field">
-              <label>Summary (Short)</label>
-              <textarea
-                className="ajm-input ajm-textarea"
-                placeholder="Enter a brief summary of the judgment..."
-                value={form.summary}
-                onChange={(e) => set('summary', e.target.value)}
-                maxLength={500}
-              />
-              <div className="ajm-char-count">{characterCount}/500</div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="edit" size={15} /> Summary
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-field">
+                  <label>Summary (Short)</label>
+                  <textarea
+                    className="ajm-input ajm-textarea"
+                    placeholder="Enter a brief summary of the judgment..."
+                    value={form.summary}
+                    onChange={(e) => set('summary', e.target.value)}
+                    maxLength={500}
+                  />
+                  <div className="ajm-char-count">{characterCount}/500</div>
+                </div>
+              </div>
             </div>
           </>
         );
@@ -405,12 +394,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Legal Classification</div>
             <div className="ajm-grid ajm-grid-2">
-              {renderSelectField('Practice Area', 'practiceArea', 'Select practice area', { options: [] })}
-              {renderSelectField('Subject Matter', 'subjectMatter', 'Select subject matter', { options: [] })}
+              {renderField('Practice Area', 'practiceArea', 'Enter practice area')}
+              {renderField('Subject Matter', 'subjectMatter', 'Enter subject matter')}
             </div>
             <div className="ajm-grid ajm-grid-2">
               {renderField('Keywords / Tags', 'keywords', 'Enter keywords separated by commas')}
-              {renderSelectField('Category', 'category', 'Select category', { options: [] })}
+              {renderField('Category', 'category', 'Enter category')}
             </div>
           </>
         );
@@ -495,7 +484,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
                 options={caseStatusOpts}
                 crudPath="/court-management/case-statuses"
               />
-              {renderSelectField('Judgment Type', 'judgmentType', 'Select type', { options: [] })}
+              {renderField('Judgment Type', 'judgmentType', 'Enter judgment type')}
             </div>
             <div className="ajm-grid ajm-grid-2">
               {renderField('Overruled By', 'overruledBy', 'If overruled, enter citation')}
@@ -539,16 +528,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved }) {
           <>
             <div className="ajm-form-title">Review</div>
             <div className="ajm-field">
-              <label>Review Status</label>
-              <div className="ajm-select-wrap">
-                <select className="ajm-select">
-                  <option value="">Select review status</option>
-                  <option value="pending">Pending Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="needs-revision">Needs Revision</option>
-                </select>
-                <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
-              </div>
+              <SelectWithCrud
+                label="Review Status"
+                value={form.reviewStatus}
+                onChange={(e) => set('reviewStatus', e.target.value)}
+                placeholder="Select review status"
+                options={caseStatusOpts}
+                crudPath="/court-management/case-statuses"
+              />
             </div>
             <div className="ajm-field">
               <label>Review Comments</label>

@@ -22540,11 +22540,42 @@ kbd.cmd__kbd {
   margin: 0 0 18px;
 }
 
-.ajm-section-title {
-  font-size: 15px;
+.ajm-form-title:not(:first-child) {
+  margin-top: 4px;
+}
+
+.ajm-section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 18px;
+  transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.ajm-section-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--border-strong);
+}
+
+.ajm-section-card__head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
-  margin: 24px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ajm-section-card__head svg {
+  color: var(--navy-700);
+  flex-shrink: 0;
+}
+
+.ajm-section-card__body {
+  padding: 18px;
 }
 
 .ajm-grid {
