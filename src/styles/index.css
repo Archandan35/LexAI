@@ -21870,55 +21870,70 @@ kbd.cmd__kbd {
   color: var(--navy-700);
 }
 
-/* Toolbar */
+/* Toolbar — matches HTML design: bordered white card, borderless tool buttons
+   separated by thin dividers */
 .jd-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 
 .jd-tool-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-soft);
-  font-size: 13px;
+  gap: 7px;
+  color: #4b5468;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s var(--ease);
   white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.15s var(--ease);
+}
+
+.jd-tool-btn svg {
+  color: #4b5468;
+  flex-shrink: 0;
 }
 
 .jd-tool-btn:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.jd-tool-btn--icon {
-  width: 36px;
-  padding: 0;
-  justify-content: center;
+  color: var(--navy-700);
 }
 
 .jd-tool-btn--active {
   color: var(--red);
-  border-color: var(--red-soft);
-  background: var(--red-soft);
+}
+
+.jd-tool-btn--active svg {
+  color: var(--red);
+}
+
+.jd-tool-btn--danger {
+  color: var(--red);
+}
+
+.jd-tool-btn--danger svg {
+  color: var(--red);
+}
+
+.jd-tool-btn--danger:hover {
+  color: #c01b12;
 }
 
 .jd-tool-divider {
   width: 1px;
-  height: 24px;
+  height: 18px;
   background: var(--border);
-  margin: 0 4px;
+  flex-shrink: 0;
 }
 
 /* Case header card */
@@ -22102,8 +22117,8 @@ kbd.cmd__kbd {
 /* Body grid */
 .jd-body-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 20px;
+  grid-template-columns: 1fr 415px;
+  gap: 22px;
   margin-bottom: 20px;
   align-items: start;
 }
@@ -22246,9 +22261,9 @@ kbd.cmd__kbd {
 .jd-rc-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  font-size: 13px;
+  align-items: flex-start;
+  padding: 9px 0;
+  gap: 14px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -22257,20 +22272,25 @@ kbd.cmd__kbd {
 }
 
 .jd-rc-key {
-  color: var(--text-soft);
+  color: var(--text-tertiary, var(--text-faint));
+  flex-shrink: 0;
+  width: 105px;
+  font-size: 13.5px;
+  padding-top: 1px;
 }
 
 .jd-rc-val {
   font-weight: 600;
   color: var(--text);
   text-align: right;
+  font-size: 13.5px;
 }
 
 .jd-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 7px;
+  justify-content: flex-end;
 }
 
 .jd-tag {
@@ -22278,11 +22298,12 @@ kbd.cmd__kbd {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--brand-soft);
-  color: var(--navy-700);
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 16px;
+  background: var(--blue-tag-bg, var(--brand-soft));
+  color: var(--blue-tag-text, var(--navy-700));
+  white-space: nowrap;
 }
 
 .jd-acts-row {

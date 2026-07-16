@@ -3,10 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
+import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
 import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
 import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
 import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
+import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
+import { jurisdictionsRepository } from '@/data-layer/repositories/jurisdictionsRepository.js';
+import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
+import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
+import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
@@ -90,8 +96,14 @@ export default function JudgmentDetail() {
   const [courts, setCourts] = useState([]);
   const [benchTypes, setBenchTypes] = useState([]);
   const [judges, setJudges] = useState([]);
+  const [caseTypes, setCaseTypes] = useState([]);
+  const [jurisdictions, setJurisdictions] = useState([]);
+  const [caseStages, setCaseStages] = useState([]);
+  const [partyTypes, setPartyTypes] = useState([]);
+  const [caseStatuses, setCaseStatuses] = useState([]);
 
   const [showEditModal, setShowEditModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +121,11 @@ export default function JudgmentDetail() {
     courtsRepository.getAll().then(setCourts).catch(() => {});
     benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
     judgesRepository.getAll().then(setJudges).catch(() => {});
+    caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
+    jurisdictionsRepository.getAll().then(setJurisdictions).catch(() => {});
+    caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
+    partyTypesRepository.getAll().then(setPartyTypes).catch(() => {});
+    caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -133,16 +150,27 @@ export default function JudgmentDetail() {
       (arr || []).forEach((r) => { m[r.id] = r.name; });
       return m;
     };
-    return { court: build(courts), bench: build(benchTypes), judge: build(judges) };
-  }, [courts, benchTypes, judges]);
+    return {
+      court: build(courts), bench: build(benchTypes), judge: build(judges),
+      caseType: build(caseTypes), jurisdiction: build(jurisdictions),
+      stage: build(caseStages), partyType: build(partyTypes),
+      caseStatus: build(caseStatuses),
+    };
+  }, [courts, benchTypes, judges, caseTypes, jurisdictions, caseStages, partyTypes, caseStatuses]);
 
+  const resolve = (map, val) => (val ? (map[val] || val) : '');
   const judgeLabel = (val) => {
     if (!val) return '';
-    if (Array.isArray(val)) return val.map((v) => nameMap.judge[v] || v).join(', ');
-    return nameMap.judge[val] || val;
+    const list = Array.isArray(val) ? val : String(val).split(',');
+    return list.map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
   };
-  const courtLabel = (val) => (val ? (nameMap.court[val] || val) : '');
-  const benchLabel = (val) => (val ? (nameMap.bench[val] || nameMap.judge[val] || val) : '');
+  const courtLabel = (val) => resolve(nameMap.court, val);
+  const benchLabel = (val) => resolve(nameMap.bench, val) || judgeLabel(val);
+  const caseTypeLabel = (val) => resolve(nameMap.caseType, val);
+  const jurisdictionLabel = (val) => resolve(nameMap.jurisdiction, val);
+  const stageLabel = (val) => resolve(nameMap.stage, val);
+  const partyTypeLabel = (val) => resolve(nameMap.partyType, val);
+  const authorityLabel = (val) => resolve(nameMap.caseStatus, val);
 
   const handleDuplicate = () => {
     if (!judgment) return;
@@ -183,15 +211,31 @@ export default function JudgmentDetail() {
     }
   };
 
+  const handleDelete = () => {
+    if (!judgment) return;
+    setConfirmDelete(true);
+  };
+
+  const confirmDeleteJudgment = () => {
+    if (!judgment) return;
+    const delId = judgment.id;
+    setConfirmDelete(false);
+    judgmentsRepository.remove(delId)
+      .then(() => navigate('/research/judgment-library'))
+      .catch(() => {});
+  };
+
   const classification = useMemo(() => {
     if (!judgment) return [];
     const rows = [];
     if (judgment.subjectMatter) rows.push({ key: 'Matter Type', val: judgment.subjectMatter });
     if (judgment.practiceArea) rows.push({ key: 'Practice Area', val: judgment.practiceArea });
     if (judgment.category) rows.push({ key: 'Category', val: judgment.category });
-    if (judgment.caseType) rows.push({ key: 'Subject', val: judgment.caseType });
+    if (judgment.caseType) rows.push({ key: 'Subject', val: caseTypeLabel(judgment.caseType) });
+    if (judgment.jurisdiction) rows.push({ key: 'Jurisdiction', val: jurisdictionLabel(judgment.jurisdiction) });
+    if (judgment.stage) rows.push({ key: 'Stage', val: stageLabel(judgment.stage) });
     return rows;
-  }, [judgment]);
+  }, [judgment, nameMap]);
 
   const tags = useMemo(() => judgment?.keywords || [], [judgment]);
 
@@ -230,8 +274,8 @@ export default function JudgmentDetail() {
 
   const partyA = appellant || petitioner || plaintiff || '';
   const partyB = respondent || respondentName || defendant || '';
-  const partyAType = appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (plaintiffType || 'Plaintiff') : '';
-  const partyBType = respondent ? 'Respondent' : defendant ? (defendantType || 'Defendant') : '';
+  const partyAType = appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '';
+  const partyBType = respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '';
 
   const citationList = [citation, neutralCitation, reporterCitation].filter(Boolean);
 
@@ -243,23 +287,32 @@ export default function JudgmentDetail() {
       </button>
 
       <div className="jd-toolbar">
-        <button className="jd-tool-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={13} /> Edit</button>
-        <button className="jd-tool-btn jd-tool-btn--icon" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={14} /></button>
+        <button type="button" className="jd-tool-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={16} /> Edit</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={16} /> Duplicate</button>
+        <div className="jd-tool-divider" />
         <button
-          className={`jd-tool-btn jd-tool-btn--icon${favourite ? ' jd-tool-btn--active' : ''}`}
+          type="button"
+          className={`jd-tool-btn${favourite ? ' jd-tool-btn--active' : ''}`}
           title="Favourite"
           onClick={() => setFavourite(!favourite)}
         >
-          <Icon name="heart" size={14} />
+          <Icon name="heart" size={16} /> Favourite
         </button>
-        <button className="jd-tool-btn jd-tool-btn--icon" title="Pin" onClick={handleNotify}><Icon name="pin" size={14} /></button>
         <div className="jd-tool-divider" />
-        <button className="jd-tool-btn jd-tool-btn--icon" title="Share" onClick={handleShare}><Icon name="share" size={14} /></button>
-        <button className="jd-tool-btn jd-tool-btn--icon" title="Print" onClick={() => window.print()}><Icon name="print" size={14} /></button>
-        <button className="jd-tool-btn jd-tool-btn--icon" title="Download" onClick={handleShare}><Icon name="download" size={14} /></button>
+        <button type="button" className="jd-tool-btn" title="Pin" onClick={handleNotify}><Icon name="pin" size={16} /> Pin</button>
         <div className="jd-tool-divider" />
-        <button className="jd-tool-btn" onClick={handleCopyCitation}><Icon name="copy" size={13} /> Copy Citation</button>
-        <button className="jd-tool-btn jd-tool-btn--icon" title="More"><Icon name="more-horizontal" size={14} /></button>
+        <button type="button" className="jd-tool-btn" title="Share" onClick={handleShare}><Icon name="share" size={16} /> Share</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn" title="Print" onClick={() => window.print()}><Icon name="print" size={16} /> Print</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn" title="Download" onClick={handleShare}><Icon name="download" size={16} /> Download</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn" onClick={handleCopyCitation}><Icon name="doclines" size={16} /> Copy Citation</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn jd-tool-btn--danger" title="Delete" onClick={handleDelete}><Icon name="trash" size={16} /> Delete</button>
+        <div className="jd-tool-divider" />
+        <button type="button" className="jd-tool-btn" title="More"><Icon name="more-horizontal" size={16} /> More</button>
       </div>
 
       <div className="jd-case-card">
@@ -277,10 +330,10 @@ export default function JudgmentDetail() {
         </div>
 
         <div className="jd-case-meta-row">
-          <MetaItem icon="building" tone="purple" label="Court" value={courtLabel(court)} />
-          <MetaItem icon="balance" tone="blue" label="Bench" value={benchText} />
-          <MetaItem icon="user" tone="green" label="Judge(s)" value={judgeText} />
-          <MetaItem icon="calendar" tone="orange" label="Judgment Date" value={date ? formatDate(date) : ''} />
+          <MetaItem icon="building2" tone="purple" label="Court" value={courtLabel(court)} />
+          <MetaItem icon="scales2" tone="blue" label="Bench" value={benchText} />
+          <MetaItem icon="user2" tone="green" label="Judge(s)" value={judgeText} />
+          <MetaItem icon="calendar2" tone="orange" label="Judgment Date" value={date ? formatDate(date) : ''} />
         </div>
 
         <div className="jd-case-info-row">
@@ -409,12 +462,15 @@ export default function JudgmentDetail() {
               {classification.length ? classification.map((row, i) => (
                 <div key={i} className="jd-rc-row">
                   <span className="jd-rc-key">{row.key}</span>
-                  <span className="jd-rc-val">{row.val}</span>
+                  <span className="jd-tag">{row.val}</span>
                 </div>
               )) : <div className="jd-empty-text">No classification data.</div>}
               {tags.length > 0 && (
-                <div className="jd-tags">
-                  {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
+                <div className="jd-rc-row jd-rc-row--tags">
+                  <span className="jd-rc-key">Keywords</span>
+                  <div className="jd-tags">
+                    {tags.map((tag, i) => <span key={i} className="jd-tag">{tag}</span>)}
+                  </div>
                 </div>
               )}
             </div>
@@ -433,10 +489,12 @@ export default function JudgmentDetail() {
             <div className="jd-rc-title"><Icon name="info" size={14} /> Quick Info</div>
             <div className="jd-rc-body">
               <div className="jd-rc-row"><span className="jd-rc-key">Judgment Type</span><span className="jd-rc-val">{judgment.judgmentType || '—'}</span></div>
-              <div className="jd-rc-row"><span className="jd-rc-key">Authority</span><span className="jd-rc-val">{judgment.authorityLevel || '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Authority</span><span className="jd-rc-val">{authorityLabel(judgment.authorityLevel) || '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Status</span><span className="jd-rc-val">{status || 'Active'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Upload Date</span><span className="jd-rc-val">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Views</span><span className="jd-rc-val">{judgment.views ?? '—'}</span></div>
+              <div className="jd-rc-row"><span className="jd-rc-key">Favourites</span><span className="jd-rc-val">{judgment.favourites ?? '—'}</span></div>
             </div>
           </div>
 
@@ -477,6 +535,16 @@ export default function JudgmentDetail() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete Judgment"
+        message={`Are you sure you want to delete "${title || citation || 'this judgment'}"? This action cannot be undone.`}
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteJudgment}
+        onCancel={() => setConfirmDelete(false)}
+      />
 
       <AddJudgmentModal
         open={showEditModal}
