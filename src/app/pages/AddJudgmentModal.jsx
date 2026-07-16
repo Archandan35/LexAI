@@ -68,6 +68,7 @@ const INITIAL_FORM = {
   jurisdiction: '',
   stage: '',
   source: '',
+  headnotes: '',
   summary: '',
 };
 
@@ -467,6 +468,23 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                     onCrudClick={() => setShowStageCrud(true)}
                   />
                   {renderField('Source', 'source', 'Enter source')}
+                </div>
+              </div>
+            </div>
+
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="book" size={15} /> Headnotes
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-field">
+                  <label>Headnotes</label>
+                  <textarea
+                    className="ajm-input ajm-textarea ajm-headnotes-textarea"
+                    placeholder="Enter the headnotes of the judgment..."
+                    value={form.headnotes}
+                    onChange={(e) => set('headnotes', e.target.value)}
+                  />
                 </div>
               </div>
             </div>

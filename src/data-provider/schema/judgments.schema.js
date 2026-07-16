@@ -30,6 +30,7 @@ export const JudgmentsSchema = {
     jurisdictionalScope: 'string',
     precedentialValue: 'string',
     reviewStatus: 'string',
+    headnotes: 'string',
     practiceArea: 'string',
     category: 'string',
     judgmentType: 'string',

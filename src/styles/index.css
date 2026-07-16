@@ -22466,7 +22466,7 @@ kbd.cmd__kbd {
 
 @media (min-width: 1025px) {
   .jd-prose {
-    max-height: 695px;
+    max-height: 400px;
     overflow-y: auto;
   }
 }
@@ -23136,6 +23136,13 @@ kbd.cmd__kbd {
   overflow-y: auto;
 }
 
+/* Headnotes textarea — draggable (bottom-right handle), taller on desktop */
+.ajm-headnotes-textarea {
+  resize: vertical;
+  min-height: 220px;
+  overflow-y: auto;
+}
+
 .ajm-input-readonly {
   background: var(--surface-2);
   color: var(--text-soft);
@@ -23428,6 +23435,9 @@ kbd.cmd__kbd {
   }
   .ajm-summary-editor .editor-surface {
     min-height: 160px;
+  }
+  .ajm-headnotes-textarea {
+    min-height: 140px;
   }
 }
 
