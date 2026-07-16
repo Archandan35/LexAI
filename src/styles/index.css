@@ -21600,6 +21600,12 @@ kbd.cmd__kbd {
 
 .jl-toolbar .btn {
   height: 40px;
+  box-sizing: border-box;
+}
+
+.jl-search-box {
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .jl-filter-row .btn {

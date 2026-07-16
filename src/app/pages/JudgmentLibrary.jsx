@@ -76,7 +76,6 @@ export default function JudgmentLibrary() {
   const allSelected = paged.length > 0 && paged.every((j) => selected.includes(j.id));
   const toggleAll = () => setSelected(allSelected ? [] : paged.map((j) => j.id));
   const toggleOne = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
   const toggleFavourite = (id) => setFavourites((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const pageNumbers = useMemo(() => {
@@ -234,92 +233,95 @@ export default function JudgmentLibrary() {
         <Button variant="ghost">Clear</Button>
       </div>
 
-      <Card noPad>
-        {paged.length === 0 ? (
-          <div className="empty">
-            <div className="empty__icon"><Icon name="book" size={24} /></div>
-            <p className="text-muted">No judgments found.</p>
+      <Card bodyClass="card__body--flush">
+        <div className="table-scroll">
+          <table className="table">
+            <thead className="jl-thead">
+              <tr>
+                {TABLE_HEADERS.map((h) => (
+                  <th key={h.key} className={h.sortable ? 'th--sortable' : ''}>
+                    {h.key === 'checkbox' ? (
+                      <input type="checkbox" checked={allSelected && paged.length > 0} onChange={toggleAll} disabled={paged.length === 0} />
+                    ) : (
+                      h.label
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paged.length === 0 ? (
+                <tr>
+                  <td colSpan={TABLE_HEADERS.length} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-faint)' }}>
+                    <Icon name="book" size={24} />
+                    <p style={{ marginTop: 8 }}>No judgments found.</p>
+                  </td>
+                </tr>
+              ) : (
+                paged.map((j) => {
+                  const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
+                  return (
+                    <tr key={j.id}>
+                      <td><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
+                      <td>
+                        <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
+                        {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
+                        {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
+                      </td>
+                      <td className="jl-cell-muted">{j.citation || '—'}</td>
+                      <td className="jl-cell-strong">
+                        {j.court || '—'}
+                        {j.bench ? <><br />{j.bench}</> : null}
+                      </td>
+                      <td className="jl-cell-strong">{j.judge || j.bench || '—'}</td>
+                      <td className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
+                      <td className="jl-cell-muted">{j.caseNumber || '—'}</td>
+                      <td>
+                        <span className={`jl-status-pill ${j.archived ? 'jl-status--archived' : 'jl-status--active'}`}>
+                          {j.archived ? 'Archived' : 'Active'}
+                        </span>
+                      </td>
+                      <td>
+                        <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
+                          <Icon name="heart" size={15} fill={isFav} />
+                        </button>
+                      </td>
+                      <td className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
+                      <td>
+                        <div className="jl-actions">
+                          <button><Icon name="eye" size={15} /></button>
+                          <button><Icon name="pen" size={15} /></button>
+                          <button><Icon name="copy" size={15} /></button>
+                          <button><Icon name="more-vertical" size={14} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="jl-pagination-row">
+          <div className="jl-showing-text">
+            {filtered.length === 0
+              ? 'No judgments to show'
+              : `Showing ${(safePage - 1) * perPage + 1} to ${Math.min(safePage * perPage, filtered.length)} of ${filtered.length} judgments`
+            }
           </div>
-        ) : (
-          <>
-            <div className="table-scroll">
-              <table className="table">
-                <thead className="jl-thead">
-                  <tr>
-                    {TABLE_HEADERS.map((h) => (
-                      <th key={h.key} className={h.sortable ? 'th--sortable' : ''}>
-                        {h.key === 'checkbox' ? (
-                          <input type="checkbox" checked={allSelected} onChange={toggleAll} />
-                        ) : (
-                          h.label
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paged.map((j) => {
-                    const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
-                    return (
-                      <tr key={j.id}>
-                        <td><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
-                        <td>
-                          <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
-                          {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
-                          {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
-                        </td>
-                        <td className="jl-cell-muted">{j.citation || '—'}</td>
-                        <td className="jl-cell-strong">
-                          {j.court || '—'}
-                          {j.bench ? <><br />{j.bench}</> : null}
-                        </td>
-                        <td className="jl-cell-strong">{j.judge || j.bench || '—'}</td>
-                        <td className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
-                        <td className="jl-cell-muted">{j.caseNumber || '—'}</td>
-                        <td>
-                          <span className={`jl-status-pill ${j.archived ? 'jl-status--archived' : 'jl-status--active'}`}>
-                            {j.archived ? 'Archived' : 'Active'}
-                          </span>
-                        </td>
-                        <td>
-                          <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
-                            <Icon name="heart" size={15} fill={isFav} />
-                          </button>
-                        </td>
-                        <td className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
-                        <td>
-                          <div className="jl-actions">
-                            <button><Icon name="eye" size={15} /></button>
-                            <button><Icon name="pen" size={15} /></button>
-                            <button><Icon name="copy" size={15} /></button>
-                            <button><Icon name="more-vertical" size={14} /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="jl-pagination-row">
-              <div className="jl-showing-text">
-                Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} judgments
-              </div>
-              <div className="jl-pagination">
-                <button className="jl-page-btn jl-page-btn--nav" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>‹</button>
-                {pageNumbers.map((p, i) =>
-                  p === '...' ? (
-                    <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">…</span>
-                  ) : (
-                    <button key={p} className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-                  )
-                )}
-                <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>›</button>
-                <span className="jl-per-page">10 / page</span>
-              </div>
-            </div>
-          </>
-        )}
+          <div className="jl-pagination">
+            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>‹</button>
+            {pageNumbers.map((p, i) =>
+              p === '...' ? (
+                <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">…</span>
+              ) : (
+                <button key={p} className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+              )
+            )}
+            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>›</button>
+            <span className="jl-per-page">10 / page</span>
+          </div>
+        </div>
       </Card>
     </div>
   );

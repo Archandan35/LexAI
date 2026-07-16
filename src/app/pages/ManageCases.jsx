@@ -283,22 +283,20 @@ export default function ManageCases() {
       {isMobile && (
         <div className="cl-mobile-view fade-in">
 
-          <div className="cl-header">
-            <div className="cl-header__left">
-              <div className="cl-header__icon"><Icon name="vault" size={22} /></div>
-              <div>
-                <div className="cl-header__title">Manage Cases</div>
-                <div className="cl-header__sub">Every matter with its documents, drafts, history, timeline and hearings in one secure place.</div>
-              </div>
+          <div className="bench-types__hero">
+            <div className="bench-types__hero-icon"><Icon name="vault" size={34} /></div>
+            <div className="bench-types__hero-text">
+              <h2>Manage Cases</h2>
+              <p>Every matter with its documents, drafts, history, timeline and hearings in one secure place.</p>
+              <div className="bench-types__hero-accent" />
             </div>
             <PermissionGate perm="manageCase.create">
-              <button className="cl-header__add" type="button" onClick={() => setOpen(true)}>
-                <Icon name="plus" size={15} /> New Case
-              </button>
+              <Button icon="plus" onClick={() => setOpen(true)} style={{ marginLeft: 'auto' }}>New Case</Button>
             </PermissionGate>
+            <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
-          <div className="bench-types__stat-cards bench-types__mobile-only">
+          <div className="bench-types__stat-cards bench-types__mobile-only" style={{ margin: '0 0 18px' }}>
             <div className="bench-types__stat-card bench-types__stat-card--total">
               <div className="bench-types__stat-card-row1">
                 <div className="bench-types__stat-card-icon"><Icon name="layers" size={18} /></div>
