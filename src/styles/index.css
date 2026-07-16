@@ -21043,6 +21043,11 @@ kbd.cmd__kbd {
 }
 .cal-event:hover { background: var(--surface-3, #e7ecf6); }
 .cal-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, #6b7280); flex: 0 0 auto; }
+.cal-event-dot--blink { animation: cal-dot-blink 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
+@keyframes cal-dot-blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--dot, #6b7280); }
+  50% { opacity: .35; box-shadow: 0 0 0 3px transparent; }
+}
 .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-more { font-size: 11px; color: var(--text-faint); padding-left: 4px; }
 
@@ -21091,8 +21096,30 @@ kbd.cmd__kbd {
   align-items: center; padding-top: 12px;
 }
 .tasks-filter-row .select, .tasks-filter-row .input { min-width: 140px; }
-.tasks-search { display: flex; align-items: center; gap: 8px; padding: 0 14px 12px; }
-.tasks-search .input { flex: 1; }
+.tasks-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-faint);
+  margin: 0 14px 12px;
+}
+.tasks-search svg { flex: 0 0 auto; color: var(--text-faint); }
+.tasks-search .input {
+  border: none;
+  background: none;
+  outline: none;
+  flex: 1;
+  font-size: 14px;
+  color: var(--text);
+  padding: 0;
+  box-shadow: none;
+}
+.tasks-search .input::placeholder { color: var(--text-faint); }
+.tasks-search .tasks-arch-toggle { margin-left: auto; }
 .tasks-arch-toggle {
   display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface);
   border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
@@ -21113,6 +21140,13 @@ kbd.cmd__kbd {
 .task-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .task-field { display: flex; flex-direction: column; gap: 5px; }
 .task-field--full { grid-column: 1 / -1; }
+.cmp-label--gear { display: flex; align-items: center; justify-content: space-between; }
+.task-field-gear {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-muted); cursor: pointer; padding: 0;
+}
+.task-field-gear:hover { background: var(--surface-2); color: var(--navy-700); }
 
 /* responsive calendar/tasks */
 @media (max-width: 768px) {

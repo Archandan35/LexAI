@@ -18,6 +18,7 @@ import { remindersRepository } from '@/data-layer/repositories/remindersReposito
 import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
 import { taskLogic } from '@/logic/taskLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
+import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { taskCategoryLogic } from '@/logic/taskCategoryLogic.js';
 import { taskStatusLogic } from '@/logic/taskStatusLogic.js';
 
@@ -49,6 +50,7 @@ export default function Calendar() {
   const [priorities, setPriorities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [caseStatuses, setCaseStatuses] = useState([]);
 
   const refreshTasks = useCallback(() => {
     taskLogic.list().then((r) => setTasks(r.ok ? (r.data || []) : [])).catch(() => {});
@@ -64,7 +66,8 @@ export default function Calendar() {
       priorityLogic.list().catch(() => []),
       taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
       taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-    ]).then(([h, rm, t, c, p, cat, st]) => {
+      caseStatusLogic.list().catch(() => []),
+    ]).then(([h, rm, t, c, p, cat, st, cst]) => {
       setHearings(Array.isArray(h) ? h : []);
       setReminders(Array.isArray(rm) ? rm : []);
       setTasks(Array.isArray(t) ? t : []);
@@ -72,6 +75,7 @@ export default function Calendar() {
       setPriorities(Array.isArray(p) ? p : []);
       setCategories(Array.isArray(cat) ? cat : []);
       setStatuses(Array.isArray(st) ? st : []);
+      setCaseStatuses(Array.isArray(cst) ? cst : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -79,20 +83,40 @@ export default function Calendar() {
   useEffect(() => { loadAll(); }, [loadAll]);
 
   /* ---------- build calendar events ---------- */
+  const caseStatusColor = useMemo(() => {
+    const map = {};
+    caseStatuses.forEach((s) => { map[(s.name || '').toLowerCase()] = s.color || '#6b7280'; });
+    return map;
+  }, [caseStatuses]);
+
+  const caseLabel = useCallback((c) => {
+    const num = c.case_display_number || c.caseNumber || '';
+    const title = c.title || '';
+    if (num && title && title !== num) return `${num} — ${title}`;
+    return num || title || 'Case';
+  }, []);
+
   const events = useMemo(() => {
     const out = [];
-    hearings.forEach((h) => out.push({
-      id: h.id, kind: 'hearing', title: h.purpose || h.title || 'Hearing',
-      date: h.date, color: '#3b82f6', caseId: h.case_id, allDay: true,
-      meta: h,
-    }));
-    reminders.forEach((r) => {
-      if (r.done) return;
+    // Scheduled case hearings — driven by each case's next hearing date.
+    cases.forEach((c) => {
+      const due = c.nextHearing || c.next_hearing;
+      if (!due) return;
+      const statusName = c.status || 'Active';
       out.push({
-        id: r.id, kind: 'reminder', title: r.title || 'Reminder',
-        date: r.due_at || r.date, color: '#f59e0b', caseId: r.case_id, allDay: true, meta: r,
+        id: `case-hearing-${c.id}`,
+        kind: 'hearing',
+        title: `${caseLabel(c)} — ${statusName}`,
+        caseId: c.id,
+        date: due,
+        color: caseStatusColor[(statusName || '').toLowerCase()] || '#3b82f6',
+        allDay: true,
+        blink: true,
+        meta: c,
+        isCaseHearing: true,
       });
     });
+    // Standalone tasks.
     tasks.forEach((t) => {
       if (t.archived) return;
       const due = t.due_date || t.start_date;
@@ -105,7 +129,7 @@ export default function Calendar() {
       });
     });
     return out;
-  }, [hearings, reminders, tasks]);
+  }, [cases, tasks, caseStatusColor, caseLabel]);
 
   /* ---------- modal state for event view ---------- */
   const [viewEvent, setViewEvent] = useState(null);
@@ -249,7 +273,7 @@ function CalendarView({ events, loading, onView, cases }) {
                       <div className="cal-cell-events">
                         {dayEvents.slice(0, 3).map((e) => (
                           <button key={e.id} className="cal-event" onClick={() => onView(e)} title={e.title}>
-                            <span className="cal-event-dot" style={{ '--dot': e.color }} />
+                            <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
                             <span className="cal-event-title">{e.title}</span>
                           </button>
                         ))}
@@ -284,7 +308,7 @@ function CalendarView({ events, loading, onView, cases }) {
                         <div className="cal-week-empty">—</div>
                       ) : dayEvents.map((e) => (
                         <button key={e.id} className="cal-event cal-event--block" onClick={() => onView(e)}>
-                          <span className="cal-event-dot" style={{ '--dot': e.color }} />
+                          <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
                           <span className="cal-event-title">{e.title}</span>
                           {e.time && <span className="cal-event-time">{fmtTime(e.time)}</span>}
                         </button>
@@ -300,7 +324,7 @@ function CalendarView({ events, loading, onView, cases }) {
             <div className="cal-day">
               {(eventsByDay[dayKey(cursor)] || []).slice().sort((a, b) => (a.time || '').localeCompare(b.time || '')).map((e) => (
                 <button key={e.id} className="cal-day-event" onClick={() => onView(e)}>
-                  <span className="cal-event-dot" style={{ '--dot': e.color }} />
+                  <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
                   <div className="cal-day-event-body">
                     <div className="cal-day-event-title">{e.title}</div>
                     {e.time && <div className="cal-day-event-time">{fmtTime(e.time)}</div>}
@@ -324,18 +348,25 @@ function CalendarView({ events, loading, onView, cases }) {
 /* ================================================================== */
 function EventViewModal({ event, onClose, cases }) {
   if (!event) return null;
-  const caseTitle = event.caseId ? (cases.find((c) => c.id === event.caseId)?.title || cases.find((c) => c.id === event.caseId)?.caseNumber || 'Linked') : null;
+  const linkedCase = event.caseId ? cases.find((c) => c.id === event.caseId) : null;
+  const caseTitle = linkedCase ? (linkedCase.title || linkedCase.case_display_number || linkedCase.caseNumber || 'Linked') : null;
   return (
-    <Modal open={!!event} onClose={onClose} title={event.title} subtitle={event.kind}>
+    <Modal open={!!event} onClose={onClose} title={event.title} subtitle={event.isCaseHearing ? 'Scheduled Hearing' : event.kind}>
       <div className="cal-evt">
-        <div className="cal-evt-row"><span className="cal-evt-label">Type</span><Badge tone={event.kind === 'task' ? 'grey' : event.kind === 'hearing' ? 'navy' : 'amber'}>{event.kind}</Badge></div>
+        <div className="cal-evt-row"><span className="cal-evt-label">Type</span><Badge tone={event.kind === 'task' ? 'grey' : 'navy'}>{event.isCaseHearing ? 'Case Hearing' : event.kind}</Badge></div>
         {event.date && <div className="cal-evt-row"><span className="cal-evt-label">Date</span><span>{new Date(event.date).toLocaleDateString()}</span></div>}
         {event.time && <div className="cal-evt-row"><span className="cal-evt-label">Time</span><span>{fmtTime(event.time)}</span></div>}
-        {caseTitle && <div className="cal-evt-row"><span className="cal-evt-label">Case</span><span>{caseTitle}</span></div>}
+        {event.isCaseHearing && linkedCase && (
+          <>
+            <div className="cal-evt-row"><span className="cal-evt-label">Case No.</span><span>{linkedCase.case_display_number || linkedCase.caseNumber || '—'}</span></div>
+            <div className="cal-evt-row"><span className="cal-evt-label">Case Title</span><span>{linkedCase.title || '—'}</span></div>
+            <div className="cal-evt-row"><span className="cal-evt-label">Status</span><Badge tone="grey">{linkedCase.status || 'Active'}</Badge></div>
+            {linkedCase.nextHearing && <div className="cal-evt-row"><span className="cal-evt-label">Next Hearing</span><span>{new Date(linkedCase.nextHearing).toLocaleDateString()}</span></div>}
+          </>
+        )}
+        {caseTitle && !event.isCaseHearing && <div className="cal-evt-row"><span className="cal-evt-label">Case</span><span>{caseTitle}</span></div>}
         {event.kind === 'task' && event.status && <div className="cal-evt-row"><span className="cal-evt-label">Status</span><span>{event.status}</span></div>}
         {event.kind === 'task' && event.meta?.description && <div className="cal-evt-row"><span className="cal-evt-label">Description</span><span>{event.meta.description}</span></div>}
-        {event.kind === 'hearing' && event.meta?.purpose && <div className="cal-evt-row"><span className="cal-evt-label">Purpose</span><span>{event.meta.purpose}</span></div>}
-        {event.kind === 'reminder' && event.meta?.type && <div className="cal-evt-row"><span className="cal-evt-label">Type</span><span>{event.meta.type}</span></div>}
         <div className="cal-evt-color"><span className="cal-evt-swatch" style={{ background: event.color }} /> {event.color}</div>
       </div>
     </Modal>
@@ -361,10 +392,22 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
   const [confirm, setConfirm] = useState(null);
   const [crud, setCrud] = useState(null); // 'category' | 'status'
 
+  const caseLabelFor = (c) => {
+    const num = c.case_display_number || c.caseNumber || '';
+    const title = c.title || '';
+    if (num && title && title !== num) return `${num} — ${title}`;
+    return num || title || c.id;
+  };
   const categoryOptions = categories.map((c) => ({ value: c.name, label: c.name }));
   const statusOptions = statuses.map((s) => ({ value: s.name, label: s.name }));
   const priorityOptions = priorities.map((p) => ({ value: p.name, label: p.name }));
-  const caseOptions = cases.map((c) => ({ value: c.id, label: c.title || c.caseNumber || c.id }));
+  const caseOptions = cases.map((c) => ({ value: c.id, label: caseLabelFor(c) }));
+
+  const openCrudFor = (type) => {
+    if (type === 'category') setCrud('category');
+    else if (type === 'status') setCrud('status');
+    else if (type === 'priority') setCrud('priority');
+  };
 
   const filtered = useMemo(() => {
     let list = tasks.filter((t) => (showArchived ? true : !t.archived));
@@ -621,7 +664,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
         <TaskFormModal
           mode={modal} task={editing} onClose={() => setModal(null)} onSaved={() => { setModal(null); onChanged(); }}
           categories={categories} statuses={statuses} priorities={priorities} cases={cases}
-          toast={toast} user={user}
+          toast={toast} user={user} onManageCrud={openCrudFor}
         />
       )}
 
@@ -634,15 +677,22 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       {crud && (
         <CrudManager
           open={!!crud} onClose={() => { setCrud(null); onReloadMaster(); }}
-          entity={crud === 'category' ? 'Task Category' : 'Task Status'}
+          entity={crud === 'category' ? 'Task Category' : crud === 'status' ? 'Task Status' : 'Priority'}
           config={{
-            logic: crud === 'category' ? taskCategoryLogic : taskStatusLogic,
-            fields: [
-              { key: 'name', label: 'Name', placeholder: 'e.g., Hearing' },
-              { key: 'short_code', label: 'Short Code', placeholder: 'HEAR' },
-              { key: 'color', label: 'Color', type: 'color' },
-              { key: 'description', label: 'Description', placeholder: 'Optional' },
-            ],
+            logic: crud === 'category' ? taskCategoryLogic : crud === 'status' ? taskStatusLogic : priorityLogic,
+            fields: crud === 'priority'
+              ? [
+                  { key: 'name', label: 'Name', placeholder: 'e.g., Urgent' },
+                  { key: 'short_code', label: 'Short Code', placeholder: 'PRIT-HIGH' },
+                  { key: 'color', label: 'Color', type: 'color' },
+                  { key: 'description', label: 'Description', placeholder: 'Optional' },
+                ]
+              : [
+                  { key: 'name', label: 'Name', placeholder: 'e.g., Hearing' },
+                  { key: 'short_code', label: 'Short Code', placeholder: 'HEAR' },
+                  { key: 'color', label: 'Color', type: 'color' },
+                  { key: 'description', label: 'Description', placeholder: 'Optional' },
+                ],
             defaults: {},
             refresh: onReloadMaster,
           }}
@@ -671,7 +721,13 @@ function statusTone(s) { return { Completed: 'green', 'In Progress': 'blue', Pen
 /* ================================================================== */
 /*  TASK FORM MODAL                                                    */
 /* ================================================================== */
-function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, priorities, cases, toast, user }) {
+function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, priorities, cases, toast, user, onManageCrud }) {
+  const caseLabelFor = (c) => {
+    const num = c.case_display_number || c.caseNumber || '';
+    const title = c.title || '';
+    if (num && title && title !== num) return `${num} — ${title}`;
+    return num || title || c.id;
+  };
   const blank = {
     title: '', description: '', notes: '', category: '', priority: 'Medium', status: 'Pending',
     active: true, due_date: '', due_time: '', start_date: '', end_date: '', reminder: false,
@@ -725,21 +781,30 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
         </div>
         <div className="task-field">
-          <label className="cmp-label">Category</label>
+          <label className="cmp-label cmp-label--gear">
+            <span>Category</span>
+            <button type="button" className="task-field-gear" title="Manage Categories" onClick={() => onManageCrud?.('category')}><Icon name="gear" size={14} /></button>
+          </label>
           <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
             <option value="">— select —</option>
             {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </Select>
         </div>
         <div className="task-field">
-          <label className="cmp-label">Priority</label>
+          <label className="cmp-label cmp-label--gear">
+            <span>Priority</span>
+            <button type="button" className="task-field-gear" title="Manage Priorities" onClick={() => onManageCrud?.('priority')}><Icon name="gear" size={14} /></button>
+          </label>
           <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
             {priorities.length === 0 ? ['Low', 'Medium', 'High', 'Urgent'].map((p) => <option key={p} value={p}>{p}</option>)
               : priorities.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
           </Select>
         </div>
         <div className="task-field">
-          <label className="cmp-label">Status</label>
+          <label className="cmp-label cmp-label--gear">
+            <span>Status</span>
+            <button type="button" className="task-field-gear" title="Manage Statuses" onClick={() => onManageCrud?.('status')}><Icon name="gear" size={14} /></button>
+          </label>
           <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
             {statuses.length === 0 ? ['Pending', 'In Progress', 'Completed', 'Cancelled', 'On Hold'].map((s) => <option key={s} value={s}>{s}</option>)
               : statuses.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -787,7 +852,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <label className="cmp-label">Linked Case</label>
           <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
             <option value="">— none —</option>
-            {cases.map((c) => <option key={c.id} value={c.id}>{c.title || c.caseNumber || c.id}</option>)}
+            {cases.map((c) => <option key={c.id} value={c.id}>{caseLabelFor(c)}</option>)}
           </Select>
         </div>
         <div className="task-field">
@@ -821,7 +886,8 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
 function TaskViewModal({ task, onClose, onEdit, categories, cases, formatDate, formatDateTime }) {
   const cat = categories.find((c) => c.name === task.category);
   const color = task.color || cat?.color || '#6b7280';
-  const caseTitle = task.case_id ? (cases.find((c) => c.id === task.case_id)?.title || task.case_id) : null;
+  const linkedCase = task.case_id ? cases.find((c) => c.id === task.case_id) : null;
+  const caseTitle = linkedCase ? ((linkedCase.case_display_number || linkedCase.caseNumber || '') + (linkedCase.title ? ` — ${linkedCase.title}` : '') || linkedCase.id) : null;
   return (
     <Modal open onClose={onClose} title={task.title}
       footer={<div className="cmp-modal-footer">
