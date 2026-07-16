@@ -22440,9 +22440,10 @@ kbd.cmd__kbd {
 }
 
 .ajm-overlay .modal {
-  max-width: 1140px;
-  width: 96%;
-  max-height: 92vh;
+  max-width: 1400px;
+  width: 90vw;
+  max-height: 90vh;
+  min-height: 500px;
 }
 
 .ajm-overlay .modal__head {
@@ -22452,7 +22453,7 @@ kbd.cmd__kbd {
 
 .ajm-overlay .modal__body {
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   flex: 1;
   display: flex;
   flex-direction: column;
