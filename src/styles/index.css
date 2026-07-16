@@ -21040,8 +21040,8 @@ kbd.cmd__kbd {
 .cal-cell-count { font-size: 11px; color: var(--text-faint); }
 .cal-cell-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event {
-  display: flex; align-items: center; gap: 5px; width: 100%; text-align: left;
-  border: none; background: var(--dot-bg, var(--surface-2)); border-radius: 6px; padding: 3px 5px;
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  border: none; background: var(--dot-bg, var(--surface-2)); border-radius: 8px; padding: 5px 10px;
   font-size: 12px; cursor: pointer; color: var(--dot, var(--text));
 }
 .cal-event:hover { background: var(--dot-bg, var(--surface-3, #e7ecf6)); filter: brightness(0.97); }
@@ -21068,7 +21068,7 @@ kbd.cmd__kbd {
 .cal-week-col:last-child { border-right: none; }
 .cal-week-col--today { background: var(--navy-50, #eef2fb); }
 .cal-week-empty { color: var(--text-faint); text-align: center; padding: 20px 0; }
-.cal-event--block { padding: 6px 8px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 2px; }
+.cal-event--block { padding: 8px 10px; border-radius: 8px; flex-direction: column; align-items: flex-start; gap: 4px; }
 .cal-event-time { font-size: 11px; color: var(--text-faint); }
 
 /* day */
@@ -21175,10 +21175,10 @@ kbd.cmd__kbd {
   .tasks-toolbar { flex-direction: column; align-items: stretch; }
   .tasks-toolbar-right { flex-direction: row; align-items: stretch; flex-wrap: wrap; }
   .tasks-toolbar-right .btn { flex: 1 1 0; width: auto; justify-content: center; }
-  .tasks-search { margin: 0 12px 12px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding-right: 12px; flex-wrap: wrap; gap: 8px; }
-  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; width: 100%; }
-  .tasks-search svg { order: 2; }
-  .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; width: 100%; justify-content: center; margin-left: 0; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); }
+  .tasks-search { margin: 0 12px 12px; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding: 9px 12px; flex-wrap: wrap; gap: 8px; }
+  .tasks-search input { flex: 1 1 auto; order: 1; min-width: 0; }
+  .tasks-search svg { order: 2; flex: 0 0 auto; }
+  .tasks-search .tasks-arch-toggle { order: 3; flex: 1 1 100%; width: 100%; justify-content: center; margin-left: 0; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06); padding: 9px 12px; }
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
   .cmp-pagination { flex-wrap: wrap; }
   .tasks-table-card .table-scroll { display: none; }
