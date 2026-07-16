@@ -745,7 +745,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                           <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
                           <span className="task-card__dt-label">DUE DATE & TIME</span>
                         </div>
-                        <span className="task-card__dt-value">
+                        <span className="task-card__dt-value task-card__dt-value--due">
                           {t.due_date ? formatDate(t.due_date) : '—'}
                           {t.due_time ? ` ${fmtTime(t.due_time)}` : ''}
                         </span>
@@ -756,7 +756,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                             <span className="task-card__field-icon"><Icon name="calendar" size={13} /></span>
                             <span className="task-card__dt-label">Start / End</span>
                           </div>
-                          <span className="task-card__dt-value">
+                          <span className="task-card__dt-value task-card__dt-value--range">
                             {t.start_date ? formatDate(t.start_date) : '—'}
                             {t.end_date ? ` → ${formatDate(t.end_date)}` : ''}
                           </span>
