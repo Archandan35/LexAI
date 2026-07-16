@@ -1,4 +1,19 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+
+// Light tint of a hex color for event backgrounds.
+const _tintCache = {};
+function tint(hex) {
+  if (!hex) return 'rgba(107,114,128,0.12)';
+  if (_tintCache[hex]) return _tintCache[hex];
+  const h = hex.replace('#', '');
+  if (h.length !== 6) { _tintCache[hex] = 'rgba(107,114,128,0.12)'; return _tintCache[hex]; }
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const out = `rgba(${r}, ${g}, ${b}, 0.12)`;
+  _tintCache[hex] = out;
+  return out;
+}
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Modal from '@/components/Modal.jsx';
@@ -97,23 +112,6 @@ export default function Calendar() {
   }, []);
 
   const caseNumberOnly = useCallback((c) => c.case_display_number || c.caseNumber || c.title || 'Case', []);
-
-  // Light tint of a hex color for event backgrounds.
-  const tint = (() => {
-    const cache = {};
-    return (hex) => {
-      if (!hex) return 'rgba(107,114,128,0.12)';
-      if (cache[hex]) return cache[hex];
-      const h = hex.replace('#', '');
-      if (h.length !== 6) { cache[hex] = 'rgba(107,114,128,0.12)'; return cache[hex]; }
-      const r = parseInt(h.slice(0, 2), 16);
-      const g = parseInt(h.slice(2, 4), 16);
-      const b = parseInt(h.slice(4, 6), 16);
-      const out = `rgba(${r}, ${g}, ${b}, 0.12)`;
-      cache[hex] = out;
-      return out;
-    };
-  })();
 
   const events = useMemo(() => {
     const out = [];
