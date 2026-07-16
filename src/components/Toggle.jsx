@@ -9,7 +9,7 @@ export default function Toggle({ checked, onChange, disabled, label, size = 'md'
         disabled={disabled}
         onChange={(e) => onChange?.(e.target.checked)}
       />
-      <span className="toggle__track"><span className="toggle__thumb" /></span>
+      <span className="toggle__track"><span className="toggle__thumb" /><span className="toggle__text">{checked ? 'Yes' : 'No'}</span></span>
       {label && <span className="toggle__label">{label}</span>}
     </label>
   );

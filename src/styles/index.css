@@ -2759,32 +2759,62 @@ select {
 }
 
 .toggle__track {
-  width: 40px;
-  height: 22px;
-  border-radius: 999px;
+  width: 56px;
+  height: 26px;
+  border-radius: 8px;
   background: var(--border-strong);
   position: relative;
-  transition: background 0.2s var(--ease);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+  transition: background 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.toggle:hover .toggle__track {
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), 0 0 0 3px var(--surface-2);
 }
 
 .toggle__thumb {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
   background: #fff;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s var(--ease);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  z-index: 1;
+}
+
+.toggle:hover .toggle__thumb {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+
+.toggle__text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+  z-index: 0;
+  transition: left 0.25s var(--ease);
+  left: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .toggle--on .toggle__track {
   background: var(--green);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .toggle--on .toggle__thumb {
-  transform: translateX(18px);
+  transform: translateX(30px);
+}
+
+.toggle--on .toggle__text {
+  left: 8px;
 }
 
 .toggle--disabled {
@@ -21175,8 +21205,8 @@ kbd.cmd__kbd {
 .task-card__case-title { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
 
 .task-card__fields { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-.task-card__field { display: flex; align-items: center; gap: 8px; }
-.task-card__field-icon { flex: 0 0 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+.task-card__field { display: flex; align-items: center; gap: 6px; }
+.task-card__field-icon { flex: 0 0 20px; display: flex; align-items: center; justify-content: flex-start; color: var(--text-muted); }
 .task-card__field-icon svg { display: block; }
 .task-card__field-value { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; word-break: break-word; }
 .task-card__field-value--title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -21189,11 +21219,11 @@ kbd.cmd__kbd {
 .task-card__dt-label-wrap { display: flex; align-items: center; gap: 6px; }
 .task-card__dt-label-wrap svg { color: var(--text-muted); flex-shrink: 0; }
 .task-card__dt-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
-.task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; padding-left: 19px; }
+.task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; padding-left: 26px; }
 
 .task-card__tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .task-card__tags-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
-.task-tag--colored { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; background: var(--tag-bg, var(--navy)); }
+.task-tag--colored { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; color: #fff; background: var(--tag-bg, var(--navy)); }
 .task-tag--colored:nth-child(2) { background: #e03131; }
 .task-tag--colored:nth-child(3) { background: #12b886; }
 .task-tag--colored:nth-child(4) { background: #f08c00; }
@@ -21300,10 +21330,10 @@ kbd.cmd__kbd {
   line-height: 1.4;
 }
 .task-card__field-icon {
-  flex-shrink: 0;
+  flex: 0 0 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   color: var(--text-muted);
 }
 .task-card__field-label {
@@ -21349,7 +21379,7 @@ kbd.cmd__kbd {
   font-size: 12px;
   font-weight: 500;
   color: var(--navy-700);
-  padding-left: 19px;
+  padding-left: 26px;
 }
 .task-card__tags {
   display: flex;

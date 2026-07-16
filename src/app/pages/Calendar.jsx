@@ -927,7 +927,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Case Number</label>
           <Select value={form.case_id} onChange={(e) => { set('case_id', e.target.value); set('hearing_id', ''); }}>
             <option value="">— none —</option>
@@ -935,7 +935,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </Select>
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Category <span className="cmp-required">*</span></label>
           <div className="task-field-row">
             <Select value={form.category} onChange={(e) => set('category', e.target.value)}>
@@ -946,7 +946,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Priority <span className="cmp-required">*</span></label>
           <div className="task-field-row">
             <Select value={form.priority} onChange={(e) => set('priority', e.target.value)}>
@@ -957,7 +957,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Status <span className="cmp-required">*</span></label>
           <div className="task-field-row">
             <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
@@ -968,7 +968,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Active / Inactive <span className="cmp-required">*</span></label>
           <Select value={form.active ? 'active' : 'inactive'} onChange={(e) => set('active', e.target.value === 'active')}>
             <option value="active">Active</option>
@@ -986,7 +986,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <Input type="time" value={form.due_time} onChange={(e) => set('due_time', e.target.value)} />
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Start / End Date</label>
           <Toggle checked={form.has_date_range} onChange={(v) => { set('has_date_range', v); if (!v) { set('start_date', ''); set('end_date', ''); } }} />
         </div>
@@ -1003,7 +1003,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </>
         )}
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Reminder</label>
           <Toggle checked={form.reminder} onChange={(v) => set('reminder', v)} />
         </div>
@@ -1014,12 +1014,12 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           </div>
         )}
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Tags <span className="cmp-optional">(comma separated)</span></label>
           <Input value={form.tags} placeholder="urgent, client-meeting" onChange={(e) => set('tags', e.target.value)} />
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Attachments <span className="cmp-optional">(upload file)</span></label>
           <input type="file" className="input task-attach-input" onChange={(e) => {
             const names = Array.from(e.target.files || []).map((f) => f.name);
@@ -1028,7 +1028,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           {form.attachments && <div className="task-attach-list">{form.attachments}</div>}
         </div>
 
-        <div className="task-field task-field--full">
+        <div className="task-field">
           <label className="cmp-label">Color Swatch</label>
           <ColorPicker value={form.color} onChange={(c) => set('color', c)} />
         </div>
