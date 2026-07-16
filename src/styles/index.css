@@ -21164,7 +21164,7 @@ kbd.cmd__kbd {
 .task-attach-input { width: 100%; padding: 14px; min-height: 64px; border: 1px dashed var(--border-strong); border-radius: 10px; background: var(--surface); cursor: pointer; }
 
 /* Task Cards (mobile/tablet) */
-.task-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+.task-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-sm); width: 100%; }
 .task-card--archived { opacity: .7; border-color: var(--border-strong); }
 .task-card__header { margin-bottom: 12px; }
 .task-card__case-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
@@ -21227,7 +21227,7 @@ kbd.cmd__kbd {
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
 .cmp-pagination { flex-wrap: wrap; }
 .tasks-table-card .table-scroll { display: none; }
-.tasks-cards { display: block; padding: 0; }
+.tasks-cards { display: block; width: 100%; padding: 12px 12px 4px; }
 
 /* --- Mobile Task Cards --- */
 .task-card {

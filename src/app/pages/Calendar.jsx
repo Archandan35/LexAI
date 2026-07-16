@@ -681,13 +681,11 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
               </table>
             </div>
             <div className="tasks-cards">
-              {paged.map((t, _debugIdx) => {
-                if (_debugIdx === 0) console.debug('[task-card-debug] task.case_id=', JSON.stringify(t.case_id), 'task.caseId=', JSON.stringify(t.caseId), 'cases.length=', cases.length, 'first case.id=', cases[0]?.id);
+              {paged.map((t) => {
                 const cat = categories.find((c) => c.name === t.category);
                 const color = t.color || cat?.color || '#6b7280';
                 const cid = t.case_id || t.caseId || '';
                 const linkedCase = cid ? cases.find((c) => String(c.id) === String(cid)) : null;
-                if (cid && !linkedCase) console.debug('[task-card] MISS case_id=', cid, 'cases.length=', cases.length, 'sample ids=', cases.slice(0,5).map(c => c.id));
                 const caseNum = linkedCase ? (linkedCase.case_display_number || linkedCase.caseNumber || linkedCase.title || cid) : (cid || '—');
                 const caseTitle = linkedCase?.title || '';
                 return (
@@ -919,6 +917,7 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
           <label className="cmp-label">Notes</label>
           <Textarea value={form.notes} placeholder="Additional notes…" onChange={(e) => set('notes', e.target.value)} />
         </div>
+
         <div className="task-field">
           <label className="cmp-label">Due Date</label>
           <Input type="date" value={form.due_date} onChange={(e) => set('due_date', e.target.value)} />
