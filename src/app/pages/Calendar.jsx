@@ -744,8 +744,9 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
 
                     {t.tags && (
                       <div className="task-card__tags">
+                        <span className="task-card__tags-label">Tags</span>
                         {t.tags.split(',').slice(0, 6).map((tg) => (
-                          <span key={tg.trim()} className="task-tag">{tg.trim()}</span>
+                          <span key={tg.trim()} className="task-tag task-tag--colored">{tg.trim()}</span>
                         ))}
                       </div>
                     )}

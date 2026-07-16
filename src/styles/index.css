@@ -21189,11 +21189,21 @@ kbd.cmd__kbd {
 .task-card__dt-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
 .task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; }
 
-.task-card__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.task-card__tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.task-card__tags-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
+.task-tag--colored { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; color: #fff; background: var(--tag-bg, var(--navy)); }
+.task-tag--colored:nth-child(2) { background: #e03131; }
+.task-tag--colored:nth-child(3) { background: #12b886; }
+.task-tag--colored:nth-child(4) { background: #f08c00; }
+.task-tag--colored:nth-child(5) { background: #7048e8; }
+.task-tag--colored:nth-child(6) { background: #c2255c; }
+
 .task-card__updated { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
 .task-card__updated svg { color: var(--text-faint); }
 
 .task-card__actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.task-card__actions .cv-action-btn { flex: 1 1 calc(33.333% - 4px); min-width: 60px; max-width: calc(33.333% - 4px); padding: 6px 4px; font-size: 10px; }
+.task-card__actions .cv-action-btn span { display: block; font-size: 9px; margin-top: 2px; }
 .task-card__actions .cv-action-btn { flex: 1; min-width: 80px; }
 
 /* responsive calendar/tasks */
