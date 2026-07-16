@@ -21176,7 +21176,7 @@ kbd.cmd__kbd {
 
 .task-card__fields { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
 .task-card__field { display: flex; align-items: center; gap: 8px; }
-.task-card__field-icon { flex: 0 0 20px; color: var(--text-muted); }
+.task-card__field-icon { flex: 0 0 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
 .task-card__field-value { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; word-break: break-word; }
 
 .task-card__divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 10px 0; }
@@ -21186,7 +21186,7 @@ kbd.cmd__kbd {
 .task-card__dt-label-wrap { display: flex; align-items: center; gap: 6px; }
 .task-card__dt-label-wrap svg { color: var(--text-muted); flex-shrink: 0; }
 .task-card__dt-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
-.task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; }
+.task-card__dt-value { font-size: 13px; color: var(--text); font-weight: 500; padding-left: 19px; }
 
 .task-card__tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .task-card__tags-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
@@ -21227,7 +21227,7 @@ kbd.cmd__kbd {
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 100%; }
 .cmp-pagination { flex-wrap: wrap; }
 .tasks-table-card .table-scroll { display: none; }
-.tasks-cards { display: block; width: 100%; padding: 12px 12px 4px; }
+.tasks-cards { display: block; width: 100%; padding: 0; }
 
 /* --- Mobile Task Cards --- */
 .task-card {
@@ -21298,6 +21298,9 @@ kbd.cmd__kbd {
 }
 .task-card__field-icon {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-muted);
 }
 .task-card__field-label {
@@ -21343,6 +21346,7 @@ kbd.cmd__kbd {
   font-size: 12px;
   font-weight: 500;
   color: var(--navy-700);
+  padding-left: 19px;
 }
 .task-card__tags {
   display: flex;

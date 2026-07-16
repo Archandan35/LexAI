@@ -69,6 +69,7 @@ export default function Calendar() {
 
   const refreshTasks = useCallback(() => {
     taskLogic.list().then((r) => setTasks(r.ok ? (r.data || []) : [])).catch(() => {});
+    casesRepository.getAll().then((c) => setCases(Array.isArray(c) ? c : [])).catch(() => {});
   }, []);
 
   const loadAll = useCallback(() => {
@@ -704,19 +705,19 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     <div className="task-card__fields">
                       {t.title && (
                         <div className="task-card__field">
-                          <Icon name="edit" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-icon"><Icon name="edit" size={14} /></span>
                           <span className="task-card__field-value">{t.title}</span>
                         </div>
                       )}
                       {t.description && (
                         <div className="task-card__field">
-                          <Icon name="file" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-icon"><Icon name="file" size={14} /></span>
                           <span className="task-card__field-value">{t.description}</span>
                         </div>
                       )}
                       {t.notes && (
                         <div className="task-card__field">
-                          <Icon name="notes" size={14} className="task-card__field-icon" />
+                          <span className="task-card__field-icon"><Icon name="notes" size={14} /></span>
                           <span className="task-card__field-value">{t.notes}</span>
                         </div>
                       )}
