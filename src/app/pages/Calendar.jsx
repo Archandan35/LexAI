@@ -717,7 +717,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       )}
                       {t.notes && (
                         <div className="task-card__field">
-                          <Icon name="note" size={14} className="task-card__field-icon" />
+                          <Icon name="notes" size={14} className="task-card__field-icon" />
                           <span className="task-card__field-label">Notes</span>
                           <span className="task-card__field-value">{t.notes}</span>
                         </div>
@@ -750,10 +750,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       </div>
                     )}
 
-                    {task?.updated_at && (
+                    {t.updated_at && (
                       <div className="task-card__updated">
                         <Icon name="clock" size={13} />
-                        Last Updated: {new Date(task.updated_at).toLocaleString()}
+                        Last Updated: {new Date(t.updated_at).toLocaleString()}
                       </div>
                     )}
 
