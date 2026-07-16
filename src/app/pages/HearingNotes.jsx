@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -15,11 +15,20 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 // Hearing Notes — assembles Facts, Issues, Evidence, Citations, Oral Submissions.
 export default function HearingNotes() {
   const toast = useToast();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
   const [caseId, setCaseId] = useState('');
   const [facts, setFacts] = useState('');
   const [issuesText, setIssuesText] = useState('');
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState(null);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const generate = async () => {
     setBusy(true);
@@ -43,12 +52,29 @@ export default function HearingNotes() {
 
   return (
     <div className="fade-in">
-      <PageHeader
-        icon="notes"
-        title="Hearing Notes"
-        subtitle="Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date."
-        actions={notes && <Button variant="ghost" icon="download" onClick={exportNotes}>Export PDF</Button>}
-      />
+      {!isMobile ? (
+        <PageHeader
+          icon="notes"
+          title="Hearing Notes"
+          subtitle="Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date."
+          actions={notes && <Button variant="ghost" icon="download" onClick={exportNotes}>Export PDF</Button>}
+        />
+      ) : (
+        <div className="cl-header">
+          <div className="cl-header__left">
+            <div className="cl-header__icon"><Icon name="notes" size={22} /></div>
+            <div>
+              <div className="cl-header__title">Hearing Notes</div>
+              <div className="cl-header__sub">Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points.</div>
+            </div>
+          </div>
+          {notes && (
+            <button className="cl-header__add" type="button" onClick={exportNotes}>
+              <Icon name="download" size={15} /> Export
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="grid-sidebar">
         <Card title="Inputs">

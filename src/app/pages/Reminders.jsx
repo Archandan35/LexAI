@@ -33,6 +33,15 @@ export default function Reminders() {
   const { user } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 991px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    handler(mql);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const [items, setItems] = useState([]);
   const [cases, setCases] = useState([]);
@@ -123,8 +132,23 @@ export default function Reminders() {
 
   return (
     <div className="fade-in">
-      <PageHeader icon="bell" title="Reminders" subtitle="All hearing, filing, evidence & compliance deadlines."
-        actions={<Button onClick={openAdd}><Icon name="plus" size={15} /> Add Reminder</Button>} />
+      {!isMobile ? (
+        <PageHeader icon="bell" title="Reminders" subtitle="All hearing, filing, evidence & compliance deadlines."
+          actions={<Button onClick={openAdd}><Icon name="plus" size={15} /> Add Reminder</Button>} />
+      ) : (
+        <div className="cl-header">
+          <div className="cl-header__left">
+            <div className="cl-header__icon"><Icon name="bell" size={22} /></div>
+            <div>
+              <div className="cl-header__title">Reminders</div>
+              <div className="cl-header__sub">All hearing, filing, evidence & compliance deadlines.</div>
+            </div>
+          </div>
+          <button className="cl-header__add" type="button" onClick={openAdd}>
+            <Icon name="plus" size={15} /> Add
+          </button>
+        </div>
+      )}
 
       <div className="stats-row">
         <div className="stat-card"><span className="stat-card__value">{stats.total}</span><span className="stat-card__label">Total</span></div>
