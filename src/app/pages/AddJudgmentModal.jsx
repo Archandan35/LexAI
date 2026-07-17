@@ -434,7 +434,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
   useEffect(() => {
     if (!open) return;
-    setForm(editing ? { ...INITIAL_FORM, ...editing } : INITIAL_FORM);
+    const merged = editing ? { ...INITIAL_FORM, ...editing } : { ...INITIAL_FORM };
+    if (!Array.isArray(merged.judges)) merged.judges = [];
+    setForm(merged);
     setTab('general');
     Promise.all([
       judgmentsRepository.getAll().catch(() => []),
