@@ -89,8 +89,17 @@ const INITIAL_FORM = {
   tags: [],
 };
 
+function flatValues(vals) {
+  if (!Array.isArray(vals)) return [];
+  return vals.flatMap((v) => {
+    if (typeof v !== 'string') return v;
+    try { const p = JSON.parse(v); if (Array.isArray(p)) return p; return v; } catch { return v; }
+  });
+}
+
 function TagInput({ label, values, onChange, placeholder, hint, onCrudClick }) {
   const [input, setInput] = useState('');
+  const chips = useMemo(() => flatValues(values), [values]);
   const add = () => {
     const v = input.trim();
     if (!v) return;
@@ -103,7 +112,7 @@ function TagInput({ label, values, onChange, placeholder, hint, onCrudClick }) {
       <label>{label}</label>
       <div className="ajm-select-crud-wrap">
         <div className="ajm-tag-input-wrap ajm-tag-input-wrap--grow">
-          {values.map((v, i) => (
+          {chips.map((v, i) => (
             <span key={i} className="ajm-tag">
               {v}
               <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
@@ -145,6 +154,8 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const wrapperRef = useRef(null);
+
+  const chips = useMemo(() => flatValues(values), [values]);
 
   const labelMap = useMemo(() => {
     const map = {};
@@ -202,7 +213,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
       <label>{label}</label>
       <div className="ajm-select-crud-wrap">
         <div className="ajm-tag-input-wrap ajm-tag-input-wrap--grow">
-          {values.map((v, i) => (
+          {chips.map((v, i) => (
             <span key={i} className="ajm-tag">
               {labelMap[v] || v}
               <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
