@@ -19,12 +19,10 @@ import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawReposito
 import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
 import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
-import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
 import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
 import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
 import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
 import { actLogic } from '@/logic/actLogic.js';
-import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
@@ -272,8 +270,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [typeOfProceedings, setTypeOfProceedings] = useState([]);
   const [natureOfDisputes, setNatureOfDisputes] = useState([]);
   const [allActs, setAllActs] = useState([]);
-  const [allProvisions, setAllProvisions] = useState([]);
-
   const [showCourtCrud, setShowCourtCrud] = useState(false);
   const [showBenchCrud, setShowBenchCrud] = useState(false);
   const [showJudgeCrud, setShowJudgeCrud] = useState(false);
@@ -287,8 +283,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [showTypeOfProceedingCrud, setShowTypeOfProceedingCrud] = useState(false);
   const [showNatureOfDisputeCrud, setShowNatureOfDisputeCrud] = useState(false);
   const [showActCrud, setShowActCrud] = useState(false);
-  const [showProvisionCrud, setShowProvisionCrud] = useState(false);
-
   const refreshAll = useMemo(() => ({
     courts: () => courtsRepository.getAll().then(setCourts).catch(() => {}),
     benchTypes: () => benchTypesRepository.getAll().then(setBenchTypes).catch(() => {}),
@@ -303,7 +297,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     typeOfProceedings: () => typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {}),
     natureOfDisputes: () => natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {}),
     allActs: () => actsRepository.getAll().then(setAllActs).catch(() => {}),
-    allProvisions: () => provisionsRepository.getAll().then(setAllProvisions).catch(() => {}),
   }), []);
 
   useEffect(() => {
@@ -325,8 +318,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       typeOfProceedingRepository.getAll().catch(() => []),
       natureOfDisputeRepository.getAll().catch(() => []),
       actsRepository.getAll().catch(() => []),
-      provisionsRepository.getAll().catch(() => []),
-    ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt, al, top, nod, act, prov]) => {
+    ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt, al, top, nod, act]) => {
       setExistingJudgments(j);
       setCourts(c);
       setBenchTypes(bt);
@@ -341,7 +333,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       setTypeOfProceedings(top);
       setNatureOfDisputes(nod);
       setAllActs(act);
-      setAllProvisions(prov);
     });
   }, [open]);
 
@@ -374,8 +365,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const typeOfProceedingOpts = useMemo(() => makeOpts(typeOfProceedings), [typeOfProceedings]);
   const natureOfDisputeOpts = useMemo(() => makeOpts(natureOfDisputes), [natureOfDisputes]);
   const actOpts = useMemo(() => (allActs || []).map((a) => ({ value: a.id, label: a.title || a.name })), [allActs]);
-  const provisionOpts = useMemo(() => makeOpts(allProvisions), [allProvisions]);
-
   const progressPercent = useMemo(() => {
     if (selectedTabIndex < 0) return 0;
     const totalSteps = PROGRESS_STEPS.length;
@@ -698,13 +687,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               />
             </div>
             <div className="ajm-grid ajm-grid-2">
-              <MultiSelectWithCrud
+              <TagInput
                 label="Provision(s)"
-                value={form.provisions || []}
+                values={form.provisions || []}
                 onChange={(v) => set('provisions', v)}
-                placeholder="Select provisions..."
-                options={provisionOpts}
-                onCrudClick={() => setShowProvisionCrud(true)}
+                placeholder="Type a provision and press Enter or use comma"
               />
               <TagInput
                 label="Legal Issue"
@@ -952,17 +939,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     defaults: { status: 'Active' },
   };
 
-  const provisionConfig = {
-    logic: provisionsLogic,
-    fields: [
-      { key: 'name', label: 'Provision Name', required: true, placeholder: 'e.g. Section 302' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. S302' },
-      { key: 'description', label: 'Description', type: 'description', full: true },
-      { key: 'status', label: 'Status', required: true },
-    ],
-    defaults: { status: 'Active' },
-  };
-
   return (
     <Modal
       open={open}
@@ -1052,7 +1028,6 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       <CrudManager open={showTypeOfProceedingCrud} onClose={() => { setShowTypeOfProceedingCrud(false); refreshAll.typeOfProceedings(); }} entity="Type of Proceeding" config={typeOfProceedingConfig} />
       <CrudManager open={showNatureOfDisputeCrud} onClose={() => { setShowNatureOfDisputeCrud(false); refreshAll.natureOfDisputes(); }} entity="Nature of Dispute" config={natureOfDisputeConfig} />
       <CrudManager open={showActCrud} onClose={() => { setShowActCrud(false); refreshAll.allActs(); }} entity="Act" config={actConfig} />
-      <CrudManager open={showProvisionCrud} onClose={() => { setShowProvisionCrud(false); refreshAll.allProvisions(); }} entity="Provision" config={provisionConfig} />
     </Modal>
   );
 }
