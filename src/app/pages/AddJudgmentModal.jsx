@@ -133,7 +133,7 @@ function TagInput({ label, values, onChange, placeholder, hint }) {
   );
 }
 
-function SearchableTagInput({ label, values = [], onChange, placeholder, options = [], hint }) {
+function SearchableTagInput({ label, values = [], onChange, placeholder, options = [], hint, onCrudClick }) {
   const [input, setInput] = useState('');
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
@@ -192,7 +192,14 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
 
   return (
     <div className="ajm-field" ref={wrapperRef}>
-      <label>{label}</label>
+      <label>
+        {label}
+        {onCrudClick && (
+          <button type="button" className="ajm-crud-btn ajm-crud-btn--inline" title={`Manage ${label}`} onClick={onCrudClick}>
+            <Icon name="gear" size={15} />
+          </button>
+        )}
+      </label>
       <div className="ajm-tag-input-wrap">
         {values.map((v, i) => (
           <span key={i} className="ajm-tag">
@@ -385,6 +392,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [typeOfProceedings, setTypeOfProceedings] = useState([]);
   const [natureOfDisputes, setNatureOfDisputes] = useState([]);
   const [allActs, setAllActs] = useState([]);
+  const [showActCrud, setShowActCrud] = useState(false);
   const [showCourtCrud, setShowCourtCrud] = useState(false);
   const [showBenchCrud, setShowBenchCrud] = useState(false);
   const [showJudgeCrud, setShowJudgeCrud] = useState(false);
@@ -797,6 +805,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 onChange={(v) => set('acts', v)}
                 placeholder="Type to search and select acts..."
                 options={actOpts}
+                onCrudClick={() => setShowActCrud(true)}
               />
             </div>
             <div className="ajm-grid ajm-grid-2">
@@ -1038,6 +1047,20 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     defaults: { status: 'Active' },
   };
 
+  const actConfig = {
+    logic: actLogic,
+    fields: [
+      { key: 'title', label: 'Act Title', required: true, placeholder: 'e.g. Indian Penal Code' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. IPC' },
+      { key: 'act_type', label: 'Act Type', placeholder: 'e.g. Central, State' },
+      { key: 'jurisdiction', label: 'Jurisdiction', placeholder: 'e.g. India' },
+      { key: 'year', label: 'Year', placeholder: 'e.g. 1860' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
   return (
     <Modal
       open={open}
@@ -1126,6 +1149,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       <CrudManager open={showAreaOfLawCrud} onClose={() => { setShowAreaOfLawCrud(false); refreshAll.areaOfLaws(); }} entity="Area of Law" config={areaOfLawConfig} />
       <CrudManager open={showTypeOfProceedingCrud} onClose={() => { setShowTypeOfProceedingCrud(false); refreshAll.typeOfProceedings(); }} entity="Type of Proceeding" config={typeOfProceedingConfig} />
       <CrudManager open={showNatureOfDisputeCrud} onClose={() => { setShowNatureOfDisputeCrud(false); refreshAll.natureOfDisputes(); }} entity="Nature of Dispute" config={natureOfDisputeConfig} />
+      <CrudManager open={showActCrud} onClose={() => { setShowActCrud(false); refreshAll.allActs(); }} entity="Acts Library" config={actConfig} />
     </Modal>
   );
 }
