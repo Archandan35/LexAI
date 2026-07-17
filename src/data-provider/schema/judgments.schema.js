@@ -49,6 +49,7 @@ export const JudgmentsSchema = {
     createdAt: 'datetime',
     updatedAt: 'datetime',
     keywords: 'array',
+    casesCited: 'array',
     acts: 'array',
     paragraphs: 'array',
     sourceUrl: 'string',
@@ -56,7 +57,7 @@ export const JudgmentsSchema = {
     pinned: 'boolean',
   },
   required: ['citation'],
-  defaults: { keywords: [], acts: [], paragraphs: [], provisions: [], legalIssue: [], tags: [], judges: [] },
+  defaults: { keywords: [], acts: [], paragraphs: [], provisions: [], legalIssue: [], tags: [], judges: [], casesCited: [] },
   relations: [],
   indexes: ['court', 'caseType', 'jurisdiction'],
 };

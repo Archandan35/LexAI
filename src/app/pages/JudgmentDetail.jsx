@@ -13,6 +13,9 @@ import { jurisdictionsRepository } from '@/data-layer/repositories/jurisdictions
 import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
 import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
 import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
+import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
+import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
+import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 
@@ -101,6 +104,9 @@ export default function JudgmentDetail() {
   const [caseStages, setCaseStages] = useState([]);
   const [partyTypes, setPartyTypes] = useState([]);
   const [caseStatuses, setCaseStatuses] = useState([]);
+  const [areaOfLaws, setAreaOfLaws] = useState([]);
+  const [typeOfProceedings, setTypeOfProceedings] = useState([]);
+  const [natureOfDisputes, setNatureOfDisputes] = useState([]);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -128,6 +134,9 @@ export default function JudgmentDetail() {
     caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
     partyTypesRepository.getAll().then(setPartyTypes).catch(() => {});
     caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {});
+    areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
+    typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
+    natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -157,8 +166,11 @@ export default function JudgmentDetail() {
       caseType: build(caseTypes), jurisdiction: build(jurisdictions),
       stage: build(caseStages), partyType: build(partyTypes),
       caseStatus: build(caseStatuses),
+      areaOfLaw: build(areaOfLaws),
+      typeOfProceeding: build(typeOfProceedings),
+      natureOfDispute: build(natureOfDisputes),
     };
-  }, [courts, benchTypes, judges, caseTypes, jurisdictions, caseStages, partyTypes, caseStatuses]);
+  }, [courts, benchTypes, judges, caseTypes, jurisdictions, caseStages, partyTypes, caseStatuses, areaOfLaws, typeOfProceedings, natureOfDisputes]);
 
   const resolve = (map, val) => (val ? (map[val] || val) : '');
   const toArr = (v) => {
@@ -167,6 +179,9 @@ export default function JudgmentDetail() {
     if (typeof v === 'string') { try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch {} return [v]; }
     return [];
   };
+  const areaOfLawLabel = (val) => resolve(nameMap.areaOfLaw, val);
+  const typeOfProceedingLabel = (val) => resolve(nameMap.typeOfProceeding, val);
+  const natureOfDisputeLabel = (val) => resolve(nameMap.natureOfDispute, val);
   const judgeLabel = (val) => {
     return toArr(val).map((v) => nameMap.judge[v?.trim()] || v?.trim() || v).join(', ');
   };
@@ -247,9 +262,9 @@ export default function JudgmentDetail() {
   const classification = useMemo(() => {
     if (!judgment) return [];
     const rows = [];
-    if (judgment.practiceArea) rows.push({ key: 'Area of Law', val: judgment.practiceArea });
-    if (judgment.typeOfProceeding) rows.push({ key: 'Type of Proceeding', val: judgment.typeOfProceeding });
-    if (judgment.natureOfDispute) rows.push({ key: 'Nature of Dispute', val: judgment.natureOfDispute });
+    if (judgment.practiceArea) rows.push({ key: 'Area of Law', val: areaOfLawLabel(judgment.practiceArea) });
+    if (judgment.typeOfProceeding) rows.push({ key: 'Type of Proceeding', val: typeOfProceedingLabel(judgment.typeOfProceeding) });
+    if (judgment.natureOfDispute) rows.push({ key: 'Nature of Dispute', val: natureOfDisputeLabel(judgment.natureOfDispute) });
     if (judgment.caseType) rows.push({ key: 'Case Type', val: caseTypeLabel(judgment.caseType) });
     if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
     if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
