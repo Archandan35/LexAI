@@ -162,7 +162,10 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     const res = await fetch(`${this._endpoint(collection)}?id=eq.${id}`, {
       method: 'PATCH', headers: this._headers(), body: JSON.stringify(patch),
     });
-    if (!res.ok) throw new Error(`Supabase update ${collection} ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Supabase update ${collection} ${res.status}${body ? `: ${body.slice(0, 300)}` : ''}`);
+    }
     const rows = await res.json();
     // Empty array = no row matched `id` (wrong id, or RLS blocked it) — the
     // update did NOT happen, even though the HTTP call itself was 200 OK.

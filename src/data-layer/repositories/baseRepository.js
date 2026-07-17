@@ -34,6 +34,21 @@ function normalizeArrays(entityName, record) {
   return out;
 }
 
+function denormalizeArrays(entityName, record) {
+  if (!record) return record;
+  const schema = getSchema(entityName);
+  if (!schema || !schema.fields) return record;
+  const out = { ...record };
+  for (const [field, type] of Object.entries(schema.fields)) {
+    if (!ARRAY_TYPES.has(type)) continue;
+    const val = out[field];
+    if (Array.isArray(val)) {
+      out[field] = JSON.stringify(val);
+    }
+  }
+  return out;
+}
+
 async function ensureCollectionExists(db, collection) {
   const providerName = EntityRegistry.providerTable(collection);
   const exists = await db.collectionExists(providerName).catch(() => false);
@@ -169,7 +184,8 @@ export function createRepository(collection) {
       if (!enriched.id) {
         enriched.id = await IDEngine.generate(entityName);
       }
-      const providerRecord = FieldMapper.toProvider(entityName, enriched);
+      const denormalized = denormalizeArrays(entityName, enriched);
+      const providerRecord = FieldMapper.toProvider(entityName, denormalized);
       const wasAutoId = !record.id;
       try {
         const result = await provider.create(providerName(), providerRecord);
@@ -181,7 +197,7 @@ export function createRepository(collection) {
         if (wasAutoId) {
           enriched.id = await IDEngine.generate(entityName);
         }
-        const retryRecord = FieldMapper.toProvider(entityName, enriched);
+        const retryRecord = FieldMapper.toProvider(entityName, denormalizeArrays(entityName, enriched));
         const result = await provider.create(providerName(), retryRecord);
         return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
       }
@@ -190,7 +206,8 @@ export function createRepository(collection) {
     async update(id, patch = {}) {
       const provider = p();
       const stamped = { ...patch, updatedAt: DateEngine.now() };
-      const providerPatch = FieldMapper.toProvider(entityName, stamped);
+      const denormalized = denormalizeArrays(entityName, stamped);
+      const providerPatch = FieldMapper.toProvider(entityName, denormalized);
       try {
         const result = await provider.update(providerName(), id, providerPatch);
         return normalizeArrays(entityName, FieldMapper.toLexAI(entityName, result));
@@ -228,7 +245,7 @@ export function createRepository(collection) {
         if (!r.id) r.id = await IDEngine.generate(entityName);
         return r;
       }));
-      const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, r));
+      const providerRecords = withIds.map((r) => FieldMapper.toProvider(entityName, denormalizeArrays(entityName, r)));
       try {
         const results = await provider.bulkCreate(providerName(), providerRecords);
         return (results || []).map((r) => normalizeArrays(entityName, FieldMapper.toLexAI(entityName, r)));
