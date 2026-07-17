@@ -250,12 +250,10 @@ export default function JudgmentDetail() {
     if (judgment.practiceArea) rows.push({ key: 'Area of Law', val: judgment.practiceArea });
     if (judgment.typeOfProceeding) rows.push({ key: 'Type of Proceeding', val: judgment.typeOfProceeding });
     if (judgment.natureOfDispute) rows.push({ key: 'Nature of Dispute', val: judgment.natureOfDispute });
-    if (judgment.category) rows.push({ key: 'Category', val: judgment.category });
-    if (judgment.caseType) rows.push({ key: 'Subject', val: caseTypeLabel(judgment.caseType) });
-    if (judgment.jurisdiction) rows.push({ key: 'Jurisdiction', val: jurisdictionLabel(judgment.jurisdiction) });
-    if (judgment.stage) rows.push({ key: 'Stage', val: stageLabel(judgment.stage) });
+    if (judgment.caseType) rows.push({ key: 'Case Type', val: caseTypeLabel(judgment.caseType) });
     if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
     if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
+    if (judgment.provisions?.length) rows.push({ key: 'Provision(s)', val: toArr(judgment.provisions).join(', ') });
     return rows;
   }, [judgment, nameMap]);
 
