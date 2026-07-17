@@ -591,6 +591,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
         );
 
       case 'headnote':
+        return (
+          <>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="book" size={15} /> Headnotes
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
