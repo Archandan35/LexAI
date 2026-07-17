@@ -88,6 +88,7 @@ const INITIAL_FORM = {
   keywords: [],
   tags: [],
   casesCited: [],
+  reviewStatus: '',
 };
 
 function flatValues(vals) {
@@ -545,7 +546,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       }
       return [];
     };
-    const merged = editing ? { ...INITIAL_FORM, ...editing } : { ...INITIAL_FORM };
+    const merged = editing ? { ...INITIAL_FORM, ...Object.fromEntries(Object.entries(editing).filter(([_, v]) => v != null)) } : { ...INITIAL_FORM };
     ['judges', 'acts', 'provisions', 'legalIssue', 'keywords', 'tags', 'casesCited'].forEach((k) => { merged[k] = toArr(merged[k]); });
     setForm(merged);
     setTab('general');
