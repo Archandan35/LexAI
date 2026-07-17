@@ -416,19 +416,36 @@ function parseToISO(str) {
 // the configured format, accepts typed input, and opens a native date picker
 // (single calendar icon) only when the calendar icon is clicked.
 function DateInput({ value, placeholder, onCommit }) {
+  const [text, setText] = useState(value ? DateEngine.formatDate(value) : '');
+  const [focused, setFocused] = useState(false);
   const hiddenRef = useRef(null);
   const openPicker = () => {
     const el = hiddenRef.current;
     if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
   };
+
+  useEffect(() => {
+    if (!focused) setText(value ? DateEngine.formatDate(value) : '');
+  }, [value, focused]);
+
+  const handleChange = (e) => {
+    const raw = e.target.value;
+    setText(raw);
+    if (!raw) { onCommit(''); return; }
+    const iso = parseToISO(raw);
+    if (iso) onCommit(iso);
+  };
+
   return (
     <div className="ajm-date-input">
       <input
         type="text"
         className="ajm-input ajm-date-field"
         placeholder={placeholder}
-        value={value ? DateEngine.formatDate(value) : ''}
-        onChange={(e) => onCommit(parseToISO(e.target.value))}
+        value={text}
+        onChange={handleChange}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
       <button
         type="button"
@@ -444,7 +461,7 @@ function DateInput({ value, placeholder, onCommit }) {
         type="date"
         className="ajm-date-native"
         value={value || ''}
-        onChange={(e) => onCommit(e.target.value)}
+        onChange={(e) => { onCommit(e.target.value); setText(DateEngine.formatDate(e.target.value)); }}
       />
     </div>
   );
