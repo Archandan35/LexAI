@@ -269,7 +269,7 @@ export default function JudgmentDetail() {
         main.style.height = '';
         return;
       }
-      main.style.height = side.getBoundingClientRect().height + 'px';
+      main.style.height = Math.floor(side.getBoundingClientRect().height) + 'px';
     };
 
     sync();
@@ -277,7 +277,7 @@ export default function JudgmentDetail() {
     const ro = new ResizeObserver(([entry]) => {
       if (window.innerWidth <= 1024) return;
       const h = entry.contentBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
-      main.style.height = h + 'px';
+      main.style.height = Math.floor(h) + 'px';
     });
 
     ro.observe(side);
@@ -439,7 +439,9 @@ export default function JudgmentDetail() {
             {tab === 'legalPrinciples' && (
               <div className="jd-panel-section">
                 <h3 className="jd-panel-title">Legal Principle</h3>
-                <div className="jd-prose">{summary || 'No legal principles recorded for this judgment.'}</div>
+                {summary
+                  ? <div className="jd-prose" dangerouslySetInnerHTML={{ __html: summary }} />
+                  : <div className="jd-prose">No legal principles recorded for this judgment.</div>}
                 <h3 className="jd-panel-title jd-panel-title--mt">Ratio Decidendi</h3>
                 <div className="jd-prose">{judgment.ratioDecidendi || 'Not specified.'}</div>
                 <h3 className="jd-panel-title jd-panel-title--mt">Key Findings</h3>

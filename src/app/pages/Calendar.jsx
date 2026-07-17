@@ -810,7 +810,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     {t.updatedAt && (
                       <div className="task-card__updated">
                         <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
-                        Last Updated: {new Date(t.updatedAt).toLocaleString()}
+                        Last Updated: {formatDateTime(t.updatedAt)}
                       </div>
                     )}
 
