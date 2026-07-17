@@ -22387,6 +22387,11 @@ kbd.cmd__kbd {
   align-items: stretch;
 }
 
+.jd-main-col {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Tabs */
 .jd-tabs {
   display: flex;
@@ -22432,8 +22437,8 @@ kbd.cmd__kbd {
   border: 1px solid var(--border);
   border-top: none;
   padding: 22px 26px;
-  min-height: 200px;
-  max-height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -22451,6 +22456,7 @@ kbd.cmd__kbd {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  height: 100%;
 }
 
 .jd-prose-card {
@@ -22458,6 +22464,9 @@ kbd.cmd__kbd {
   border-radius: var(--radius-sm);
   padding: 18px 20px;
   background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .jd-prose-card .jd-panel-title {
@@ -22480,6 +22489,7 @@ kbd.cmd__kbd {
   line-height: 1.7;
   color: var(--text);
   white-space: pre-wrap;
+  flex: 1;
 }
 
 .jd-empty-text {
