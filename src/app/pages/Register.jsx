@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
@@ -9,6 +9,13 @@ import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import PasswordInput from '@/components/PasswordInput.jsx';
 import { Field, Input } from '@/components/Field.jsx';
+
+function roleAccessSummary(role) {
+  if (role.all) return 'Full access — all modules and settings';
+  const perms = role.permissions || [];
+  if (!perms.length) return 'No access assigned';
+  return `${perms.length} permission${perms.length === 1 ? '' : 's'}`;
+}
 
 export default function Register() {
   const { settings } = useSettings();
@@ -21,6 +28,10 @@ export default function Register() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const [roles, setRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState('');
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   if (isAuthenticated) return <Navigate to="/" replace />;
 
@@ -46,6 +57,32 @@ export default function Register() {
     );
   }
 
+  // Load available roles (with their access) so the user can see what each
+  // role grants before choosing. The Admin role is seeded on first install;
+  // if none exist yet, the first account auto-provisions the Admin role.
+  useEffect(() => {
+    (async () => {
+      try {
+        const configured = settingsCache.get('defaultRole') || 'Admin';
+        const res = await roleService.list();
+        const list = Array.isArray(res) ? res : (res && res.data) || [];
+        const codes = list.map((r) => r.code || r.name).filter(Boolean);
+        const effective = codes.length ? list : [{ code: 'Admin', name: 'Administrator', all: true, permissions: [], description: 'Full system access (auto-created on first install)' }];
+        setRoles(effective);
+        const initial = effective.some((r) => r.code === configured)
+          ? configured
+          : (effective[0]?.code || 'Admin');
+        setSelectedRole(initial);
+      } catch (_) {
+        const fallback = [{ code: 'Admin', name: 'Administrator', all: true, permissions: [], description: 'Full system access (auto-created on first install)' }];
+        setRoles(fallback);
+        setSelectedRole('Admin');
+      } finally {
+        setLoadingRoles(false);
+      }
+    })();
+  }, []);
+
   const submit = async (e) => {
     e.preventDefault();
     setError('');
@@ -58,23 +95,11 @@ export default function Register() {
 
     setBusy(true);
 
-    const configuredRole = settingsCache.get('defaultRole') || 'Admin';
-    // The Admin role is seeded on first install. If the configured default role
-    // has not been created yet in Role Management, fall back to Admin so public
-    // registration never fails with "Role does not exist".
-    let defaultRole = configuredRole;
-    try {
-      const rolesRes = await roleService.list();
-      const exists = (rolesRes || []).some((r) => r.code === configuredRole);
-      if (!exists) defaultRole = 'Admin';
-    } catch (_) {
-      defaultRole = 'Admin';
-    }
     const res = await userLogic.create({
       name: name.trim(),
       email: email.trim(),
       password,
-      roleCode: defaultRole,
+      roleCode: selectedRole || settingsCache.get('defaultRole') || 'Admin',
     }, null);
 
     setBusy(false);
@@ -125,6 +150,36 @@ export default function Register() {
           <Field label="Confirm Password">
             <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" required />
           </Field>
+
+          <Field label="Select Role">
+            {loadingRoles ? (
+              <div className="auth-role-loading">Loading available roles…</div>
+            ) : (
+              <div className="auth-role-list">
+                {roles.map((r) => {
+                  const code = r.code || r.name;
+                  const active = selectedRole === code;
+                  return (
+                    <button
+                      type="button"
+                      key={code}
+                      className={`auth-role ${active ? 'auth-role--active' : ''}`}
+                      onClick={() => setSelectedRole(code)}
+                    >
+                      <span className="auth-role__check">{active && <Icon name="check" size={12} />}</span>
+                      <span className="auth-role__body">
+                        <span className="auth-role__name">{r.name || code}</span>
+                        <span className="auth-role__access">{roleAccessSummary(r)}</span>
+                        {r.description && <span className="auth-role__desc">{r.description}</span>}
+                      </span>
+                      {r.all && <span className="auth-role__badge">Full Access</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </Field>
+
           <Button type="submit" variant="primary" className="btn--block" loading={busy} icon="shield">Create Account</Button>
         </form>
 
@@ -136,4 +191,3 @@ export default function Register() {
     </div>
   );
 }
-

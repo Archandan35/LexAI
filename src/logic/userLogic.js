@@ -45,7 +45,31 @@ export const userLogic = {
 
       const allRoles = await roleService.list();
       const roleExists = allRoles.some((r) => r.code === roleCode);
-      if (!roleExists) return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
+      // First-account bootstrap: if no users exist yet and the requested role is
+      // missing, auto-provision it with FULL access so the very first signup
+      // (the administrator) always succeeds. Subsequent accounts must use a role
+      // that already exists in Role Management.
+      if (!roleExists) {
+        const { ok: usersOk, data: existingUsers } = await userService.list().then((u) => ({ ok: true, data: u })).catch(() => ({ ok: false, data: [] }));
+        const userCount = usersOk ? (existingUsers || []).length : 0;
+        if (userCount === 0) {
+          const created = await roleService.create({
+            id: 'role_admin',
+            code: roleCode,
+            name: data.roleName || roleCode,
+            description: 'Administrator with full system access (auto-provisioned on first install)',
+            permissions: [],
+            all: true,
+            inheritsHierarchy: true,
+            system: true,
+            status: 'Active',
+            createdAt: nowISO(),
+          });
+          if (!created) return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
+        } else {
+          return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);
+        }
+      }
 
       let userId = undefined;
       try {
