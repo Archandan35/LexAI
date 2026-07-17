@@ -5,7 +5,7 @@ export default function ActLibrary() {
   return (
     <LibraryPage
       title="Acts Library"
-      icon="book"
+      icon="boo"
       logic={actLogic}
       searchFields={['title']}
       searchPlaceholder="Search acts..."
