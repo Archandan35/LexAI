@@ -18,6 +18,24 @@ Runs fully offline with the bundled **mock AI**, **local DB** (localStorage, see
 
 ---
 
+## Production deployment with Supabase
+
+For production deployments, you'll need to run the SQL migration:
+
+```bash
+# 1. Copy scripts/install-supabase.sql to your local machine
+# 2. Log into your Supabase dashboard and go to SQL Editor
+# 3. Run the entire script (lines 1-1240) to create all tables and functions
+```
+
+**OR** if you set VITE_SUPABASE_SERVICE_ROLE_KEY in your .env, the app will attempt to auto-bootstrap.
+
+**Critical Issue:** The `exec_sql` function is required for the application to interact with Supabase tables. Without it, endpoints like `/schema_meta`, `/roles`, `/settings`, etc. return 404 errors.
+
+The tables listed in your error logs (`schema_meta`, `roles`, `settings`, `cases`, etc.) only get created when you run the SQL installation script.
+
+---
+
 ## Architecture — strict clean layering
 
 ```

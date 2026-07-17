@@ -598,6 +598,14 @@ alter table "roles" add column if not exists "updated_at" timestamptz;
 create index if not exists idx_roles_code on "roles" ("code");
 create index if not exists idx_roles_status on "roles" ("status");
 
+-- Insert default admin role required by LexAI (first-install bootstrap only).
+-- The admin account created during installation gets this role. Additional
+-- roles (client, manager, user, etc.) can be created later by the admin from
+-- within the app's Role Management UI.
+insert into "roles" ("id", "code", "name", "description", "permissions", "all", "inherits_hierarchy", "system", "status", "created_at", "updated_at") values
+(gen_random_uuid()::text, 'admin', 'Admin', 'Administrator with full system access', '{}', true, true, true, 'active', now(), now())
+on conflict ("code") do nothing;
+
 create table if not exists "permissions" (
   "id" text primary key,
   "code" text,

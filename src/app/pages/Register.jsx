@@ -3,6 +3,7 @@ import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useSettings } from '@/data-layer/SettingsContext.jsx';
 import { userLogic } from '@/logic/userLogic.js';
+import { roleService } from '@/services/roleService.js';
 import { settingsCache } from '@/core/settingsCache.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
@@ -57,7 +58,18 @@ export default function Register() {
 
     setBusy(true);
 
-    const defaultRole = settingsCache.get('defaultRole') || 'Client';
+    const configuredRole = settingsCache.get('defaultRole') || 'Admin';
+    // The Admin role is seeded on first install. If the configured default role
+    // has not been created yet in Role Management, fall back to Admin so public
+    // registration never fails with "Role does not exist".
+    let defaultRole = configuredRole;
+    try {
+      const rolesRes = await roleService.list();
+      const exists = (rolesRes || []).some((r) => r.code === configuredRole);
+      if (!exists) defaultRole = 'Admin';
+    } catch (_) {
+      defaultRole = 'Admin';
+    }
     const res = await userLogic.create({
       name: name.trim(),
       email: email.trim(),
