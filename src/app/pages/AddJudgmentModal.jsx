@@ -116,6 +116,14 @@ function TagInput({ label, values, onChange, placeholder, hint }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } }}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData('text');
+              const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
+              if (lines.length > 1) {
+                e.preventDefault();
+                onChange([...values, ...lines]);
+              }
+            }}
           />
           <button type="button" className="ajm-tag-add-btn" onClick={add}><Icon name="plus" size={14} /></button>
         </div>
