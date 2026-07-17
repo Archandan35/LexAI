@@ -139,6 +139,12 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const wrapperRef = useRef(null);
 
+  const labelMap = useMemo(() => {
+    const map = {};
+    options.forEach((o) => { map[o.value] = o.label; });
+    return map;
+  }, [options]);
+
   const filtered = useMemo(() => {
     if (!input.trim()) return options.filter((o) => !values.includes(o.value));
     const q = input.toLowerCase();
@@ -190,7 +196,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
       <div className="ajm-tag-input-wrap">
         {values.map((v, i) => (
           <span key={i} className="ajm-tag">
-            {v}
+            {labelMap[v] || v}
             <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
           </span>
         ))}
