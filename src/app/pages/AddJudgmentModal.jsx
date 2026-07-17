@@ -424,15 +424,10 @@ function DateInput({ value, placeholder, onCommit }) {
     if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
   };
 
-  const displayDate = (iso) => {
-    if (!iso) return '';
-    const parts = iso.split('-');
-    if (parts.length !== 3) return iso;
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  };
+  const fmt = (v) => v ? DateEngine.formatDate(v) : '';
 
   useEffect(() => {
-    if (!focused) setText(displayDate(value));
+    if (!focused) setText(fmt(value));
   }, [value, focused]);
 
   const handleChange = (e) => {
@@ -468,7 +463,7 @@ function DateInput({ value, placeholder, onCommit }) {
         type="date"
         className="ajm-date-native"
         value={value || ''}
-        onChange={(e) => { onCommit(e.target.value); setText(displayDate(e.target.value)); }}
+        onChange={(e) => { onCommit(e.target.value); setText(fmt(e.target.value)); }}
       />
     </div>
   );
