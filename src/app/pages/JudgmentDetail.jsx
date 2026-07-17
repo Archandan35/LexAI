@@ -269,6 +269,7 @@ export default function JudgmentDetail() {
     if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
     if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
     if (judgment.provisions?.length) rows.push({ key: 'Provision(s)', val: toArr(judgment.provisions).join(', ') });
+    if (judgment.casesCited?.length) rows.push({ key: 'Cases Cited', val: toArr(judgment.casesCited).join(', ') });
     return rows;
   }, [judgment, nameMap]);
 

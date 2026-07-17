@@ -639,6 +639,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       if (!Array.isArray(entry.provisions)) entry.provisions = [];
       if (!Array.isArray(entry.legalIssue)) entry.legalIssue = [];
       if (!Array.isArray(entry.tags)) entry.tags = [];
+      if (!Array.isArray(entry.casesCited)) entry.casesCited = [];
       let result;
       if (editing && editing.id) {
         result = await judgmentsRepository.update(editing.id, entry);
