@@ -208,7 +208,7 @@ function SearchableTagInput({ label, values = [], onChange, placeholder, options
             value={input}
             onChange={(e) => { setInput(e.target.value); setOpen(true); setFocusedIdx(-1); }}
             onKeyDown={handleKey}
-            onFocus={() => input.trim() && setOpen(true)}
+            onFocus={() => setOpen(true)}
             onPaste={(e) => {
               const pasted = e.clipboardData.getData('text');
               const lines = pasted.split('\n').map((s) => s.trim()).filter(Boolean);
