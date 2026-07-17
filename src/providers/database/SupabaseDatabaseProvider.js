@@ -187,6 +187,36 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
   // If the RPC is not available (405), tries to bootstrap the function using the
   // service role key via /pg/v1/sql, then retries via RPC.
   async execSql(sql) {
+    // Try RPC first
+    const rpcResult = await this._execSqlViaRpc(sql);
+    if (rpcResult.ok) return rpcResult;
+    // RPC failed — fall back to service-key SQL endpoint
+    const h = this._serviceHeaders();
+    if (!h) return rpcResult;
+    try {
+      const res = await fetch(`${this.url}/pg/v1/sql`, {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ query: sql }),
+      });
+      if (res.ok) {
+        const body = await res.text().catch(() => '');
+        if (!body) return { ok: true, raw: true };
+        try {
+          const data = JSON.parse(body);
+          return { ok: true, data: Array.isArray(data) ? data : [data], raw: true };
+        } catch {
+          return { ok: true, raw: true };
+        }
+      }
+      const body = await res.text().catch(() => '');
+      return { ok: false, error: body.slice(0, 300) };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async _execSqlViaRpc(sql) {
     try {
       const res = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
         method: 'POST',
@@ -207,28 +237,7 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
       if (res.status === 405 && !this._bootstrapped) {
         const booted = await this._tryBootstrapExecSql();
         if (booted) {
-          // After bootstrap the RPC is still invisible to PostgREST until its
-          // schema cache is refreshed. Use the service-key SQL endpoint directly.
-          const h = this._serviceHeaders();
-          if (h) {
-            const retry = await fetch(`${this.url}/pg/v1/sql`, {
-              method: 'POST',
-              headers: h,
-              body: JSON.stringify({ query: sql }),
-            });
-            if (retry.ok) {
-              const body = await retry.text().catch(() => '');
-              if (!body) return { ok: true, raw: true };
-              try {
-                const data = JSON.parse(body);
-                return { ok: true, data: Array.isArray(data) ? data : [data], raw: true };
-              } catch {
-                return { ok: true, raw: true };
-              }
-            }
-            return { ok: false, error: await retry.text().catch(() => 'Retry failed') };
-          }
-          // Fallback: try the RPC anyway (won't work until cache refreshes)
+          // Retry via RPC — function now exists but cache might be stale
           const retry = await fetch(`${this.url}/rest/v1/rpc/exec_sql`, {
             method: 'POST',
             headers: { ...this._headers(), 'Content-Type': 'application/json' },
@@ -244,7 +253,7 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
               return { ok: true };
             }
           }
-          return { ok: false, error: await retry.text().catch(() => 'Retry failed') };
+          // Bootstrap worked but RPC still fails — caller will fall back to /pg/v1/sql
         }
       }
       return { ok: false, needsManual: res.status === 405, error: await res.text().catch(() => 'Unknown error') };

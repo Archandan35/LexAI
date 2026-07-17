@@ -440,12 +440,7 @@ function DateInput({ value, placeholder, onCommit }) {
     if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
   };
 
-  const fmt = (v) => {
-    if (!v) return '';
-    const p = v.split('T')[0].split('-');
-    if (p.length !== 3) return DateEngine.formatDate(v);
-    return `${p[2]}/${p[1]}/${p[0]}`;
-  };
+  const fmt = (v) => v ? DateEngine.formatDate(v) : '';
 
   useEffect(() => {
     if (!focused) setText(fmt(value));
@@ -483,7 +478,7 @@ function DateInput({ value, placeholder, onCommit }) {
         ref={hiddenRef}
         type="date"
         className="ajm-date-native"
-        value={value || ''}
+        value={DateEngine.toInputDate(value)}
         onChange={(e) => { onCommit(e.target.value); setText(fmt(e.target.value)); }}
       />
     </div>
