@@ -52,7 +52,7 @@ export const udbEngine = {
   // Produce a complete .udb object from the live database.
   async build() {
     const provider = getDatabaseProvider();
-    const all = await provider.snapshot(DATA_COLLECTIONS); // { name: rows[] }
+    const all = await provider.snapshot(DATA_COLLECTIONS, null); // full export: no row cap
 
     const data = {};
     DATA_COLLECTIONS.forEach((n) => { if (!SECTIONED[n]) data[n] = all[n] || []; });

@@ -28,7 +28,7 @@ export const databaseHealthEngine = {
         continue;
       }
       // eslint-disable-next-line no-await-in-loop
-      rowsByCollection[s.collection] = await provider.list(s.collection, {}).catch(() => []);
+      rowsByCollection[s.collection] = await provider.list(s.collection, { limit: SAMPLE }).catch(() => []);
     }
 
     // 2) field checks — required fields absent on sampled rows; schema fields

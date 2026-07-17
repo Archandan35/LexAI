@@ -52,11 +52,15 @@ export default class SupabaseAuthProvider extends AuthProvider {
       headers: this.#headers(),
       body: JSON.stringify({ email, password }),
     });
+    const contentType = res.headers.get('content-type') || '';
     if (!res.ok) {
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Auth signup failed (${res.status}). The Supabase Auth endpoint returned a non-JSON response — check that VITE_SUPABASE_URL is correct and CORS allows this origin in Supabase Dashboard → API → CORS.`);
+      }
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.msg || err?.error_description || err?.error || `Signup failed: ${res.status}`);
     }
-    const data = await res.json();
+    const data = contentType.includes('application/json') ? await res.json() : {};
     return data.user;
   }
 
@@ -64,11 +68,15 @@ export default class SupabaseAuthProvider extends AuthProvider {
     const res = await fetch(`${this.#authBase()}/token?grant_type=password`, {
       method: 'POST', headers: this.#headers(), body: JSON.stringify({ email: identifier, password }),
     });
+    const contentType = res.headers.get('content-type') || '';
     if (!res.ok) {
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Auth sign-in failed (${res.status}). The Supabase Auth endpoint returned a non-JSON response — check that VITE_SUPABASE_URL is correct and CORS allows this origin in Supabase Dashboard → API → CORS.`);
+      }
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error_description || err?.error || 'Invalid credentials.');
     }
-    const data = await res.json();
+    const data = contentType.includes('application/json') ? await res.json() : {};
     const userId = data.user?.id;
     if (!userId) throw new Error('No user ID returned from auth provider.');
 

@@ -138,10 +138,13 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     return `${this.url}/rest/v1/${collection}`;
   }
 
-  async list(collection, query = {}) {
+  async   list(collection, query = {}) {
     const params = new URLSearchParams();
+    const PASSTHROUGH = new Set(['limit', 'offset', 'order', 'select', 'or']);
     Object.entries(query).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') params.set(k, `eq.${v}`);
+      if (v === undefined || v === null || v === '') return;
+      if (PASSTHROUGH.has(k)) { params.set(k, String(v)); return; }
+      params.set(k, `eq.${v}`);
     });
     const res = await fetch(`${this._endpoint(collection)}?${params.toString()}`, { headers: this._headers() });
     if (!res.ok) throw new Error(`Supabase list ${collection} ${res.status}`);

@@ -38,7 +38,7 @@ export const databaseManagerLogic = {
         databaseAdminService.validateSchema().catch(() => ({ valid: false, present: [], missing: [] })),
         databaseAdminService.getMeta().catch(() => null),
         databaseAdminService.getVersion().catch(() => 0),
-        databaseAdminService.snapshot(known).catch(() => ({})),
+        databaseAdminService.snapshot(known, 200).catch(() => ({})),
         databaseHealthService.scan().catch(() => null),
       ]);
       const counts = {};
@@ -163,7 +163,7 @@ export const databaseManagerLogic = {
   // ---- import / export (.udb) ----
   async exportDatabase(user) {
     try {
-      const udb = await databaseAdminService.exportUdb();
+      const udb = await databaseAdminService.exportUdb(null);
       downloadFile(udbFileName(), JSON.stringify(udb, null, 2), 'application/octet-stream');
       await audit('db.export', user, 'Exported .udb');
       return ok(true);

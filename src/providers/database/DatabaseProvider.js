@@ -89,11 +89,16 @@ export default class DatabaseProvider {
 
   // ---- Snapshot / restore (for backup + .udb, provider-agnostic) ----------
   // Read every given collection into a plain object { name: rows[] }.
-  async snapshot(collections = []) {
+  // `limit` caps rows per collection to bound payload size (egress). A backup/
+  // export path passes null to fetch everything; dashboard previews pass a small
+  // number. Default is bounded to avoid pulling entire tables on every call.
+  async snapshot(collections = [], limit = 1000) {
     const out = {};
     for (const name of collections) {
       // eslint-disable-next-line no-await-in-loop
-      try { out[name] = await this.list(name, {}); } catch { out[name] = []; }
+      try {
+        out[name] = limit == null ? await this.list(name, {}) : await this.list(name, { limit });
+      } catch { out[name] = []; }
     }
     return out;
   }
