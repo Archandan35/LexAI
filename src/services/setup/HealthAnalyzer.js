@@ -12,7 +12,8 @@ export const HealthAnalyzer = {
       'courts', 'case_types', 'case_stages', 'judgments', 'cause_list_templates',
       'bench_types', 'jurisdictions', 'clients', 'contacts', 'acts', 'prompts', 'templates',
       'legal_notices', 'precedents', 'reports', 'party_types', 'case_statuses', 'priorities',
-      'hearing_statuses', 'contact_types', 'judges', 'reminder_types', 'folder_templates', 'draft_types'];
+      'hearing_statuses', 'contact_types', 'judges', 'reminder_types', 'folder_templates', 'draft_types', 'area_of_law',
+      'type_of_proceeding', 'nature_of_dispute', 'provisions'];
     return rlTables.filter(t => present.includes(t)).length;
   },
 
@@ -36,7 +37,8 @@ export const HealthAnalyzer = {
        'cause_list_templates', 'bench_types', 'jurisdictions', 'clients', 'contacts', 'acts',
        'prompts', 'templates', 'legal_notices', 'precedents', 'reports', 'party_types',
        'case_statuses', 'priorities', 'hearing_statuses', 'contact_types', 'judges',
-       'reminder_types', 'folder_templates', 'draft_types'].includes(t)
+       'reminder_types', 'folder_templates', 'draft_types', 'area_of_law',
+       'type_of_proceeding', 'nature_of_dispute', 'provisions'].includes(t)
     ).length;
     const performanceScore = total > 0 ? Math.round((idxTables / Math.max(total, 1)) * 100) : 80;
 

@@ -15,6 +15,16 @@ import { caseStagesRepository } from '@/data-layer/repositories/caseStagesReposi
 import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
 import { prioritiesRepository } from '@/data-layer/repositories/prioritiesRepository.js';
 import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
+import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
+import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
+import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
+import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
+import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
+import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
+import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
+import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
+import { actLogic } from '@/logic/actLogic.js';
+import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
@@ -28,29 +38,31 @@ import { DateEngine } from '@/core/DateEngine.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
+  { key: 'citation', label: 'Citation', icon: 'link' },
   { key: 'headnote', label: 'Headnote', icon: 'book' },
   { key: 'judgement', label: 'Judgement', icon: 'edit' },
-  { key: 'classification', label: 'Legal Classification', icon: 'tag' },
-  { key: 'references', label: 'Legal References', icon: 'list' },
+  { key: 'classification', label: 'Legal References', icon: 'tag' },
+
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
   { key: 'applicability', label: 'Applicability', icon: 'star' },
-  { key: 'authority', label: 'Authority & Type', icon: 'shield' },
+
   { key: 'documents', label: 'Documents', icon: 'file' },
   { key: 'notes', label: 'Notes & Links', icon: 'edit' },
   { key: 'review', label: 'Review', icon: 'check-circle' },
 ];
 
 const PROGRESS_STEPS = [
-  'General Information', 'Headnote', 'Judgement',
-  'Legal Classification', 'Legal References', 'Legal Principle',
-  'Applicability', 'Authority & Type', 'Documents',
+  'General Information', 'Citation', 'Headnote', 'Judgement',
+  'Legal References', 'Legal Principle',
+  'Applicability', 'Documents',
   'Notes & Links', 'Review',
 ];
 
 const INITIAL_FORM = {
   plaintiff: '',
   defendant: '',
-  subjectMatter: '',
+  typeOfProceeding: '',
+  natureOfDispute: '',
   act: '',
   plaintiffType: '',
   defendantType: '',
@@ -73,7 +85,83 @@ const INITIAL_FORM = {
   source: '',
   headnotes: '',
   summary: '',
+  practiceArea: '',
+  acts: [],
+  provisions: [],
+  legalIssue: [],
+  keywords: [],
+  tags: [],
 };
+
+function TagInput({ label, values, onChange, placeholder, hint }) {
+  const [input, setInput] = useState('');
+  const add = () => {
+    const v = input.trim();
+    if (!v) return;
+    onChange([...values, v]);
+    setInput('');
+  };
+  const remove = (idx) => onChange(values.filter((_, i) => i !== idx));
+  return (
+    <div className="ajm-field">
+      <label>{label}</label>
+      <div className="ajm-tag-input-wrap">
+        {values.map((v, i) => (
+          <span key={i} className="ajm-tag">
+            {v}
+            <button type="button" className="ajm-tag-remove" onClick={() => remove(i)}>&times;</button>
+          </span>
+        ))}
+        <div className="ajm-tag-input-row">
+          <input
+            className="ajm-input ajm-tag-input"
+            type="text"
+            placeholder={placeholder}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } }}
+          />
+          <button type="button" className="ajm-tag-add-btn" onClick={add}><Icon name="plus" size={14} /></button>
+        </div>
+      </div>
+      {hint && <div className="ajm-field-hint">{hint}</div>}
+    </div>
+  );
+}
+
+function MultiSelectWithCrud({ label, required, value = [], onChange, placeholder, options, onCrudClick }) {
+  const handleChange = (e) => {
+    const selected = Array.from(e.target.options).filter((o) => o.selected).map((o) => o.value);
+    onChange(selected);
+  };
+  return (
+    <div className="ajm-field">
+      <label>
+        {label}
+        {required && <span className="ajm-req">*</span>}
+      </label>
+      <div className="ajm-select-crud-wrap">
+        <div className="ajm-select-wrap ajm-select-wrap--grow">
+          <select className="ajm-select ajm-select--multi" multiple value={value} onChange={handleChange}>
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <span className="ajm-select-chevron"><Icon name="chevronDown" size={14} /></span>
+        </div>
+        <button
+          type="button"
+          className="ajm-crud-btn"
+          title={`Manage ${label}`}
+          onClick={onCrudClick}
+        >
+          <Icon name="gear" size={15} />
+        </button>
+      </div>
+      {value.length > 0 && <div className="ajm-multi-count">{value.length} selected</div>}
+    </div>
+  );
+}
 
 function SelectWithCrud({ label, required, value, onChange, placeholder, options, onCrudClick }) {
   return (
@@ -182,6 +270,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [caseStatuses, setCaseStatuses] = useState([]);
   const [priorities, setPriorities] = useState([]);
   const [partyTypes, setPartyTypes] = useState([]);
+  const [areaOfLaws, setAreaOfLaws] = useState([]);
+  const [typeOfProceedings, setTypeOfProceedings] = useState([]);
+  const [natureOfDisputes, setNatureOfDisputes] = useState([]);
+  const [allActs, setAllActs] = useState([]);
+  const [allProvisions, setAllProvisions] = useState([]);
 
   const [showCourtCrud, setShowCourtCrud] = useState(false);
   const [showBenchCrud, setShowBenchCrud] = useState(false);
@@ -192,6 +285,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [showCaseStatusCrud, setShowCaseStatusCrud] = useState(false);
   const [showPriorityCrud, setShowPriorityCrud] = useState(false);
   const [showPartyTypeCrud, setShowPartyTypeCrud] = useState(false);
+  const [showAreaOfLawCrud, setShowAreaOfLawCrud] = useState(false);
+  const [showTypeOfProceedingCrud, setShowTypeOfProceedingCrud] = useState(false);
+  const [showNatureOfDisputeCrud, setShowNatureOfDisputeCrud] = useState(false);
+  const [showActCrud, setShowActCrud] = useState(false);
+  const [showProvisionCrud, setShowProvisionCrud] = useState(false);
 
   const refreshAll = useMemo(() => ({
     courts: () => courtsRepository.getAll().then(setCourts).catch(() => {}),
@@ -203,6 +301,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     caseStatuses: () => caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {}),
     priorities: () => prioritiesRepository.getAll().then(setPriorities).catch(() => {}),
     partyTypes: () => partyTypesRepository.getAll().then(setPartyTypes).catch(() => {}),
+    areaOfLaws: () => areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {}),
+    typeOfProceedings: () => typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {}),
+    natureOfDisputes: () => natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {}),
+    allActs: () => actsRepository.getAll().then(setAllActs).catch(() => {}),
+    allProvisions: () => provisionsRepository.getAll().then(setAllProvisions).catch(() => {}),
   }), []);
 
   useEffect(() => {
@@ -220,7 +323,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       caseStatusesRepository.getAll().catch(() => []),
       prioritiesRepository.getAll().catch(() => []),
       partyTypesRepository.getAll().catch(() => []),
-    ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt]) => {
+      areaOfLawRepository.getAll().catch(() => []),
+      typeOfProceedingRepository.getAll().catch(() => []),
+      natureOfDisputeRepository.getAll().catch(() => []),
+      actsRepository.getAll().catch(() => []),
+      provisionsRepository.getAll().catch(() => []),
+    ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt, al, top, nod, act, prov]) => {
       setExistingJudgments(j);
       setCourts(c);
       setBenchTypes(bt);
@@ -231,6 +339,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       setCaseStatuses(cst);
       setPriorities(pr);
       setPartyTypes(pt);
+      setAreaOfLaws(al);
+      setTypeOfProceedings(top);
+      setNatureOfDisputes(nod);
+      setAllActs(act);
+      setAllProvisions(prov);
     });
   }, [open]);
 
@@ -259,6 +372,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const caseStatusOpts = useMemo(() => makeOpts(caseStatuses), [caseStatuses]);
   const priorityOpts = useMemo(() => makeOpts(priorities), [priorities]);
   const partyTypeOpts = useMemo(() => makeOpts(partyTypes), [partyTypes]);
+  const areaOfLawOpts = useMemo(() => makeOpts(areaOfLaws), [areaOfLaws]);
+  const typeOfProceedingOpts = useMemo(() => makeOpts(typeOfProceedings), [typeOfProceedings]);
+  const natureOfDisputeOpts = useMemo(() => makeOpts(natureOfDisputes), [natureOfDisputes]);
+  const actOpts = useMemo(() => (allActs || []).map((a) => ({ value: a.id, label: a.title || a.name })), [allActs]);
+  const provisionOpts = useMemo(() => makeOpts(allProvisions), [allProvisions]);
 
   const progressPercent = useMemo(() => {
     if (selectedTabIndex < 0) return 0;
@@ -280,10 +398,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
         date: cleaned.judgmentDate || null,
         status: draft ? 'Draft' : 'Active',
         updatedAt: new Date().toISOString(),
-        keywords: [],
-        acts: [],
         paragraphs: [],
       };
+      if (!Array.isArray(entry.keywords)) entry.keywords = [];
+      if (!Array.isArray(entry.acts)) entry.acts = [];
+      if (!Array.isArray(entry.provisions)) entry.provisions = [];
+      if (!Array.isArray(entry.legalIssue)) entry.legalIssue = [];
+      if (!Array.isArray(entry.tags)) entry.tags = [];
       let result;
       if (editing && editing.id) {
         result = await judgmentsRepository.update(editing.id, entry);
@@ -381,6 +502,26 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
 
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
+                <Icon name="calendar" size={15} /> Judgment Dates
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-grid ajm-grid-3">
+                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
+                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
+                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
+                </div>
+              </div>
+            </div>
+
+
+          </>
+        );
+
+      case 'citation':
+        return (
+          <>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
                 <Icon name="info" size={15} /> Citation & Case Information
               </div>
               <div className="ajm-section-card__body">
@@ -432,30 +573,24 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                 </div>
               </div>
             </div>
-
             <div className="ajm-section-card">
               <div className="ajm-section-card__head">
-                <Icon name="calendar" size={15} /> Judgment Dates
+                <Icon name="book" size={15} /> Cases Cited
               </div>
               <div className="ajm-section-card__body">
-                <div className="ajm-grid ajm-grid-3">
-                  {renderField('Judgment Date', 'judgmentDate', 'Select judgment date', { type: 'date', required: true })}
-                  {renderField('Pronouncement Date', 'pronouncementDate', 'Select pronouncement date', { type: 'date' })}
-                  {renderField('Upload Date', 'uploadDate', 'Select upload date', { type: 'date' })}
-                </div>
+                <TagInput
+                  label="Cases Cited"
+                  values={form.casesCited || []}
+                  onChange={(v) => set('casesCited', v)}
+                  placeholder="Type a citation and press Enter or use comma"
+                  hint="Add citations referenced in this judgment. Separate with commas or press Enter."
+                />
               </div>
             </div>
-
-
           </>
         );
 
       case 'headnote':
-        return (
-          <>
-            <div className="ajm-section-card">
-              <div className="ajm-section-card__head">
-                <Icon name="book" size={15} /> Headnotes
               </div>
               <div className="ajm-section-card__body">
                 <div className="ajm-field">
@@ -497,36 +632,78 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       case 'classification':
         return (
           <>
-            <div className="ajm-form-title">Legal Classification</div>
+            <div className="ajm-form-title">Legal References</div>
             <div className="ajm-grid ajm-grid-2">
-              {renderField('Practice Area', 'practiceArea', 'Enter practice area')}
-              {renderField('Subject Matter', 'subjectMatter', 'Enter subject matter')}
+              <SelectWithCrud
+                label="Area of Law"
+                value={form.practiceArea}
+                onChange={(e) => set('practiceArea', e.target.value)}
+                placeholder="civil law"
+                options={areaOfLawOpts}
+                onCrudClick={() => setShowAreaOfLawCrud(true)}
+              />
+              <SelectWithCrud
+                label="Type of Proceeding"
+                value={form.typeOfProceeding}
+                onChange={(e) => set('typeOfProceeding', e.target.value)}
+                placeholder="Select type of proceeding"
+                options={typeOfProceedingOpts}
+                onCrudClick={() => setShowTypeOfProceedingCrud(true)}
+              />
             </div>
             <div className="ajm-grid ajm-grid-2">
-              {renderField('Keywords / Tags', 'keywords', 'Enter keywords separated by commas')}
-              {renderField('Category', 'category', 'Enter category')}
+              <SelectWithCrud
+                label="Nature of Dispute"
+                value={form.natureOfDispute}
+                onChange={(e) => set('natureOfDispute', e.target.value)}
+                placeholder="Select nature of dispute"
+                options={natureOfDisputeOpts}
+                onCrudClick={() => setShowNatureOfDisputeCrud(true)}
+              />
+              <MultiSelectWithCrud
+                label="Act"
+                value={form.acts || []}
+                onChange={(v) => set('acts', v)}
+                placeholder="Select acts..."
+                options={actOpts}
+                onCrudClick={() => setShowActCrud(true)}
+              />
+            </div>
+            <div className="ajm-grid ajm-grid-2">
+              <MultiSelectWithCrud
+                label="Provision(s)"
+                value={form.provisions || []}
+                onChange={(v) => set('provisions', v)}
+                placeholder="Select provisions..."
+                options={provisionOpts}
+                onCrudClick={() => setShowProvisionCrud(true)}
+              />
+              <TagInput
+                label="Legal Issue"
+                values={form.legalIssue || []}
+                onChange={(v) => set('legalIssue', v)}
+                placeholder="Type a legal issue and press Enter"
+                hint="This is the most valuable research field. Add every legal issue addressed in this judgment."
+              />
+            </div>
+            <div className="ajm-grid ajm-grid-2">
+              <TagInput
+                label="Keywords"
+                values={form.keywords || []}
+                onChange={(v) => set('keywords', v)}
+                placeholder="Type a keyword and press Enter"
+              />
+              <TagInput
+                label="Tags"
+                values={form.tags || []}
+                onChange={(v) => set('tags', v)}
+                placeholder="Type a tag and press Enter"
+              />
             </div>
           </>
         );
 
-      case 'references':
-        return (
-          <>
-            <div className="ajm-form-title">Legal References</div>
-            <div className="ajm-field">
-              <label>Acts & Statutes Referenced</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter acts and statutes referenced..." value={form.act || ''} onChange={(e) => set('act', e.target.value)} />
-            </div>
-            <div className="ajm-field">
-              <label>Sections & Provisions</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter sections and provisions..." />
-            </div>
-            <div className="ajm-field">
-              <label>Cases Cited</label>
-              <textarea className="ajm-input ajm-textarea" placeholder="Enter cases cited in this judgment..." />
-            </div>
-          </>
-        );
+
 
       case 'principle':
         return (
@@ -576,27 +753,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           </>
         );
 
-      case 'authority':
-        return (
-          <>
-            <div className="ajm-form-title">Authority & Type</div>
-            <div className="ajm-grid ajm-grid-2">
-              <SelectWithCrud
-                label="Authority Level"
-                value={form.authorityLevel}
-                onChange={(e) => set('authorityLevel', e.target.value)}
-                placeholder="Select level"
-                options={caseStatusOpts}
-                onCrudClick={() => setShowCaseStatusCrud(true)}
-              />
-              {renderField('Judgment Type', 'judgmentType', 'Enter judgment type')}
-            </div>
-            <div className="ajm-grid ajm-grid-2">
-              {renderField('Overruled By', 'overruledBy', 'If overruled, enter citation')}
-              {renderField('Followed By', 'followedBy', 'Enter subsequent cases')}
-            </div>
-          </>
-        );
+
 
       case 'documents':
         return (
@@ -755,6 +912,64 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     defaults: { status: 'Active' },
   };
 
+  const areaOfLawConfig = {
+    logic: areaOfLawLogic,
+    fields: [
+      { key: 'name', label: 'Area of Law Name', required: true, placeholder: 'e.g. Civil Law' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CIV-LAW' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const typeOfProceedingConfig = {
+    logic: typeOfProceedingLogic,
+    fields: [
+      { key: 'name', label: 'Type of Proceeding Name', required: true, placeholder: 'e.g. Appeal' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. APP' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const natureOfDisputeConfig = {
+    logic: natureOfDisputeLogic,
+    fields: [
+      { key: 'name', label: 'Nature of Dispute Name', required: true, placeholder: 'e.g. Contract Dispute' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CONT' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const actConfig = {
+    logic: actLogic,
+    fields: [
+      { key: 'title', label: 'Act Title', required: true, placeholder: 'e.g. Indian Penal Code' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. IPC' },
+      { key: 'act_type', label: 'Act Type', required: true, placeholder: 'e.g. Criminal, Civil' },
+      { key: 'jurisdiction', label: 'Jurisdiction', required: false, placeholder: 'e.g. India' },
+      { key: 'year', label: 'Year', type: 'number', required: false, placeholder: 'e.g. 1860' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
+  const provisionConfig = {
+    logic: provisionsLogic,
+    fields: [
+      { key: 'name', label: 'Provision Name', required: true, placeholder: 'e.g. Section 302' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. S302' },
+      { key: 'description', label: 'Description', type: 'description', full: true },
+      { key: 'status', label: 'Status', required: true },
+    ],
+    defaults: { status: 'Active' },
+  };
+
   return (
     <Modal
       open={open}
@@ -840,6 +1055,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       <CrudManager open={showCaseStatusCrud} onClose={() => { setShowCaseStatusCrud(false); refreshAll.caseStatuses(); }} entity="Status" config={caseStatusConfig} />
       <CrudManager open={showPriorityCrud} onClose={() => { setShowPriorityCrud(false); refreshAll.priorities(); }} entity="Priority" config={priorityConfig} />
       <CrudManager open={showPartyTypeCrud} onClose={() => { setShowPartyTypeCrud(false); refreshAll.partyTypes(); }} entity="Party Type" config={partyTypeConfig} />
+      <CrudManager open={showAreaOfLawCrud} onClose={() => { setShowAreaOfLawCrud(false); refreshAll.areaOfLaws(); }} entity="Area of Law" config={areaOfLawConfig} />
+      <CrudManager open={showTypeOfProceedingCrud} onClose={() => { setShowTypeOfProceedingCrud(false); refreshAll.typeOfProceedings(); }} entity="Type of Proceeding" config={typeOfProceedingConfig} />
+      <CrudManager open={showNatureOfDisputeCrud} onClose={() => { setShowNatureOfDisputeCrud(false); refreshAll.natureOfDisputes(); }} entity="Nature of Dispute" config={natureOfDisputeConfig} />
+      <CrudManager open={showActCrud} onClose={() => { setShowActCrud(false); refreshAll.allActs(); }} entity="Act" config={actConfig} />
+      <CrudManager open={showProvisionCrud} onClose={() => { setShowProvisionCrud(false); refreshAll.allProvisions(); }} entity="Provision" config={provisionConfig} />
     </Modal>
   );
 }

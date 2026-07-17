@@ -44,6 +44,10 @@ let _prefixMap = {
   tasks: { prefix: 'TASK', padding: 5 },
   taskCategories: { prefix: 'TKCAT', padding: 5 },
   taskStatuses: { prefix: 'TKST', padding: 5 },
+  area_of_law: { prefix: 'AOL', padding: 5 },
+  type_of_proceeding: { prefix: 'TOP', padding: 5 },
+  nature_of_dispute: { prefix: 'NOD', padding: 5 },
+  provisions: { prefix: 'PROV', padding: 5 },
 };
 
 // Seed entity_prefix_registry from in-memory map on first use

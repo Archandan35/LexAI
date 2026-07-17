@@ -173,7 +173,6 @@ export default function JudgmentDetail() {
   const jurisdictionLabel = (val) => resolve(nameMap.jurisdiction, val);
   const stageLabel = (val) => resolve(nameMap.stage, val);
   const partyTypeLabel = (val) => resolve(nameMap.partyType, val);
-  const authorityLabel = (val) => resolve(nameMap.caseStatus, val);
 
   const handleDuplicate = () => {
     if (!judgment) return;
@@ -245,12 +244,15 @@ export default function JudgmentDetail() {
   const classification = useMemo(() => {
     if (!judgment) return [];
     const rows = [];
-    if (judgment.subjectMatter) rows.push({ key: 'Matter Type', val: judgment.subjectMatter });
-    if (judgment.practiceArea) rows.push({ key: 'Practice Area', val: judgment.practiceArea });
+    if (judgment.practiceArea) rows.push({ key: 'Area of Law', val: judgment.practiceArea });
+    if (judgment.typeOfProceeding) rows.push({ key: 'Type of Proceeding', val: judgment.typeOfProceeding });
+    if (judgment.natureOfDispute) rows.push({ key: 'Nature of Dispute', val: judgment.natureOfDispute });
     if (judgment.category) rows.push({ key: 'Category', val: judgment.category });
     if (judgment.caseType) rows.push({ key: 'Subject', val: caseTypeLabel(judgment.caseType) });
     if (judgment.jurisdiction) rows.push({ key: 'Jurisdiction', val: jurisdictionLabel(judgment.jurisdiction) });
     if (judgment.stage) rows.push({ key: 'Stage', val: stageLabel(judgment.stage) });
+    if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: judgment.legalIssue.join(', ') });
+    if (judgment.tags?.length) rows.push({ key: 'Tags', val: judgment.tags.join(', ') });
     return rows;
   }, [judgment, nameMap]);
 
@@ -521,7 +523,7 @@ export default function JudgmentDetail() {
 
         <div className="jd-side-col" ref={sideColRef}>
           <div className="jd-rc-card">
-            <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal Classification</div>
+            <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal References</div>
             <div className="jd-rc-body">
               {classification.length ? classification.map((row, i) => (
                 <div key={i} className="jd-rc-row">
@@ -553,7 +555,6 @@ export default function JudgmentDetail() {
             <div className="jd-rc-title"><Icon name="info" size={14} /> Quick Info</div>
             <div className="jd-rc-body">
               <div className="jd-rc-row"><span className="jd-rc-key">Judgment Type</span><span className="jd-rc-val">{judgment.judgmentType || '—'}</span></div>
-              <div className="jd-rc-row"><span className="jd-rc-key">Authority</span><span className="jd-rc-val">{authorityLabel(judgment.authorityLevel) || '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Status</span><span className="jd-rc-val">{status || 'Active'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Upload Date</span><span className="jd-rc-val">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>

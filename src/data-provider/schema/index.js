@@ -51,6 +51,10 @@ import { DraftTypesSchema } from './draft_types.schema.js';
 import { JudgesSchema } from './judges.schema.js';
 import { ReminderTypesSchema } from './reminder_types.schema.js';
 import { PartyTypesSchema } from './party_types.schema.js';
+import { AreaOfLawSchema } from './area_of_law.schema.js';
+import { TypeOfProceedingSchema } from './type_of_proceeding.schema.js';
+import { NatureOfDisputeSchema } from './nature_of_dispute.schema.js';
+import { ProvisionsSchema } from './provisions.schema.js';
 import { TasksSchema } from './tasks.schema.js';
 import { TaskCategoriesSchema } from './task_categories.schema.js';
 import { TaskStatusesSchema } from './task_statuses.schema.js';
@@ -104,6 +108,10 @@ export const schemas = {
   judges: JudgesSchema,
   reminder_types: ReminderTypesSchema,
   party_types: PartyTypesSchema,
+  area_of_law: AreaOfLawSchema,
+  type_of_proceeding: TypeOfProceedingSchema,
+  nature_of_dispute: NatureOfDisputeSchema,
+  provisions: ProvisionsSchema,
   tasks: TasksSchema,
   task_categories: TaskCategoriesSchema,
   task_statuses: TaskStatusesSchema,
@@ -111,7 +119,7 @@ export const schemas = {
 
 // Bumped whenever the universal schema shape changes. Mirrors SCHEMA_VERSION in
 // backupLogic so a .udb can be checked against the running app.
-export const SCHEMA_VERSION = 32;
+export const SCHEMA_VERSION = 34;
 
 // Every collection name known to the application.
 export const collectionNames = Object.keys(schemas);
