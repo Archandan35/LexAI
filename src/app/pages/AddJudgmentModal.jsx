@@ -424,8 +424,15 @@ function DateInput({ value, placeholder, onCommit }) {
     if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
   };
 
+  const displayDate = (iso) => {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  };
+
   useEffect(() => {
-    if (!focused) setText(value ? DateEngine.formatDate(value) : '');
+    if (!focused) setText(displayDate(value));
   }, [value, focused]);
 
   const handleChange = (e) => {
@@ -461,7 +468,7 @@ function DateInput({ value, placeholder, onCommit }) {
         type="date"
         className="ajm-date-native"
         value={value || ''}
-        onChange={(e) => { onCommit(e.target.value); setText(DateEngine.formatDate(e.target.value)); }}
+        onChange={(e) => { onCommit(e.target.value); setText(displayDate(e.target.value)); }}
       />
     </div>
   );
@@ -640,7 +647,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
         {type === 'date' ? (
           <DateInput
             value={form[fieldKey]}
-            placeholder={DateEngine.getDatePlaceholder()}
+            placeholder="23/05/2026"
             onCommit={(iso) => set(fieldKey, iso)}
           />
         ) : (
