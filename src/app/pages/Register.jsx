@@ -24,9 +24,11 @@ export default function Register() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
   const [roles, setRoles] = useState([]);
@@ -114,6 +116,7 @@ export default function Register() {
     const res = await userLogic.create({
       name: name.trim(),
       email: email.trim(),
+      phone: phone.trim(),
       password,
       ...(selectedRole ? { roleCode: selectedRole } : {}),
     }, null);
@@ -121,6 +124,14 @@ export default function Register() {
     setBusy(false);
 
     if (res.ok) {
+      // Supabase may require email confirmation before the first sign-in.
+      // Tell the user to check their inbox instead of attempting a login that
+      // would otherwise fail with a misleading "wrong credentials" error.
+      if (res.data?.emailConfirmationRequired) {
+        setNotice(res.data.message || 'Account created. Please confirm your email before signing in.');
+        setTimeout(() => nav('/login', { replace: true }), 2500);
+        return;
+      }
       const loginRes = await login(email.trim(), password);
       if (loginRes.ok) {
         nav('/', { replace: true });
@@ -153,12 +164,22 @@ export default function Register() {
           </div>
         )}
 
+        {notice && (
+          <div className="alert alert--success alert--mb">
+            <Icon name="check" size={16} />
+            {notice}
+          </div>
+        )}
+
         <form onSubmit={submit}>
           <Field label="Full Name">
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Adv. Priya Sharma" autoFocus required />
           </Field>
           <Field label="Email Address">
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. priya@lexai.local" required />
+          </Field>
+          <Field label="Phone (optional)">
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +91 98765 43210" />
           </Field>
           <Field label="Password">
             <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required />

@@ -37,16 +37,6 @@ export const authLogic = {
         return fail(`Failed to create auth account: ${authErr.message}. Ensure Auth sign-ups are enabled (Settings → Authentication → Sign up).`);
       }
 
-      // 2. If email confirmation is required, don't attempt auto-login
-      if (!emailConfirmed) {
-        console.log('[Bootstrap] email confirmation required — skipping auto-login');
-        return ok({
-          user: { id: userId, email, name },
-          emailConfirmationRequired: true,
-          message: 'Account created successfully. Please confirm your email before logging in.',
-        });
-      }
-
       // 2.5. Create Admin role if none exist (required for bootstrap)
       const existingRoles = await roleService.list();
       if (existingRoles.length === 0) {
@@ -65,7 +55,9 @@ export const authLogic = {
         });
       }
 
-      // 3. Create application user record
+      // 3. Create application user record (Admin). Done BEFORE the email-
+      // confirmation early-return so the admin role is preserved even when the
+      // user must confirm their email before first sign-in.
       console.log('[Bootstrap] create application user start');
       const { salt, hash } = await hashPassword(password);
       const userRecord = {
@@ -108,6 +100,18 @@ export const authLogic = {
         if (!user) throw createErr;
       }
       console.log('[Bootstrap] application user created:', user?.id);
+
+      // 3.5. If email confirmation is required, don't attempt auto-login.
+      // The Admin DB user was already created above so the role is preserved;
+      // the user simply confirms their email then signs in normally.
+      if (!emailConfirmed) {
+        console.log('[Bootstrap] email confirmation required — skipping auto-login');
+        return ok({
+          user: { id: userId, email, name },
+          emailConfirmationRequired: true,
+          message: 'Account created successfully. Please confirm your email before logging in.',
+        });
+      }
 
       // 4. Auto-login to verify credentials
       console.log('[Bootstrap] auto login start');

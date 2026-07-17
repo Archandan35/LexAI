@@ -61,7 +61,19 @@ export default class SupabaseAuthProvider extends AuthProvider {
       throw new Error(err?.msg || err?.error_description || err?.error || `Signup failed: ${res.status}`);
     }
     const data = contentType.includes('application/json') ? await res.json() : {};
-    return data.user;
+    const user = data.user || {};
+    // When Supabase has "Confirm email" enabled (free-tier default), signup
+    // succeeds but no session is issued until the user confirms. Surface this
+    // so the UI can tell the user to check their inbox instead of failing the
+    // auto-login with a misleading "wrong credentials" error.
+    const emailConfirmed = !!user.email_confirmed_at || !!data.session;
+    return {
+      id: user.id,
+      email: user.email,
+      email_confirmed_at: user.email_confirmed_at,
+      session: data.session || null,
+      emailConfirmationRequired: !emailConfirmed,
+    };
   }
 
   async signIn(identifier, password) {

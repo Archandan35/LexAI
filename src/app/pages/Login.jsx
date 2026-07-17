@@ -41,7 +41,23 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setError(''); setBusy(true);
-    const res = await login(identifier.trim(), password);
+    const raw = identifier.trim();
+
+    // Supabase Auth only signs in by email. If the user entered a username or
+    // phone number, resolve it to the registered email via the users table.
+    let loginIdentifier = raw;
+    if (raw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
+      try {
+        const all = await userService.list();
+        const match = (all || []).find((u) =>
+          (u.username && u.username.toLowerCase() === raw.toLowerCase()) ||
+          (u.phone && u.phone.replace(/\D/g, '') === raw.replace(/\D/g, ''))
+        );
+        if (match && match.email) loginIdentifier = match.email;
+      } catch (_) { /* fall through — signIn will report invalid credentials */ }
+    }
+
+    const res = await login(loginIdentifier, password);
     setBusy(false);
     if (res.ok) nav(from, { replace: true });
     else setError(res.error || 'Sign in failed.');
@@ -77,7 +93,7 @@ export default function Login() {
         {error && <div className="alert alert--danger alert--mb"><Icon name="alert" size={16} />{error}</div>}
 
         <form onSubmit={submit}>
-          <Field label="Email or username">
+          <Field label="Email, username or phone">
             <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="e.g. admin@company.com" autoFocus />
           </Field>
           <Field label="Password">

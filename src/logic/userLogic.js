@@ -85,10 +85,14 @@ export const userLogic = {
       }
 
       let userId = undefined;
+      let emailConfirmationRequired = false;
       try {
         const authUser = await authService.signUp(data.email.toLowerCase(), password);
         if (authUser && authUser.id) {
           userId = authUser.id;
+        }
+        if (authUser && authUser.emailConfirmationRequired) {
+          emailConfirmationRequired = true;
         }
       } catch (authErr) {
         console.warn('[LexAI] External auth signup skipped or failed:', authErr);
@@ -110,6 +114,17 @@ export const userLogic = {
         createdAt: nowISO(),
       });
       await auditService.record({ action: 'user.create', module: 'users', user: actor, details: `Created user ${row.email || row.username}` });
+
+      // If Supabase requires email confirmation, stop here and tell the user to
+      // confirm — do NOT attempt an auto-login (it would fail with a misleading
+      // "wrong credentials" error).
+      if (emailConfirmationRequired) {
+        return ok({
+          user: stripSecrets(row),
+          emailConfirmationRequired: true,
+          message: 'Account created. Please confirm your email before signing in.',
+        });
+      }
       return ok(stripSecrets(row));
     } catch (e) {
       return fail(e);
