@@ -108,14 +108,13 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
   const load = useCallback(async () => {
     setLoading(true);
     const [d, f] = await Promise.all([
-      documentsRepository.getAll().catch(() => []),
-      caseFoldersRepository.getAll().catch(() => []),
+      documentsRepository.getAll({ caseId }).catch(() => []),
+      caseFoldersRepository.getAll({ caseId }).catch(() => []),
     ]);
     setDocs(Array.isArray(d) ? d : []);
     setFolders(Array.isArray(f) ? f : []);
     setLoading(false);
-    const caseFolders = (Array.isArray(f) ? f : []).filter((x) => x.caseId === caseId || x.case_id === caseId);
-    setShowMissingWarning(caseFolders.length === 0);
+    setShowMissingWarning((Array.isArray(f) ? f : []).length === 0);
   }, [caseId]);
 
   useEffect(() => { load(); }, [load]);
@@ -127,10 +126,7 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
     return () => document.removeEventListener('click', handler);
   }, [docMenuId]);
 
-  const caseFolders = useMemo(() =>
-    folders.filter((f) => f.caseId === caseId || f.case_id === caseId),
-    [folders, caseId]
-  );
+  const caseFolders = useMemo(() => folders, [folders]);
 
   const rootFolder = useMemo(() =>
     caseFolders.find((f) => !f.parent_id && !f.parentId) || null,

@@ -81,6 +81,8 @@ export default function CaseDetails() {
   }, [id, formatDate, toast]);
   const [params, setParams] = useSearchParams();
   const [vault, setVault] = useState(null);
+  const [tabData, setTabData] = useState({});
+  const [loadedTabs, setLoadedTabs] = useState(new Set());
   const [tab, setTab] = useState(params.get('tab') || 'Overview');
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -88,6 +90,14 @@ export default function CaseDetails() {
   const [activityKey, setActivityKey] = useState(0);
   const [showDeleteDlg, setShowDeleteDlg] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+
+  // Merged view: vault (always-loaded case) + lazy-loaded tab data
+  const data = { ...(vault || {}), ...tabData };
+  const c = data.case;
+  const documents = data.documents || [];
+  const hearings = data.hearings || [];
+  const notes = data.notes || [];
+  const folders = data.folders || [];
 
   const goToTab = useCallback((t) => {
     setTab(t);
@@ -113,10 +123,52 @@ export default function CaseDetails() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  const loadTab = useCallback(async (tabName) => {
+    if (loadedTabs.has(tabName)) return;
+    const loaders = {
+      Documents: () => Promise.all([
+        caseLogic.vaultDocuments(id).then(r => r.ok ? r.data : []),
+        caseLogic.vaultFolders(id).then(r => r.ok ? r.data : []),
+      ]),
+      Hearings: () => caseLogic.vaultHearings(id).then(r => r.ok ? r.data : null),
+      Notes: () => caseLogic.vaultNotes(id).then(r => r.ok ? r.data : []),
+      Timeline: () => Promise.all([
+        caseLogic.vaultHistory(id).then(r => r.ok ? r.data : []),
+        caseLogic.vaultActivity(id).then(r => r.ok ? r.data : []),
+      ]),
+      History: () => Promise.all([
+        caseLogic.vaultHistory(id).then(r => r.ok ? r.data : []),
+        caseLogic.vaultActivity(id).then(r => r.ok ? r.data : []),
+      ]),
+    };
+    const loader = loaders[tabName];
+    if (!loader) return;
+    const result = await loader();
+    if (tabName === 'Documents') {
+      setTabData((prev) => ({ ...prev, documents: result[0], folders: result[1] }));
+    } else if (tabName === 'Hearings') {
+      setTabData((prev) => ({ ...prev, ...result }));
+    } else if (tabName === 'Notes') {
+      setTabData((prev) => ({ ...prev, notes: result }));
+    } else if (tabName === 'Timeline' || tabName === 'History') {
+      setTabData((prev) => ({ ...prev, history: result[0], activity: result[1] }));
+    }
+    setLoadedTabs((prev) => new Set([...prev, tabName]));
+  }, [id, loadedTabs]);
+
+  // Load tab data when tab changes
+  useEffect(() => { if (tab !== 'Overview') loadTab(tab); }, [tab, loadTab]);
+
   const load = useCallback(async () => {
     try {
       const res = await caseLogic.vault(id);
       setVault(res.ok ? res.data : null);
+      // Pre-load hearings for header metrics (upcoming/last hearing)
+      const hRes = await caseLogic.vaultHearings(id);
+      if (hRes.ok) {
+        setTabData((prev) => ({ ...prev, ...hRes.data }));
+        setLoadedTabs((prev) => new Set([...prev, 'Hearings']));
+      }
     } catch {
       setVault(null);
     }
@@ -147,8 +199,8 @@ export default function CaseDetails() {
     if (r.ok) { toast.push('Case duplicated.', 'success'); nav(`/cases/${r.data.id}`); }
     else toast.push(r.error, 'error');
   };
-  const exportCase = async () => exportJson(`case_${vault?.case?.caseNumber}`, await caseLogic.exportBundle(id));
-  const archive = async () => { try { await caseLogic.setArchived(id, !vault?.case?.archived, user); toast.push(vault?.case?.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } };
+  const exportCase = async () => exportJson(`case_${c?.caseNumber}`, await caseLogic.exportBundle(id));
+  const archive = async () => { try { await caseLogic.setArchived(id, !c?.archived, user); toast.push(c?.archived ? 'Case restored.' : 'Case archived.', 'success'); load(); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } };
   const remove = async (deleteFolders) => {
     try {
       await caseLogic.remove(id, user, deleteFolders);
@@ -160,22 +212,18 @@ export default function CaseDetails() {
   };
 
   if (loading) return <Spinner label="Loading case…" />;
-  if (!vault?.case) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
+  if (!c) return <EmptyState title="Case not found." action={<Button onClick={() => nav('/cases')}>Back to Manage Cases</Button>} />;
 
-  const c = vault.case;
-  const lastHearing = vault.lastHearing;
+  const lastHearing = data.lastHearing;
   const todayStr = new Date().toISOString().slice(0, 10);
-  const upcomingHearing = [...(vault.hearings || [])]
+  const upcomingHearing = [...(hearings)]
     .filter((h) => (h.date || '').slice(0, 10) >= todayStr)
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0]
     || (c.nextHearing && (c.nextHearing || '').slice(0, 10) >= todayStr
       ? { date: c.nextHearing, purpose: 'Next Hearing', status: 'Scheduled' }
       : null);
 
-  const hearings = [...vault.hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const documents = vault.documents || [];
-  const notes = vault.notes || [];
-  const folders = vault.folders || [];
+  const sortedHearings = [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return (
     <>

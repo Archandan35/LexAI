@@ -294,30 +294,27 @@ export const caseLogic = {
   },
 
   // Manage Cases — everything filed under one case.
+  // Lazy-loaded per tab to avoid fetching all related data on page mount.
   async vault(caseId) {
-    try {
-      const [theCase, drafts, documents, hearings, notes, folders, history, activity, reminders] = await Promise.all([
-        caseService.getCase(caseId),
-        draftingService.listDrafts(caseId),
-        caseService.listDocuments(caseId),
-        caseService.listHearings(caseId),
-        caseService.listNotes(caseId),
-        caseFolderService.list(caseId),
-        caseHistoryService.list(caseId),
-        caseActivityService.list(caseId),
-        reminderService.list(caseId),
-      ]);
-      const sortedHearings = [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
-      const past = sortedHearings.filter((h) => new Date(h.date) <= new Date());
-      return ok({
-        case: theCase, drafts, documents, hearings, notes,
-        folders, history, activity, reminders,
-        lastHearing: past[0] || null,
-      });
-    } catch (e) {
-      return fail(e);
-    }
+    try { return ok({ case: await caseService.getCase(caseId) }); } catch (e) { return fail(e); }
   },
+
+  // Per-tab lazy loaders
+  async vaultHearings(caseId) {
+    try {
+      const hearings = await caseService.listHearings(caseId);
+      const sorted = [...hearings].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const past = sorted.filter((h) => new Date(h.date) <= new Date());
+      return ok({ hearings, lastHearing: past[0] || null });
+    } catch (e) { return fail(e); }
+  },
+  async vaultDrafts(caseId) { try { return ok(await draftingService.listDrafts(caseId)); } catch (e) { return fail(e); } },
+  async vaultDocuments(caseId) { try { return ok(await caseService.listDocuments(caseId)); } catch (e) { return fail(e); } },
+  async vaultNotes(caseId) { try { return ok(await caseService.listNotes(caseId)); } catch (e) { return fail(e); } },
+  async vaultFolders(caseId) { try { return ok(await caseFolderService.list(caseId)); } catch (e) { return fail(e); } },
+  async vaultHistory(caseId) { try { return ok(await caseHistoryService.list(caseId)); } catch (e) { return fail(e); } },
+  async vaultActivity(caseId) { try { return ok(await caseActivityService.list(caseId)); } catch (e) { return fail(e); } },
+  async vaultReminders(caseId) { try { return ok(await reminderService.list(caseId)); } catch (e) { return fail(e); } },
 };
 
 function byUpdated(a, b) {

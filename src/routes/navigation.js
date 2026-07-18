@@ -77,7 +77,6 @@ export const NAV_GROUPS = [
       { to: '/research/strategy', label: 'Strategy Engine', icon: 'target', module: 'strategy' },
       { to: '/research/cross-examination', label: 'Cross Examination', icon: 'mic', module: 'crossExamination' },
       { to: '/research/evidence-gap', label: 'Evidence Gap Analysis', icon: 'layers', module: 'evidence' },
-      { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
     ],
   },
   { type: 'heading', label: 'COURT MANAGEMENT' },
