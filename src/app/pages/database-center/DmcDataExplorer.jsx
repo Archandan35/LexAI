@@ -1,19 +1,43 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { caseService } from '@/services/caseService.js';
 import { bytes, useFormat } from '@/utils/format.js';
 import { storageService } from '@/services/storageService.js';
 import Icon from '@/components/Icon.jsx';
+import Button from '@/components/Button.jsx';
 
-const COLLECTIONS = ['documents', 'cases', 'drafts', 'notes', 'case_folders', 'hearings'];
+const COLLECTIONS = databaseAdminService.knownCollections();
+const STAT_VARIANTS = ['indigo', 'green', 'amber', 'blue'];
 
 export default function DmcDataExplorer() {
   const { formatDate } = useFormat();
+  const navigate = useNavigate();
   const [collection, setCollection] = useState('documents');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [previewDoc, setPreviewDoc] = useState(null);
+  const [counts, setCounts] = useState({});
+  const [stats, setStats] = useState({ collections: 0, totalRecords: 0, provider: '\u2014', schemaVersion: '\u2014' });
+
+  useEffect(() => {
+    databaseAdminService.counts().then(setCounts).catch(() => {});
+    setStats({
+      collections: databaseAdminService.knownCollections().length,
+      totalRecords: 0,
+      provider: databaseAdminService.providerName(),
+      schemaVersion: String(databaseAdminService.schemaVersion()),
+    });
+  }, []);
+
+  const statCards = [
+    { label: 'Collections', value: stats.collections, sub: 'Available schemas', variant: 'indigo', icon: 'layers' },
+    { label: 'Total Records', value: Object.values(counts).reduce((a, b) => a + (b || 0), 0), sub: stats.provider, variant: 'green', icon: 'database' },
+    { label: 'Provider', value: stats.provider, sub: 'Schema v' + stats.schemaVersion, variant: 'amber', icon: 'server' },
+    { label: 'Current Selection', value: collection, sub: rows.length + ' record(s) loaded', variant: 'blue', icon: 'filter' },
+  ];
 
   const load = async () => {
     setLoading(true);
@@ -30,7 +54,7 @@ export default function DmcDataExplorer() {
   const filtered = rows.filter((r) => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return (r.name || r.title || r.id || '').toLowerCase().includes(q);
+    return (r.name || r.title || r.id || r.caseNumber || '').toLowerCase().includes(q);
   });
 
   const fields = collection === 'documents'
@@ -45,24 +69,50 @@ export default function DmcDataExplorer() {
     if (f === 'name' && collection === 'documents') {
       return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} className="dmc-explorer-link">{r[f] || r.title}</a>;
     }
-    return r[f] || r[f.replace(/^[a-z]/, (c) => c.toUpperCase())] || '\u2014';
+    return r[f] || '\u2014';
   };
+
+  const totalCount = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
 
   return (
     <>
-      <div className="dmc-db-hero dmc-db-hero--sm">
-        <div className="dmc-db-hero__icon"><Icon name="layers" size={26} /></div>
+      <div className="dmc-db-hero">
+        <div className="dmc-db-hero__icon"><Icon name="layers" size={36} /></div>
         <div className="dmc-db-hero__text">
           <div className="dmc-db-hero__accent" />
           <h2>Data Explorer</h2>
-          <p>Browse, search, and inspect database collections.</p>
+          <p>Browse, search, and inspect every collection in your database. View records, preview documents, and monitor data at a glance.</p>
+          <div className="dmc-db-hero__actions">
+            <Button variant="primary" size="sm" onClick={() => navigate('/admin/database-center/import')}>
+              <Icon name="download" size={14} /> Import Data
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/database-center/export')}>
+              <Icon name="upload" size={14} /> Export Data
+            </Button>
+          </div>
         </div>
+        <div className="dmc-db-hero__watermark"><Icon name="layers" size={96} /></div>
+      </div>
+
+      <div className="dmc-db-stats-row">
+        {statCards.map((c, i) => (
+          <div key={c.label} className="dmc-db-statcard">
+            <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${STAT_VARIANTS[i]}`}>
+              <Icon name={c.icon} size={18} />
+            </div>
+            <div className="dmc-db-statcard__body">
+              <div className="dmc-db-statcard__label">{c.label}</div>
+              <div className="dmc-db-statcard__value">{c.value}</div>
+              <div className="dmc-db-statcard__sub">{c.sub}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="dmc-db-section">
         <div className="dmc-db-section__head">
           <div className="dmc-db-section__title"><Icon name="layers" size={18} /> Collection Browser</div>
-          <span className="dmc-db-section__badge">{filtered.length} record(s)</span>
+          <span className="dmc-db-section__badge">{filtered.length} / {totalCount} records</span>
         </div>
         <div className="dmc-db-section__body">
           <div className="dmc-db-toolbar">
@@ -75,12 +125,16 @@ export default function DmcDataExplorer() {
                 <input placeholder="Search records\u2026" value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
             </div>
+            <div className="dmc-db-toolbar__right">
+              <Button variant="ghost" size="sm" onClick={load}><Icon name="refresh" size={14} /> Refresh</Button>
+            </div>
           </div>
+
           {previewDoc && (
             <div style={{ marginBottom: 16, padding: 16, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <strong>{previewDoc.name || previewDoc.title}</strong>
-                <button className="iconbtn" onClick={() => setPreviewDoc(null)}><Icon name="close" size={16} /></button>
+                <button onClick={() => setPreviewDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-soft)' }}><Icon name="close" size={16} /></button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 13 }}>
                 <div><span style={{ color: 'var(--text-faint)' }}>ID:</span> {previewDoc.id}</div>
@@ -100,6 +154,7 @@ export default function DmcDataExplorer() {
             </div>
           )}
         </div>
+
         {loading ? (
           <div className="dmc-empty"><div className="dmc-empty__title">Loading\u2026</div></div>
         ) : filtered.length === 0 ? (
