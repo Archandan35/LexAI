@@ -190,6 +190,34 @@ export default function ActLibrary() {
   };
   const getTypeColor = (type, item) => item?.color || typeColors[type?.toLowerCase()] || '#6b7280';
 
+  const exists = (title, code) => items.some(i =>
+    i.title?.toLowerCase() === title.toLowerCase() || (code && i.short_code?.toUpperCase() === code.toUpperCase())
+  );
+
+  const doBulkAdd = async () => {
+    const lines = bulkAddText.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.push('Paste at least one entry.', 'error'); return; }
+    setBusy(true);
+    setProgress({ current: 0, total: lines.length, itemName: 'Starting…', percent: 0 });
+    let added = 0, skipped = 0;
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
+      const colonIdx = line.indexOf(':');
+      const title = colonIdx === -1 ? line : line.slice(0, colonIdx).trim();
+      const code = colonIdx === -1 ? autoCode(title) : line.slice(colonIdx + 1).trim().toUpperCase();
+      setProgress({ current: idx + 1, total: lines.length, itemName: title || '…', percent: Math.round(((idx + 1) / lines.length) * 100) });
+      if (!title) { skipped++; continue; }
+      if (exists(title, code)) { skipped++; continue; }
+      const res = await actLogic.create({ title, short_code: code, color: newColor });
+      if (res.ok) added++; else skipped++;
+    }
+    setBusy(false);
+    setProgress(null);
+    setBulkAddText('');
+    toast.push(`${added} added.${skipped ? ` ${skipped} skipped.` : ''}`, added ? 'success' : 'info');
+    load();
+  };
+
   const startEdit = (item) => {
     setActiveAction(null);
     setEditId(item.id);
@@ -374,10 +402,19 @@ export default function ActLibrary() {
           <div className="bench-types__form-header">
             <Icon name={ACTIONS.find(a => a.key === activeAction)?.icon || 'file'} size={18} />
             <span className="bench-types__form-header-title">{ACTIONS.find(a => a.key === activeAction)?.label} Act</span>
+            {SUB_MODES[activeAction] && (
+              <div className="bench-types__toggle">
+                {SUB_MODES[activeAction].map(m => (
+                  <button key={m.key} className={`bench-types__toggle-btn${subMode === m.key ? ' active' : ''}`} onClick={() => setSubMode(m.key)}>
+                    <Icon name={m.icon} size={13} /> {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <button className="iconbtn bench-types__form-close" onClick={reset} title="Close"><Icon name="close" size={18} /></button>
           </div>
           <div className="bench-types__form-body">
-            {activeAction === 'add' && (
+            {activeAction === 'add' && subMode === 'single' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Title <span className="bench-types__required">*</span></label>
@@ -418,6 +455,26 @@ export default function ActLibrary() {
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Description <span className="bench-types__optional">(optional)</span></label>
                   <Textarea value={newDesc} placeholder="Brief description…" onChange={e => setNewDesc(e.target.value)} maxLength={500} />
+                </div>
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Badge Colour</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className="cmp-color-swatch-lg" style={{ '--swatch-color': newColor }} />
+                    <ColorPicker value={newColor} onChange={setNewColor} />
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeAction === 'add' && subMode === 'bulk' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Paste Acts <span className="bench-types__required">*</span></label>
+                  <Textarea value={bulkAddText}
+                    placeholder={`Indian Penal Code:IPC\nCode of Criminal Procedure:CrPC\nIndian Evidence Act`}
+                    onChange={e => setBulkAddText(e.target.value)}
+                    rows={8}
+                  />
+                  <span className="bench-types__hint">One per line. Optionally append <code>:SHORTCODE</code> for custom short code. Default: ACTS-{'{TITLE}'}</span>
                 </div>
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Badge Colour</label>
@@ -522,7 +579,8 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__form-footer">
             <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
-            {activeAction === 'add' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}
+            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}
+            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
             {activeAction === 'edit' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
             {activeAction === 'delete' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
             {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
@@ -786,6 +844,27 @@ export default function ActLibrary() {
             )}
           </div>
         </>
+      )}
+
+      {busy && (
+        <div className="bench-types__busy-overlay">
+          <div className="bench-types__busy-box">
+            {progress ? (
+              <>
+                <div className="bench-types__progress-bar-track">
+                  <div className="bench-types__progress-bar-fill" style={{ '--fill': `${progress.percent}%` }} />
+                </div>
+                <div className="bench-types__progress-info">
+                  <span className="bench-types__progress-item">{progress.itemName}</span>
+                  <span className="bench-types__progress-count">{progress.current} / {progress.total}</span>
+                  <span className="bench-types__progress-pct">{progress.percent}%</span>
+                </div>
+              </>
+            ) : (
+              <><div className="spinner" /><span>Please wait…</span></>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── View Modal ── */}

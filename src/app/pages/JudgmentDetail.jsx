@@ -275,9 +275,6 @@ export default function JudgmentDetail() {
     if (judgment.typeOfProceeding) rows.push({ key: 'Type of Proceeding', val: typeOfProceedingLabel(judgment.typeOfProceeding) });
     if (judgment.natureOfDispute) rows.push({ key: 'Nature of Dispute', val: natureOfDisputeLabel(judgment.natureOfDispute) });
     if (judgment.caseType) rows.push({ key: 'Case Type', val: caseTypeLabel(judgment.caseType) });
-    if (judgment.legalIssue?.length) rows.push({ key: 'Legal Issue', val: toArr(judgment.legalIssue).join(', ') });
-    if (judgment.tags?.length) rows.push({ key: 'Tags', val: toArr(judgment.tags).join(', ') });
-    if (judgment.provisions?.length) rows.push({ key: 'Provision(s)', val: toArr(judgment.provisions).join(', ') });
     return rows;
   }, [judgment, nameMap]);
 
@@ -537,31 +534,6 @@ export default function JudgmentDetail() {
 
         <div className="jd-side-col" ref={sideColRef}>
 
-          {related.length > 0 && (
-            <div className="jd-rc-card jd-related-slider-card">
-              <div className="jd-rc-title">
-                <span><Icon name="layers" size={14} /> Related Judgments</span>
-                <button className="jd-view-all-btn" onClick={() => navigate('/research/judgment-library')}>View All</button>
-              </div>
-              <div className="jd-related-slider-wrap">
-                <button className="jd-slide-btn jd-slide-left" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: -280, behavior: 'smooth' }); }}><Icon name="chevronLeft" size={18} /></button>
-                <div className="jd-related-slider">
-                  {related.map((r) => (
-                    <div key={r.id} className="jd-related-slide-item" onClick={() => navigate(`/research/judgment-library/${r.id}`)}>
-                      <div className="jd-related-slide-title">{r.title || r.citation}</div>
-                      <div className="jd-related-slide-court">{courtLabel(r.court)}</div>
-                      <div className="jd-related-slide-footer">
-                        <span>{r.date ? formatDate(r.date) : ''}</span>
-                        <span>{r.status || r.citation}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button className="jd-slide-btn jd-slide-right" onClick={(e) => { e.currentTarget.parentElement.querySelector('.jd-related-slider').scrollBy({ left: 280, behavior: 'smooth' }); }}><Icon name="chevronRight" size={18} /></button>
-              </div>
-            </div>
-          )}
-
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="tag" size={14} /> Legal References</div>
             <div className="jd-rc-body">
@@ -585,6 +557,28 @@ export default function JudgmentDetail() {
             </div>
           )}
 
+          {judgment.legalIssue?.length > 0 && (
+            <div className="jd-rc-card">
+              <div className="jd-rc-title"><Icon name="book" size={14} /> Legal Issue</div>
+              <div className="jd-rc-body">
+                <div className="jd-tags">
+                  {toArr(judgment.legalIssue).map((item, i) => <span key={i} className="jd-tag">{item}</span>)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {judgment.provisions?.length > 0 && (
+            <div className="jd-rc-card">
+              <div className="jd-rc-title"><Icon name="file" size={14} /> Provision(s)</div>
+              <div className="jd-rc-body">
+                <div className="jd-tags">
+                  {toArr(judgment.provisions).map((p, i) => <span key={i} className="jd-tag">{p}</span>)}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
             <div className="jd-rc-body">
@@ -597,12 +591,9 @@ export default function JudgmentDetail() {
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="info" size={14} /> Quick Info</div>
             <div className="jd-rc-body">
-              <div className="jd-rc-row"><span className="jd-rc-key">Judgment Type</span><span className="jd-rc-val">{judgment.judgmentType || '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Status</span><span className="jd-rc-val">{status || 'Active'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Upload Date</span><span className="jd-rc-val">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span></div>
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
-              <div className="jd-rc-row"><span className="jd-rc-key">Views</span><span className="jd-rc-val">{judgment.views ?? '—'}</span></div>
-              <div className="jd-rc-row"><span className="jd-rc-key">Favourites</span><span className="jd-rc-val">{judgment.favourites ?? '—'}</span></div>
             </div>
           </div>
 

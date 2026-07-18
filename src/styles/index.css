@@ -23520,7 +23520,6 @@ kbd.cmd__kbd {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  justify-content: flex-end;
 }
 
 .jd-tag {
