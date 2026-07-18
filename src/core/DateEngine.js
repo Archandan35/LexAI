@@ -197,9 +197,11 @@ export const DateEngine = {
   },
 
   // Get the configured date format key from settings cache.
+  // Resolves the 'custom' option to the user-provided customDateFormat pattern.
   getDateFormat() {
     const s = settingsCache.getAll();
-    return s.dateFormat || 'june23';
+    const fmt = s.dateFormat || 'june23';
+    return fmt === 'custom' ? (s.customDateFormat || 'june23') : fmt;
   },
 
   // Get the configured time format key from settings cache.
@@ -236,7 +238,8 @@ export const DateEngine = {
   // If format/timezone omitted, reads from global settings cache.
   formatDate(date, format, timezone) {
     const s = settingsCache.getAll();
-    return formatByPattern(date, format || s.dateFormat || 'june23', timezone || s.timezone);
+    const fmt = format || s.dateFormat || 'june23';
+    return formatByPattern(date, fmt === 'custom' ? (s.customDateFormat || 'june23') : fmt, timezone || s.timezone);
   },
 
   // Format a time using a named pattern and optional timezone.

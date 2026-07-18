@@ -555,7 +555,19 @@ export default function JudgmentLibrary() {
                           {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
                           {!j.caseName && j.parties && <div className="jl-case-sub">{j.parties}</div>}
                         </td>
-                        <td data-label="Citation" className="jl-cell-muted">{j.citation || '—'}</td>
+                        <td data-label="Citation" className="jl-cell-citations">
+                          {(() => {
+                            const cites = [j.citation, j.neutralCitation, j.reporterCitation].filter(Boolean);
+                            if (!cites.length) return <span className="jl-cell-muted">—</span>;
+                            return (
+                              <div className="jl-cit-chips">
+                                {cites.map((c, i) => (
+                                  <span key={i} className={`jl-cit-chip${i === 0 ? '' : ' jl-cit-chip--muted'}`}>{c}</span>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </td>
                         <td data-label="Court / Bench" className="jl-cell-strong">
                           {resolveName(nameMap.court, j.court)}
                           {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}

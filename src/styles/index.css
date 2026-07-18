@@ -22329,6 +22329,31 @@ kbd.cmd__kbd {
   color: var(--text-soft);
 }
 
+.jl-cell-citations {
+  vertical-align: middle;
+}
+
+.jl-cit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.jl-cit-chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy-700);
+  background: var(--brand-soft);
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.jl-cit-chip--muted {
+  color: var(--text-soft);
+  background: var(--surface-2);
+}
+
 .jl-thead {
   background: var(--surface-2);
 }
