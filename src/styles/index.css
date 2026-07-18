@@ -16169,6 +16169,9 @@ kbd.cmd__kbd {
 .dmc-body {
   padding: 28px 32px 60px;
   width: 100%;
+}
+
+.dmc-body__inner {
   max-width: 1440px;
   margin: 0 auto;
 }

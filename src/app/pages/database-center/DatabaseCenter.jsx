@@ -27,7 +27,9 @@ export default function DatabaseCenter() {
         </div>
       </nav>
       <div className="dmc-body">
-        <Outlet />
+        <div className="dmc-body__inner">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
