@@ -83,6 +83,7 @@ const INITIAL_FORM = {
   source: '',
   headnotes: '',
   summary: '',
+  fullText: '',
   practiceArea: '',
   acts: [],
   provisions: [],
@@ -890,6 +891,15 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                     <DocEditor
                       value={form.summary}
                       onChange={(html) => set('summary', html)}
+                    />
+                  </div>
+                </div>
+                <div className="ajm-field">
+                  <label>Full Judgment Text</label>
+                  <div className="ajm-doc-editor">
+                    <DocEditor
+                      value={form.fullText}
+                      onChange={(html) => set('fullText', html)}
                     />
                   </div>
                 </div>

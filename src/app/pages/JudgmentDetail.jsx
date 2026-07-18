@@ -480,16 +480,32 @@ export default function JudgmentDetail() {
 
             {tab === 'legalPrinciples' && (
               <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Legal Principle</h3>
-                {summary
-                  ? <div className="jd-prose" dangerouslySetInnerHTML={{ __html: summary }} />
-                  : <div className="jd-prose">No legal principles recorded for this judgment.</div>}
-                <h3 className="jd-panel-title jd-panel-title--mt">Ratio Decidendi</h3>
-                <div className="jd-prose">{judgment.ratioDecidendi || 'Not specified.'}</div>
-                <h3 className="jd-panel-title jd-panel-title--mt">Key Findings</h3>
-                <div className="jd-prose">{judgment.keyFindings || 'Not specified.'}</div>
-                <h3 className="jd-panel-title jd-panel-title--mt">Final Decision</h3>
-                <div className="jd-prose">{judgment.finalDecision || status || 'Not specified.'}</div>
+                {/* Section 1 — Judgment Dates */}
+                <h3 className="jd-panel-title">Judgment Dates</h3>
+                <div className="jd-dates-row">
+                  <div className="jd-date-item">
+                    <span className="jd-date-label">Judgment Date <span className="jd-req">*</span></span>
+                    <span className="jd-date-value">{judgment.judgmentDate ? formatDate(judgment.judgmentDate) : '—'}</span>
+                  </div>
+                  <div className="jd-date-item">
+                    <span className="jd-date-label">Pronouncement Date</span>
+                    <span className="jd-date-value">{judgment.pronouncementDate ? formatDate(judgment.pronouncementDate) : '—'}</span>
+                  </div>
+                  <div className="jd-date-item">
+                    <span className="jd-date-label">Upload Date</span>
+                    <span className="jd-date-value">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span>
+                  </div>
+                </div>
+
+                {/* Section 2 — Judgment Text */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Judgment Text</h3>
+                <div className="jd-prose-card jd-judgment-text-card">
+                  <div className="jd-prose jd-prose--readonly">
+                    {judgment.fullText
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
+                      : 'No full judgment text recorded for this judgment.'}
+                  </div>
+                </div>
               </div>
             )}
 

@@ -42,6 +42,7 @@ export const JudgmentsSchema = {
     followedBy: 'string',
     title: 'string',
     summary: 'string',
+    fullText: 'string',
     date: 'datetime',
     judgmentDate: 'datetime',
     pronouncementDate: 'datetime',
