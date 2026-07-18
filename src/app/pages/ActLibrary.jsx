@@ -10,6 +10,13 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 
+const ENTITY_PREFIX = 'ACTS';
+
+const autoCode = (title) => {
+  const slug = title.trim().replace(/\s+/g, '-').toUpperCase();
+  return `${ENTITY_PREFIX}-${slug}`;
+};
+
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
   { key: 'edit', label: 'Edit', icon: 'edit', variant: 'outline' },
@@ -115,7 +122,8 @@ export default function ActLibrary() {
   const doAdd = async () => {
     if (!newTitle.trim()) { toast.push('Title is required.', 'error'); return; }
     setBusy(true);
-    const res = await actLogic.create({ title: newTitle, act_type: newType, jurisdiction: newJurisdiction, year: parseInt(newYear) || 0, sections_count: parseInt(newSections) || 0, amendments_count: parseInt(newAmendments) || 0, description: newDesc, status: newStatus, short_code: newCode, color: newColor });
+    const code = newCode.trim().toUpperCase() || autoCode(newTitle);
+    const res = await actLogic.create({ title: newTitle, act_type: newType, jurisdiction: newJurisdiction, year: parseInt(newYear) || 0, sections_count: parseInt(newSections) || 0, amendments_count: parseInt(newAmendments) || 0, description: newDesc, status: newStatus, short_code: code, color: newColor });
     setBusy(false);
     if (res.ok) { reset(); toast.push('Act added.', 'success'); load(); }
     else toast.push(res.error || 'Failed to add act.', 'error');
@@ -203,7 +211,7 @@ export default function ActLibrary() {
     setNewAmendments(item.amendments_count?.toString() || '');
     setNewDesc(item.description || '');
     setNewStatus(item.status || 'Active');
-    setNewCode(item.short_code || '');
+    setNewCode('');
     setNewColor(item.color || '#6b7280');
     setDupTarget(item);
   };
@@ -367,7 +375,8 @@ export default function ActLibrary() {
                 </div>
                 <div className="bench-types__field">
                   <label className="bench-types__label">Short Code</label>
-                  <Input value={newCode} placeholder="e.g., IPC" onChange={e => setNewCode(e.target.value)} />
+                  <Input value={newCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
+                  <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
                 </div>
                 <div className="bench-types__field">
                   <label className="bench-types__label">Type</label>
@@ -426,7 +435,8 @@ export default function ActLibrary() {
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Short Code</label>
-                      <Input value={editCode} onChange={e => setEditCode(e.target.value)} />
+                      <Input value={editCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
+                      <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
                     </div>
                     <div className="bench-types__field">
                       <label className="bench-types__label">Type</label>
@@ -567,6 +577,7 @@ export default function ActLibrary() {
                   <th className="bench-types__th--w32"></th>
                   <th>#</th>
                   <th>TITLE</th>
+                  <th>SHORT CODE</th>
                   <th>TYPE</th>
                   <th>JURISDICTION</th>
                   <th>YEAR</th>
@@ -577,7 +588,7 @@ export default function ActLibrary() {
               </thead>
               <tbody>
                 {paged.length === 0 ? (
-                  <tr><td className="bench-types__empty" colSpan={9}>No acts found.</td></tr>
+                  <tr><td className="bench-types__empty" colSpan={10}>No acts found.</td></tr>
                 ) : paged.map((item, idx) => (
                   <tr key={item.id} draggable={!search}
                     onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -596,6 +607,7 @@ export default function ActLibrary() {
                         <span className="cmp-cell-name">{item.title}</span>
                       </div>
                     </td>
+                    <td><span className="bench-types__code-pill">{item.short_code || '—'}</span></td>
                     <td>{item.act_type ? <span className="badge badge--info">{item.act_type}</span> : '—'}</td>
                     <td>{item.jurisdiction || '—'}</td>
                     <td>{item.year || '—'}</td>
@@ -650,7 +662,7 @@ export default function ActLibrary() {
                       <span className="bench-types__mobile-card-name">{item.title}</span>
                       {item.act_type && <span className="badge badge--info">{item.act_type}</span>}
                     </div>
-                    <span className="bench-types__mobile-code">{item.jurisdiction || '—'} · {item.sections_count || 0} sections</span>
+                    <span className="bench-types__mobile-code">{item.short_code || '—'} · {item.jurisdiction || '—'} · {item.sections_count || 0} sections</span>
                   </div>
                 </div>
                 <div className="bench-types__mobile-divider"></div>
@@ -708,7 +720,10 @@ export default function ActLibrary() {
               <div key={item.id} className="bench-types__grid-card">
                 <div className="bench-types__grid-card-header">
                   <div className="bench-types__grid-card-icon" style={{ background: `${getTypeColor(item.act_type, item)}1a`, color: getTypeColor(item.act_type, item) }}><Icon name="book" size={22} /></div>
-                  <div className="bench-types__grid-card-title">{item.title}</div>
+                  <div className="bench-types__grid-card-title-group">
+                    <div className="bench-types__grid-card-title">{item.title}</div>
+                    {item.short_code && <span className="bench-types__grid-card-code">{item.short_code}</span>}
+                  </div>
                 </div>
                 <div className="bench-types__grid-card-body">
                   {item.act_type && <span className="badge badge--info">{item.act_type}</span>}
@@ -821,7 +836,8 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code</label>
-            <Input value={editCode} onChange={e => setEditCode(e.target.value)} />
+            <Input value={editCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setEditCode(e.target.value.toUpperCase())} />
+            <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Type</label>
@@ -877,7 +893,8 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Short Code</label>
-            <Input value={newCode} onChange={e => setNewCode(e.target.value)} />
+            <Input value={newCode} placeholder="ACTS-<ACT-NAME>" onChange={e => setNewCode(e.target.value.toUpperCase())} />
+            <span className="bench-types__hint">Example: ACTS-INDIAN-PENAL-CODE</span>
           </div>
           <div className="bench-types__field">
             <label className="bench-types__label">Type</label>

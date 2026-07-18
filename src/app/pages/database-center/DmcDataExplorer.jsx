@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
@@ -7,10 +7,18 @@ import { bytes, useFormat } from '@/utils/format.js';
 import { storageService } from '@/services/storageService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
+import Modal from '@/components/Modal.jsx';
 
 const COLLECTIONS = databaseAdminService.knownCollections();
 const STAT_VARIANTS = ['indigo', 'green', 'amber', 'blue'];
-const VARIANT_MAP = { indigo: 0, green: 1, amber: 2, blue: 3, purple: 4, cyan: 5 };
+const COLL_VARIANTS = ['indigo', 'green', 'amber', 'blue', 'purple', 'cyan'];
+const COLL_ICONS = ['layers', 'folder', 'file-text', 'edit', 'folder-plus', 'calendar'];
+const PER_PAGE_OPTIONS = [10, 25, 50, 100];
+
+function getFieldValue(r, f) {
+  if (f.includes('.')) return f.split('.').reduce((o, k) => o?.[k], r);
+  return r[f];
+}
 
 export default function DmcDataExplorer() {
   const { formatDate } = useFormat();
@@ -22,6 +30,12 @@ export default function DmcDataExplorer() {
   const [previewDoc, setPreviewDoc] = useState(null);
   const [counts, setCounts] = useState({});
   const [showCollectionGrid, setShowCollectionGrid] = useState(false);
+  const [sortField, setSortField] = useState('');
+  const [sortDir, setSortDir] = useState('asc');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [detailItem, setDetailItem] = useState(null);
 
   useEffect(() => {
     databaseAdminService.counts().then(setCounts).catch(() => {});
@@ -37,39 +51,83 @@ export default function DmcDataExplorer() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [collection]);
+  useEffect(() => { load(); setPage(1); setSelectedIds(new Set()); setPreviewDoc(null); setDetailItem(null); }, [collection]);
 
-  const filtered = rows.filter((r) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (r.name || r.title || r.id || r.caseNumber || '').toLowerCase().includes(q);
-  });
+  const fields = useMemo(() => {
+    if (collection === 'documents') return ['name', 'folder', 'mime', 'size', 'createdAt'];
+    if (collection === 'cases') return ['caseNumber', 'case_type', 'case_year', 'status', 'createdAt'];
+    return ['id', 'name'];
+  }, [collection]);
 
-  const fields = collection === 'documents'
-    ? ['name', 'folder', 'mime', 'size', 'uploadedAt']
-    : collection === 'cases'
-    ? ['caseNumber', 'case_type', 'case_year', 'status', 'createdAt']
-    : ['id', 'name'];
+  const filtered = useMemo(() => {
+    let data = rows;
+    if (search) {
+      const q = search.toLowerCase();
+      data = data.filter((r) =>
+        fields.some((f) => {
+          const v = getFieldValue(r, f);
+          return v != null && String(v).toLowerCase().includes(q);
+        })
+      );
+    }
+    if (sortField) {
+      data = [...data].sort((a, b) => {
+        let va = getFieldValue(a, sortField);
+        let vb = getFieldValue(b, sortField);
+        if (va == null) va = '';
+        if (vb == null) vb = '';
+        if (typeof va === 'number' && typeof vb === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+        va = String(va).toLowerCase();
+        vb = String(vb).toLowerCase();
+        return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+    }
+    return data;
+  }, [rows, search, sortField, sortDir, fields]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+
+  const handleSort = (f) => {
+    if (sortField === f) {
+      if (sortDir === 'asc') setSortDir('desc');
+      else { setSortField(''); setSortDir('asc'); }
+    } else { setSortField(f); setSortDir('asc'); }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paged.length && paged.length > 0) setSelectedIds(new Set());
+    else setSelectedIds(new Set(paged.map((r) => r.id)));
+  };
 
   const renderCell = (r, f) => {
-    if (f === 'size') return bytes(r[f] || 0);
-    if (f === 'uploadedAt' || f === 'createdAt') return formatDate(r[f] || r.uploaded_at || r.created_at);
+    const v = getFieldValue(r, f);
+    if (f === 'size') return bytes(v || 0);
+    if (f === 'createdAt') return formatDate(v || r.uploaded_at || r.created_at);
     if (f === 'name' && collection === 'documents') {
-      return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} className="dmc-explorer-link">{r[f] || r.title}</a>;
+      return <a href="#" onClick={(e) => { e.preventDefault(); setPreviewDoc(r); }} className="dmc-explorer-link">{v || r.title}</a>;
     }
     if (f === 'caseNumber') {
-      return <span style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{r[f] || '\u2014'}</span>;
+      return <span style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{v || '\u2014'}</span>;
     }
     if (f === 'status') {
-      const status = (r[f] || '').toLowerCase();
+      const status = (v || '').toLowerCase();
       const color = status === 'active' || status === 'open' ? 'green' : status === 'closed' || status === 'resolved' ? 'navy' : 'amber';
-      return <span className={`dmc-badge dmc-badge--${color}`}>{r[f] || '\u2014'}</span>;
+      return <span className={`dmc-badge dmc-badge--${color}`}>{v || '\u2014'}</span>;
     }
-    return r[f] || '\u2014';
+    return v ?? '\u2014';
   };
 
   const totalCount = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
-  const icons = ['layers', 'folder', 'file-text', 'edit', 'folder-plus', 'calendar'];
 
   const statCards = [
     { label: 'Collections', value: COLLECTIONS.length, sub: 'Available schemas', variant: 'indigo', icon: 'layers' },
@@ -77,6 +135,85 @@ export default function DmcDataExplorer() {
     { label: 'Provider', value: databaseAdminService.providerName(), sub: 'Schema v' + databaseAdminService.schemaVersion(), variant: 'amber', icon: 'server' },
     { label: 'Loaded', value: rows.length, sub: 'In ' + collection, variant: 'blue', icon: 'filter' },
   ];
+
+  const renderPagination = () => {
+    if (filtered.length === 0) return null;
+    const start = (safePage - 1) * perPage + 1;
+    const end = Math.min(safePage * perPage, filtered.length);
+    const maxVisible = 5;
+    const pages = [];
+    let startPage = Math.max(1, safePage - Math.floor(maxVisible / 2));
+    let endPage = startPage + maxVisible - 1;
+    if (endPage > totalPages) { endPage = totalPages; startPage = Math.max(1, endPage - maxVisible + 1); }
+    for (let i = startPage; i <= endPage; i++) pages.push(i);
+
+    return (
+      <div className="dmc-db-pagination">
+        <div className="dmc-db-pagination__info">Showing {start}\u2013{end} of {filtered.length} records</div>
+        <div className="dmc-db-pagination__controls">
+          <button className="dmc-db-pagination__btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+          {startPage > 1 && <span style={{ color: 'var(--text-faint)', padding: '0 4px', fontSize: 12 }}>\u2026</span>}
+          {pages.map((p) => (
+            <button key={p} className={`dmc-db-pagination__btn${safePage === p ? ' dmc-db-pagination__btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+          ))}
+          {endPage < totalPages && <span style={{ color: 'var(--text-faint)', padding: '0 4px', fontSize: 12 }}>\u2026</span>}
+          <button className="dmc-db-pagination__btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+        </div>
+        <div className="dmc-db-perpage">
+          <span>Rows:</span>
+          <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}>
+            {PER_PAGE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDetailModal = () => {
+    if (!detailItem) return null;
+    const isDoc = collection === 'documents';
+    const pairs = isDoc ? [
+      ['ID', detailItem.id],
+      ['Name', detailItem.name || detailItem.title],
+      ['Folder', detailItem.folder],
+      ['MIME Type', detailItem.mime],
+      ['Size', bytes(detailItem.size || 0)],
+      ['Uploaded', formatDate(detailItem.uploaded_at || detailItem.uploadedAt)],
+      ['Storage Ref', detailItem.ref],
+      ['Sync Status', detailItem.syncStatus],
+    ] : [
+      ['ID', detailItem.id],
+      ['Case Number', detailItem.caseNumber],
+      ['Type', detailItem.case_type],
+      ['Year', detailItem.case_year],
+      ['Court', detailItem.court],
+      ['Judge', detailItem.judge],
+      ['Status', detailItem.status],
+      ['Filed', detailItem.filed_at ? formatDate(detailItem.filed_at) : '\u2014'],
+    ];
+
+    return (
+      <Modal open={true} title={detailItem.name || detailItem.title || detailItem.caseNumber || 'Record Details'} onClose={() => setDetailItem(null)} size="lg">
+        <div className="dmc-detail-grid">
+          {pairs.map(([label, value]) => (
+            <div key={label} className="dmc-detail-row">
+              <span className="dmc-detail-label">{label}</span>
+              <span className="dmc-detail-value">{value ?? '\u2014'}</span>
+            </div>
+          ))}
+        </div>
+        {isDoc && detailItem.ref && (
+          <div style={{ marginTop: 16 }}>
+            <Button variant="outline" size="sm" onClick={() => storageService.getUrl(detailItem.ref).then((url) => url && window.open(url, '_blank'))}>
+              <Icon name="eye" size={14} /> View File
+            </Button>
+          </div>
+        )}
+      </Modal>
+    );
+  };
+
+  const allSelected = paged.length > 0 && selectedIds.size === paged.length;
 
   return (
     <>
@@ -136,8 +273,8 @@ export default function DmcDataExplorer() {
                   style={{ cursor: 'pointer', flex: '1 1 calc(16.66% - 12px)', minWidth: 130, border: collection === c ? '2px solid var(--brand)' : '1px solid var(--border)' }}
                   onClick={() => { setCollection(c); setShowCollectionGrid(false); }}
                 >
-                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${STAT_VARIANTS[i % 4]}`}>
-                    <Icon name={icons[i % icons.length]} size={16} />
+                  <div className={`dmc-db-statcard__icon dmc-db-statcard__icon--${COLL_VARIANTS[i % COLL_VARIANTS.length]}`}>
+                    <Icon name={COLL_ICONS[i % COLL_ICONS.length]} size={16} />
                   </div>
                   <div className="dmc-db-statcard__body">
                     <div className="dmc-db-statcard__label" style={{ fontSize: 8.5 }}>{c}</div>
@@ -157,85 +294,70 @@ export default function DmcDataExplorer() {
                 {COLLECTIONS.slice(0, 6).map((c) => (
                   <button
                     key={c}
+                    className={`dmc-db-chip${collection === c ? ' dmc-db-chip--active' : ''}`}
                     onClick={() => { setCollection(c); setPreviewDoc(null); }}
-                    style={{
-                      padding: '5px 12px', fontSize: 12, borderRadius: 6, border: '1px solid var(--border)',
-                      cursor: 'pointer', background: collection === c ? 'var(--brand)' : 'transparent',
-                      color: collection === c ? '#fff' : 'var(--text-soft)',
-                      fontWeight: collection === c ? 600 : 400,
-                    }}
                   >{c}</button>
                 ))}
                 {COLLECTIONS.length > 6 && (
-                  <select className="dmc-db-select" value={collection} onChange={(e) => { setCollection(e.target.value); setPreviewDoc(null); }}
-                    style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6 }}
-                  >
+                  <select className="dmc-db-select" value={collection} onChange={(e) => { setCollection(e.target.value); setPreviewDoc(null); }}>
                     {COLLECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 )}
               </div>
-              <div className="dmc-db-search" style={{ minWidth: 160 }}>
+              <div className="dmc-db-search">
                 <Icon name="search" size={14} />
-                <input placeholder="Search\u2026" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <input placeholder="Search\u2026" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
               </div>
             </div>
             <div className="dmc-db-toolbar__right">
+              {selectedIds.size > 0 && (
+                <span style={{ fontSize: 12, color: 'var(--brand)', fontWeight: 600 }}>{selectedIds.size} selected</span>
+              )}
               <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
                 <Icon name="refresh" size={14} /> {loading ? 'Loading\u2026' : 'Refresh'}
               </Button>
             </div>
           </div>
+        </div>
 
-          {previewDoc && (
-            <div style={{ marginBottom: 16, padding: 16, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface-2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon name="file-text" size={16} style={{ color: 'var(--brand)' }} />
-                  </div>
-                  <strong>{previewDoc.name || previewDoc.title}</strong>
-                </div>
-                <button onClick={() => setPreviewDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-soft)' }}><Icon name="close" size={16} /></button>
+        {previewDoc && (
+          <div className="dmc-preview-panel">
+            <div className="dmc-preview-panel__header">
+              <div className="dmc-preview-panel__title">
+                <div className="dmc-preview-panel__icon"><Icon name="file-text" size={16} /></div>
+                {previewDoc.name || previewDoc.title}
               </div>
+              <button className="dmc-preview-panel__close" onClick={() => setPreviewDoc(null)} title="Close preview"><Icon name="close" size={16} /></button>
+            </div>
+            <div className="dmc-preview-panel__body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px', fontSize: 13 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>ID</span>
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{previewDoc.id}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>Folder</span>
-                  <span>{previewDoc.folder || '\u2014'}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>Size</span>
-                  <span>{bytes(previewDoc.size || 0)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>Type</span>
-                  <span>{previewDoc.mime || '\u2014'}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>Uploaded</span>
-                  <span>{formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-faint)' }}>Sync</span>
-                  <span>{previewDoc.syncStatus || '\u2014'}</span>
-                </div>
+                {[
+                  ['ID', previewDoc.id],
+                  ['Folder', previewDoc.folder],
+                  ['Size', bytes(previewDoc.size || 0)],
+                  ['Type', previewDoc.mime],
+                  ['Uploaded', formatDate(previewDoc.uploaded_at || previewDoc.uploadedAt)],
+                  ['Sync', previewDoc.syncStatus],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ color: 'var(--text-faint)' }}>{label}</span>
+                    <span>{value ?? '\u2014'}</span>
+                  </div>
+                ))}
               </div>
               {previewDoc.ref && (
-                <div style={{ marginTop: 12 }}>
-                  <button className="btn btn--sm btn--ghost" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
+                <div className="dmc-preview-panel__actions">
+                  <Button variant="outline" size="sm" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
                     <Icon name="eye" size={14} /> View File
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {loading ? (
-          <div className="dmc-empty" style={{ padding: '32px 20px' }}><div className="dmc-empty__title">Loading records\u2026</div></div>
+          <div className="dmc-empty"><div className="dmc-empty__title" style={{ padding: '24px 0' }}>Loading records\u2026</div></div>
         ) : filtered.length === 0 ? (
           <div className="dmc-empty">
             <div className="dmc-empty__icon"><Icon name="layers" size={32} /></div>
@@ -243,22 +365,55 @@ export default function DmcDataExplorer() {
             <div className="dmc-empty__hint">Try a different collection or search term.</div>
           </div>
         ) : (
-          <div className="dmc-db-table-wrap">
-            <table className="dmc-db-table">
-              <thead>
-                <tr>{fields.map((f) => <th key={f}>{f}</th>)}</tr>
-              </thead>
-              <tbody>
-                {filtered.slice(0, 50).map((r) => (
-                  <tr key={r.id}>
-                    {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
+          <>
+            <div className="dmc-db-table-wrap">
+              <table className="dmc-db-table">
+                <thead>
+                  <tr>
+                    <th className="dmc-db-table__checkbox">
+                      <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+                    </th>
+                    {fields.map((f) => (
+                      <th
+                        key={f}
+                        className={`dmc-db-table th--sortable${sortField === f ? sortDir === 'asc' ? ' th--sort-asc' : ' th--sort-desc' : ''}`}
+                        onClick={() => handleSort(f)}
+                      >
+                        {f.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
+                        <span className="dmc-db-table__sort-arrow">
+                          {sortField === f ? (
+                            sortDir === 'asc' ? '\u25B2' : '\u25BC'
+                          ) : '\u25B2\u25BC'}
+                        </span>
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paged.map((r) => (
+                    <tr
+                      key={r.id}
+                      className={`dmc-db-table__row--clickable${selectedIds.has(r.id) ? ' dmc-db-table__row--selected' : ''}`}
+                      onClick={(e) => {
+                        if (e.target.type === 'checkbox') return;
+                        setDetailItem(r);
+                      }}
+                    >
+                      <td className="dmc-db-table__checkbox" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} />
+                      </td>
+                      {fields.map((f) => <td key={f}>{renderCell(r, f)}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {renderPagination()}
+          </>
         )}
       </div>
+
+      {renderDetailModal()}
     </>
   );
 }

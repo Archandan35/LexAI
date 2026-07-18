@@ -3,6 +3,13 @@ import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
 import { orderComparator, normalizeDisplayOrder, nextDisplayOrder } from '@/utils/displayOrder.js';
 
+const SHORT_CODE_PREFIX = 'ACTS';
+
+function autoShortCode(title = '') {
+  const slug = String(title).trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+  return slug ? `${SHORT_CODE_PREFIX}-${slug}` : '';
+}
+
 export const actLogic = {
   async list() {
     const rows = await actService.list();
@@ -35,10 +42,12 @@ export const actLogic = {
   async create(data) {
     try {
       const { name, ...rest } = data;
+      const title = rest.title || name || '';
       const all = await actService.list();
       const row = await actService.create({
         ...rest,
-        title: rest.title || name || '',
+        title,
+        short_code: (data.short_code || '').trim().toUpperCase() || autoShortCode(title),
         id: uid('act'), created_at: nowISO(), display_order: nextDisplayOrder(all),
       });
       return ok(row);
@@ -49,6 +58,7 @@ export const actLogic = {
 
   async update(id, data) {
     try {
+      if (data.short_code !== undefined) data.short_code = (data.short_code || '').trim().toUpperCase();
       const row = await actService.update(id, data);
       return ok(row);
     } catch (e) {
