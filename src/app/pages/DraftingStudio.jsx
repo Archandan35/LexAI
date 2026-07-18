@@ -65,7 +65,7 @@ export default function DraftingStudio() {
   });
   const [blank, setBlank] = useState({ title: '', folder: '', fileType: DEFAULT_DRAFT_FILE_TYPE });
 
-  const interval = config.storage?.autoSaveInterval || 5000;
+  const interval = config.storage?.autoSaveInterval || 30000;
   const saveTimer = useRef(null);
 
   const loadDrafts = useCallback(async () => {

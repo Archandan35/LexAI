@@ -5,8 +5,13 @@ import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
 
 // searchService — façade over the active SearchProvider. Can (re)build the index
 // from DB-held documents/drafts and run relevance queries.
+let indexBuilt = false;
+
 export const searchService = {
+  invalidateIndex() { indexBuilt = false; },
+
   async reindexCaseCorpus() {
+    if (indexBuilt) return (getSearchProvider().docs || []).length;
     const [documents, drafts, cases] = await Promise.all([
       documentsRepository.getAll(),
       draftsRepository.getAll(),
@@ -18,6 +23,7 @@ export const searchService = {
       ...cases.map((c) => ({ id: c.id, kind: 'case', title: c.title, text: `${c.description} ${c.caseNumber}`, caseId: c.id })),
     ];
     await getSearchProvider().index(docs);
+    indexBuilt = true;
     return docs.length;
   },
 

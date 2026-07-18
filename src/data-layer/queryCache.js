@@ -87,7 +87,7 @@ export function getQueryData(key) {
 
 // useQuery — subscribe to a cached key and (re)fetch when stale/missing.
 export function useQuery(key, fetcher, options = {}) {
-  const { staleTime = 30000, enabled = true } = options;
+  const { staleTime = 300000, enabled = true } = options;
 
   const entry = getEntry(key);
   entry.fetcher = fetcher;

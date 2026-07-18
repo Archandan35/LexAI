@@ -5,6 +5,8 @@ import { documentsRepository } from '@/data-layer/repositories/documentsReposito
 import { notesRepository } from '@/data-layer/repositories/notesRepository.js';
 import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
 
+const CACHE_TTL = 60_000;
+
 const SOURCES = [
   { repo: casesRepository, type: 'Case', icon: 'vault', module: 'manageCase',
     title: (r) => r.caseNumber || r.title, subtitle: (r) => r.title, route: (r) => `/cases/${r.id}`,
@@ -23,6 +25,17 @@ const SOURCES = [
     fields: (r) => [r.purpose, r.status, r.notes] },
 ];
 
+let cache = null;
+let cacheTs = 0;
+
+async function getAllowedCollections(allowed) {
+  if (cache && Date.now() - cacheTs < CACHE_TTL) return cache;
+  const collections = await Promise.all(allowed.map((s) => s.repo.getAll().catch(() => [])));
+  cache = collections;
+  cacheTs = Date.now();
+  return cache;
+}
+
 function score(haystack, terms) {
   let s = 0;
   terms.forEach((t) => { if (haystack.includes(t)) s += 1; });
@@ -30,13 +43,15 @@ function score(haystack, terms) {
 }
 
 export const searchLogic = {
+  invalidateCache() { cache = null; cacheTs = 0; },
+
   async search(query, { can } = {}) {
     const q = String(query || '').trim().toLowerCase();
     if (q.length < 2) return [];
     const terms = q.match(/[a-z0-9]{2,}/g) || [q];
     const allowed = SOURCES.filter((s) => !can || can(`${s.module}.view`));
 
-    const collections = await Promise.all(allowed.map((s) => s.repo.getAll().catch(() => [])));
+    const collections = await getAllowedCollections(allowed);
     const hits = [];
     allowed.forEach((src, i) => {
       collections[i].forEach((r) => {

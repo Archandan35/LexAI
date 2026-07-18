@@ -19,9 +19,6 @@ export const NAV_GROUPS = [
           { to: '/cases/hearings', label: 'Hearing Notes', icon: 'notes', module: 'hearingNotes' },
         ],
       },
-      { to: '/clients', label: 'Clients', icon: 'users' },
-      { to: '/advocates', label: 'Advocates', icon: 'users' },
-      { to: '/contacts', label: 'Contacts', icon: 'book' },
     ],
   },
   { type: 'heading', label: 'Reminder Center' },
@@ -32,6 +29,30 @@ export const NAV_GROUPS = [
       { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
     ],
   },
+  { type: 'heading', label: 'Contact Center' },
+  {
+    label: '',
+    items: [
+      { to: '/clients', label: 'Clients', icon: 'users' },
+      { to: '/advocates', label: 'Advocates', icon: 'users' },
+      { to: '/contacts', label: 'Contacts', icon: 'book' },
+    ],
+  },
+  {
+    label: 'Document Center',
+    items: [
+      { to: '/documents', label: 'Case Documents', icon: 'folder', end: true, module: 'caseManage' },
+      { to: '/documents/review', label: 'Document Review', icon: 'scan', module: 'documents' },
+    ],
+  },
+  { type: 'heading', label: 'Knowledge Library' },
+  {
+    label: '',
+    items: [
+      { to: '/research/judgment-library', label: 'Judgment Library', icon: 'book', module: 'research' },
+      { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
+    ],
+  },
   {
     label: 'Drafting Center',
     items: [
@@ -40,13 +61,6 @@ export const NAV_GROUPS = [
       { to: '/drafting/legal-notices', label: 'Legal Notices', icon: 'doc', module: 'drafting' },
       { to: '/drafting/version-control', label: 'Version Control', icon: 'history', module: 'drafting' },
       { to: '/drafting/archive', label: 'Document Archive', icon: 'folder', module: 'drafting' },
-    ],
-  },
-  {
-    label: 'Document Center',
-    items: [
-      { to: '/documents', label: 'Case Documents', icon: 'folder', end: true, module: 'caseManage' },
-      { to: '/documents/review', label: 'Document Review', icon: 'scan', module: 'documents' },
     ],
   },
   {
@@ -106,13 +120,6 @@ export const NAV_GROUPS = [
           { to: '/admin/storage', label: 'Storage Settings', icon: 'folder', module: 'storage' },
           { to: '/admin/permission-manager', label: 'Permission Manager', icon: 'lock', module: 'permissions' },
           { to: '/admin/setup-wizard', label: 'Setup Wizard', icon: 'wrench', module: 'admin' },
-        ],
-      },
-      {
-        label: 'Knowledge Library', icon: 'book',
-        children: [
-          { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
-          { to: '/research/judgment-library', label: 'Judgment Library', icon: 'document', module: 'research' },
         ],
       },
     ],

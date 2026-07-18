@@ -7,6 +7,8 @@ import { caseHistoryService } from '@/services/caseHistoryService.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
 import { reminderService } from '@/services/reminderService.js';
 import { reminderLogic } from '@/logic/reminderLogic.js';
+import { draftsRepository } from '@/data-layer/repositories/draftsRepository.js';
+import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
 import { invalidateQuery } from '@/data-layer/queryCache.js';
 import { ok, fail } from '@/utils/result.js';
 import { nowISO, uid } from '@/utils/id.js';
@@ -136,10 +138,14 @@ export const caseLogic = {
   // Dashboard data aggregation across collections.
   async dashboard() {
     try {
-      const [cases, drafts, documents, hearings, tasks] = await Promise.all([
-        caseService.listCases(),
-        draftingService.listDrafts(),
-        caseService.listDocuments(),
+      const [
+        cases, draftCount, drafts, docCount, documents, hearings, tasks,
+      ] = await Promise.all([
+        caseService.listCases({ select: 'id,status,case_type,title,caseNumber,next_hearing,archived' }),
+        draftsRepository.count(),
+        draftsRepository.getAll({ limit: 5, order: 'updatedAt.desc' }),
+        documentsRepository.count(),
+        documentsRepository.getAll({ limit: 5, order: 'uploadedAt.desc' }),
         caseService.listHearings(),
         (async () => { try { const m = await import('@/logic/taskLogic.js'); const r = await m.taskLogic.list(); return r.ok ? r.data || [] : []; } catch { return []; } })(),
       ]);
@@ -263,15 +269,14 @@ export const caseLogic = {
       const caseTypeDistribution = Object.entries(typeMap).map(([label, value]) => ({ label, value }));
 
       const onHoldCnt = live.filter((c) => c.status === 'On Hold').length;
-      const draftCnt = drafts.length;
 
       return ok({
         stats: {
           activeCases: live.filter((c) => c.status === 'Active').length,
           totalCases: live.length,
           onHoldCases: onHoldCnt,
-          drafts: draftCnt,
-          documents: documents.length,
+          drafts: draftCount ?? drafts.length,
+          documents: docCount ?? documents.length,
           hearings: upcoming.length,
         },
         activeCases: live.slice(0, 6),

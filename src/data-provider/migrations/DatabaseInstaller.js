@@ -25,7 +25,12 @@ export const databaseInstaller = {
     let coreMissing = false;
     let authError = null;
 
-    const schemas = listSchemas();
+    const allSchemas = listSchemas();
+    // Quick check: only sample a few representative core collections. Checking
+    // all 49 on every app load is wasteful. If these core tables exist, the DB
+    // is installed — the full schema is validated separately by health scans.
+    const sample = allSchemas.filter((s) => s.core).slice(0, 5);
+    const schemas = sample.length ? sample : allSchemas.slice(0, 5);
 
     if (onProgress) onProgress({ step: 1, total: 1, label: 'Checking collections...', status: 'working' });
 
