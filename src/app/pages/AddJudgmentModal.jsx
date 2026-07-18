@@ -71,6 +71,7 @@ const INITIAL_FORM = {
   reporterCitation: '',
   caseNumber: '',
   caseType: '',
+  applicableStages: [],
   court: '',
   bench: '',
   judges: [],

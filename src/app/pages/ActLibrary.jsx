@@ -835,24 +835,6 @@ export default function ActLibrary() {
       ) : (
         <>
           {/* ── Grid view ── */}
-          <div className="bench-types__table-footer bench-types__desktop-only">
-            <div>Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} acts</div>
-            {totalPages > 1 && (
-              <div className="bench-types__pagination">
-                <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const start = Math.max(1, Math.min(safePage - Math.floor(5 / 2), totalPages - 4));
-                  const p = start + i;
-                  if (p > totalPages) return null;
-                  return <button key={p} className={`bench-types__page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>;
-                })}
-                <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
-              </div>
-            )}
-            <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
-              {perPage} / page <Icon name="chevronDown" size={13} />
-            </span>
-          </div>
           <div className="bench-types__mobile-section-header bench-types__mobile-only">
             <span className="bench-types__mobile-section-title">All Acts</span>
             <span className="bench-types__mobile-section-count">{Math.min(perPage, filtered.length)} of {filtered.length}</span>
@@ -903,6 +885,26 @@ export default function ActLibrary() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="bench-types__table-footer bench-types__desktop-only">
+            <div className="bench-types__ft-info">Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length} acts</div>
+            <div className="bench-types__ft-right">
+              <span className="bench-types__ft-perpage" onClick={() => setPerPage(perPage === 10 ? 20 : perPage === 20 ? 50 : 10)}>
+                {perPage} / page <Icon name="chevronDown" size={13} />
+              </span>
+              {totalPages > 1 && (
+                <div className="bench-types__pagination">
+                  <button className="bench-types__page-btn" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}><Icon name="chevronLeft" size={14} /></button>
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const start = Math.max(1, Math.min(safePage - Math.floor(5 / 2), totalPages - 4));
+                    const p = start + i;
+                    if (p > totalPages) return null;
+                    return <button key={p} className={`bench-types__page-btn${safePage === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>;
+                  })}
+                  <button className="bench-types__page-btn" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}><Icon name="chevron" size={14} /></button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="bench-types__mobile-pagination bench-types__mobile-only">
             <div className="bench-types__mobile-pag-info">Showing {(safePage - 1) * perPage + 1} to {Math.min(safePage * perPage, filtered.length)} of {filtered.length}</div>

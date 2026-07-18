@@ -449,9 +449,27 @@ export default function JudgmentDetail() {
           <div className="jd-tab-panel">
             {tab === 'overview' && (
               <div className="jd-overview-cards">
+                {/* Judgment Link / Source URL Section */}
+                {judgment.sourceUrl && (
+                  <div className="jd-prose-card jd-source-link-section">
+                    <h3 className="jd-panel-title">Judgment Link</h3>
+                    <div className="jd-source-link-wrap">
+                      <a
+                        href={judgment.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="jd-source-link"
+                      >
+                        {judgment.sourceUrl}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Headnotes Section (Readonly) */}
                 <div className="jd-prose-card">
                   <h3 className="jd-panel-title">Headnotes</h3>
-                  <div className="jd-prose">
+                  <div className="jd-prose jd-prose--readonly">
                     {judgment.headnotes
                       ? <span dangerouslySetInnerHTML={{ __html: judgment.headnotes }} />
                       : 'No headnotes recorded for this judgment.'}
@@ -596,15 +614,6 @@ export default function JudgmentDetail() {
               <div className="jd-rc-row"><span className="jd-rc-key">Last Updated</span><span className="jd-rc-val">{judgment.updatedAt ? formatDate(judgment.updatedAt) : '—'}</span></div>
             </div>
           </div>
-
-          {judgment.sourceUrl && (
-            <div className="jd-rc-card jd-source-link-card">
-              <div className="jd-rc-title"><Icon name="link" size={14} /> Judgment Link</div>
-              <div className="jd-rc-body">
-                <a href={judgment.sourceUrl} target="_blank" rel="noopener noreferrer" className="jd-source-link">{judgment.sourceUrl}</a>
-              </div>
-            </div>
-          )}
 
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Documents</div>
