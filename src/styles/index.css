@@ -23351,6 +23351,31 @@ kbd.cmd__kbd {
   text-decoration: underline;
 }
 
+.jd-source-link-section .jd-source-link-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.jd-source-link-section .jd-source-link {
+  word-break: break-all;
+  color: var(--navy-700);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.jd-source-link-section .jd-source-link:hover {
+  text-decoration: underline;
+}
+
+.jd-source-link--truncate {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Tabs */
 .jd-tabs {
   display: flex;

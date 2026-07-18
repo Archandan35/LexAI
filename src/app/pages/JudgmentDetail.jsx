@@ -28,7 +28,6 @@ const TABS = [
   { key: 'legalAnalysis', label: 'Legal Principles' },
   { key: 'documents', label: 'Documents' },
   { key: 'notes', label: 'Notes' },
-  { key: 'linked', label: 'Linked Records' },
   { key: 'history', label: 'History' },
 ];
 
@@ -486,26 +485,27 @@ export default function JudgmentDetail() {
                 {judgment.sourceUrl && (
                   <div className="jd-prose-card jd-source-link-section jd-panel-title--mt">
                     <h3 className="jd-panel-title">Judgment Link</h3>
-                    <div className="jd-source-link-wrap">
-                      <a
-                        href={judgment.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="jd-source-link"
-                      >
+                <div className="jd-source-link-wrap">
+                  <a
+                    href={judgment.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="jd-source-link jd-source-link--truncate"
+                    title={judgment.sourceUrl}
+                  >
                         {judgment.sourceUrl}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {/* Section 2 — Judgment Text */}
-                <h3 className="jd-panel-title jd-panel-title--mt">Judgment Text</h3>
+                {/* Section 2 — Judgement */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Judgement</h3>
                 <div className="jd-prose-card jd-judgment-text-card">
                   <div className="jd-prose jd-prose--readonly">
                     {judgment.fullText
                       ? <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
-                      : 'No full judgment text recorded for this judgment.'}
+                      : 'No judgement text recorded for this judgment.'}
                   </div>
                 </div>
               </div>
@@ -573,8 +573,13 @@ export default function JudgmentDetail() {
                   <div className="jd-ref-item">
                     <span className="jd-ref-label">Act</span>
                     <div className="jd-tags jd-tags--readonly">
-                      {acts?.length ? acts.map((act, i) => <span key={i} className="jd-tag">{actNameMap[act] || act}</span>) : (
-                        judgment.act ? <span className="jd-tag">{judgment.act}</span> : <span className="jd-ref-empty">—</span>
+                      {acts?.length ? acts.map((act, i) => {
+                        const name = typeof act === 'string'
+                          ? (actNameMap[act] || act)
+                          : (act?.name || act?.title || (act?.id ? actNameMap[act.id] : '') || '');
+                        return <span key={i} className="jd-tag">{name || '—'}</span>;
+                      }) : (
+                        judgment.act ? <span className="jd-tag">{actNameMap[judgment.act] || judgment.act}</span> : <span className="jd-ref-empty">—</span>
                       )}
                     </div>
                   </div>
@@ -707,13 +712,6 @@ export default function JudgmentDetail() {
               </div>
             )}
 
-            {tab === 'linked' && (
-              <div className="jd-panel-section">
-                <h3 className="jd-panel-title">Linked Records</h3>
-                <div className="jd-prose jd-empty-text">No linked records.</div>
-              </div>
-            )}
-
             {tab === 'history' && (
               <div className="jd-panel-section">
                 {/* Section 1 — Audit History (2-column) */}
@@ -817,7 +815,7 @@ export default function JudgmentDetail() {
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
             <div className="jd-rc-body">
               {acts?.length ? acts.map((act, i) => <ActRow key={i} act={actNameMap[act] || act} />) : (
-                judgment.act ? <div className="jd-empty-text">{judgment.act}</div> : <div className="jd-empty-text">No acts referenced.</div>
+                judgment.act ? <ActRow key="single" act={actNameMap[judgment.act] || judgment.act} /> : <div className="jd-empty-text">No acts referenced.</div>
               )}
             </div>
           </div>
