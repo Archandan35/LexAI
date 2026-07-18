@@ -24,6 +24,13 @@ const ACTIONS = [
   { key: 'import', label: 'Import', icon: 'upload', variant: 'outline' },
 ];
 
+const SUB_MODES = {
+  add: [
+    { key: 'single', label: 'Single Add', icon: 'plus' },
+    { key: 'bulk', label: 'Bulk Add', icon: 'users' },
+  ],
+};
+
 export default function ActLibrary() {
   const toast = useToast();
   const [items, setItems] = useState([]);
@@ -70,6 +77,8 @@ export default function ActLibrary() {
   const [importFile, setImportFile] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
   const dragOrder = useRef(null);
+  const [bulkAddText, setBulkAddText] = useState('');
+  const [progress, setProgress] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -110,6 +119,7 @@ export default function ActLibrary() {
     setEditId(''); setEditTitle(''); setEditType(''); setEditJurisdiction(''); setEditYear(''); setEditSections(''); setEditAmendments(''); setEditDesc(''); setEditStatus('Active'); setEditCode(''); setEditColor('#6b7280');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
+    setBulkAddText(''); setProgress(null);
     setPage(1);
   };
 

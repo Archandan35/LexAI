@@ -376,7 +376,7 @@ export default function DmcDataExplorer() {
                     {fields.map((f) => (
                       <th
                         key={f}
-                        className={`dmc-db-table th--sortable${sortField === f ? sortDir === 'asc' ? ' th--sort-asc' : ' th--sort-desc' : ''}`}
+                        className={`th--sortable${sortField === f ? sortDir === 'asc' ? ' th--sort-asc' : ' th--sort-desc' : ''}`}
                         onClick={() => handleSort(f)}
                       >
                         {f.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
