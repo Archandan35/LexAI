@@ -40,6 +40,7 @@ const TABS = [
   { key: 'headnote', label: 'Headnote', icon: 'book' },
   { key: 'judgement', label: 'Judgement', icon: 'edit' },
   { key: 'classification', label: 'Legal References', icon: 'tag' },
+  { key: 'applicability', label: 'Applicability', icon: 'layers' },
 
   { key: 'principle', label: 'Legal Principle', icon: 'pen' },
 
@@ -50,7 +51,7 @@ const TABS = [
 
 const PROGRESS_STEPS = [
   'General Information', 'Citation', 'Headnote', 'Judgement',
-  'Legal References', 'Legal Principle',
+  'Legal References', 'Applicability', 'Legal Principle',
   'Documents', 'Notes', 'Review',
 ];
 
@@ -95,6 +96,9 @@ const INITIAL_FORM = {
   keyFindings: '',
   notes: '',
   reviewComments: '',
+  applicableStages: [],
+  legalPrinciple: '',
+  usageNotes: '',
 };
 
 function flatValues(vals) {
@@ -548,7 +552,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       return [];
     };
     const merged = editing ? { ...INITIAL_FORM, ...Object.fromEntries(Object.entries(editing).filter(([_, v]) => v != null)) } : { ...INITIAL_FORM };
-    ['judges', 'acts', 'provisions', 'legalIssue', 'keywords', 'tags', 'casesCited'].forEach((k) => { merged[k] = toArr(merged[k]); });
+    ['judges', 'acts', 'provisions', 'legalIssue', 'keywords', 'tags', 'casesCited', 'applicableStages'].forEach((k) => { merged[k] = toArr(merged[k]); });
     setForm(merged);
     setTab('general');
     Promise.all([
@@ -641,6 +645,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       if (!Array.isArray(entry.legalIssue)) entry.legalIssue = [];
       if (!Array.isArray(entry.tags)) entry.tags = [];
       if (!Array.isArray(entry.casesCited)) entry.casesCited = [];
+      if (!Array.isArray(entry.applicableStages)) entry.applicableStages = [];
       let result;
       if (editing && editing.id) {
         result = await judgmentsRepository.update(editing.id, entry);
@@ -964,7 +969,59 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           </>
         );
 
-
+      case 'applicability':
+        return (
+          <>
+            <div className="ajm-form-title">Applicability</div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="folder" size={15} /> Applicable Stage
+              </div>
+              <div className="ajm-section-card__body">
+                <SearchableTagInput
+                  label="Stage"
+                  values={form.applicableStages || []}
+                  onChange={(v) => set('applicableStages', v)}
+                  placeholder="Type to search and select stages..."
+                  options={stageOpts}
+                  onCrudClick={() => setShowStageCrud(true)}
+                />
+              </div>
+            </div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="pen" size={15} /> Legal Principle
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-field">
+                  <label>Legal Principle</label>
+                  <div className="ajm-doc-editor">
+                    <DocEditor
+                      value={form.legalPrinciple}
+                      onChange={(html) => set('legalPrinciple', html)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="ajm-section-card">
+              <div className="ajm-section-card__head">
+                <Icon name="notes" size={15} /> Usage Notes
+              </div>
+              <div className="ajm-section-card__body">
+                <div className="ajm-field">
+                  <label>Usage Notes</label>
+                  <textarea
+                    className="ajm-input ajm-textarea ajm-summary-textarea"
+                    placeholder="Enter usage notes..."
+                    value={form.usageNotes}
+                    onChange={(e) => set('usageNotes', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
 
       case 'principle':
         return (

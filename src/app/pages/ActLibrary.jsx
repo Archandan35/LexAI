@@ -29,6 +29,10 @@ const SUB_MODES = {
     { key: 'single', label: 'Single Add', icon: 'plus' },
     { key: 'bulk', label: 'Bulk Add', icon: 'users' },
   ],
+  delete: [
+    { key: 'single', label: 'Single Delete', icon: 'trash' },
+    { key: 'bulk', label: 'Bulk Delete', icon: 'trash' },
+  ],
 };
 
 export default function ActLibrary() {
@@ -69,6 +73,7 @@ export default function ActLibrary() {
   const [editColor, setEditColor] = useState('#6b7280');
 
   const [delId, setDelId] = useState('');
+  const [bulkDelSelected, setBulkDelSelected] = useState(new Set());
   const [viewItem, setViewItem] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [dupTarget, setDupTarget] = useState(null);
@@ -106,6 +111,7 @@ export default function ActLibrary() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const bulkMode = activeAction === 'delete' && subMode === 'bulk';
 
   const activeActs = items.filter(i => (i.status || 'Active').toLowerCase() === 'active').length;
   const actsWithAmendments = items.filter(i => (i.amendments_count || 0) > 0).length;
@@ -119,7 +125,7 @@ export default function ActLibrary() {
     setEditId(''); setEditTitle(''); setEditType(''); setEditJurisdiction(''); setEditYear(''); setEditSections(''); setEditAmendments(''); setEditDesc(''); setEditStatus('Active'); setEditCode(''); setEditColor('#6b7280');
     setDelId(''); setImportFile(null);
     setEditTarget(null); setDupTarget(null);
-    setBulkAddText(''); setProgress(null);
+    setBulkAddText(''); setBulkDelSelected(new Set()); setProgress(null);
     setPage(1);
   };
 
@@ -164,6 +170,50 @@ export default function ActLibrary() {
         setBusy(false);
         if (res.ok || !res.error) { setDelId(''); toast.push('Act deleted.', 'success'); load(); }
         else toast.push(res.error, 'error');
+      },
+      onCancel: () => setConfirmState(null),
+    });
+  };
+
+  const toggleBulkDel = (id) => {
+    setBulkDelSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (bulkDelSelected.size === filtered.length) {
+      setBulkDelSelected(new Set());
+    } else {
+      setBulkDelSelected(new Set(filtered.map(i => i.id)));
+    }
+  };
+
+  const doBulkDelete = async () => {
+    if (!bulkDelSelected.size) { toast.push('Select at least one act.', 'error'); return; }
+    const count = bulkDelSelected.size;
+    setConfirmState({
+      title: 'Delete Acts',
+      message: `Delete ${count} act(s)?`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setConfirmState(null);
+        setBusy(true);
+        const ids = [...bulkDelSelected];
+        setProgress({ current: 0, total: ids.length, itemName: 'Starting…', percent: 0 });
+        for (let idx = 0; idx < ids.length; idx++) {
+          const item = items.find(x => x.id === ids[idx]);
+          setProgress({ current: idx + 1, total: ids.length, itemName: item?.title || '…', percent: Math.round(((idx + 1) / ids.length) * 100) });
+          await actLogic.remove(ids[idx]);
+        }
+        setBusy(false);
+        setProgress(null);
+        setBulkDelSelected(new Set());
+        toast.push(`${count} deleted.`, 'success');
+        load();
       },
       onCancel: () => setConfirmState(null),
     });
@@ -547,7 +597,7 @@ export default function ActLibrary() {
                 )}
               </div>
             )}
-            {activeAction === 'delete' && (
+            {activeAction === 'delete' && subMode === 'single' && (
               <div className="bench-types__form-grid">
                 <div className="bench-types__field bench-types__field--full">
                   <label className="bench-types__label">Select Act <span className="bench-types__required">*</span></label>
@@ -562,6 +612,27 @@ export default function ActLibrary() {
                     <span>This action cannot be undone. All associated data will be removed.</span>
                   </div>
                 )}
+              </div>
+            )}
+            {activeAction === 'delete' && subMode === 'bulk' && (
+              <div className="bench-types__form-grid">
+                <div className="bench-types__field bench-types__field--full">
+                  <label className="bench-types__label">Select acts to delete</label>
+                  <div className="bench-types__checkbox-toolbar">
+                    <label className="bench-types__checkbox-all">
+                      <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />
+                      <span>Select all {filtered.length}</span>
+                    </label>
+                    <span className="bench-types__checkbox-count">{bulkDelSelected.size} selected</span>
+                  </div>
+                  <div className="cmp-drag-hint">Tick the rows in the table below to select records for deletion.</div>
+                  {bulkDelSelected.size > 0 && (
+                    <div className="bench-types__warning">
+                      <Icon name="alert" size={16} />
+                      <span>{bulkDelSelected.size} act(s) will be permanently deleted.</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {activeAction === 'import' && (
@@ -582,7 +653,8 @@ export default function ActLibrary() {
             {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}
             {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
             {activeAction === 'edit' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
-            {activeAction === 'delete' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
+            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
             {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
           </div>
         </Card>
@@ -642,6 +714,7 @@ export default function ActLibrary() {
             <table className="bench-types__table">
               <thead>
                 <tr>
+                  {bulkMode && <th className="bench-types__th--w32"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
                   <th className="bench-types__th--w32"></th>
                   <th>#</th>
                   <th>TITLE</th>
@@ -656,7 +729,7 @@ export default function ActLibrary() {
               </thead>
               <tbody>
                 {paged.length === 0 ? (
-                  <tr><td className="bench-types__empty" colSpan={10}>No acts found.</td></tr>
+                  <tr><td className="bench-types__empty" colSpan={bulkMode ? 11 : 10}>No acts found.</td></tr>
                 ) : paged.map((item, idx) => (
                   <tr key={item.id} draggable={!search}
                     onDragStart={(e) => handleDragStart(e, (safePage - 1) * perPage + idx)}
@@ -664,6 +737,7 @@ export default function ActLibrary() {
                     onDragEnd={handleDragEnd}
                     className={`bench-types__row${dragIdx === (safePage - 1) * perPage + idx ? ' bench-types__row--dragging' : ''}`}
                   >
+                    {bulkMode && <td className="cmp-check-cell"><input type="checkbox" checked={bulkDelSelected.has(item.id)} onChange={() => toggleBulkDel(item.id)} /></td>}
                     <td className="cmp-drag-cell">
                       <span className="cmp-drag-handle" title="Drag to reorder"><Icon name="grip" size={15} /></span>
                     </td>
