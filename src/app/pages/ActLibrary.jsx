@@ -724,12 +724,10 @@ export default function ActLibrary() {
                     </div>
                   </div>
                   <div className="bench-types__grid-card-actions">
-                    <div className="bench-types__grid-card-action-box">
-                      <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                      <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                      <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
-                      <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
-                    </div>
+                    <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
+                    <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
+                    <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
+                    <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
                     <div className="bench-types__grid-card-action-labels">
                       <span>View</span>
                       <span>Edit</span>

@@ -15,7 +15,8 @@ function DonutChart({ segments, size = 120, stroke = 18 }) {
   const circ = 2 * Math.PI * r;
   const cx = size / 2, cy = size / 2;
   let offset = 0;
-  const total = segments.reduce((s, seg) => s + (seg.value || 0), 0) || 1;
+  const rawTotal = segments.reduce((s, seg) => s + (seg.value || 0), 0);
+  const total = rawTotal || 1;
   return (
     <svg width={size} height={size} className="dash-donut-svg" viewBox={`0 0 ${size} ${size}`}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
@@ -37,7 +38,7 @@ function DonutChart({ segments, size = 120, stroke = 18 }) {
         return el;
       })}
       {/* centre label */}
-      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="22" fontWeight="800" fill="var(--navy-900)">{total}</text>
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="22" fontWeight="800" fill="var(--navy-900)">{rawTotal}</text>
       <text x={cx} y={cy + 14} textAnchor="middle" fontSize="10" fill="var(--text-faint)">Total Cases</text>
     </svg>
   );
@@ -105,8 +106,8 @@ export default function Dashboard() {
   /* Case type distribution bars */
   const categories = caseTypeDistribution && caseTypeDistribution.length > 0
     ? caseTypeDistribution
-    : [{ label: 'No data', value: 1 }];
-  const maxCat = Math.max(...categories.map((c) => c.value));
+    : [];
+  const maxCat = categories.length > 0 ? Math.max(...categories.map((c) => c.value)) : 0;
 
   return (
     <><div className="fade-in dash-desktop-view dash-desktop-view__pb">
@@ -353,6 +354,9 @@ export default function Dashboard() {
             <span className="dash-card-head__title">Case Category Distribution</span>
             <span className="dash-card-head__link" onClick={() => nav('/reports')}>View Report <Icon name="arrow" size={13} /></span>
           </div>
+          {categories.length === 0 ? (
+            <div className="dash-padded-content"><EmptyState icon="folder" title="No case categories yet." /></div>
+          ) : (
           <div className="dash-bar-chart">
             <div className="dash-bars">
               {categories.map((cat, i) => (
@@ -372,6 +376,7 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* Quick Actions */}

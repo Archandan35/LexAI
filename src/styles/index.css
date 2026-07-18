@@ -22694,12 +22694,12 @@ kbd.cmd__kbd {
 
 .bench-types__grid-card-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 0 8px;
   position: relative;
   margin-top: 4px;
+  flex-wrap: wrap;
 }
 .bench-types__grid-card-actions::before {
   content: '';
@@ -22711,45 +22711,29 @@ kbd.cmd__kbd {
   background: var(--border);
 }
 
-.bench-types__grid-card-action-box {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.bench-types__grid-card-actions .cmp-act-btn {
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
-}
-.bench-types__grid-card-action-box:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-  border-color: var(--primary);
-}
-
-.bench-types__grid-card-action-box .cmp-act-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 10px;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
   cursor: pointer;
   color: var(--text-faint);
-  border-radius: 6px;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
-.bench-types__grid-card-action-box .cmp-act-btn:hover {
+.bench-types__grid-card-actions .cmp-act-btn:hover {
   background: var(--hover-bg);
   color: var(--text);
-  transform: scale(1.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
 }
 
 .bench-types__grid-card-action-labels {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 0 6px;
+  padding: 4px 6px 0;
 }
 .bench-types__grid-card-action-labels span {
   font-size: 9.5px;
@@ -22757,7 +22741,7 @@ kbd.cmd__kbd {
   letter-spacing: 0.4px;
   color: var(--text-faint);
   text-align: center;
-  width: 40px;
+  width: 42px;
 }
 
 .bench-types__bottom-nav {
