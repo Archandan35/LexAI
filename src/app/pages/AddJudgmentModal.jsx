@@ -984,6 +984,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                   values={form.applicableStages || []}
                   onChange={(v) => set('applicableStages', v)}
                   placeholder="Type to search and select stages..."
+                  hint="Select the procedural stage(s) this judgment applies to."
                   options={stageOpts}
                   onCrudClick={() => setShowStageCrud(true)}
                 />
@@ -1002,6 +1003,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                       onChange={(html) => set('legalPrinciple', html)}
                     />
                   </div>
+                  <div className="ajm-hint">Summarise the core legal principle established or applied by this judgment.</div>
                 </div>
               </div>
             </div>
@@ -1014,10 +1016,11 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
                   <label>Usage Notes</label>
                   <textarea
                     className="ajm-input ajm-textarea ajm-summary-textarea"
-                    placeholder="Enter usage notes..."
+                    placeholder="How and when to use this judgment in practice..."
                     value={form.usageNotes}
                     onChange={(e) => set('usageNotes', e.target.value)}
                   />
+                  <div className="ajm-hint">Add practical guidance on citing or relying on this judgment.</div>
                 </div>
               </div>
             </div>
@@ -1156,7 +1159,8 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     logic: caseStageLogic,
     fields: [
       { key: 'name', label: 'Stage Name', required: true, placeholder: 'e.g. Pleading' },
-      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PL' },
+      { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. STAG-Counter-claim' },
+      { key: 'color', label: 'Colour', type: 'color' },
       { key: 'description', label: 'Description', type: 'description', full: true },
       { key: 'status', label: 'Status', required: true },
     ],

@@ -234,14 +234,25 @@ export default function Reminders() {
         </>
       )}
 
-      <div className="toolbar-row">
-        <Input className="search-row__input" placeholder="Search by title, type or case…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select className="select" value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="overdue">Overdue</option>
-          <option value="done">Done</option>
-        </select>
+      <div className="reminders-toolbar">
+        <div className="reminders-toolbar__search">
+          <Icon name="search" size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
+          <input
+            placeholder="Search by title, type or case…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ paddingLeft: 38, paddingRight: 12, height: 38, lineHeight: '38px' }}
+          />
+        </div>
+        <div className="reminders-toolbar__filter">
+          <label>Status:</label>
+          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (
