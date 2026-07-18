@@ -17,13 +17,19 @@ export const NAV_GROUPS = [
           { to: '/cases/order-sheet', label: 'Order Sheet', icon: 'calendar', module: 'orderSheet' },
           { to: '/cases/case-timeline', label: 'Case Timeline', icon: 'clock', module: 'timeline' },
           { to: '/cases/hearings', label: 'Hearing Notes', icon: 'notes', module: 'hearingNotes' },
-          { to: '/reminders', label: 'Reminders', icon: 'bell', module: 'manageCase' },
         ],
       },
-      { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
       { to: '/clients', label: 'Clients', icon: 'users' },
       { to: '/advocates', label: 'Advocates', icon: 'users' },
       { to: '/contacts', label: 'Contacts', icon: 'book' },
+    ],
+  },
+  { type: 'heading', label: 'Reminder Center' },
+  {
+    label: '',
+    items: [
+      { to: '/reminders', label: 'Reminders', icon: 'bell', module: 'manageCase' },
+      { to: '/calendar', label: 'Calendar & Tasks', icon: 'calendar' },
     ],
   },
   {
