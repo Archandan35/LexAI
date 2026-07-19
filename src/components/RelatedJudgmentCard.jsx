@@ -82,14 +82,14 @@ export default function RelatedJudgmentCard({ judgment, onView, getCourtLabel })
       <div className="rjc-meta">
         <div className="rjc-meta-col">
           <div className="rjc-meta-label-row">
-            <Icon name="building2" size={14} />
+            <Icon name="building2" size={14} className="rjc-icon-court" />
             <span className="rjc-meta-label">Court</span>
           </div>
           <div className="rjc-meta-value">{courtName || '\u2014'}</div>
         </div>
         <div className="rjc-meta-col">
           <div className="rjc-meta-label-row">
-            <Icon name="calendar" size={14} />
+            <Icon name="calendar" size={14} className="rjc-icon-calendar" />
             <span className="rjc-meta-label">Judgment Date</span>
           </div>
           <div className="rjc-meta-value">{formattedDate || '\u2014'}</div>

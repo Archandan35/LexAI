@@ -656,15 +656,19 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
             <button className="btn btn--outline" onClick={() => setCrud('status')}><Icon name="flag" size={15} /> Statuses</button>
           </div>
           <div className="tasks-toolbar-right">
-            <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
-              {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
-            </Button>
             <button className="btn btn--ghost" onClick={exportCsv}><Icon name="download" size={15} /> Export</button>
             <button className="btn btn--ghost" onClick={printTasks}><Icon name="print" size={15} /> Print</button>
           </div>
         </div>
 
         <div className="tasks-filter-row">
+          <div className="tasks-search-inner">
+            <Icon name="search" size={18} />
+            <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          </div>
+          <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenTaskFilter}>
+            {[filters.category, filters.priority, filters.status, filters.active, filters.caseId].some((v) => v.length) ? `Filter (${[filters.category, filters.priority, filters.status, filters.active, filters.caseId].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
+          </Button>
           <input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
           <Select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="due_asc">Sort: Due (earliest)</option>
@@ -673,17 +677,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
             <option value="created_desc">Sort: Created (newest)</option>
             <option value="priority_asc">Sort: Priority</option>
           </Select>
-          <button className="btn btn--ghost" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
-        </div>
-
-        <div className="tasks-search">
-          <div className="tasks-search-inner">
-            <Icon name="search" size={18} />
-            <input value={search} placeholder="Search tasks by title, description, or tag…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
-          </div>
           <button className={`tasks-arch-toggle${showArchived ? ' active' : ''}`} onClick={() => setShowArchived((s) => !s)}>
             <Icon name="history" size={15} /> {showArchived ? 'Hide Archived' : 'Show Archived'}
           </button>
+          <button className="btn btn--ghost" onClick={() => { setFilters({ category: [], priority: [], status: [], active: [], caseId: [], date: '' }); setSearch(''); }}>Clear</button>
         </div>
       </Card>
 
