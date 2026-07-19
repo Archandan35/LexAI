@@ -578,13 +578,19 @@ export default function JudgmentDetail() {
             {tab === 'overview' && (
               <div className="jd-overview-cards">
                 {/* Headnotes Section (Readonly) */}
-                <div className="jd-prose-card">
-                  <h3 className="jd-panel-title">Headnotes</h3>
-                  <div className="jd-prose jd-prose--readonly">
-                    {judgment.headnotes
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.headnotes }} />
-                      : 'No headnotes recorded for this judgment.'}
-                  </div>
+                <div className="jd-judgment-text-card">
+                  <h3 className="jd-panel-title"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Headnotes</h3>
+                  {judgment.headnotes ? (
+                    <div className="jd-prose jd-prose--readonly jd-judgment-reader">
+                      <span dangerouslySetInnerHTML={{ __html: judgment.headnotes }} />
+                    </div>
+                  ) : (
+                    <div className="jd-judgment-empty">
+                      <div className="jd-judgment-empty-ill"><Icon name="doclines" size={56} /></div>
+                      <div className="jd-judgment-empty-title">No Headnotes Available</div>
+                      <div className="jd-judgment-empty-sub">This judgment does not yet contain any headnotes.</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1017,17 +1023,16 @@ export default function JudgmentDetail() {
           {loading ? (
             <div className="jd-related-slider-wrap">
               <div className="jd-rel-slider">
-                {Array.from({ length: 4 }).map((_, i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="jd-rel-card jd-rel-card--skeleton">
                     <div className="jd-rel-skel-head">
                       <div className="jd-rel-skel-icon" />
                       <div className="jd-rel-skel-badge" />
                     </div>
                     <div className="jd-rel-skel-line jd-rel-skel-line--lg" />
-                    <div className="jd-rel-skel-line jd-rel-skel-line--lg" />
-                    <div className="jd-rel-skel-line" />
+                    <div className="jd-rel-skel-line jd-rel-skel-line--md" />
+                    <div className="jd-rel-skel-line jd-rel-skel-line--sm" />
                     <div className="jd-rel-skel-tags">
-                      <div className="jd-rel-skel-tag" />
                       <div className="jd-rel-skel-tag" />
                       <div className="jd-rel-skel-tag" />
                     </div>
@@ -1043,7 +1048,7 @@ export default function JudgmentDetail() {
                 disabled={sliderAtStart}
                 aria-label="Previous related judgments"
               >
-                <Icon name="chevronLeft" size={18} />
+                <Icon name="chevronLeft" size={20} />
               </button>
               <div
                 className="jd-rel-slider"
@@ -1052,39 +1057,40 @@ export default function JudgmentDetail() {
               >
                 {related.map((r) => {
                   const cites = r.citation ? String(r.citation).split(/[,;]/).map((c) => c.trim()).filter(Boolean) : [];
-                  const status = r.overruledBy ? 'overruled' : (r.archived ? 'archived' : 'active');
-                  const statusLabel = status === 'overruled' ? 'Overruled' : status === 'archived' ? 'Archived' : 'Active';
+                  const status = r.overruledBy ? 'Overruled' : (r.archived ? 'Archived' : 'Active');
+                  const statusKey = status.toLowerCase();
                   const tags = toArr(r.tags).length ? toArr(r.tags) : toArr(r.keywords);
                   const visibleTags = tags.slice(0, 2);
                   const extra = tags.length - visibleTags.length;
+                  const year = r.date ? new Date(r.date).getFullYear() : '';
                   return (
-                    <div key={r.id} className={`jd-rel-card jd-rel-card--${status}`} onClick={() => navigate(`/judgment-library/${r.id}`)}>
+                    <div key={r.id} className={`jd-rel-card jd-rel-card--${statusKey}`} onClick={() => navigate(`/judgment-library/${r.id}`)}>
                       <div className="jd-rel-card-head">
                         <div className="jd-rel-card-icon"><Icon name="balance" size={18} /></div>
-                        <span className={`jd-rel-status jd-rel-status--${status}`}>{statusLabel}</span>
+                        <span className={`jd-rel-status jd-rel-status--${statusKey}`}>{status}</span>
                       </div>
                       <div className="jd-rel-title">{r.title || r.citation || 'Untitled'}</div>
                       <div className="jd-rel-cite">{cites[0] || '—'}</div>
                       <div className="jd-rel-meta">
-                        <span><Icon name="building2" size={13} /> {courtLabel(r.court) || '—'}</span>
-                        {r.date && <span className="jd-rel-dot">·</span>}
-                        {r.date && <span><Icon name="calendar" size={13} /> {formatDate(r.date)}</span>}
+                        <Icon name="building2" size={14} />
+                        <span>{courtLabel(r.court) || '—'}</span>
+                        <span className="jd-rel-meta-dot">•</span>
+                        <Icon name="calendar" size={14} />
+                        <span>{year || '—'}</span>
                       </div>
-                      {visibleTags.length > 0 && (
-                        <div className="jd-rel-tags">
-                          {visibleTags.map((t, ti) => (
-                            <span key={ti} className="jd-rel-tag">{t}</span>
-                          ))}
-                          {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra}</span>}
-                        </div>
-                      )}
+                      <div className="jd-rel-tags">
+                        {visibleTags.map((t, ti) => (
+                          <span key={ti} className="jd-rel-tag">{t}</span>
+                        ))}
+                        {extra > 0 && <span className="jd-rel-tag jd-rel-tag--more">+{extra}</span>}
+                      </div>
                       <div className="jd-rel-footer">
                         <div className="jd-rel-actions">
                           <button className="jd-rel-ghost" title="Bookmark" onClick={(e) => e.stopPropagation()}><Icon name="bookmark" size={15} /></button>
                           <button className="jd-rel-ghost" title="Share" onClick={(e) => e.stopPropagation()}><Icon name="share" size={15} /></button>
                         </div>
                         <button className="jd-rel-view" onClick={(e) => { e.stopPropagation(); navigate(`/judgment-library/${r.id}`); }}>
-                          View Judgment <Icon name="arrow" size={13} />
+                          View Judgment <Icon name="arrow" size={14} />
                         </button>
                       </div>
                     </div>
@@ -1097,16 +1103,16 @@ export default function JudgmentDetail() {
                 disabled={sliderAtEnd}
                 aria-label="Next related judgments"
               >
-                <Icon name="chevronRight" size={18} />
+                <Icon name="chevronRight" size={20} />
               </button>
             </div>
           ) : (
             <div className="jd-rel-empty">
-              <div className="jd-rel-empty-ill"><Icon name="balance" size={48} /></div>
+              <div className="jd-rel-empty-ill"><Icon name="courthouse" /></div>
               <div className="jd-rel-empty-title">No Related Judgments Found</div>
               <div className="jd-rel-empty-sub">No similar precedents are currently linked to this judgment.</div>
               <button className="jd-rel-empty-btn" onClick={() => navigate('/judgment-library')}>
-                <Icon name="book" size={15} /> Browse Judgment Library
+                <Icon name="book" size={16} /> Browse Judgment Library
               </button>
             </div>
           )}

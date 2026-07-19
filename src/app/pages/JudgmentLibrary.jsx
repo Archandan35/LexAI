@@ -45,7 +45,7 @@ export default function JudgmentLibrary() {
   const [favourites, setFavourites] = useState({});
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const perPage = 10;
+  const [perPage, setPerPage] = useState(10);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -526,7 +526,7 @@ export default function JudgmentLibrary() {
         </div>
       )}
 
-      <Card bodyClass="card__body--flush">
+      <Card bodyClass="card__body--flush jl-library-card">
         <div className="table-scroll">
           <table className="table jl-table">
             <thead className="jl-thead">
@@ -555,7 +555,7 @@ export default function JudgmentLibrary() {
                     const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
                     return (
                       <tr key={j.id}>
-                        <td data-label="Case Number" className="jl-cell-muted">
+                        <td data-label="Case Number" className="jl-case-num">
                           {(() => {
                             const num = j.caseNumber;
                             const typeLabel = j.caseType ? (nameMap.caseType?.[j.caseType] || j.caseType) : '';
@@ -599,8 +599,11 @@ export default function JudgmentLibrary() {
                             const stages = Array.isArray(j.applicableStages)
                               ? j.applicableStages
                               : (j.applicableStages ? String(j.applicableStages).split(/[,;]/) : []);
-                            const labels = stages.map((s) => nameMap.stage?.[s?.trim()] || s?.trim() || s).filter(Boolean);
-                            if (!labels.length) return 'â€”';
+                            const labels = stages
+                              .map((s) => resolveName(nameMap.stage, s))
+                              .map((s) => (s && s !== '—' ? s : (typeof s === 'string' ? s.trim() : s)))
+                              .filter(Boolean);
+                            if (!labels.length) return '—';
                             return (
                               <div className="jl-tag-stack">
                                 {labels.map((s, i) => (
@@ -628,23 +631,29 @@ export default function JudgmentLibrary() {
           </table>
         </div>
         <div className="jl-pagination-row">
-          <div className="jl-showing-text">
-            {filtered.length === 0
-              ? 'No judgments to show'
-              : `Showing ${(safePage - 1) * perPage + 1} to ${Math.min(safePage * perPage, filtered.length)} of ${filtered.length} judgments`
-            }
+          <div className="jl-pagination jl-pagination--left">
+            <button className="jl-page-btn jl-page-btn--nav jl-page-btn--prev" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>
+              <Icon name="chevronLeft" size={16} />
+              <span>Previous</span>
+            </button>
+            <span className="jl-page-current">{safePage}</span>
+            <button className="jl-page-btn jl-page-btn--nav jl-page-btn--next" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>
+              <span>Next</span>
+              <Icon name="chevron" size={16} />
+            </button>
           </div>
-          <div className="jl-pagination">
-            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>â€¹</button>
-            {pageNumbers.map((p, i) =>
-              p === '...' ? (
-                <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">â€¦</span>
-              ) : (
-                <button key={p} className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-              )
-            )}
-            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>â€º</button>
-            <span className="jl-per-page">10 / page</span>
+          <div className="jl-pagination jl-pagination--right">
+            <label className="jl-per-page">
+              <select
+                className="jl-per-page-select"
+                value={perPage}
+                onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              >
+                <option value={10}>10 / page</option>
+                <option value={20}>20 / page</option>
+                <option value={50}>50 / page</option>
+              </select>
+            </label>
           </div>
         </div>
       </Card>
