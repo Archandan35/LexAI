@@ -33,6 +33,7 @@ const TABLE_HEADERS = [
 const FILTER_DEFAULTS = {
   court: '',
   bench: '',
+  caseType: '',
   type: '',
   typeOfProceeding: '',
   natureOfDispute: '',
@@ -182,43 +183,48 @@ export default function JudgmentLibrary() {
     const types = new Set();
     const years = new Set();
     const matterTypes = new Set();
-    const actIds = new Set();
     const benches = new Set();
     const typeOfProceedings = new Set();
     const natureOfDisputes = new Set();
-    const provisions = new Set();
     const applicableStages = new Set();
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
       if (j.judges || j.judge || j.bench) judges.add(j.judges || j.judge || j.bench);
       if (j.caseType) types.add(j.caseType);
       if (j.subjectMatter) matterTypes.add(j.subjectMatter);
-      if (j.act) actIds.add(j.act);
-      if (j.acts?.length) j.acts.forEach((id) => actIds.add(id));
       if (j.bench) benches.add(j.bench);
       if (j.typeOfProceeding) typeOfProceedings.add(j.typeOfProceeding);
       if (j.natureOfDispute) natureOfDisputes.add(j.natureOfDispute);
-      if (j.provisions?.length) toArr(j.provisions).forEach((p) => p && provisions.add(p));
       if (j.applicableStages?.length) toArr(j.applicableStages).forEach((s) => s && applicableStages.add(s));
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
     });
     const labelOrUnknown = (map, id) => (id && map[id] ? map[id] : (id ? 'Unknown' : '—'));
+    const activeActs = (acts || []).filter((a) => !a.status || a.status === 'Active');
+    const activeProvisions = (provisions || []).filter((p) => !p.status || p.status === 'Active');
+    const activeCaseTypes = (caseTypes || []).filter((ct) => !ct.status || ct.status === 'Active');
     return {
       courts: Array.from(courts).sort().map((id) => ({ value: id, label: nameMap.court[id] || id })),
       judges: Array.from(judges).sort().map((id) => ({ value: id, label: nameMap.judge[id] || id })),
       types: Array.from(types).sort().map((id) => ({ value: id, label: nameMap.caseType[id] || 'Unknown' })),
       matterTypes: Array.from(matterTypes).sort().map((v) => ({ value: v, label: v })),
-      acts: Array.from(actIds).sort().map((id) => ({ value: id, label: nameMap.act[id] || 'Unknown' })),
+      acts: activeActs
+        .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+        .map((a) => ({ value: a.id, label: a.title })),
       years: Array.from(years).sort(),
       benches: Array.from(benches).sort().map((id) => ({ value: id, label: nameMap.bench[id] || id })),
       typeOfProceedings: Array.from(typeOfProceedings).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.typeOfProceeding, id) })),
       natureOfDisputes: Array.from(natureOfDisputes).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.natureOfDispute, id) })),
-      provisions: Array.from(provisions).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.provision, id) })),
+      provisions: activeProvisions
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map((p) => ({ value: p.id, label: p.name })),
       applicableStages: Array.from(applicableStages).sort().map((id) => ({ value: id, label: labelOrUnknown(nameMap.stage, id) })),
+      caseTypes: activeCaseTypes
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map((ct) => ({ value: ct.id, label: ct.name })),
     };
-  }, [judgments, nameMap]);
+  }, [judgments, nameMap, acts, provisions, caseTypes]);
 
   const stats = useMemo(() => {
     const list = judgments;
@@ -252,6 +258,7 @@ export default function JudgmentLibrary() {
     if (filters.court) rows = rows.filter((j) => (j.court || '') === filters.court);
     if (filters.bench) rows = rows.filter((j) => (j.bench || '') === filters.bench);
     if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
+    if (filters.caseType) rows = rows.filter((j) => (j.caseType || '') === filters.caseType);
     if (filters.type) rows = rows.filter((j) => (j.caseType || '') === filters.type);
     if (filters.typeOfProceeding) rows = rows.filter((j) => (j.typeOfProceeding || '') === filters.typeOfProceeding);
     if (filters.natureOfDispute) rows = rows.filter((j) => (j.natureOfDispute || '') === filters.natureOfDispute);
@@ -554,6 +561,10 @@ export default function JudgmentLibrary() {
           <select className="jl-filter-select jl-filter-select--native" value={filters.bench} onChange={(e) => setFilter('bench', e.target.value)}>
             <option value="">Bench</option>
             {uniqueValues.benches.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.caseType} onChange={(e) => setFilter('caseType', e.target.value)}>
+            <option value="">Case Type</option>
+            {uniqueValues.caseTypes.map((ct) => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
           </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
             <option value="">Area of Law</option>
