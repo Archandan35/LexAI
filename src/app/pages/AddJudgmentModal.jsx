@@ -70,6 +70,7 @@ const INITIAL_FORM = {
   neutralCitation: '',
   reporterCitation: '',
   caseNumber: '',
+  caseYear: '',
   caseType: '',
   applicableStages: [],
   court: '',
@@ -793,6 +794,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
               <div className="ajm-section-card__body">
                 <div className="ajm-grid ajm-grid-2">
                   {renderField('Case Number', 'caseNumber', 'e.g. Civil Appeal No. 1234 of 2024', { required: true })}
+                  {renderField('Case Year', 'caseYear', 'e.g. 2024')}
                   <SelectWithCrud
                     label="Case Type"
                     required
