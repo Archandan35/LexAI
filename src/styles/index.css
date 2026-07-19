@@ -22413,6 +22413,7 @@ kbd.cmd__kbd {
   text-decoration: underline;
 }
 
+.jl-table td.jl-case-num,
 .jl-case-num {
   font-weight: 600;
   color: var(--navy-700);
