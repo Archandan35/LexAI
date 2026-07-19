@@ -114,6 +114,7 @@ export default function JudgmentDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [actDetailsMap, setActDetailsMap] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -140,9 +141,27 @@ export default function JudgmentDetail() {
     areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
     typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
     natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
-    actsRepository.getAll().then(setAllActs).catch(() => {});
+    actsRepository.getAll().then((data) => { if (!cancelled) setAllActs(data || []); }).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!judgment) return;
+    const actIds = [];
+    if (judgment.acts?.length) actIds.push(...judgment.acts);
+    if (judgment.act) actIds.push(judgment.act);
+    if (!actIds.length) return;
+    const missing = actIds.filter((aid) => aid && !actDetailsMap[aid] && !(allActs || []).some((a) => a.id === aid));
+    if (!missing.length) return;
+    let cancelled = false;
+    missing.forEach((aid) => {
+      actsRepository.getById(aid).then((act) => {
+        if (cancelled || !act) return;
+        setActDetailsMap((prev) => ({ ...prev, [aid]: act }));
+      }).catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, [judgment, allActs]);
 
   const related = useMemo(() => {
     if (!judgment) return [];
@@ -179,8 +198,11 @@ export default function JudgmentDetail() {
   const actNameMap = useMemo(() => {
     const m = {};
     (allActs || []).forEach((a) => { m[a.id] = a.title || a.name || a.short_code || a.id; });
+    Object.entries(actDetailsMap).forEach(([id, a]) => {
+      if (!m[id]) m[id] = a.title || a.name || a.short_code || a.id;
+    });
     return m;
-  }, [allActs]);
+  }, [allActs, actDetailsMap]);
 
   const resolve = (map, val) => (val ? (map[val] || val) : '');
   const toArr = (v) => {
@@ -465,17 +487,20 @@ export default function JudgmentDetail() {
             {tab === 'legalPrinciples' && (
               <div className="jd-panel-section">
                 {/* Section 1 — Judgment Dates */}
-                <h3 className="jd-panel-title">Judgment Dates</h3>
+                <h3 className="jd-panel-title"><Icon name="calendar" size={20} className="jd-panel-title-icon" /> Judgment Dates</h3>
                 <div className="jd-dates-row">
-                  <div className="jd-date-item">
+                  <div className="jd-date-card jd-date-card--blue">
+                    <div className="jd-date-card-icon"><Icon name="calendar" size={20} /></div>
                     <span className="jd-date-label">Judgment Date <span className="jd-req">*</span></span>
                     <span className="jd-date-value">{judgment.judgmentDate ? formatDate(judgment.judgmentDate) : '—'}</span>
                   </div>
-                  <div className="jd-date-item">
+                  <div className="jd-date-card jd-date-card--green">
+                    <div className="jd-date-card-icon"><Icon name="check-circle" size={20} /></div>
                     <span className="jd-date-label">Pronouncement Date</span>
                     <span className="jd-date-value">{judgment.pronouncementDate ? formatDate(judgment.pronouncementDate) : '—'}</span>
                   </div>
-                  <div className="jd-date-item">
+                  <div className="jd-date-card jd-date-card--purple">
+                    <div className="jd-date-card-icon"><Icon name="upload" size={20} /></div>
                     <span className="jd-date-label">Upload Date</span>
                     <span className="jd-date-value">{judgment.uploadDate ? formatDate(judgment.uploadDate) : '—'}</span>
                   </div>
@@ -483,38 +508,45 @@ export default function JudgmentDetail() {
 
                 {/* Judgment Link / Source URL Section */}
                 {judgment.sourceUrl && (
-                  <div className="jd-prose-card jd-source-link-section jd-panel-title--mt">
-                    <h3 className="jd-panel-title">Judgment Link</h3>
-                <div className="jd-source-link-wrap">
-                  <a
-                    href={judgment.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="jd-source-link"
-                    title={judgment.sourceUrl}
-                  >
-                        {judgment.sourceUrl}
+                  <div className="jd-panel-section-block jd-panel-title--mt">
+                    <h3 className="jd-panel-title"><Icon name="link" size={20} className="jd-panel-title-icon" /> Judgment Link</h3>
+                    <div className="jd-source-link-card">
+                      <a
+                        href={judgment.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="jd-source-link"
+                        title={judgment.sourceUrl}
+                      >
+                        <span className="jd-source-link-text">{judgment.sourceUrl}</span>
+                        <span className="jd-source-link-ext"><Icon name="arrow" size={16} /></span>
                       </a>
                     </div>
                   </div>
                 )}
 
                 {/* Section 2 — Judgement */}
-                <h3 className="jd-panel-title jd-panel-title--mt">Judgement</h3>
-                <div className="jd-prose-card jd-judgment-text-card">
-                  <div className="jd-prose jd-prose--readonly">
-                    {judgment.summary
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.summary }} />
-                      : judgment.fullText
-                        ? <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
-                        : 'No judgement text recorded for this judgment.'}
-                  </div>
+                <h3 className="jd-panel-title jd-panel-title--mt"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Judgement</h3>
+                <div className="jd-judgment-text-card">
+                  {(judgment.summary || judgment.fullText) ? (
+                    <div className="jd-prose jd-prose--readonly jd-judgment-reader">
+                      {judgment.summary
+                        ? <span dangerouslySetInnerHTML={{ __html: judgment.summary }} />
+                        : <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />}
+                    </div>
+                  ) : (
+                    <div className="jd-judgment-empty">
+                      <div className="jd-judgment-empty-ill"><Icon name="doclines" size={56} /></div>
+                      <div className="jd-judgment-empty-title">No Judgment Text Available</div>
+                      <div className="jd-judgment-empty-sub">This judgment does not yet contain the full judgment text.</div>
+                    </div>
+                  )}
                 </div>
                 {judgment.summary && judgment.fullText && judgment.fullText !== judgment.summary && (
                   <>
-                    <h3 className="jd-panel-title jd-panel-title--mt">Full Judgment Text</h3>
-                    <div className="jd-prose-card jd-judgment-text-card">
-                      <div className="jd-prose jd-prose--readonly">
+                    <h3 className="jd-panel-title jd-panel-title--mt"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Full Judgment Text</h3>
+                    <div className="jd-judgment-text-card">
+                      <div className="jd-prose jd-prose--readonly jd-judgment-reader">
                         <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
                       </div>
                     </div>

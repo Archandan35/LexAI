@@ -127,16 +127,16 @@ export default function JudgmentLibrary() {
   };
 
   const nameMap = useMemo(() => {
-    const build = (arr) => {
+    const build = (arr, field = 'name') => {
       const m = {};
-      (arr || []).forEach((r) => { m[r.id] = r.name; });
+      (arr || []).forEach((r) => { m[r.id] = r[field] || r.name || r.title || r.short_code || r.id; });
       return m;
     };
     return {
       court: build(courts),
       bench: build(benchTypes),
       judge: build(judges),
-      act: build(acts),
+      act: build(acts, 'title'),
     };
   }, [courts, benchTypes, judges, acts]);
 
@@ -155,6 +155,7 @@ export default function JudgmentLibrary() {
       if (j.type) types.add(j.type);
       if (j.subjectMatter) matterTypes.add(j.subjectMatter);
       if (j.act) actIds.add(j.act);
+      if (j.acts?.length) j.acts.forEach((id) => actIds.add(id));
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
@@ -202,7 +203,7 @@ export default function JudgmentLibrary() {
     if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
     if (filters.type) rows = rows.filter((j) => (j.type || '') === filters.type);
     if (filters.matterType) rows = rows.filter((j) => (j.subjectMatter || '') === filters.matterType);
-    if (filters.act) rows = rows.filter((j) => (j.act || '') === filters.act);
+    if (filters.act) rows = rows.filter((j) => (j.act || '') === filters.act || (j.acts || []).includes(filters.act));
     if (filters.year) {
       rows = rows.filter((j) => {
         try { return new Date(j.date).getFullYear() === Number(filters.year); } catch { return false; }
@@ -572,7 +573,20 @@ export default function JudgmentLibrary() {
                           {resolveName(nameMap.court, j.court)}
                           {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
                         </td>
-                        <td data-label="Judge(s)" className="jl-cell-strong">{resolveName(nameMap.judge, j.judges || j.judge) || '—'}</td>
+                        <td data-label="Judge(s)" className="jl-cell-strong">
+                          {(() => {
+                            const judgeVal = j.judges || j.judge;
+                            if (!judgeVal) return '—';
+                            const list = Array.isArray(judgeVal) ? judgeVal : [judgeVal];
+                            return (
+                              <div className="jl-judge-stack">
+                                {list.map((jId, i) => (
+                                  <span key={i} className="jl-judge-line">{nameMap.judge[jId] || jId}</span>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </td>
                         <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
                         <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
                         <td data-label="Status">
