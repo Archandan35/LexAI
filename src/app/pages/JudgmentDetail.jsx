@@ -773,55 +773,17 @@ export default function JudgmentDetail() {
                   </div>
                 </div>
 
-                {(source || sourceUrl) && (
-                  <>
-                    <h3 className="jd-panel-title jd-panel-title--mt">Judgment Source</h3>
-                    <div className="jd-refs-grid">
-                      {source && (
-                        <div className="jd-ref-item">
-                          <span className="jd-ref-label">Source</span>
-                          <div className="jd-tags jd-tags--readonly">
-                            <span className="jd-tag">{source}</span>
-                          </div>
-                        </div>
-                      )}
-                      {sourceUrl && (
-                        <div className="jd-ref-item">
-                          <span className="jd-ref-label">Source URL</span>
-                          <div className="jd-tags jd-tags--readonly">
-                            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="jd-source-link" style={{ fontSize: 13 }}>{sourceUrl}</a>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {citationList.length > 0 && (
-                  <>
-                    <h3 className="jd-panel-title jd-panel-title--mt">Citations</h3>
-                    <div className="jd-refs-grid">
-                      <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
-                        <div className="jd-tags jd-tags--readonly">
-                          {citationList.map((c, i) => <span key={i} className={`jd-tag jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <h3 className="jd-panel-title jd-panel-title--mt">Keywords</h3>
+                {/* Section 2 — Other References (2-column) */}
+                <h3 className="jd-panel-title jd-panel-title--mt">Other References</h3>
                 <div className="jd-refs-grid">
-                  <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Keywords</span>
                     <div className="jd-tags jd-tags--readonly">
                       {toArr(judgment.keywords).length ? toArr(judgment.keywords).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
                     </div>
                   </div>
-                </div>
-
-                <h3 className="jd-panel-title jd-panel-title--mt">Tags</h3>
-                <div className="jd-refs-grid">
-                  <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
+                  <div className="jd-ref-item">
+                    <span className="jd-ref-label">Tags</span>
                     <div className="jd-tags jd-tags--readonly">
                       {toArr(judgment.tags).length ? toArr(judgment.tags).map((tag, i) => <span key={i} className="jd-tag">{tag}</span>) : <span className="jd-ref-empty">—</span>}
                     </div>
@@ -991,6 +953,32 @@ export default function JudgmentDetail() {
               )) : <div className="jd-empty-text">No classification data.</div>}
             </div>
           </div>
+
+          {(source || sourceUrl) && (
+            <div className="jd-rc-card">
+              <div className="jd-rc-title"><Icon name="link" size={14} /> Judgment Source</div>
+              <div className="jd-rc-body">
+                {source && <div className="jd-rc-row"><span className="jd-rc-key">Source</span><span className="jd-rc-val">{source}</span></div>}
+                {sourceUrl && (
+                  <div className="jd-rc-row">
+                    <span className="jd-rc-key">Source URL</span>
+                    <span className="jd-rc-val">
+                      <a href={sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: 12, wordBreak: 'break-all' }}>{sourceUrl}</a>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {citationList.length > 0 && (
+            <div className="jd-rc-card jd-citation-card">
+              <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
+              <div className="jd-rc-body jd-citation-body">
+                {citationList.map((c, i) => <span key={i} className={`jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
+              </div>
+            </div>
+          )}
 
           {tags.length > 0 && (
             <div className="jd-rc-card">
