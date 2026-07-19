@@ -28,10 +28,13 @@ const TABLE_HEADERS = [
 
 const FILTER_DEFAULTS = {
   court: '',
-  judge: '',
+  bench: '',
   type: '',
-  matterType: '',
+  typeOfProceeding: '',
+  natureOfDispute: '',
   act: '',
+  provision: '',
+  applicableStage: '',
   year: '',
 };
 
@@ -154,6 +157,11 @@ export default function JudgmentLibrary() {
     const years = new Set();
     const matterTypes = new Set();
     const actIds = new Set();
+    const benches = new Set();
+    const typeOfProceedings = new Set();
+    const natureOfDisputes = new Set();
+    const provisions = new Set();
+    const applicableStages = new Set();
     judgments.forEach((j) => {
       if (j.court) courts.add(j.court);
       if (j.judges || j.judge || j.bench) judges.add(j.judges || j.judge || j.bench);
@@ -161,6 +169,11 @@ export default function JudgmentLibrary() {
       if (j.subjectMatter) matterTypes.add(j.subjectMatter);
       if (j.act) actIds.add(j.act);
       if (j.acts?.length) j.acts.forEach((id) => actIds.add(id));
+      if (j.bench) benches.add(j.bench);
+      if (j.typeOfProceeding) typeOfProceedings.add(j.typeOfProceeding);
+      if (j.natureOfDispute) natureOfDisputes.add(j.natureOfDispute);
+      if (j.provisions?.length) toArr(j.provisions).forEach((p) => p && provisions.add(p));
+      if (j.applicableStages?.length) toArr(j.applicableStages).forEach((s) => s && applicableStages.add(s));
       if (j.date) {
         try { years.add(new Date(j.date).getFullYear()); } catch {}
       }
@@ -172,6 +185,11 @@ export default function JudgmentLibrary() {
       matterTypes: Array.from(matterTypes).sort().map((v) => ({ value: v, label: v })),
       acts: Array.from(actIds).sort().map((id) => ({ value: id, label: nameMap.act[id] || id })),
       years: Array.from(years).sort(),
+      benches: Array.from(benches).sort().map((id) => ({ value: id, label: nameMap.bench[id] || id })),
+      typeOfProceedings: Array.from(typeOfProceedings).sort().map((v) => ({ value: v, label: v })),
+      natureOfDisputes: Array.from(natureOfDisputes).sort().map((v) => ({ value: v, label: v })),
+      provisions: Array.from(provisions).sort().map((v) => ({ value: v, label: v })),
+      applicableStages: Array.from(applicableStages).sort().map((v) => ({ value: v, label: v })),
     };
   }, [judgments, nameMap]);
 
@@ -205,10 +223,15 @@ export default function JudgmentLibrary() {
       );
     }
     if (filters.court) rows = rows.filter((j) => (j.court || '') === filters.court);
+    if (filters.bench) rows = rows.filter((j) => (j.bench || '') === filters.bench);
     if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
     if (filters.type) rows = rows.filter((j) => (j.type || '') === filters.type);
+    if (filters.typeOfProceeding) rows = rows.filter((j) => (j.typeOfProceeding || '') === filters.typeOfProceeding);
+    if (filters.natureOfDispute) rows = rows.filter((j) => (j.natureOfDispute || '') === filters.natureOfDispute);
     if (filters.matterType) rows = rows.filter((j) => (j.subjectMatter || '') === filters.matterType);
     if (filters.act) rows = rows.filter((j) => (j.act || '') === filters.act || (j.acts || []).includes(filters.act));
+    if (filters.provision) rows = rows.filter((j) => (j.provisions || []).some((p) => p === filters.provision));
+    if (filters.applicableStage) rows = rows.filter((j) => (j.applicableStages || []).some((s) => s === filters.applicableStage));
     if (filters.year) {
       rows = rows.filter((j) => {
         try { return new Date(j.date).getFullYear() === Number(filters.year); } catch { return false; }
@@ -501,24 +524,36 @@ export default function JudgmentLibrary() {
             <option value="">All Courts</option>
             {uniqueValues.courts.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.judge} onChange={(e) => setFilter('judge', e.target.value)}>
-            <option value="">All Judges</option>
-            {uniqueValues.judges.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
+          <select className="jl-filter-select jl-filter-select--native" value={filters.bench} onChange={(e) => setFilter('bench', e.target.value)}>
+            <option value="">Bench</option>
+            {uniqueValues.benches.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
           </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
-            <option value="">All Types</option>
+            <option value="">Case Type</option>
             {uniqueValues.types.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.matterType} onChange={(e) => setFilter('matterType', e.target.value)}>
-            <option value="">All Matter Types</option>
-            {uniqueValues.matterTypes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+          <select className="jl-filter-select jl-filter-select--native" value={filters.typeOfProceeding} onChange={(e) => setFilter('typeOfProceeding', e.target.value)}>
+            <option value="">Type of Proceeding</option>
+            {uniqueValues.typeOfProceedings.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.natureOfDispute} onChange={(e) => setFilter('natureOfDispute', e.target.value)}>
+            <option value="">Nature of Dispute</option>
+            {uniqueValues.natureOfDisputes.map((n) => <option key={n.value} value={n.value}>{n.label}</option>)}
           </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.act} onChange={(e) => setFilter('act', e.target.value)}>
-            <option value="">All Acts</option>
+            <option value="">Acts</option>
             {uniqueValues.acts.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
           </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.provision} onChange={(e) => setFilter('provision', e.target.value)}>
+            <option value="">Provision(s)</option>
+            {uniqueValues.provisions.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+          <select className="jl-filter-select jl-filter-select--native" value={filters.applicableStage} onChange={(e) => setFilter('applicableStage', e.target.value)}>
+            <option value="">Applicability</option>
+            {uniqueValues.applicableStages.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
           <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
-            <option value="">All Years</option>
+            <option value="">Year of Judgment</option>
             {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
           <Button variant="ghost" icon="filter" onClick={() => setShowFilters(false)}>Hide Filters</Button>

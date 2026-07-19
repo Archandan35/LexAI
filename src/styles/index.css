@@ -22246,9 +22246,15 @@ kbd.cmd__kbd {
 
 .jl-filter-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 18px;
   align-items: center;
+}
+
+.jl-filter-row .jl-filter-select--native {
+  flex: 1 1 180px;
+  min-width: 160px;
 }
 
 .jl-filter-select {
