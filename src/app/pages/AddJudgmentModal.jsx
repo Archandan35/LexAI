@@ -497,6 +497,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [tab, setTab] = useState('general');
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [saveError, setSaveError] = useState('');
   const [existingJudgments, setExistingJudgments] = useState([]);
   const [courts, setCourts] = useState([]);
@@ -626,6 +627,8 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   }, [selectedTabIndex]);
 
   const handleSave = async (draft = false) => {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setSaveError('');
     try {
@@ -656,13 +659,14 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
         result = await judgmentsRepository.create({ ...entry, createdAt: new Date().toISOString() });
       }
       if (!result) throw new Error('Save returned no record');
-      onSaved?.();
+      onSaved?.(result);
       onClose?.();
     } catch (err) {
       console.error('[AddJudgmentModal] save failed:', err);
       const msg = err?.message || 'Unknown error';
       setSaveError(`Could not save: ${msg}`);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -1271,8 +1275,8 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           {saveError && <div className="ajm-save-error">{saveError}</div>}
           <Button variant="ghost" onClick={onClose} icon="close">Cancel</Button>
           <div className="ajm-actions-right">
-            <Button variant="ghost" icon="save" onClick={() => handleSave(true)} disabled={saving}>Save as Draft</Button>
-            <Button variant="ghost" icon="check" onClick={() => handleSave(false)} disabled={saving}>Save</Button>
+            <Button variant="ghost" icon="save" onClick={() => handleSave(true)} disabled={saving} loading={saving}>Save as Draft</Button>
+            <Button variant="ghost" icon="check" onClick={() => handleSave(false)} disabled={saving} loading={saving}>Save</Button>
             <Button variant="primary" icon="arrow" disabled>Next</Button>
           </div>
         </div>

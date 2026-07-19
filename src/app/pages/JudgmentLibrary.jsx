@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
@@ -8,6 +8,7 @@ import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js'
 import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
 import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
 import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
+import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
 import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
@@ -55,6 +56,7 @@ export default function JudgmentLibrary() {
   const [benchTypes, setBenchTypes] = useState([]);
   const [judges, setJudges] = useState([]);
   const [acts, setActs] = useState([]);
+  const [caseTypes, setCaseTypes] = useState([]);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 991px)');
@@ -78,6 +80,7 @@ export default function JudgmentLibrary() {
     benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
     judgesRepository.getAll().then(setJudges).catch(() => {});
     actsRepository.getAll().then(setActs).catch(() => {});
+    caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
   }, [loadJudgments]);
 
   const [editing, setEditing] = useState(null);
@@ -134,10 +137,11 @@ export default function JudgmentLibrary() {
       bench: build(benchTypes),
       judge: build(judges),
       act: build(acts, 'title'),
+      caseType: build(caseTypes),
     };
-  }, [courts, benchTypes, judges, acts]);
+  }, [courts, benchTypes, judges, acts, caseTypes]);
 
-  const resolveName = (map, val) => (val ? (map[val] || val) : '—');
+  const resolveName = (map, val) => (val ? (map[val] || val) : 'â€”');
 
   const uniqueValues = useMemo(() => {
     const courts = new Set();
@@ -335,7 +339,7 @@ export default function JudgmentLibrary() {
   if (loading) {
     return (
       <div className="fade-in">
-        <div className="loading-block"><span className="spinner" /> Loading judgments…</div>
+        <div className="loading-block"><span className="spinner" /> Loading judgmentsâ€¦</div>
       </div>
     );
   }
@@ -547,7 +551,23 @@ export default function JudgmentLibrary() {
                     const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
                     return (
                       <tr key={j.id}>
-                        <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
+                        <td data-label="Case Number" className="jl-cell-muted">
+                          {(() => {
+                            const num = j.caseNumber;
+                            const typeLabel = j.caseType ? (nameMap.caseType?.[j.caseType] || j.caseType) : '';
+                            const yearSrc = j.date || j.judgmentDate;
+                            let year = '';
+                            if (yearSrc) {
+                              try { year = new Date(yearSrc).getFullYear(); } catch { year = ''; }
+                            }
+                            if (!num && !typeLabel && !year) return 'â€”';
+                            const parts = [];
+                            if (typeLabel) parts.push(typeLabel);
+                            if (num) parts.push(typeLabel ? `No. ${num}` : num);
+                            if (year) parts.push(`of ${year}`);
+                            return parts.join(' ');
+                          })()}
+                        </td>
                         <td data-label="Case Title">
                           <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
                           {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
@@ -556,7 +576,7 @@ export default function JudgmentLibrary() {
                         <td data-label="Citation" className="jl-cell-citations">
                           {(() => {
                             const cites = [j.citation, j.neutralCitation, j.reporterCitation].filter(Boolean);
-                            if (!cites.length) return <span className="jl-cell-muted">—</span>;
+                            if (!cites.length) return <span className="jl-cell-muted">â€”</span>;
                             return (
                               <div className="jl-cit-stack">
                                 {cites.map((c, i) => (
@@ -576,7 +596,7 @@ export default function JudgmentLibrary() {
                               ? j.applicableStages
                               : (j.applicableStages ? String(j.applicableStages).split(/[,;]/) : []);
                             const labels = stages.map((s) => nameMap.stage[s?.trim()] || s?.trim() || s).filter(Boolean);
-                            if (!labels.length) return '—';
+                            if (!labels.length) return 'â€”';
                             return (
                               <div className="jl-tag-stack">
                                 {labels.map((s, i) => (
@@ -586,8 +606,8 @@ export default function JudgmentLibrary() {
                             );
                           })()}
                         </td>
-                        <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
-                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
+                        <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : 'â€”'}</td>
+                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : 'â€”'}</td>
                         <td data-label="Actions">
                           <div className="jl-actions">
                             <button title="View" onClick={() => navigate(`/research/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
@@ -611,15 +631,15 @@ export default function JudgmentLibrary() {
             }
           </div>
           <div className="jl-pagination">
-            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>‹</button>
+            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>â€¹</button>
             {pageNumbers.map((p, i) =>
               p === '...' ? (
-                <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">…</span>
+                <span key={`ellipsis-${i}`} className="jl-page-btn jl-page-btn--nav">â€¦</span>
               ) : (
                 <button key={p} className={`jl-page-btn ${safePage === p ? 'jl-page-btn--active' : ''}`} onClick={() => setPage(p)}>{p}</button>
               )
             )}
-            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>›</button>
+            <button className="jl-page-btn jl-page-btn--nav" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>â€º</button>
             <span className="jl-per-page">10 / page</span>
           </div>
         </div>
@@ -650,7 +670,22 @@ export default function JudgmentLibrary() {
         open={showAddModal}
         editing={editing}
         onClose={() => { setShowAddModal(false); setEditing(null); }}
-        onSaved={() => { setEditing(null); loadJudgments(); }}
+        onSaved={(saved) => {
+          setEditing(null);
+          if (saved && saved.id) {
+            setJudgments((prev) => {
+              const idx = prev.findIndex((j) => j.id === saved.id);
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = saved;
+                return next;
+              }
+              return [saved, ...prev];
+            });
+          } else {
+            loadJudgments();
+          }
+        }}
       />
 
       <ConfirmDialog
