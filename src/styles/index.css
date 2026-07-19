@@ -24646,7 +24646,7 @@ kbd.cmd__kbd {
   flex-shrink: 0;
 }
 
-.rjc-icon-court { color: #6366F1; }
+.rjc-icon-court,
 .rjc-icon-calendar { color: #F59E0B; }
 
 .rjc-meta-value {

@@ -366,6 +366,8 @@ export default function JudgmentDetail() {
     const pB = judgment.respondent || judgment.respondentName || judgment.defendant || '';
     const citations = [judgment.neutralCitation, judgment.reporterCitation, judgment.citation]
       .filter(Boolean)
+      .flatMap(c => String(c).split(/[,;]/).map(s => s.trim()))
+      .filter(Boolean)
       .filter((c, i, arr) => arr.indexOf(c) === i);
     const ref = citations.join(' | ');
     const formatted = (pA && pB)
@@ -478,6 +480,7 @@ export default function JudgmentDetail() {
     appellant, respondent, petitioner, respondentName,
     plaintiff, defendant, plaintiffType, defendantType,
     summary, paragraphs, acts, documents,
+    source, sourceUrl,
   } = judgment;
 
   const benchText = benchLabel(judgment.bench) || judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
@@ -488,7 +491,10 @@ export default function JudgmentDetail() {
   const partyAType = appellant ? 'Appellant' : petitioner ? 'Petitioner' : plaintiff ? (partyTypeLabel(plaintiffType) || 'Plaintiff') : '';
   const partyBType = respondent ? 'Respondent' : defendant ? (partyTypeLabel(defendantType) || 'Defendant') : '';
 
-  const citationList = [citation, neutralCitation, reporterCitation].filter(Boolean);
+  const citationList = [citation, neutralCitation, reporterCitation]
+    .filter(Boolean)
+    .flatMap(c => String(c).split(/[,;]/).map(s => s.trim()))
+    .filter(Boolean);
 
   return (
     <div className="jd-page">
@@ -533,6 +539,7 @@ export default function JudgmentDetail() {
             <div className="jd-case-citations">
               {citation && <span className="jd-cit-chip">{citation}</span>}
               {neutralCitation && <span className="jd-cit-chip jd-cit-chip--muted">{neutralCitation}</span>}
+              {reporterCitation && <span className="jd-cit-chip jd-cit-chip--muted">{reporterCitation}</span>}
             </div>
           </div>
           <div className="jd-case-head-right">
@@ -765,6 +772,43 @@ export default function JudgmentDetail() {
                     </div>
                   </div>
                 </div>
+
+                {(source || sourceUrl) && (
+                  <>
+                    <h3 className="jd-panel-title jd-panel-title--mt">Judgment Source</h3>
+                    <div className="jd-refs-grid">
+                      {source && (
+                        <div className="jd-ref-item">
+                          <span className="jd-ref-label">Source</span>
+                          <div className="jd-tags jd-tags--readonly">
+                            <span className="jd-tag">{source}</span>
+                          </div>
+                        </div>
+                      )}
+                      {sourceUrl && (
+                        <div className="jd-ref-item">
+                          <span className="jd-ref-label">Source URL</span>
+                          <div className="jd-tags jd-tags--readonly">
+                            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="jd-source-link" style={{ fontSize: 13 }}>{sourceUrl}</a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {citationList.length > 0 && (
+                  <>
+                    <h3 className="jd-panel-title jd-panel-title--mt">Citations</h3>
+                    <div className="jd-refs-grid">
+                      <div className="jd-ref-item" style={{ gridColumn: '1 / -1' }}>
+                        <div className="jd-tags jd-tags--readonly">
+                          {citationList.map((c, i) => <span key={i} className={`jd-tag jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Section 2 — Other References (2-column) */}
                 <h3 className="jd-panel-title jd-panel-title--mt">Other References</h3>
@@ -1001,14 +1045,6 @@ export default function JudgmentDetail() {
             </div>
           </div>
 
-          {citationList.length > 1 && (
-            <div className="jd-rc-card jd-citation-card">
-              <div className="jd-rc-title"><Icon name="bookmark" size={14} /> Citation</div>
-              <div className="jd-rc-body jd-citation-body">
-                {citationList.map((c, i) => <span key={i} className={`jd-cit-pill jd-cit-pill--c${i % 6}`}>{c}</span>)}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
