@@ -18,6 +18,7 @@ import { auditLogsRepository } from '@/data-layer/repositories/auditLogsReposito
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const TABLE_HEADERS = [
   { key: 'caseNumber', label: 'Case Number' },
@@ -31,16 +32,16 @@ const TABLE_HEADERS = [
 ];
 
 const FILTER_DEFAULTS = {
-  court: '',
-  bench: '',
-  caseType: '',
-  type: '',
-  typeOfProceeding: '',
-  natureOfDispute: '',
-  act: '',
-  provision: '',
-  applicableStage: '',
-  year: '',
+  court: [],
+  bench: [],
+  caseType: [],
+  type: [],
+  typeOfProceeding: [],
+  natureOfDispute: [],
+  act: [],
+  provision: [],
+  applicableStage: [],
+  year: [],
 };
 
 export default function JudgmentLibrary() {
@@ -58,7 +59,8 @@ export default function JudgmentLibrary() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempFilters, setTempFilters] = useState({ ...FILTER_DEFAULTS });
   const fileInputRef = useRef(null);
 
   const [courts, setCourts] = useState([]);
@@ -265,20 +267,18 @@ export default function JudgmentLibrary() {
         (j.keywords || []).join(' ').toLowerCase().includes(q)
       );
     }
-    if (filters.court) rows = rows.filter((j) => (j.court || '') === filters.court);
-    if (filters.bench) rows = rows.filter((j) => (j.bench || '') === filters.bench);
-    if (filters.judge) rows = rows.filter((j) => (j.judge || j.bench || '') === filters.judge);
-    if (filters.caseType) rows = rows.filter((j) => (j.caseType || '') === filters.caseType);
-    if (filters.type) rows = rows.filter((j) => (j.caseType || '') === filters.type);
-    if (filters.typeOfProceeding) rows = rows.filter((j) => (j.typeOfProceeding || '') === filters.typeOfProceeding);
-    if (filters.natureOfDispute) rows = rows.filter((j) => (j.natureOfDispute || '') === filters.natureOfDispute);
-    if (filters.matterType) rows = rows.filter((j) => (j.subjectMatter || '') === filters.matterType);
-    if (filters.act) rows = rows.filter((j) => (j.act || '') === filters.act || (j.acts || []).includes(filters.act));
-    if (filters.provision) rows = rows.filter((j) => (j.provisions || []).some((p) => p === filters.provision));
-    if (filters.applicableStage) rows = rows.filter((j) => (j.applicableStages || []).some((s) => s === filters.applicableStage));
-    if (filters.year) {
+    if (filters.court.length) rows = rows.filter((j) => filters.court.includes(j.court || ''));
+    if (filters.bench.length) rows = rows.filter((j) => filters.bench.includes(j.bench || ''));
+    if (filters.caseType.length) rows = rows.filter((j) => filters.caseType.includes(j.caseType || ''));
+    if (filters.type.length) rows = rows.filter((j) => filters.type.includes(j.caseType || ''));
+    if (filters.typeOfProceeding.length) rows = rows.filter((j) => filters.typeOfProceeding.includes(j.typeOfProceeding || ''));
+    if (filters.natureOfDispute.length) rows = rows.filter((j) => filters.natureOfDispute.includes(j.natureOfDispute || ''));
+    if (filters.act.length) rows = rows.filter((j) => filters.act.includes(j.act || '') || (j.acts || []).some((a) => filters.act.includes(a)));
+    if (filters.provision.length) rows = rows.filter((j) => (j.provisions || []).some((p) => filters.provision.includes(p)));
+    if (filters.applicableStage.length) rows = rows.filter((j) => (j.applicableStages || []).some((s) => filters.applicableStage.includes(s)));
+    if (filters.year.length) {
       rows = rows.filter((j) => {
-        try { return new Date(j.date).getFullYear() === Number(filters.year); } catch { return false; }
+        try { return filters.year.includes(String(new Date(j.date).getFullYear())); } catch { return false; }
       });
     }
     rows.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
@@ -294,13 +294,32 @@ export default function JudgmentLibrary() {
   const toggleOne = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   const toggleFavourite = (id) => setFavourites((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const setFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const setFilter = (key, values) => {
+    setFilters((prev) => ({ ...prev, [key]: values }));
     setPage(1);
   };
 
+  const handleTempFilterChange = (key, values) => {
+    setTempFilters((prev) => ({ ...prev, [key]: values }));
+  };
+
+  const handleApplyFilters = () => {
+    setFilters({ ...tempFilters });
+    setShowFilterPopup(false);
+    setPage(1);
+  };
+
+  const handleClearAll = () => {
+    setTempFilters({ ...FILTER_DEFAULTS });
+  };
+
+  const handleOpenFilterPopup = () => {
+    setTempFilters({ ...filters });
+    setShowFilterPopup(true);
+  };
+
   const clearFilters = () => {
-    setFilters(FILTER_DEFAULTS);
+    setFilters({ ...FILTER_DEFAULTS });
     setSearch('');
     setPage(1);
   };
@@ -558,56 +577,11 @@ export default function JudgmentLibrary() {
         </div>
         <Button variant="ghost" icon="download" onClick={() => fileInputRef.current && fileInputRef.current.click()}>Import</Button>
         <Button variant="ghost" icon="upload" onClick={exportCsv}>Export</Button>
-        <Button variant="ghost" icon="more-horizontal" onClick={() => setShowFilters((s) => !s)}>More</Button>
+        <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenFilterPopup}>
+          {Object.values(filters).some((v) => v.length > 0) ? `Filter (${Object.values(filters).reduce((s, v) => s + v.length, 0)})` : 'Filter'}
+        </Button>
         <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="jl-file-input" onChange={handleImportFile} />
       </div>
-
-      {showFilters && (
-        <div className="jl-filter-row">
-          <select className="jl-filter-select jl-filter-select--native" value={filters.court} onChange={(e) => setFilter('court', e.target.value)}>
-            <option value="">All Courts</option>
-            {uniqueValues.courts.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.bench} onChange={(e) => setFilter('bench', e.target.value)}>
-            <option value="">Bench</option>
-            {uniqueValues.benches.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.caseType} onChange={(e) => setFilter('caseType', e.target.value)}>
-            <option value="">Case Type</option>
-            {uniqueValues.caseTypes.map((ct) => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.type} onChange={(e) => setFilter('type', e.target.value)}>
-            <option value="">Area of Law</option>
-            {uniqueValues.types.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.typeOfProceeding} onChange={(e) => setFilter('typeOfProceeding', e.target.value)}>
-            <option value="">Type of Proceeding</option>
-            {uniqueValues.typeOfProceedings.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.natureOfDispute} onChange={(e) => setFilter('natureOfDispute', e.target.value)}>
-            <option value="">Nature of Dispute</option>
-            {uniqueValues.natureOfDisputes.map((n) => <option key={n.value} value={n.value}>{n.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.act} onChange={(e) => setFilter('act', e.target.value)}>
-            <option value="">Acts</option>
-            {uniqueValues.acts.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.provision} onChange={(e) => setFilter('provision', e.target.value)}>
-            <option value="">Provision(s)</option>
-            {uniqueValues.provisions.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.applicableStage} onChange={(e) => setFilter('applicableStage', e.target.value)}>
-            <option value="">Applicability</option>
-            {uniqueValues.applicableStages.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-          <select className="jl-filter-select jl-filter-select--native" value={filters.year} onChange={(e) => setFilter('year', e.target.value)}>
-            <option value="">Year of Judgment</option>
-            {uniqueValues.years.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
-          <Button variant="ghost" icon="filter" onClick={() => setShowFilters(false)}>Hide Filters</Button>
-          <Button variant="ghost" onClick={clearFilters}>Clear</Button>
-        </div>
-      )}
 
       <Card bodyClass="card__body--flush jl-library-card">
         <div className="table-scroll">
@@ -763,6 +737,16 @@ export default function JudgmentLibrary() {
           <span>Calendar</span>
         </button>
       </nav>
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        uniqueValues={uniqueValues}
+        tempFilters={tempFilters}
+        onTempFilterChange={handleTempFilterChange}
+        onApply={handleApplyFilters}
+        onClearAll={handleClearAll}
+      />
+
       <AddJudgmentModal
         open={showAddModal}
         editing={editing}
