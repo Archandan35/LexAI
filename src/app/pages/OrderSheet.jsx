@@ -722,49 +722,16 @@ export default function OrderSheet() {
                       <Input type="date" value={dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : ''} onChange={(e) => setDateTo(e.target.value)} className="flex-1" />
                     </div>
 
-                    {/* Court */}
-                    <div className="cl-filters__search">
-                      <Icon name="building" size={15} color="var(--navy-600)" />
-                      <select
-                        className="order-sheet__filter-select"
-                        value={filterCourt}
-                        onChange={(e) => setFilterCourt(e.target.value)}
-                      >
-                        <option value="">All Courts</option>
-                        {uniqueCourtNames.map(c => (<option key={c} value={c}>{c}</option>))}
-                      </select>
-                    </div>
-
-                    {/* Jurisdiction */}
-                    <div className="cl-filters__search">
-                      <Icon name="globe" size={15} color="var(--navy-600)" />
-                      <select
-                        className="order-sheet__filter-select"
-                        value={filterCourtLocation}
-                        onChange={(e) => setFilterCourtLocation(e.target.value)}
-                      >
-                        <option value="">All Jurisdictions</option>
-                        {uniqueCourtLocations.map(l => (<option key={l} value={l}>{l}</option>))}
-                      </select>
-                    </div>
-
                     {/* Search */}
                     <div className="cl-filters__search">
                       <Icon name="search" size={15} color="var(--navy-600)" />
                       <input type="text" placeholder="Search case number, parties..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                     </div>
 
-                    {/* Status */}
                     <div className="cl-filters__search">
-                      <Icon name="checkSquare" size={15} color="var(--navy-600)" />
-                      <select
-                        className="order-sheet__filter-select"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                      >
-                        <option value="">All Status</option>
-                        {caseStatuses.map(st => (<option key={st} value={st}>{st}</option>))}
-                      </select>
+                      <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenOSFilter} style={{ width: '100%', justifyContent: 'center' }}>
+                        {[filterCourt, filterCourtLocation, filterStatus].some(Boolean) ? `Filter (${[filterCourt, filterCourtLocation, filterStatus].filter(Boolean).length})` : 'Filter'}
+                      </Button>
                     </div>
 
                     {/* Actions */}
@@ -1926,6 +1893,17 @@ export default function OrderSheet() {
           </div>
         </Field>
       </Modal>
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={osFilterCategories}
+        options={osFilterOptions}
+        tempFilters={tempOSFilters}
+        onTempFilterChange={handleTempOSFilterChange}
+        onApply={handleApplyOSFilters}
+        onClearAll={handleClearOSFilters}
+      />
     </>
   );
 }
