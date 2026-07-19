@@ -23829,6 +23829,11 @@ kbd.cmd__kbd {
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
 }
 
+.jd-judgment-text-card--auto {
+  min-height: 0;
+  height: auto;
+}
+
 .jd-judgment-reader {
   font-size: 16px;
   line-height: 1.8;
@@ -24090,7 +24095,7 @@ kbd.cmd__kbd {
 }
 
 .jd-related-section {
-  padding: 24px;
+  padding: 24px 0;
   background: transparent;
 }
 
@@ -24100,6 +24105,7 @@ kbd.cmd__kbd {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
+  padding: 0 24px;
 }
 
 .jd-related-title {
@@ -24143,7 +24149,6 @@ kbd.cmd__kbd {
 .jd-related-slider-wrap {
   display: flex;
   align-items: center;
-  gap: 16px;
   position: relative;
 }
 
@@ -24154,20 +24159,23 @@ kbd.cmd__kbd {
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   flex: 1;
-  padding: 4px 2px 12px;
+  padding: 4px 60px 12px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
 .jd-rel-slider::-webkit-scrollbar { display: none; }
 
-/* ========= Navigation Arrows ========= */
+/* ========= Navigation Buttons ========= */
 
 .jd-rel-arrow {
-  flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  margin-top: -22px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
@@ -24176,13 +24184,23 @@ kbd.cmd__kbd {
   justify-content: center;
   color: #0F172A;
   cursor: pointer;
-  transition: all 0.15s var(--ease);
+  transition: all 0.2s var(--ease);
+}
+
+.jd-rel-arrow--left {
+  left: 8px;
+}
+
+.jd-rel-arrow--right {
+  right: 8px;
 }
 
 .jd-rel-arrow:hover:not(:disabled) {
+  background: #F8FAFC;
   border-color: #2563EB;
   color: #2563EB;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  transform: scale(1.05);
 }
 
 .jd-rel-arrow:disabled {
@@ -24515,7 +24533,8 @@ kbd.cmd__kbd {
 }
 
 @media (max-width: 760px) {
-  .jd-related-section { padding: 18px 16px; }
+  .jd-related-section { padding: 18px 0; }
+  .jd-related-head { padding: 0 16px; }
   .jd-rel-slider .jd-rel-card { flex-basis: 290px; width: 290px; }
 }
 

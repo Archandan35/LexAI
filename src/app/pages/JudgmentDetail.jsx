@@ -650,25 +650,27 @@ export default function JudgmentDetail() {
 
                 {/* Section 2 — Judgement */}
                 <h3 className="jd-panel-title jd-panel-title--mt"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Judgement</h3>
-                <div className="jd-judgment-text-card">
-                  {(judgment.summary || judgment.fullText) ? (
+                {(judgment.summary || judgment.fullText) ? (
+                  <div className="jd-prose-card">
                     <div className="jd-prose jd-prose--readonly jd-judgment-reader">
                       {judgment.summary
                         ? <span dangerouslySetInnerHTML={{ __html: judgment.summary }} />
                         : <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />}
                     </div>
-                  ) : (
+                  </div>
+                ) : (
+                  <div className="jd-prose-card">
                     <div className="jd-judgment-empty">
                       <div className="jd-judgment-empty-ill"><Icon name="doclines" size={56} /></div>
                       <div className="jd-judgment-empty-title">No Judgment Text Available</div>
                       <div className="jd-judgment-empty-sub">This judgment does not yet contain the full judgment text.</div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
                 {judgment.summary && judgment.fullText && judgment.fullText !== judgment.summary && (
                   <>
                     <h3 className="jd-panel-title jd-panel-title--mt"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Full Judgment Text</h3>
-                    <div className="jd-judgment-text-card">
+                    <div className="jd-prose-card">
                       <div className="jd-prose jd-prose--readonly jd-judgment-reader">
                         <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
                       </div>
@@ -684,9 +686,10 @@ export default function JudgmentDetail() {
                 <h3 className="jd-panel-title">Applicable Stage</h3>
                 <div className="jd-tags jd-tags--readonly">
                   {toArr(judgment.applicableStages).length ? (
-                    toArr(judgment.applicableStages).map((stage, i) => (
-                      <span key={i} className="jd-tag">{stage}</span>
-                    ))
+                    toArr(judgment.applicableStages).map((stage, i) => {
+                      const resolved = stageLabel(stage);
+                      return <span key={i} className="jd-tag">{resolved || '—'}</span>;
+                    })
                   ) : (
                     <div className="jd-prose jd-empty-text">No applicable stages specified.</div>
                   )}
