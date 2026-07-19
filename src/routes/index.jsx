@@ -1,8 +1,13 @@
 import { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout.jsx';
 import RequireAuth from '@/components/RequireAuth.jsx';
 import { lazyWithRetry as lazy } from '@/utils/lazyWithRetry.js';
+
+function RedirectJudgmentDetail() {
+  const { id } = useParams();
+  return <Navigate to={`/research/judgment-library/${id}`} replace />;
+}
 
 const Login = lazy(() => import('@/app/pages/Login.jsx'));
 const Register = lazy(() => import('@/app/pages/Register.jsx'));
@@ -211,6 +216,8 @@ export default function AppRoutes() {
         <Route path="/case-manage" element={<Navigate to="/cases" replace />} />
         <Route path="/hearing-notes" element={<Navigate to="/cases/hearings" replace />} />
         <Route path="/timeline" element={<Navigate to="/cases/case-timeline" replace />} />
+        <Route path="/judgment-library" element={<Navigate to="/research/judgment-library" replace />} />
+        <Route path="/judgment-library/:id" element={<RedirectJudgmentDetail />} />
         <Route path="/citations" element={<Navigate to="/research/citations" replace />} />
         <Route path="/verify" element={<Navigate to="/research/citation-verify" replace />} />
         <Route path="/analysis" element={<Navigate to="/research/case-analysis" replace />} />

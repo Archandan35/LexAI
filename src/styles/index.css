@@ -22333,13 +22333,13 @@ kbd.cmd__kbd {
   vertical-align: middle;
 }
 
-.jl-cit-chips {
+.jl-cit-stack {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.jl-cit-chip {
+.jl-cit-line {
   font-size: 12px;
   font-weight: 600;
   color: var(--navy-700);
@@ -22347,9 +22347,10 @@ kbd.cmd__kbd {
   padding: 3px 9px;
   border-radius: 6px;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
-.jl-cit-chip--muted {
+.jl-cit-line--muted {
   color: var(--text-soft);
   background: var(--surface-2);
 }
@@ -23366,14 +23367,6 @@ kbd.cmd__kbd {
 
 .jd-source-link-section .jd-source-link:hover {
   text-decoration: underline;
-}
-
-.jd-source-link--truncate {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Tabs */

@@ -560,9 +560,9 @@ export default function JudgmentLibrary() {
                             const cites = [j.citation, j.neutralCitation, j.reporterCitation].filter(Boolean);
                             if (!cites.length) return <span className="jl-cell-muted">—</span>;
                             return (
-                              <div className="jl-cit-chips">
+                              <div className="jl-cit-stack">
                                 {cites.map((c, i) => (
-                                  <span key={i} className={`jl-cit-chip${i === 0 ? '' : ' jl-cit-chip--muted'}`}>{c}</span>
+                                  <div key={i} className={`jl-cit-line${i === 0 ? '' : ' jl-cit-line--muted'}`}>{c}</div>
                                 ))}
                               </div>
                             );

@@ -178,7 +178,7 @@ export default function JudgmentDetail() {
 
   const actNameMap = useMemo(() => {
     const m = {};
-    (allActs || []).forEach((a) => { m[a.id] = a.title || a.name; });
+    (allActs || []).forEach((a) => { m[a.id] = a.title || a.name || a.short_code || a.id; });
     return m;
   }, [allActs]);
 
@@ -490,7 +490,7 @@ export default function JudgmentDetail() {
                     href={judgment.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="jd-source-link jd-source-link--truncate"
+                    className="jd-source-link"
                     title={judgment.sourceUrl}
                   >
                         {judgment.sourceUrl}
@@ -503,11 +503,23 @@ export default function JudgmentDetail() {
                 <h3 className="jd-panel-title jd-panel-title--mt">Judgement</h3>
                 <div className="jd-prose-card jd-judgment-text-card">
                   <div className="jd-prose jd-prose--readonly">
-                    {judgment.fullText
-                      ? <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
-                      : 'No judgement text recorded for this judgment.'}
+                    {judgment.summary
+                      ? <span dangerouslySetInnerHTML={{ __html: judgment.summary }} />
+                      : judgment.fullText
+                        ? <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
+                        : 'No judgement text recorded for this judgment.'}
                   </div>
                 </div>
+                {judgment.summary && judgment.fullText && judgment.fullText !== judgment.summary && (
+                  <>
+                    <h3 className="jd-panel-title jd-panel-title--mt">Full Judgment Text</h3>
+                    <div className="jd-prose-card jd-judgment-text-card">
+                      <div className="jd-prose jd-prose--readonly">
+                        <span dangerouslySetInnerHTML={{ __html: judgment.fullText }} />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -800,23 +812,29 @@ export default function JudgmentDetail() {
             </div>
           )}
 
-          {judgment.provisions?.length > 0 && (
-            <div className="jd-rc-card">
-              <div className="jd-rc-title"><Icon name="file" size={14} /> Provision(s)</div>
-              <div className="jd-rc-body">
-                <div className="jd-tags">
-                  {toArr(judgment.provisions).map((p, i) => <span key={i} className="jd-tag">{p}</span>)}
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="jd-rc-card">
             <div className="jd-rc-title"><Icon name="file" size={14} /> Acts & Sections</div>
             <div className="jd-rc-body">
-              {acts?.length ? acts.map((act, i) => <ActRow key={i} act={actNameMap[act] || act} />) : (
-                judgment.act ? <ActRow key="single" act={actNameMap[judgment.act] || judgment.act} /> : <div className="jd-empty-text">No acts referenced.</div>
-              )}
+              {(acts?.length || judgment.provisions?.length) ? (
+                <>
+                  {acts?.length ? acts.map((act, i) => {
+                    const resolvedName = typeof act === 'string'
+                      ? (actNameMap[act] || act)
+                      : (act?.name || act?.title || (act?.id ? actNameMap[act.id] : '') || '');
+                    return <ActRow key={i} act={resolvedName} />;
+                  }) : judgment.act ? <ActRow key="single" act={actNameMap[judgment.act] || judgment.act} /> : null}
+                  {toArr(judgment.provisions).length ? (
+                    <div className="jd-acts-sections-list" style={{ marginTop: acts?.length ? 8 : 0 }}>
+                      {toArr(judgment.provisions).map((p, i) => (
+                        <div key={i} className="jd-acts-row">
+                          <Icon name="file" size={14} />
+                          <span className="jd-acts-section">{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              ) : <div className="jd-empty-text">No acts referenced.</div>}
             </div>
           </div>
 
