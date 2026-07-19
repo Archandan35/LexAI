@@ -487,7 +487,7 @@ export default function JudgmentDetail() {
   const judgeText = judgeLabel(judgment.judge) || judgeLabel(judgment.judges);
   const caseYear = date ? new Date(date).getFullYear() : '';
   const formattedCaseNumber = caseType && caseNumber
-    ? `${caseType} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
+    ? `${caseTypeLabel(caseType)} No. ${caseNumber}${caseYear ? ` of ${caseYear}` : ''}`
     : caseNumber;
 
   const partyA = appellant || petitioner || plaintiff || '';
