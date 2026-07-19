@@ -99,7 +99,6 @@ const INITIAL_FORM = {
   notes: '',
   researchNotes: '',
   reviewComments: '',
-  applicableStages: [],
   legalPrinciple: '',
   usageNotes: '',
 };

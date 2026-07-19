@@ -9,6 +9,7 @@ import { orderComparator } from '@/utils/displayOrder.js';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const ENTITY_PREFIX = 'COUT';
 
@@ -68,7 +69,31 @@ export default function Courts() {
   const [viewItem, setViewItem] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [dupTarget, setDupTarget] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempCrudFilters, setTempCrudFilters] = useState({ status: [] });
+  const [filterStatus, setFilterStatus] = useState('');
+
+  const crudFilterCategories = [
+    { key: 'status', label: 'Status' },
+  ];
+  const crudFilterOptions = {
+    status: [
+      { value: 'Active', label: 'Active' },
+      { value: 'Inactive', label: 'Inactive' },
+    ],
+  };
+
+  const handleOpenCrudFilter = () => {
+    setTempCrudFilters({ status: filterStatus ? [filterStatus] : [] });
+    setShowFilterPopup(true);
+  };
+  const handleTempCrudFilterChange = (key, values) => setTempCrudFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyCrudFilters = () => {
+    setFilterStatus(tempCrudFilters.status[0] || '');
+    setPage(1);
+    setShowFilterPopup(false);
+  };
+  const handleClearCrudFilters = () => { setTempCrudFilters({ status: [] }); };
   const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -365,10 +390,10 @@ export default function Courts() {
 
   // Derived data
   const filtered = items.filter((i) =>
-    !search ||
+    (!search ||
     i.name.toLowerCase().includes(search.toLowerCase()) ||
-    (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort(orderComparator);
+    (i.short_code || '').toLowerCase().includes(search.toLowerCase()))
+  ).filter((i) => !filterStatus || i.status === filterStatus).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -494,8 +519,8 @@ export default function Courts() {
           ))}
         </div>
         <div className="cmp-toolbar-right">
-          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} title={showFilter ? 'Filter active — click to clear' : 'Filter'} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
-            <Icon name="filter" size={16} /><span>Filter</span>
+          <button className={`cmp-tb-filter${filterStatus ? ' active' : ''}`} title={filterStatus ? `Filter: ${filterStatus}` : 'Filter'} onClick={handleOpenCrudFilter}>
+            <Icon name="filter" size={16} /><span>Filter{filterStatus ? ` (1)` : ''}</span>
           </button>
         </div>
       </div>
@@ -682,7 +707,7 @@ export default function Courts() {
         </Card>
       )}
 
-      <div className={`cmp-search${showFilter ? ' cmp-search--filtered' : ''}`}>
+      <div className={`cmp-search${filterStatus ? ' cmp-search--filtered' : ''}`}>
         <Icon name="search" size={18} />
         <input ref={searchRef} value={search} placeholder="Search courts…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
@@ -819,6 +844,17 @@ export default function Courts() {
           onCancel={confirmState.onCancel}
         />
       )}
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={crudFilterCategories}
+        options={crudFilterOptions}
+        tempFilters={tempCrudFilters}
+        onTempFilterChange={handleTempCrudFilterChange}
+        onApply={handleApplyCrudFilters}
+        onClearAll={handleClearCrudFilters}
+      />
 
       {/* Table Card */}
       <div className="cmp-table-card">

@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const ENTITY_PREFIX = 'ACTY';
 
@@ -43,6 +44,8 @@ export default function ActLibrary() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('');
   const [sortBy, setSortBy] = useState('title');
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempALFilters, setTempALFilters] = useState({ filterType: [] });
   const [viewMode, setViewMode] = useState('list');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -95,6 +98,17 @@ export default function ActLibrary() {
   useEffect(() => { load(); }, []);
 
   const types = [...new Set(items.map(i => i.act_type).filter(Boolean))];
+
+  const alFilterCategories = [{ key: 'filterType', label: 'Type of Act' }];
+  const alFilterOptions = types.map((t) => ({ value: t, label: t }));
+
+  const handleOpenALFilter = () => {
+    setTempALFilters({ filterType: filterType ? [filterType] : [] });
+    setShowFilterPopup(true);
+  };
+  const handleTempALFilterChange = (key, values) => setTempALFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyALFilters = () => { setFilterType(tempALFilters.filterType[0] || ''); setShowFilterPopup(false); setPage(1); };
+  const handleClearALFilters = () => { setTempALFilters({ filterType: [] }); };
 
   const filtered = items.filter(i => {
     if (search && !i.title?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -666,12 +680,9 @@ export default function ActLibrary() {
           <Icon name="search" size={18} />
           <input value={search} placeholder="Search acts by title..." autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <div style={{ width: 180 }}>
-          <Select value={filterType} onChange={e => setFilterType(e.target.value)}>
-            <option value="">All Types</option>
-            {types.map(t => <option key={t} value={t}>{t}</option>)}
-          </Select>
-        </div>
+        <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenALFilter}>
+          {filterType ? `Filter (1)` : 'Filter'}
+        </Button>
         <div style={{ width: 180 }}>
           <Select value={sortBy} onChange={e => setSortBy(e.target.value)}>
             <option value="title">Sort: Title</option>
@@ -1112,6 +1123,17 @@ export default function ActLibrary() {
           </div>
         </div>
       )}
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={alFilterCategories}
+        options={{ filterType: alFilterOptions }}
+        tempFilters={tempALFilters}
+        onTempFilterChange={handleTempALFilterChange}
+        onApply={handleApplyALFilters}
+        onClearAll={handleClearALFilters}
+      />
 
       {confirmState && (
         <ConfirmDialog

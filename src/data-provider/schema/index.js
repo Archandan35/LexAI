@@ -57,6 +57,7 @@ import { ProvisionsSchema } from './provisions.schema.js';
 import { TasksSchema } from './tasks.schema.js';
 import { TaskCategoriesSchema } from './task_categories.schema.js';
 import { TaskStatusesSchema } from './task_statuses.schema.js';
+import { PrecedentsSchema } from './precedents.schema.js';
 
 // Infrastructure schemas — registers system tables in EntityRegistry for
 // schema diff/repair compatibility without making them visible to the installer.
@@ -98,6 +99,7 @@ export const schemas = {
   legal_notices: LegalNoticesSchema,
   reports: ReportsSchema,
   case_statuses: CaseStatusesSchema,
+  precedents: PrecedentsSchema,
   priorities: PrioritiesSchema,
   hearing_statuses: HearingStatusesSchema,
   contact_types: ContactTypesSchema,

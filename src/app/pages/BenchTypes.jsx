@@ -10,6 +10,7 @@ import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const ENTITY_PREFIX = 'BENT';
 
@@ -67,7 +68,31 @@ export default function BenchTypes() {
   const [editTarget, setEditTarget] = useState(null);
   const [dupTarget, setDupTarget] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempCrudFilters, setTempCrudFilters] = useState({ status: [] });
+  const [filterStatus, setFilterStatus] = useState('');
+
+  const crudFilterCategories = [
+    { key: 'status', label: 'Status' },
+  ];
+  const crudFilterOptions = {
+    status: [
+      { value: 'Active', label: 'Active' },
+      { value: 'Inactive', label: 'Inactive' },
+    ],
+  };
+
+  const handleOpenCrudFilter = () => {
+    setTempCrudFilters({ status: filterStatus ? [filterStatus] : [] });
+    setShowFilterPopup(true);
+  };
+  const handleTempCrudFilterChange = (key, values) => setTempCrudFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyCrudFilters = () => {
+    setFilterStatus(tempCrudFilters.status[0] || '');
+    setPage(1);
+    setShowFilterPopup(false);
+  };
+  const handleClearCrudFilters = () => { setTempCrudFilters({ status: [] }); };
   const [moreMenu, setMoreMenu] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -256,9 +281,9 @@ export default function BenchTypes() {
     setBusy(false);
   };
 
-  const filtered = items.filter(i =>
-    !search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase())
-  ).sort(orderComparator);
+  const filtered = items.filter((i) =>
+    (!search || i.name.toLowerCase().includes(search.toLowerCase()) || (i.short_code || '').toLowerCase().includes(search.toLowerCase()))
+  ).filter((i) => !filterStatus || i.status === filterStatus).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -425,9 +450,8 @@ export default function BenchTypes() {
           ))}
         </div>
         <div className="bench-types__toolbar-right">
-          <button className={`bench-types__tb-filter${showFilter ? ' active' : ''}`} title={showFilter ? 'Filter active — click to clear' : 'Filter'} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
-            <Icon name="filter" size={16} />
-            <span>Filter</span>
+          <button className={`bench-types__tb-filter${filterStatus ? ' active' : ''}`} title={filterStatus ? `Filter: ${filterStatus}` : 'Filter'} onClick={handleOpenCrudFilter}>
+            <Icon name="filter" size={16} /><span>Filter{filterStatus ? ` (1)` : ''}</span>
           </button>
         </div>
       </div>
@@ -606,7 +630,7 @@ export default function BenchTypes() {
         </Card>
       )}
 
-      <div className={`bench-types__search${showFilter ? ' bench-types__search--filtered' : ''}`}>
+      <div className={`bench-types__search${filterStatus ? ' bench-types__search--filtered' : ''}`}>
         <Icon name="search" size={18} />
         <input ref={searchRef} value={search} placeholder="Search bench types…" autoComplete="off" onChange={e => { setSearch(e.target.value); setPage(1); }} />
       </div>
@@ -930,6 +954,17 @@ export default function BenchTypes() {
           onCancel={confirmState.onCancel}
         />
       )}
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={crudFilterCategories}
+        options={crudFilterOptions}
+        tempFilters={tempCrudFilters}
+        onTempFilterChange={handleTempCrudFilterChange}
+        onApply={handleApplyCrudFilters}
+        onClearAll={handleClearCrudFilters}
+      />
     </div>
   );
 }

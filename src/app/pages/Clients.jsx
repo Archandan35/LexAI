@@ -5,6 +5,7 @@ import Icon from '@/components/Icon.jsx';
 import { Field, Input, Textarea } from '@/components/Field.jsx';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const EMPTY_FORM = { name: '', contact_person: '', email: '', phone: '', address: '', client_type: 'Individual', notes: '', status: 'Active' };
 
@@ -27,6 +28,10 @@ export default function Clients() {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempClFilters, setTempClFilters] = useState({ client_type: [], status: [] });
+  const [filterClientType, setFilterClientType] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
@@ -42,6 +47,38 @@ export default function Clients() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  const clFilterCategories = [
+    { key: 'client_type', label: 'Client Type' },
+    { key: 'status', label: 'Status' },
+  ];
+  const clFilterOptions = [
+    { value: 'Individual', label: 'Individual' },
+    { value: 'Firm', label: 'Firm' },
+    { value: 'Company', label: 'Company' },
+    { value: 'Government', label: 'Government' },
+    { value: 'NGO', label: 'NGO' },
+    { value: 'Other', label: 'Other' },
+  ];
+  const clStatusOptions = [
+    { value: 'Active', label: 'Active' },
+    { value: 'Inactive', label: 'Inactive' },
+  ];
+
+  const handleOpenClFilter = () => {
+    setTempClFilters({
+      client_type: filterClientType ? [filterClientType] : [],
+      status: filterStatus ? [filterStatus] : [],
+    });
+    setShowFilterPopup(true);
+  };
+  const handleTempClFilterChange = (key, values) => setTempClFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyClFilters = () => {
+    setFilterClientType(tempClFilters.client_type[0] || '');
+    setFilterStatus(tempClFilters.status[0] || '');
+    setShowFilterPopup(false);
+  };
+  const handleClearClFilters = () => { setTempClFilters({ client_type: [], status: [] }); };
+
   const load = async () => {
     setLoading(true);
     const [d, s] = await Promise.all([clientLogic.list(), clientLogic.stats()]);
@@ -53,16 +90,19 @@ export default function Clients() {
   useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => {
-    if (!search) return items;
+    let rows = items;
     const q = search.toLowerCase();
-    return items.filter((c) =>
+    if (q) rows = rows.filter((c) =>
       (c.name || '').toLowerCase().includes(q) ||
       (c.email || '').toLowerCase().includes(q) ||
       (c.phone || '').toLowerCase().includes(q) ||
       (c.client_type || '').toLowerCase().includes(q) ||
       (c.contact_person || '').toLowerCase().includes(q)
     );
-  }, [items, search]);
+    if (filterClientType) rows = rows.filter((c) => c.client_type === filterClientType);
+    if (filterStatus) rows = rows.filter((c) => c.status === filterStatus);
+    return rows;
+  }, [items, search, filterClientType, filterStatus]);
 
   const openAdd = () => { setForm(EMPTY_FORM); setEditing(null); setShowForm(true); };
 
@@ -200,6 +240,9 @@ export default function Clients() {
 
       <div className="toolbar-row">
         <Input className="search-row__input" placeholder="Search by name, email, phone, type…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenClFilter}>
+          {[filterClientType, filterStatus].some(Boolean) ? `Filter (${[filterClientType, filterStatus].filter(Boolean).length})` : 'Filter'}
+        </Button>
         <Button onClick={openAdd}><Icon name="plus" size={15} /> Add Client</Button>
       </div>
 
@@ -304,6 +347,17 @@ export default function Clients() {
           <Button variant="primary" icon="edit" onClick={() => { const c = viewing; setViewing(null); openEdit(c); }}>Edit Client</Button>
         </div>
       </Modal>
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={clFilterCategories}
+        options={{ client_type: clFilterOptions, status: clStatusOptions }}
+        tempFilters={tempClFilters}
+        onTempFilterChange={handleTempClFilterChange}
+        onApply={handleApplyClFilters}
+        onClearAll={handleClearClFilters}
+      />
 
       <nav className="bench-types__bottom-nav bench-types__mobile-only">
         <button className="bench-types__nav-tab bench-types__nav-tab--active">

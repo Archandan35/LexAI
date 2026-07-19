@@ -73,6 +73,9 @@ const DEFAULT_MAPPINGS = {
   reminder_types: { ...COMMON },
   reports: { ...COMMON },
   schema_meta: { ...COMMON, appVersion: 'app_version', installedAt: 'installed_at' },
+  tasks: { ...COMMON },
+  task_categories: { ...COMMON },
+  task_statuses: { ...COMMON },
 };
 
 function ensureInit() {

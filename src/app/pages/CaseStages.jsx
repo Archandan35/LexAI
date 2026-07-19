@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -43,7 +44,31 @@ export default function CaseStages() {
   const [activeAction, setActiveAction] = useState(null);
   const [subMode, setSubMode] = useState('single');
   const [page, setPage] = useState(1);
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempCrudFilters, setTempCrudFilters] = useState({ status: [] });
+  const [filterStatus, setFilterStatus] = useState('');
+
+  const crudFilterCategories = [
+    { key: 'status', label: 'Status' },
+  ];
+  const crudFilterOptions = {
+    status: [
+      { value: 'Active', label: 'Active' },
+      { value: 'Inactive', label: 'Inactive' },
+    ],
+  };
+
+  const handleOpenCrudFilter = () => {
+    setTempCrudFilters({ status: filterStatus ? [filterStatus] : [] });
+    setShowFilterPopup(true);
+  };
+  const handleTempCrudFilterChange = (key, values) => setTempCrudFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyCrudFilters = () => {
+    setFilterStatus(tempCrudFilters.status[0] || '');
+    setPage(1);
+    setShowFilterPopup(false);
+  };
+  const handleClearCrudFilters = () => { setTempCrudFilters({ status: [] }); };
   const searchRef = useRef(null);
   const [perPage, setPerPage] = useState(10);
 
@@ -249,9 +274,9 @@ export default function CaseStages() {
     toast.push('CSV import coming soon.', 'info');
   };
 
-  const filtered = items.filter(i =>
-    !search || i.name.toLowerCase().includes(search.toLowerCase())
-  ).sort(orderComparator);
+  const filtered = items.filter((i) =>
+    (!search || i.name.toLowerCase().includes(search.toLowerCase()))
+  ).filter((i) => !filterStatus || i.status === filterStatus).sort(orderComparator);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -396,8 +421,8 @@ export default function CaseStages() {
           ))}
         </div>
         <div className="cmp-toolbar-right">
-          <button className={`cmp-tb-filter${showFilter ? ' active' : ''}`} onClick={() => { setShowFilter(!showFilter); searchRef.current?.focus(); }}>
-            <Icon name="filter" size={16} /><span>Filter</span>
+          <button className={`cmp-tb-filter${filterStatus ? ' active' : ''}`} title={filterStatus ? `Filter: ${filterStatus}` : 'Filter'} onClick={handleOpenCrudFilter}>
+            <Icon name="filter" size={16} /><span>Filter{filterStatus ? ` (1)` : ''}</span>
           </button>
         </div>
       </div>
@@ -874,6 +899,16 @@ export default function CaseStages() {
         )}
       {!search && <div className="muted cmp-drag-hint">Drag rows to reorder. Order applies to every case form.</div>}
 
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={crudFilterCategories}
+        options={crudFilterOptions}
+        tempFilters={tempCrudFilters}
+        onTempFilterChange={handleTempCrudFilterChange}
+        onApply={handleApplyCrudFilters}
+        onClearAll={handleClearCrudFilters}
+      />
     </div>
   );
 }

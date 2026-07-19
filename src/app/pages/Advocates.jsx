@@ -5,6 +5,7 @@ import Icon from '@/components/Icon.jsx';
 import { Field, Input, Textarea } from '@/components/Field.jsx';
 import { userLogic } from '@/logic/userLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 const EMPTY_FORM = { name: '', email: '', phone: '', address: '', status: 'Active' };
 
@@ -26,6 +27,9 @@ export default function Advocates() {
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempAdFilters, setTempAdFilters] = useState({ status: [] });
+  const [filterStatus, setFilterStatus] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
@@ -41,6 +45,27 @@ export default function Advocates() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  const adFilterCategories = [
+    { key: 'status', label: 'Status' },
+  ];
+  const adFilterOptions = {
+    status: [
+      { value: 'Active', label: 'Active' },
+      { value: 'Inactive', label: 'Inactive' },
+    ],
+  };
+
+  const handleOpenAdFilter = () => {
+    setTempAdFilters({ status: filterStatus ? [filterStatus] : [] });
+    setShowFilterPopup(true);
+  };
+  const handleTempAdFilterChange = (key, values) => setTempAdFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyAdFilters = () => {
+    setFilterStatus(tempAdFilters.status[0] || '');
+    setShowFilterPopup(false);
+  };
+  const handleClearAdFilters = () => { setTempAdFilters({ status: [] }); };
+
   const load = async () => {
     setLoading(true);
     const d = await userLogic.list();
@@ -53,14 +78,16 @@ export default function Advocates() {
   const items = useMemo(() => all.filter((u) => u.roleCode === 'advocate'), [all]);
 
   const filtered = useMemo(() => {
-    if (!search) return items;
+    let rows = items;
     const q = search.toLowerCase();
-    return items.filter((u) =>
+    if (q) rows = rows.filter((u) =>
       (u.name || '').toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q) ||
       (u.phone || '').toLowerCase().includes(q)
     );
-  }, [items, search]);
+    if (filterStatus) rows = rows.filter((u) => u.status === filterStatus);
+    return rows;
+  }, [items, search, filterStatus]);
 
   const stats = useMemo(() => ({
     total: items.length,
@@ -203,6 +230,9 @@ export default function Advocates() {
 
       <div className="toolbar-row">
         <Input className="search-row__input" placeholder="Search by name, email, phone..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenAdFilter}>
+          {filterStatus ? `Filter (1)` : 'Filter'}
+        </Button>
         <Button onClick={openAdd}><Icon name="plus" size={15} /> Add Advocate</Button>
       </div>
 
@@ -287,6 +317,17 @@ export default function Advocates() {
           <Button variant="primary" icon="edit" onClick={() => { const u = viewing; setViewing(null); openEdit(u); }}>Edit Advocate</Button>
         </div>
       </Modal>
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={adFilterCategories}
+        options={adFilterOptions}
+        tempFilters={tempAdFilters}
+        onTempFilterChange={handleTempAdFilterChange}
+        onApply={handleApplyAdFilters}
+        onClearAll={handleClearAdFilters}
+      />
 
       <nav className="bench-types__bottom-nav bench-types__mobile-only">
         <button className="bench-types__nav-tab bench-types__nav-tab--active">

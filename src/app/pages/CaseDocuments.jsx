@@ -9,6 +9,7 @@ import { fileLogic } from '@/logic/fileLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { bytes, useFormat } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import FilterPopup from '@/components/FilterPopup.jsx';
 
 /* ── helpers ── */
 function fileExt(name = '') {
@@ -82,7 +83,8 @@ export default function CaseDocuments() {
   const [docMenuId, setDocMenuId] = useState(null);
   const [folderSearch, setFolderSearch] = useState('');
   const [fileExtFilter, setFileExtFilter] = useState([]);
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempCmFilters, setTempCmFilters] = useState({ fileType: [] });
   const [ctxMenu, setCtxMenu] = useState(null);
   const [contentCtx, setContentCtx] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -97,14 +99,6 @@ export default function CaseDocuments() {
     return () => document.removeEventListener('click', handler);
   }, [ctxMenu, contentCtx]);
 
-  // close filter popup on click outside
-  useEffect(() => {
-    if (!showFilter) return;
-    const handler = (e) => { if (!e.target.closest('.cdoc__filter-wrap')) setShowFilter(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showFilter]);
-
   const load = useCallback(async () => {
     setLoading(true);
     const [d, f] = await Promise.all([
@@ -117,6 +111,25 @@ export default function CaseDocuments() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const cmFilterCategories = [
+    { key: 'fileType', label: 'File Type' },
+  ];
+  const cmFilterOptions = {
+    fileType: ['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => ({ value: ext, label: ext })),
+  };
+
+  const handleOpenCmFilter = () => {
+    setTempCmFilters({ fileType: [...fileExtFilter] });
+    setShowFilterPopup(true);
+  };
+  const handleTempCmFilterChange = (key, values) => setTempCmFilters((prev) => ({ ...prev, [key]: values }));
+  const handleApplyCmFilters = () => {
+    setFileExtFilter(tempCmFilters.fileType);
+    setPage(1);
+    setShowFilterPopup(false);
+  };
+  const handleClearCmFilters = () => { setTempCmFilters({ fileType: [] }); };
 
   // close doc context menu on outside click
   useEffect(() => {
@@ -309,10 +322,6 @@ export default function CaseDocuments() {
   const toggleAll = () => {
     if (allChecked) setDocSelected((s) => s.filter((id) => !paginated.some((d) => d.id === id)));
     else setDocSelected((s) => [...new Set([...s, ...paginated.map((d) => d.id)])]);
-  };
-
-  const toggleFileExt = (ext) => {
-    setFileExtFilter((prev) => prev.includes(ext) ? prev.filter((e) => e !== ext) : [...prev, ext]);
   };
 
   const handleUpload = async (e) => {
@@ -524,25 +533,10 @@ export default function CaseDocuments() {
 
               {/* Filters */}
               <div className="cdoc__filter-wrap">
-                <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={() => setShowFilter((s) => !s)}>
+                <button className={`cdoc__filter-btn${fileExtFilter.length > 0 ? ' cdoc__filter-btn--active' : ''}`} onClick={handleOpenCmFilter}>
                   <Icon name="filter" size={14} />
                   Filters{fileExtFilter.length > 0 ? ` (${fileExtFilter.length})` : ''}
                 </button>
-                {showFilter && (
-                  <div className="cdoc__filter-popup">
-                    <div className="cdoc__filter-popup-title">File type</div>
-                    {['PDF', 'DOCX', 'DOC', 'XLSX', 'XLS'].map((ext) => (
-                      <label key={ext} className="cdoc__filter-opt">
-                        <input type="checkbox" checked={fileExtFilter.includes(ext)} onChange={() => toggleFileExt(ext)} />
-                        <span>{ext}</span>
-                      </label>
-                    ))}
-                    <div className="cdoc__filter-popup-actions">
-                      <button className="cdoc__filter-clear" onClick={() => { setFileExtFilter([]); setShowFilter(false); }}>Clear</button>
-                      <button className="cdoc__filter-apply" onClick={() => setShowFilter(false)}>Apply</button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -858,6 +852,17 @@ export default function CaseDocuments() {
           </button>
         </div>
       )}
+
+      <FilterPopup
+        open={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        categories={cmFilterCategories}
+        options={cmFilterOptions}
+        tempFilters={tempCmFilters}
+        onTempFilterChange={handleTempCmFilterChange}
+        onApply={handleApplyCmFilters}
+        onClearAll={handleClearCmFilters}
+      />
 
       {/* Preview modal */}
       {preview && (
