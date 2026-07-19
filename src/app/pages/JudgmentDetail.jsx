@@ -578,7 +578,7 @@ export default function JudgmentDetail() {
             {tab === 'overview' && (
               <div className="jd-overview-cards">
                 {/* Headnotes Section (Readonly) */}
-                <div className="jd-judgment-text-card">
+                <div className="jd-prose-card">
                   <h3 className="jd-panel-title"><Icon name="doc" size={20} className="jd-panel-title-icon" /> Headnotes</h3>
                   {judgment.headnotes ? (
                     <div className="jd-prose jd-prose--readonly jd-judgment-reader">
@@ -1106,7 +1106,7 @@ export default function JudgmentDetail() {
                 disabled={sliderAtEnd}
                 aria-label="Next related judgments"
               >
-                <Icon name="chevronRight" size={20} />
+                <Icon name="chevron" size={20} />
               </button>
             </div>
           ) : (

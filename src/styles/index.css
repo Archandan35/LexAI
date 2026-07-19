@@ -23680,14 +23680,14 @@ kbd.cmd__kbd {
 .jd-dates-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 14px;
   margin-bottom: 24px;
 }
 
 @media (max-width: 720px) {
   .jd-dates-row {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 }
 
@@ -23695,13 +23695,11 @@ kbd.cmd__kbd {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 16px;
-  padding: 24px;
-  min-height: 104px;
-  border: 1px solid #E5E7EB;
-  border-radius: 14px;
-  background: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
 }
 
@@ -23775,13 +23773,12 @@ kbd.cmd__kbd {
 }
 
 .jd-source-link-card {
-  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  background: #FFFFFF;
+  padding: 14px 20px;
+  background: var(--surface);
   border: 1px solid #2563EB;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   transition: background 0.15s var(--ease), border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
   cursor: pointer;
 }
@@ -24105,7 +24102,6 @@ kbd.cmd__kbd {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
-  padding: 0 24px;
 }
 
 .jd-related-title {
@@ -24534,7 +24530,6 @@ kbd.cmd__kbd {
 
 @media (max-width: 760px) {
   .jd-related-section { padding: 18px 0; }
-  .jd-related-head { padding: 0 16px; }
   .jd-rel-slider .jd-rel-card { flex-basis: 290px; width: 290px; }
 }
 
