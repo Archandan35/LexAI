@@ -14,15 +14,12 @@ import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 
 const TABLE_HEADERS = [
-  { key: 'checkbox', label: '' },
+  { key: 'caseNumber', label: 'Case Number' },
   { key: 'title', label: 'Case Title' },
   { key: 'citation', label: 'Citation', sortable: true },
   { key: 'court', label: 'Court / Bench' },
-  { key: 'judges', label: 'Judge(s)' },
+  { key: 'applicability', label: 'Applicability' },
   { key: 'date', label: 'Judgment Date', sortable: true },
-  { key: 'caseNumber', label: 'Case Number' },
-  { key: 'status', label: 'Status' },
-  { key: 'favourite', label: 'Favourite' },
   { key: 'updated', label: 'Last Updated' },
   { key: 'actions', label: 'Actions' },
 ];
@@ -550,7 +547,7 @@ export default function JudgmentLibrary() {
                     const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
                     return (
                       <tr key={j.id}>
-                        <td data-label=""><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
+                        <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
                         <td data-label="Case Title">
                           <div className="jl-case-title">{j.caseName || j.title || j.citation || 'Untitled'}</div>
                           {j.title !== j.caseName && j.caseName && <div className="jl-case-sub">{j.title}</div>}
@@ -573,34 +570,23 @@ export default function JudgmentLibrary() {
                           {resolveName(nameMap.court, j.court)}
                           {j.bench ? <><br />{resolveName(nameMap.bench, j.bench)}</> : null}
                         </td>
-                        <td data-label="Judge(s)" className="jl-cell-strong">
+                        <td data-label="Applicability" className="jl-cell-muted">
                           {(() => {
-                            const judgeVal = j.judges || j.judge;
-                            if (!judgeVal) return <span className="jl-cell-muted">—</span>;
-                            const raw = Array.isArray(judgeVal) ? judgeVal : String(judgeVal).split(/[,;]/);
-                            const names = raw.map((x) => (nameMap.judge[x?.trim()] || x?.trim() || x)).filter(Boolean);
-                            if (!names.length) return <span className="jl-cell-muted">—</span>;
+                            const stages = Array.isArray(j.applicableStages)
+                              ? j.applicableStages
+                              : (j.applicableStages ? String(j.applicableStages).split(/[,;]/) : []);
+                            const labels = stages.map((s) => nameMap.stage[s?.trim()] || s?.trim() || s).filter(Boolean);
+                            if (!labels.length) return '—';
                             return (
-                              <div className="jl-judge-stack">
-                                {names.map((n, i) => (
-                                  <span key={i} className="jl-judge-line">{n}</span>
+                              <div className="jl-tag-stack">
+                                {labels.map((s, i) => (
+                                  <span key={i} className="jl-tag-chip">{s}</span>
                                 ))}
                               </div>
                             );
                           })()}
                         </td>
                         <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
-                        <td data-label="Case Number" className="jl-cell-muted">{j.caseNumber || '—'}</td>
-                        <td data-label="Status">
-                          <span className={`jl-status-pill ${j.archived ? 'jl-status--archived' : 'jl-status--active'}`}>
-                            {j.archived ? 'Archived' : 'Active'}
-                          </span>
-                        </td>
-                        <td data-label="Favourite" className="jl-fav-cell">
-                          <button className={`jl-heart-btn ${isFav ? 'jl-heart-btn--filled' : ''}`} onClick={() => toggleFavourite(j.id)}>
-                            <Icon name="heart" size={15} fill={isFav} />
-                          </button>
-                        </td>
                         <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
                         <td data-label="Actions">
                           <div className="jl-actions">
