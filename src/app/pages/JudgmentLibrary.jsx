@@ -150,6 +150,16 @@ export default function JudgmentLibrary() {
 
   const resolveName = (map, val) => (val ? (map[val] || val) : 'â€”');
 
+  const toArr = (v) => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v.flat();
+    if (typeof v === 'string') {
+      try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch {}
+      return [v];
+    }
+    return [];
+  };
+
   const uniqueValues = useMemo(() => {
     const courts = new Set();
     const judges = new Set();

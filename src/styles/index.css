@@ -23416,7 +23416,7 @@ kbd.cmd__kbd {
 .jd-main-col {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   align-self: start;
 }
 
