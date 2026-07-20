@@ -3,8 +3,9 @@ import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input } from '@/components/Field.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
-export default function CrudListPage({ title, icon, logic, searchFields, statsConfig, emptyText, addLabel, renderForm, columns, renderRowActions }) {
+export default function CrudListPage({ title, icon, logic, searchFields, statsConfig, emptyText, addLabel, renderForm, columns, renderRowActions, module, actionCreate = 'create', actionDelete = 'delete' }) {
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
               <h2>{title}</h2>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={() => setShowForm(!showForm)} style={{ marginLeft: 'auto' }}>{addLabel}</Button>
+            <PermissionGate module={module} action={actionCreate}><Button icon="plus" onClick={() => setShowForm(!showForm)} style={{ marginLeft: 'auto' }}>{addLabel}</Button></PermissionGate>
             <Icon name={icon} className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -71,7 +72,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
             <div className="bench-types__hero-text">
               <h2>{title}</h2>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={() => setShowForm(!showForm)}>{addLabel}</Button>
+              <PermissionGate module={module} action={actionCreate}><Button icon="plus" onClick={() => setShowForm(!showForm)}>{addLabel}</Button></PermissionGate>
             </div>
             <Icon name={icon} className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -95,7 +96,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
       <Card bodyClass="card__body--flush">
         <div className="toolbar-row" style={{ padding: '14px 18px 0' }}>
           <Input className="search-row__input" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          <Button onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : addLabel}</Button>
+          <PermissionGate module={module} action={actionCreate}><Button onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : addLabel}</Button></PermissionGate>
         </div>
         {showForm && <div style={{ padding: '0 18px 14px' }}>{renderForm({ load, setShowForm })}</div>}
         {loading ? <div className="loading-block"><span className="spinner" /></div> : filtered.length === 0 ? (
@@ -106,7 +107,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
               <thead><tr>{columns.map((col) => <th key={col.header}>{col.header}</th>)}</tr></thead>
               <tbody>{filtered.map((item) => (
                 <tr key={item.id}>{columns.map((col) => <td key={col.header}>{col.render ? col.render(item) : item[col.accessor] ?? '—'}</td>)}
-                  {renderRowActions && <td>{renderRowActions(item, load)}</td>}
+                  {renderRowActions && <td><PermissionGate module={module} action={actionDelete}>{renderRowActions(item, load)}</PermissionGate></td>}
                 </tr>
               ))}</tbody>
             </table>

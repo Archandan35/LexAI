@@ -22,6 +22,8 @@ import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
+import { usePermissions } from '@/hooks/usePermissions.js';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
@@ -681,7 +683,7 @@ export default function OrderSheet() {
               <h2>Cases</h2>
               <p>View and manage all hearings across your matters.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openNew}>Add</Button>
+              <PermissionGate module="orderSheet" action="create"><Button icon="plus" onClick={openNew}>Add</Button></PermissionGate>
             </div>
             <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -732,7 +734,7 @@ export default function OrderSheet() {
                     </div>
 
                     <div className="cl-filters__search">
-                      <Button variant="ghost" icon="filter" className="jl-filter-btn w-full" onClick={handleOpenOSFilter} style={{ justifyContent: 'center' }}>
+                      <Button variant="ghost" icon="filter" className="jl-filter-btn w-full justify-center" onClick={handleOpenOSFilter}>
                         {[filterCourt, filterCourtLocation, filterStatus].some(Boolean) ? `Filter (${[filterCourt, filterCourtLocation, filterStatus].filter(Boolean).length})` : 'Filter'}
                       </Button>
                     </div>
@@ -750,11 +752,11 @@ export default function OrderSheet() {
               <div className="cl-hearings">
                 <div className="cl-hearings__title">Cases ({sortedRows.length})</div>
                 <div className="cl-hearings__bar">
-                  <button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button>
-                  <button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button>
-                  <button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
+                  <PermissionGate module="orderSheet" action="export"><button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button></PermissionGate>
+                  <PermissionGate module="orderSheet" action="print"><button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button></PermissionGate>
+                  <PermissionGate module="orderSheet" action="bulkDelete"><button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
                     <Icon name="trash" size={13} /> Bulk Delete
-                  </button>
+                  </button></PermissionGate>
                 </div>
 
                 {paginatedRows.length === 0 ? (
@@ -834,15 +836,15 @@ export default function OrderSheet() {
                               <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); setPreviewHearing(h); }} title="View">
                                 <Icon name="eye" size={14} /><span>View</span>
                               </button>
-                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
+                              <PermissionGate module="orderSheet" action="edit"><button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); openEdit(h); }} title="Edit">
                                 <Icon name="edit" size={14} /><span>Edit</span>
-                              </button>
-                              <button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); duplicateHearing(h); }} title="Duplicate">
+                              </button></PermissionGate>
+                              <PermissionGate module="orderSheet" action="duplicate"><button className="cl-card__action-btn" onClick={(e) => { e.stopPropagation(); duplicateHearing(h); }} title="Duplicate">
                                 <Icon name="copy" size={14} /><span>Duplicate</span>
-                              </button>
-                              <button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
+                              </button></PermissionGate>
+                              <PermissionGate module="orderSheet" action="delete"><button className="cl-card__action-btn cl-card__action-btn--danger" onClick={(e) => { e.stopPropagation(); deleteHearing(h.id); }} title="Delete">
                                 <Icon name="trash" size={14} /><span>Delete</span>
-                              </button>
+                              </button></PermissionGate>
                             </div>
                           </div>
                         </div>
@@ -928,9 +930,9 @@ export default function OrderSheet() {
                     </select>
                     <div className="order-sheet__filter-actions">
                       <button className="order-sheet__btn-reset" onClick={() => { setTplSearch(''); setTplCategory(''); }}>Reset</button>
-                      <button className="order-sheet__btn-apply" onClick={openTplNew}>
+                      <PermissionGate module="orderSheet" action="create"><button className="order-sheet__btn-apply" onClick={openTplNew}>
                         <Icon name="plus" size={13} /> New Template
-                      </button>
+                      </button></PermissionGate>
                     </div>
                   </div>
                   {paginatedTpls.length === 0 ? (
@@ -963,10 +965,10 @@ export default function OrderSheet() {
                               </div>
                             </div>
                             <div className="order-sheet__tpl-actions">
-                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /><span>View</span></button>
-                              <button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /><span>Edit</span></button>
-                              <button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /><span>Duplicate</span></button>
-                              <button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /><span>Delete</span></button>
+                              <button className="order-sheet__tpl-action" title="View" onClick={() => openTplView(t)}><Icon name="eye" size={14} /></button>
+                              <PermissionGate module="orderSheet" action="edit"><button className="order-sheet__tpl-action" title="Edit" onClick={() => openTplEdit(t)}><Icon name="edit" size={14} /></button></PermissionGate>
+                              <PermissionGate module="orderSheet" action="duplicate"><button className="order-sheet__tpl-action" title="Duplicate" onClick={() => duplicateTpl(t)}><Icon name="copy" size={14} /></button></PermissionGate>
+                              <PermissionGate module="orderSheet" action="delete"><button className="order-sheet__tpl-action" title="Delete" onClick={() => deleteTpl(t)}><Icon name="trash" size={14} /></button></PermissionGate>
                             </div>
                           </div>
                         );
@@ -1002,28 +1004,8 @@ export default function OrderSheet() {
               )}
             </div>
           )}
-
-          <nav className="bench-types__bottom-nav bench-types__mobile-only">
-            <button className="bench-types__nav-tab bench-types__nav-tab--active">
-              <Icon name="home" size={20} />
-              <span>Dashboard</span>
-            </button>
-            <button className="bench-types__nav-tab">
-              <Icon name="briefcase" size={20} />
-              <span>Matters</span>
-            </button>
-            <button className="bench-types__nav-fab">
-              <Icon name="plus" size={24} />
-            </button>
-            <button className="bench-types__nav-tab">
-              <Icon name="file" size={20} />
-              <span>Order Sheet</span>
-            </button>
-            <button className="bench-types__nav-tab">
-              <Icon name="calendar" size={20} />
-              <span>Calendar</span>
-            </button>
-          </nav>
+        </div>
+      )}
         </div>
       )}
 
@@ -1037,7 +1019,7 @@ export default function OrderSheet() {
               <p>View and manage all hearings across your matters.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openNew} style={{ marginLeft: 'auto' }}>Add Order Sheet</Button>
+            <PermissionGate module="orderSheet" action="create"><Button icon="plus" onClick={openNew} className="ml-auto">Add Order Sheet</Button></PermissionGate>
             <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -1101,12 +1083,12 @@ export default function OrderSheet() {
               <div className="order-sheet__card-header">
                 <div className="cases__card-header-title">Cases ({sortedRows.length})</div>
                 <div className="order-sheet__actions-group pos-relative">
-                  <button className="order-sheet__action-btn" onClick={exportToCsv}>
+                  <PermissionGate module="orderSheet" action="export"><button className="order-sheet__action-btn" onClick={exportToCsv}>
                     <Icon name="download" size={13} /> Export
-                  </button>
-                  <button className="order-sheet__action-btn" onClick={handlePrint}>
+                  </button></PermissionGate>
+                  <PermissionGate module="orderSheet" action="print"><button className="order-sheet__action-btn" onClick={handlePrint}>
                     <Icon name="print" size={13} /> Print
-                  </button>
+                  </button></PermissionGate>
                   <button className="order-sheet__action-btn" onClick={() => setShowColumnsMenu(!showColumnsMenu)}>
                     <Icon name="grid" size={13} /> Columns
                   </button>
@@ -1236,15 +1218,15 @@ export default function OrderSheet() {
                                 <button className="btn btn--ghost btn--sm" onClick={() => setPreviewHearing(h)} title="View">
                                   <Icon name="eye" size={13} />
                                 </button>
-                                <button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit">
+                                <PermissionGate module="orderSheet" action="edit"><button className="btn btn--ghost btn--sm" onClick={() => openEdit(h)} title="Edit">
                                   <Icon name="edit" size={13} />
-                                </button>
-                                <button className="btn btn--ghost btn--sm" onClick={() => duplicateHearing(h)} title="Duplicate">
+                                </button></PermissionGate>
+                                <PermissionGate module="orderSheet" action="duplicate"><button className="btn btn--ghost btn--sm" onClick={() => duplicateHearing(h)} title="Duplicate">
                                   <Icon name="copy" size={13} />
-                                </button>
-                                <button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete">
+                                </button></PermissionGate>
+                                <PermissionGate module="orderSheet" action="delete"><button className="btn btn--ghost btn--sm text-danger" onClick={() => deleteHearing(h.id)} title="Delete">
                                   <Icon name="trash" size={13} />
-                                </button>
+                                </button></PermissionGate>
                               </td>
                             )}
                           </tr>

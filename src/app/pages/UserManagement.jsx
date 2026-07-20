@@ -137,18 +137,18 @@ export default function UserManagement() {
     { key: 'actions', label: '', width: 200, render: (u) => (
       <div className="row-actions">
         <button className="iconbtn" title="View" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="eye" size={15} /></button>
-        <PermissionGate perm="users.edit">
+        <PermissionGate module="users" action="edit">
           <button className="iconbtn" title="Edit" onClick={() => nav(`/admin/users/${u.id}`)}><Icon name="edit" size={15} /></button>
         </PermissionGate>
-        <PermissionGate perm="users.create">
+        <PermissionGate module="users" action="create">
           <button className="iconbtn" title="Duplicate" onClick={() => { setForm({ ...BLANK, name: u.name, email: u.email, username: u.username, roleCode: u.roleCode, status: 'Active' }); }}><Icon name="copy" size={15} /></button>
         </PermissionGate>
-        <PermissionGate perm="users.edit">
+        <PermissionGate module="users" action="edit">
           <button className="iconbtn" title={u.status === 'Active' ? 'Disable' : 'Enable'} onClick={() => setStatus(u, u.status === 'Active' ? 'Disabled' : 'Active')}>
             <Icon name={u.status === 'Active' ? 'ban' : 'check'} size={15} />
           </button>
         </PermissionGate>
-        <PermissionGate perm="users.delete">
+        <PermissionGate module="users" action="delete">
           {isProtectedUser(u) ? (
             <button className="iconbtn" title="Super Admin is protected and cannot be deleted" onClick={() => setSuperWarn(true)} disabled><Icon name="lock" size={15} /></button>
           ) : (
@@ -167,8 +167,8 @@ export default function UserManagement() {
         subtitle="Create users, assign roles, and manage account status. New users are created here (no public sign-up)."
         actions={(
           <>
-            <PermissionGate perm="users.export"><Button variant="ghost" icon="download" onClick={() => exportCsv('users', users, ['name', 'email', 'username', 'roleName', 'status'])}>Export</Button></PermissionGate>
-            <PermissionGate perm="users.create"><Button variant="primary" icon="plus" onClick={openCreate}>Add User</Button></PermissionGate>
+            <PermissionGate module="users" action="export"><Button variant="ghost" icon="download" onClick={() => exportCsv('users', users, ['name', 'email', 'username', 'roleName', 'status'])}>Export</Button></PermissionGate>
+            <PermissionGate module="users" action="create"><Button variant="primary" icon="plus" onClick={openCreate}>Add User</Button></PermissionGate>
           </>
         )}
       />
@@ -178,7 +178,7 @@ export default function UserManagement() {
           <span><b>{selected.length}</b> selected</span>
           {selectionHasProtected && <Badge tone="amber">Super Admin included — will be skipped</Badge>}
           <div className="bulk-bar__spacer" />
-          <PermissionGate perm="users.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={askBulk}>Delete selected</Button></PermissionGate>
+          <PermissionGate module="users" action="bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={askBulk}>Delete selected</Button></PermissionGate>
         </div>
       )}
 

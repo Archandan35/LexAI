@@ -118,7 +118,7 @@ export default function AppRoutes() {
         <Route path="/calendar" element={G('calendar', <Calendar />)} />
         <Route path="/tasks" element={<Navigate to="/calendar" replace />} />
         <Route path="/clients" element={G('clients', <Clients />)} />
-        <Route path="/advocates" element={G('clients', <Advocates />)} />
+        <Route path="/advocates" element={G('advocates', <Advocates />)} />
         <Route path="/contacts" element={G('contacts', <Contacts />)} />
 
         {/* ── Drafting Center ── */}
@@ -164,10 +164,10 @@ export default function AppRoutes() {
         <Route path="/admin/security" element={G('settings', <SecuritySettings />)} />
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
         <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
-        <Route path="/admin/setup-wizard" element={G('admin', <SetupWizard />)} />
+        <Route path="/admin/setup-wizard" element={G('setupWizard', <SetupWizard />)} />
 
         {/* ── Database Management Center ── */}
-        <Route path="/admin/database-center" element={G('admin', <DatabaseCenter />)}>
+        <Route path="/admin/database-center" element={G('databaseCenter', <DatabaseCenter />)}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DmcDashboard />} />
           <Route path="data-explorer" element={<DmcDataExplorer />} />
@@ -193,10 +193,10 @@ export default function AppRoutes() {
         <Route path="/admin/schema-mapping" element={<Navigate to="/admin/database-center/migration" replace />} />
 
         {/* ── Tools ── */}
-        <Route path="/test-design" element={<TestDesignPage />} />
-        <Route path="/tools/ai" element={G('drafting', <AiAssistant />)} />
-        <Route path="/tools/ai/prompts" element={G('drafting', <PromptLibrary />)} />
-        <Route path="/tools/ai/usage" element={G('drafting', <AiUsage />)} />
+        <Route path="/test-design" element={G('testDesign', <TestDesignPage />)} />
+        <Route path="/tools/ai" element={G('aiAssistant', <AiAssistant />)} />
+        <Route path="/tools/ai/prompts" element={G('promptLibrary', <PromptLibrary />)} />
+        <Route path="/tools/ai/usage" element={G('aiUsage', <AiUsage />)} />
         <Route path="/tools/reports/cases" element={G('reports', <CaseReports />)} />
         <Route path="/tools/reports/courts" element={G('reports', <CourtReports />)} />
         <Route path="/tools/reports/activity" element={G('reports', <UserActivity />)} />

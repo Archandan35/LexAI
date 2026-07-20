@@ -6,6 +6,7 @@ import { Field, Input, Textarea } from '@/components/Field.jsx';
 import { clientLogic } from '@/logic/clientLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const EMPTY_FORM = { name: '', contact_person: '', email: '', phone: '', address: '', client_type: 'Individual', notes: '', status: 'Active' };
 
@@ -144,7 +145,7 @@ export default function Clients() {
               <p>Manage your clients and contacts.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openAdd} className="ml-auto">Add Client</Button>
+            <PermissionGate module="clients" action="create"><Button icon="plus" onClick={openAdd} className="ml-auto">Add Client</Button></PermissionGate>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -207,7 +208,7 @@ export default function Clients() {
               <h2>Clients</h2>
               <p>Manage your clients and contacts.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd}>Add Client</Button>
+              <PermissionGate module="clients" action="create"><Button icon="plus" onClick={openAdd}>Add Client</Button></PermissionGate>
             </div>
             <Icon name="users" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -243,7 +244,7 @@ export default function Clients() {
         <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenClFilter}>
           {[filterClientType, filterStatus].some(Boolean) ? `Filter (${[filterClientType, filterStatus].filter(Boolean).length})` : 'Filter'}
         </Button>
-        <Button onClick={openAdd}><Icon name="plus" size={15} /> Add Client</Button>
+        <PermissionGate module="clients" action="create"><Button onClick={openAdd}><Icon name="plus" size={15} /> Add Client</Button></PermissionGate>
       </div>
 
       {loading ? (
@@ -268,8 +269,8 @@ export default function Clients() {
               </div>
               <div className="client-card__actions" onClick={(e) => e.stopPropagation()}>
                 <button className="iconbtn" title="View" onClick={() => setViewing(c)}><Icon name="eye" size={15} /></button>
-                <button className="iconbtn" title="Edit" onClick={() => openEdit(c)}><Icon name="edit" size={15} /></button>
-                <button className="iconbtn iconbtn--danger" title="Remove" onClick={() => remove(c)}><Icon name="trash" size={15} /></button>
+                <PermissionGate module="clients" action="edit"><button className="iconbtn" title="Edit" onClick={() => openEdit(c)}><Icon name="edit" size={15} /></button></PermissionGate>
+                <PermissionGate module="clients" action="delete"><button className="iconbtn iconbtn--danger" title="Remove" onClick={() => remove(c)}><Icon name="trash" size={15} /></button></PermissionGate>
               </div>
             </div>
           ))}
@@ -344,7 +345,7 @@ export default function Clients() {
         )}
         <div className="modal__foot">
           <Button variant="ghost" onClick={() => setViewing(null)}>Close</Button>
-          <Button variant="primary" icon="edit" onClick={() => { const c = viewing; setViewing(null); openEdit(c); }}>Edit Client</Button>
+          <PermissionGate module="clients" action="edit"><Button variant="primary" icon="edit" onClick={() => { const c = viewing; setViewing(null); openEdit(c); }}>Edit Client</Button></PermissionGate>
         </div>
       </Modal>
 

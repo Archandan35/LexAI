@@ -204,10 +204,10 @@ export default function Calendar() {
             <div className="bench-types__hero-accent" />
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
-          <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} style={{ marginLeft: 'auto' }}>Add Task</Button>
+          <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} className="ml-auto">Add Task</Button>
         </div>
       ) : (
-        <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+        <div className="bench-types__hero mb-20">
           <div className="bench-types__hero-icon"><Icon name="calendar" size={34} /></div>
           <div className="bench-types__hero-text">
             <h2>Calendar & Tasks</h2>

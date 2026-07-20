@@ -6421,6 +6421,15 @@ kbd.cmd__kbd {
   border-bottom-color: var(--brand);
 }
 
+/* ---- JudgmentDetail source URL ---- */
+.jd-source-url {
+  display: block;
+  color: #2563eb;
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
 /* ---- LegalResearch additions ---- */
 .legal-research__folder-title {
   font-weight: 650;

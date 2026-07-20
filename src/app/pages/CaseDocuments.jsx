@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Input } from '@/components/Field.jsx';
@@ -381,8 +382,8 @@ export default function CaseDocuments() {
           {!selectMode && (isHovered || isEditing) && !clipboard && (
             <div className="docmgr__folder-actions" onClick={(e) => e.stopPropagation()}>
               {isEditing
-                ? <><button className="iconbtn" title="Save" onClick={saveRename}><Icon name="check" size={13} /></button><button className="iconbtn" title="Cancel" onClick={cancelRename}><Icon name="close" size={13} /></button></>
-                : <><button className="iconbtn" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={13} /></button><button className="iconbtn" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={13} /></button><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={13} /></button></>
+                ? <><PermissionGate module="caseManage" action="edit"><button className="iconbtn" title="Save" onClick={saveRename}><Icon name="check" size={13} /></button></PermissionGate><button className="iconbtn" title="Cancel" onClick={cancelRename}><Icon name="close" size={13} /></button></>
+                : <><PermissionGate module="caseManage" action="edit"><button className="iconbtn" title="Rename" onClick={() => startRename(f)}><Icon name="edit" size={13} /></button></PermissionGate><button className="iconbtn" title="Cut" onClick={() => cutFolder(f)}><Icon name="scissors" size={13} /></button><button className="iconbtn" title="Copy" onClick={() => copyFolder(f)}><Icon name="copy" size={13} /></button><PermissionGate module="caseManage" action="delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => deleteFolder(f)}><Icon name="trash" size={13} /></button></PermissionGate></>
               }
             </div>
           )}
@@ -412,12 +413,16 @@ export default function CaseDocuments() {
         </div>
         <input ref={fileInputRef} type="file" hidden onChange={handleUpload} accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg,.txt" />
         <div className="flex-row gap-8">
-          <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-            {uploading ? 'Uploading…' : '+ Upload Document'}
-          </Button>
-          <Button variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
-            Add Folder
-          </Button>
+          <PermissionGate module="caseManage" action="create">
+            <Button variant="primary" icon="upload" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+              {uploading ? 'Uploading…' : '+ Upload Document'}
+            </Button>
+          </PermissionGate>
+          <PermissionGate module="caseManage" action="create">
+            <Button variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>
+              Add Folder
+            </Button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -444,9 +449,11 @@ export default function CaseDocuments() {
                 const allExpanded = allIds.every((id) => expanded[id]);
                 setExpanded(Object.fromEntries(allIds.map((id) => [id, !allExpanded])));
               }}><Icon name="maximize" size={13} /></button>
-              {selectMode && folderSelected.size > 0 && <button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button>}
+              {selectMode && folderSelected.size > 0 && <PermissionGate module="caseManage" action="delete"><button className="iconbtn iconbtn--danger" title="Delete selected" onClick={bulkDeleteFolders}><Icon name="trash" size={13} /></button></PermissionGate>}
               <button className={`docmgr__mode-btn${selectMode ? ' active' : ''}`} title={selectMode ? 'Exit select' : 'Select folders'} onClick={() => { setSelectMode((s) => !s); if (selectMode) setFolderSelected(new Set()); }}><Icon name="checkSquare" size={13} /></button>
-              <button className="iconbtn" title="New folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}><Icon name="plus" size={14} /></button>
+              <PermissionGate module="caseManage" action="create">
+                <button className="iconbtn" title="New folder" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}><Icon name="plus" size={14} /></button>
+              </PermissionGate>
             </div>
           </div>
 
@@ -642,9 +649,9 @@ export default function CaseDocuments() {
                               <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
                                 <Icon name="eye" size={15} />
                               </button>
-                              <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
+                              <PermissionGate module="caseManage" action="download"><button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
                                 <Icon name="download" size={15} />
-                              </button>
+                              </button></PermissionGate>
                               <div className="cdoc__action-more-wrap" onClick={(e) => e.stopPropagation()}>
                                 <button className="cdoc__action-btn" title="More" onClick={() => setDocMenuId(docMenuId === d.id ? null : d.id)}>
                                   <Icon name="more-vertical" size={15} />
@@ -652,11 +659,11 @@ export default function CaseDocuments() {
                                 {docMenuId === d.id && (
                                   <div className="cdoc__doc-menu">
                                     <button className="cdoc__doc-menu-item" onClick={() => { setPreview(d); setDocMenuId(null); }}>Preview</button>
-                                    <button className="cdoc__doc-menu-item" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) { window.open(url, '_blank'); setDocMenuId(null); } }}>Download</button>
-                                    <button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Rename document:', d.name); if (n && n.trim()) { await fileLogic.renameDocument(d.id, n.trim()); setDocMenuId(null); await load(); } }}>Rename</button>
-                                    <button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Move to folder:'); if (n && n.trim()) { await fileLogic.moveDocument(d, n.trim(), null, user); setDocMenuId(null); await load(); } }}>Move to…</button>
+                                    <PermissionGate module="caseManage" action="download"><button className="cdoc__doc-menu-item" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) { window.open(url, '_blank'); setDocMenuId(null); } }}>Download</button></PermissionGate>
+                                    <PermissionGate module="caseManage" action="edit"><button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Rename document:', d.name); if (n && n.trim()) { await fileLogic.renameDocument(d.id, n.trim()); setDocMenuId(null); await load(); } }}>Rename</button></PermissionGate>
+                                    <PermissionGate module="caseManage" action="edit"><button className="cdoc__doc-menu-item" onClick={async () => { const n = prompt('Move to folder:'); if (n && n.trim()) { await fileLogic.moveDocument(d, n.trim(), null, user); setDocMenuId(null); await load(); } }}>Move to…</button></PermissionGate>
                                     <div className="cdoc__doc-menu-divider" />
-                                    <button className="cdoc__doc-menu-item cdoc__doc-menu-item--danger" onClick={async () => { if (confirm(`Delete "${d.name}"?`)) { await fileLogic.deleteDocument(d, user); setDocMenuId(null); await load(); } }}>Delete</button>
+                                    <PermissionGate module="caseManage" action="delete"><button className="cdoc__doc-menu-item cdoc__doc-menu-item--danger" onClick={async () => { if (confirm(`Delete "${d.name}"?`)) { await fileLogic.deleteDocument(d, user); setDocMenuId(null); await load(); } }}>Delete</button></PermissionGate>
                                   </div>
                                 )}
                               </div>
@@ -713,9 +720,9 @@ export default function CaseDocuments() {
                           <button className="cdoc__action-btn" title="Preview" onClick={() => setPreview(d)}>
                             <Icon name="eye" size={14} />
                           </button>
-                          <button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
+                          <PermissionGate module="caseManage" action="download"><button className="cdoc__action-btn" title="Download" onClick={async () => { const url = await fileLogic.getUrl(d.ref).catch(() => null); if (url) window.open(url, '_blank'); }}>
                             <Icon name="download" size={14} />
-                          </button>
+                          </button></PermissionGate>
                         </div>
                       </div>
                     );
@@ -731,8 +738,8 @@ export default function CaseDocuments() {
               <div className="empty__icon"><Icon name="folder" size={24} /></div>
               <p className="muted">This folder is empty.</p>
               <div className="flex-row gap-8 mt-4">
-                <Button size="sm" variant="primary" onClick={() => fileInputRef.current?.click()}>Upload a document</Button>
-                <Button size="sm" variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>Add sub-folder</Button>
+                <PermissionGate module="caseManage" action="create"><Button size="sm" variant="primary" onClick={() => fileInputRef.current?.click()}>Upload a document</Button></PermissionGate>
+                <PermissionGate module="caseManage" action="create"><Button size="sm" variant="ghost" icon="plus" onClick={() => { setCreating(true); setBulkAdding(false); setNewName(''); }}>Add sub-folder</Button></PermissionGate>
               </div>
             </div>
           )}
@@ -743,14 +750,14 @@ export default function CaseDocuments() {
               {!bulkAdding ? (
                 <div className="flex-row gap-6">
                   <Input autoFocus value={newName} placeholder="Folder name..." onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') { setCreating(false); setBulkAdding(false); } }} />
-                  <button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button>
+                  <PermissionGate module="caseManage" action="create"><button className="iconbtn" title="Confirm" onClick={createFolder}><Icon name="check" size={14} /></button></PermissionGate>
                   <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
                 </div>
               ) : (
                 <div className="flex-col gap-6">
                   <textarea className="input docmgr__bulk-textarea" autoFocus value={bulkNames} placeholder="Enter folder names, one per line..." onChange={(e) => setBulkNames(e.target.value)} rows={4} />
                   <div className="flex-row gap-6">
-                    <Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button>
+                    <PermissionGate module="caseManage" action="create"><Button size="sm" icon="plus" onClick={bulkAddFolders}>Create All</Button></PermissionGate>
                     <Button size="sm" variant="ghost" onClick={() => setBulkAdding(false)}>Single</Button>
                     <div className="flex-1" />
                     <button className="iconbtn" title="Cancel" onClick={() => { setCreating(false); setBulkAdding(false); }}><Icon name="close" size={14} /></button>
@@ -769,10 +776,10 @@ export default function CaseDocuments() {
         if (!f) return null;
         return (
           <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${ctxMenu.x}px`, '--menu-y': `${ctxMenu.y}px` }}>
-            <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); startRename(f); setCtxMenu(null); }}>
+            <PermissionGate module="caseManage" action="edit"><button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); startRename(f); setCtxMenu(null); }}>
               <Icon name="edit" size={14} />
               Rename
-            </button>
+            </button></PermissionGate>
             <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); cutFolder(f); setCtxMenu(null); }}>
               <Icon name="scissors" size={14} />
               Cut
@@ -786,10 +793,10 @@ export default function CaseDocuments() {
               <Icon name="info" size={14} />
               Properties
             </button>
-            <button className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={(e) => { e.stopPropagation(); deleteFolder(f); setCtxMenu(null); }}>
+            <PermissionGate module="caseManage" action="delete"><button className="cdoc__ctx-item cdoc__ctx-item--danger" onClick={(e) => { e.stopPropagation(); deleteFolder(f); setCtxMenu(null); }}>
               <Icon name="trash" size={14} />
               Delete
-            </button>
+            </button></PermissionGate>
           </div>
         );
       })()}
@@ -797,10 +804,10 @@ export default function CaseDocuments() {
       {/* Content-panel right-click context menu */}
       {contentCtx && (
         <div className="cdoc__ctx-menu cdoc__ctx-menu--fixed" style={{ '--menu-x': `${contentCtx.x}px`, '--menu-y': `${contentCtx.y}px` }}>
-          <button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setCreating(true); setBulkAdding(false); setNewName(''); setContentCtx(null); }}>
+          <PermissionGate module="caseManage" action="create"><button className="cdoc__ctx-item" onClick={(e) => { e.stopPropagation(); setCreating(true); setBulkAdding(false); setNewName(''); setContentCtx(null); }}>
             <Icon name="plus" size={14} />
             Add new folder
-          </button>
+          </button></PermissionGate>
           <div className="cdoc__ctx-divider" />
           <button className="cdoc__ctx-item cdoc__ctx-item--disabled" disabled onClick={(e) => { e.stopPropagation(); }}>
             <Icon name="redo" size={14} />

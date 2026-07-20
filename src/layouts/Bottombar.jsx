@@ -1,21 +1,27 @@
 import { useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/data-layer/AuthContext.jsx';
 import Icon from '@/components/Icon.jsx';
 import { FabActionContext } from '@/data-layer/FABContext.jsx';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'home', to: '/dashboard' },
-  { key: 'matters', label: 'Matters', icon: 'briefcase-duo', to: '/cases' },
-  { key: 'add', label: 'Add', icon: 'plus', to: '/cases/create', fab: true },
-  { key: 'order-sheet', label: 'Order Sheet', icon: 'file', to: '/cases/order-sheet' },
-  { key: 'calendar', label: 'Calendar', icon: 'calendar', to: '/calendar' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'home', to: '/dashboard', module: 'dashboard' },
+  { key: 'matters', label: 'Matters', icon: 'briefcase-duo', to: '/cases', module: 'manageCase' },
+  { key: 'add', label: 'Add', icon: 'plus', to: '/cases/create', module: 'manageCase', fab: true },
+  { key: 'order-sheet', label: 'Order Sheet', icon: 'file', to: '/cases/order-sheet', module: 'orderSheet' },
+  { key: 'calendar', label: 'Calendar', icon: 'calendar', to: '/calendar', module: 'calendar' },
 ];
 
 export default function Bottombar() {
   const nav = useNavigate();
   const { pathname } = useLocation();
+  const { canViewModule } = useAuth();
   const fabActionRef = useContext(FabActionContext);
+
+  const allowed = NAV_ITEMS.filter((item) => canViewModule(item.module));
+
+  if (allowed.length === 0) return null;
 
   const bar = (
     <div className="bottombar-wrap">
@@ -27,7 +33,7 @@ export default function Bottombar() {
           />
         </svg>
         <div className="bottombar__items">
-          {NAV_ITEMS.map((item) => {
+          {allowed.map((item) => {
             const isActive = item.key === 'dashboard'
               ? pathname === '/dashboard' || pathname === '/'
               : item.to && pathname.startsWith(item.to);

@@ -960,9 +960,8 @@ export default function JudgmentDetail() {
                 {source && <div className="jd-rc-row"><span className="jd-rc-key">Source</span><span className="jd-rc-val">{source}</span></div>}
                 {sourceUrl && (
                   <>
-                    <div className="jd-rc-key" style={{ marginBottom: 4 }}>Source URL</div>
-                    <a href={sourceUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'block', color: '#2563eb', fontSize: 12, wordBreak: 'break-all', lineHeight: 1.5 }}>{sourceUrl}</a>
+                    <div className="jd-rc-key mb-4">Source URL</div>
+                    <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="jd-source-url">{sourceUrl}</a>
                   </>
                 )}
               </div>

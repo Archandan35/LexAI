@@ -7,6 +7,7 @@ import Icon from '@/components/Icon.jsx';
 import { contactLogic } from '@/logic/contactLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useContactTypes } from '@/hooks/useContactTypes.js';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 function ContactForm({ load, setShowForm }) {
   const toast = useToast();
@@ -25,7 +26,7 @@ function ContactForm({ load, setShowForm }) {
       <Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
       <Field label="Email"><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
       <Field label="Organization"><Input value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} /></Field>
-      <Button onClick={add}>Save Contact</Button>
+      <PermissionGate module="contacts" action="create"><Button onClick={add}>Save Contact</Button></PermissionGate>
     </div>
   );
 }
@@ -40,6 +41,7 @@ export default function Contacts() {
       searchFields={['name']}
       emptyText="No contacts yet."
       addLabel="Add Contact"
+      module="contacts"
       statsConfig={[
         { key: 'totalContacts', label: 'Total Contacts', icon: 'users' },
         { key: 'advocates', label: 'Advocates', icon: 'user' },

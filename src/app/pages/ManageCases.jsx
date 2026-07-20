@@ -180,7 +180,7 @@ export default function ManageCases() {
               <p>Every matter with its documents, drafts, history, timeline and hearings in one secure place.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <PermissionGate perm="manageCase.create">
+            <PermissionGate module="manageCase" action="create">
               <Button icon="plus" onClick={() => setOpen(true)} className="manage-cases__hero-action">New Case</Button>
             </PermissionGate>
             <Icon name="folder" className="bench-types__hero-watermark bench-types__watermark-icon" />
@@ -256,15 +256,15 @@ export default function ManageCases() {
             <div className="bulk-bar">
               <span><b>{selected.length}</b> selected</span>
               <div className="bulk-bar__spacer" />
-              <PermissionGate perm="manageCase.export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('cases_export', cases.filter((c) => selected.includes(c.id)))}>Export</Button></PermissionGate>
-              <PermissionGate perm="manageCase.archive"><Button variant="ghost" size="sm" icon="vault" onClick={async () => { try { for (const id of selected) await caseLogic.setArchived(id, filters.view !== 'archived', user); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } setSelected([]); reload(); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
-              <PermissionGate perm="manageCase.bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={bulkRemove}>Delete</Button></PermissionGate>
+              <PermissionGate module="manageCase" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportJson('cases_export', cases.filter((c) => selected.includes(c.id)))}>Export</Button></PermissionGate>
+              <PermissionGate module="manageCase" action="archive"><Button variant="ghost" size="sm" icon="vault" onClick={async () => { try { for (const id of selected) await caseLogic.setArchived(id, filters.view !== 'archived', user); } catch (e) { toast.push(e?.message || 'Archive failed.', 'error'); } setSelected([]); reload(); }}>{filters.view === 'archived' ? 'Restore' : 'Archive'}</Button></PermissionGate>
+              <PermissionGate module="manageCase" action="bulkDelete"><Button variant="danger" size="sm" icon="trash" onClick={bulkRemove}>Delete</Button></PermissionGate>
             </div>
           )}
 
           <Card bodyClass="card__body--flush">
             {loading ? <div className="loading-block"><span className="spinner" /> Loading…</div> : filtered.length === 0 ? (
-              <EmptyState icon="vault" title="No cases found." hint="Create your first case." action={can('manageCase.create') && <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>} />
+              <EmptyState icon="vault" title="No cases found." hint="Create your first case." action={<PermissionGate module="manageCase" action="create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>} />
             ) : (
               <div className="table-scroll">
                 <table className="table">
@@ -293,11 +293,11 @@ export default function ManageCases() {
                         <td>
                           <div className="row-actions">
                             <button className="iconbtn" title="View" onClick={() => nav(`/cases/${c.id}`)}><Icon name="eye" size={15} /></button>
-                            <PermissionGate perm="manageCase.edit"><button className="iconbtn" title="Edit" onClick={() => nav(`/cases/${c.id}?edit=1`)}><Icon name="edit" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="manageCase.create"><button className="iconbtn" title="Duplicate" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')}><Icon name="layers" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="manageCase.export"><button className="iconbtn" title="Export" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))}><Icon name="download" size={15} /></button></PermissionGate>
-                            <PermissionGate perm="manageCase.archive"><button className="iconbtn" title={c.archived ? 'Restore' : 'Archive'} onClick={() => act(() => caseLogic.setArchived(c.id, !c.archived, user), c.archived ? 'Restored.' : 'Archived.')}><Icon name={c.archived ? 'history' : 'vault'} size={15} /></button></PermissionGate>
-                            <PermissionGate perm="manageCase.delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(c)}><Icon name="trash" size={15} /></button></PermissionGate>
+                            <PermissionGate module="manageCase" action="edit"><button className="iconbtn" title="Edit" onClick={() => nav(`/cases/${c.id}?edit=1`)}><Icon name="edit" size={15} /></button></PermissionGate>
+                            <PermissionGate module="manageCase" action="create"><button className="iconbtn" title="Duplicate" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')}><Icon name="layers" size={15} /></button></PermissionGate>
+                            <PermissionGate module="manageCase" action="export"><button className="iconbtn" title="Export" onClick={async () => exportJson(`case_${c.caseNumber}`, await caseLogic.exportBundle(c.id))}><Icon name="download" size={15} /></button></PermissionGate>
+                            <PermissionGate module="manageCase" action="archive"><button className="iconbtn" title={c.archived ? 'Restore' : 'Archive'} onClick={() => act(() => caseLogic.setArchived(c.id, !c.archived, user), c.archived ? 'Restored.' : 'Archived.')}><Icon name={c.archived ? 'history' : 'vault'} size={15} /></button></PermissionGate>
+                            <PermissionGate module="manageCase" action="delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(c)}><Icon name="trash" size={15} /></button></PermissionGate>
                           </div>
                         </td>
                       </tr>
@@ -334,7 +334,7 @@ export default function ManageCases() {
               <h2>Manage Cases</h2>
               <p>Every matter with its documents, drafts, history, timeline and hearings in one secure place.</p>
               <div className="bench-types__hero-accent" />
-              <PermissionGate perm="manageCase.create">
+              <PermissionGate module="manageCase" action="create">
                 <Button icon="plus" onClick={() => setOpen(true)}>New Case</Button>
               </PermissionGate>
             </div>
@@ -445,12 +445,12 @@ export default function ManageCases() {
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}`)} aria-label="View case">
                     <Icon name="eye" size={16} /><span>View</span>
                   </button>
-                  <PermissionGate perm="manageCase.edit">
+                  <PermissionGate module="manageCase" action="edit">
                     <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?edit=1`)} aria-label="Edit case">
                       <Icon name="edit" size={16} /><span>Edit</span>
                     </button>
                   </PermissionGate>
-                  <PermissionGate perm="manageCase.create">
+                  <PermissionGate module="manageCase" action="create">
                     <button className="cv-action-btn" onClick={() => act(() => caseLogic.duplicate(c.id, user), 'Case duplicated.')} aria-label="Duplicate case">
                       <Icon name="layers" size={16} /><span>Duplicate</span>
                     </button>
@@ -461,7 +461,7 @@ export default function ManageCases() {
                   <button className="cv-action-btn" onClick={() => nav(`/cases/${c.id}?tab=Hearings`)} aria-label="Hearings">
                     <Icon name="video" size={16} /><span>Hearings</span>
                   </button>
-                  <PermissionGate perm="manageCase.delete">
+                  <PermissionGate module="manageCase" action="delete">
                     <button className="cv-action-btn" onClick={() => remove(c)} aria-label="Delete case">
                       <Icon name="trash" size={16} /><span>Delete</span>
                     </button>
