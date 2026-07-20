@@ -2,6 +2,13 @@ import { databaseManagerLogic } from '@/logic/databaseManagerLogic.js';
 import { authLogic } from '@/logic/authLogic.js';
 import { userLogic } from '@/logic/userLogic.js';
 import { roleLogic } from '@/logic/roleLogic.js';
+import { randomHex } from '@/utils/crypto.js';
+
+function genTestPassword(prefix) {
+  // Generated at runtime so no static credential is embedded in the source.
+  // Mix of case + digit + special char satisfies the default password policy.
+  return `${prefix}!${randomHex(8)}Q2`;
+}
 
 export async function runIntegrationTest() {
   const steps = [];
@@ -21,17 +28,18 @@ export async function runIntegrationTest() {
     log('Install Schema', true, 'Installed schema structures and seeded initial system roles.');
 
     // 3. Create Admin (Bootstrap)
+    const adminPassword = genTestPassword('Adm');
     const bootstrapRes = await authLogic.bootstrapAdmin({
       name: 'System Owner',
       email: 'admin@lexai.local',
-      password: 'AdminPassword@123',
+      password: adminPassword,
     });
     if (!bootstrapRes.ok) throw new Error(bootstrapRes.error);
     const adminUser = bootstrapRes.data.user;
     log('Create First Admin', true, `Successfully bootstrapped admin: ${adminUser.email}`);
 
     // 4. Login
-    const loginRes = await authLogic.login('admin@lexai.local', 'AdminPassword@123');
+    const loginRes = await authLogic.login('admin@lexai.local', adminPassword);
     if (!loginRes.ok) throw new Error(loginRes.error);
     log('Login Admin', true, 'Admin logged in successfully.');
 
@@ -47,12 +55,13 @@ export async function runIntegrationTest() {
 
     // 6. Create User
     const testRoleCode = roleRes.data.code || 'test_role';
+    const internPassword = genTestPassword('Int');
     const userRes = await userLogic.create({
       name: 'Jane Intern',
       email: 'jane@lexai.local',
       username: 'janeintern',
       roleCode: testRoleCode,
-      password: 'InternPassword@123',
+      password: internPassword,
       status: 'Active',
     }, adminUser);
     if (!userRes.ok) throw new Error(userRes.error);
@@ -64,7 +73,7 @@ export async function runIntegrationTest() {
     log('Logout Admin', true, 'Admin logged out cleanly.');
 
     // 8. Login As User
-    const userLoginRes = await authLogic.login('jane@lexai.local', 'InternPassword@123');
+    const userLoginRes = await authLogic.login('jane@lexai.local', internPassword);
     if (!userLoginRes.ok) throw new Error(userLoginRes.error);
     const activeUser = userLoginRes.data.user;
     log('Login As User', true, `Logged in successfully as ${activeUser.name}.`);
