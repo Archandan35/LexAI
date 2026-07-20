@@ -254,15 +254,18 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {activeCases.slice(0, 5).map((c) => (
-                  <tr key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
-                    <td><span className="dash-case-title">{c.title || c.caseNumber}</span></td>
-                    <td><span className="dash-case-num">{c.caseNumber}</span></td>
-                    <td className="dash-cases__client">{c.client || '—'}</td>
-                    <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'} dot>{c.status || 'Active'}</Badge></td>
-                    <td className="dash-cases__date">{formatDate(c.updatedAt || c.createdAt)}</td>
-                  </tr>
-                ))}
+                {activeCases.slice(0, 5).map((c) => {
+                  const cn = c.case_display_number || c.caseNumber || '';
+                  return (
+                    <tr key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
+                      <td><span className="dash-case-title">{c.title || cn}</span></td>
+                      <td><span className="dash-case-num">{cn}</span></td>
+                      <td className="dash-cases__client">{c.client || '—'}</td>
+                      <td><Badge tone={c.status === 'Active' ? 'green' : c.status === 'On Hold' ? 'amber' : 'grey'} dot>{c.status || 'Active'}</Badge></td>
+                      <td className="dash-cases__date">{c.updatedAt || c.createdAt ? formatDate(c.updatedAt || c.createdAt) : '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -580,19 +583,22 @@ export default function Dashboard() {
               <p className="lexm-empty-title">No cases yet.</p>
               <p className="lexm-empty-sub">Create your first case to get started.</p>
             </div>
-          ) : activeCases.slice(0, 3).map((c) => (
-            <div className="lexm-case-row" key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
-              <div className="lexm-case-icon"><Icon name="users" size={16} /></div>
-              <div className="lexm-case-text">
-                <div className="lexm-case-title">{c.title || c.caseNumber}</div>
-                <div className="lexm-case-client">Client: {c.client || '—'}</div>
+          ) : activeCases.slice(0, 3).map((c) => {
+            const cn = c.case_display_number || c.caseNumber || '';
+            return (
+              <div className="lexm-case-row" key={c.id} onClick={() => nav(`/cases/${c.id}`)}>
+                <div className="lexm-case-icon"><Icon name="users" size={16} /></div>
+                <div className="lexm-case-text">
+                  <div className="lexm-case-title">{c.title || cn}</div>
+                  <div className="lexm-case-client">Client: {c.client || '—'}</div>
+                </div>
+                <div className="lexm-case-right">
+                  <span className="lexm-badge">{c.status || 'Active'}</span>
+                  <Icon name="chevron" size={16} className="dash-chevron" />
+                </div>
               </div>
-              <div className="lexm-case-right">
-                <span className="lexm-badge">{c.status || 'Active'}</span>
-                <Icon name="chevron" size={16} className="dash-chevron" />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="lexm-card">
