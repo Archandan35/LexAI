@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Icon from './Icon.jsx';
 import CrudManager from './CrudManager.jsx';
-import { DateField } from './DateField.jsx';
+import { DateInput } from '@/components/DateInput.jsx';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
 import { exportPdf, exportDocx } from '@/utils/exportDoc.js';
@@ -72,7 +72,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
           <div className="sosb-row2">
             <div className="sosb-field">
               <label className="sosb-lbl">Filed On <span className="sosb-req">*</span></label>
-              <DateField className="sosb-datefield" value={form.filedOn} onChange={(e) => set('filedOn', e.target.value)} />
+              <DateInput className="sosb-datefield" value={form.filedOn} onChange={(e) => set('filedOn', e.target.value)} />
             </div>
             <div className="sosb-field">
               <label className="sosb-lbl">Status <span className="sosb-req">*</span></label>
@@ -170,7 +170,7 @@ function Card({ step, form, set, charCount, partyTypes, caseStatuses, onGearPart
           <div className="sosb-row2">
             <div className="sosb-field">
               <label className="sosb-lbl">Next Date <span className="sosb-req">*</span></label>
-              <DateField className="sosb-datefield" value={form.nextDate} onChange={(e) => set('nextDate', e.target.value)} />
+              <DateInput className="sosb-datefield" value={form.nextDate} onChange={(e) => set('nextDate', e.target.value)} />
             </div>
             <div className="sosb-field">
               <label className="sosb-lbl">Purpose <span className="sosb-req">*</span></label>

@@ -27,7 +27,7 @@ import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
 import Button from '@/components/Button.jsx';
-
+import DateInput from '@/components/DateInput.jsx';
 
 const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
@@ -465,10 +465,10 @@ export default function CreateCase() {
             </div>
           </Field>
           <Field label="Filing Date" required>
-            <Input type="date" placeholder="dd-mm-yyyy" value={form.filing_date} onChange={setFieldEvent('filing_date')} />
+            <DateInput value={form.filing_date} onChange={setFieldEvent('filing_date')} />
           </Field>
           <Field label="Next Hearing Date">
-            <Input type="date" placeholder="dd-mm-yyyy" value={form.next_hearing_date} onChange={setFieldEvent('next_hearing_date')} />
+            <DateInput value={form.next_hearing_date} onChange={setFieldEvent('next_hearing_date')} />
           </Field>
         </div>
       </SectionCard>
@@ -486,10 +486,10 @@ export default function CreateCase() {
             <Input value={form.cnr_number} onChange={setFieldEvent('cnr_number')} placeholder="Enter CNR number" />
           </Field>
           <Field label="Registration Date">
-            <Input type="date" placeholder="dd-mm-yyyy" value={form.registration_date} onChange={setFieldEvent('registration_date')} />
+            <DateInput value={form.registration_date} onChange={setFieldEvent('registration_date')} />
           </Field>
           <Field label="Disposal Date">
-            <Input type="date" placeholder="dd-mm-yyyy" value={form.disposal_date} onChange={setFieldEvent('disposal_date')} />
+            <DateInput value={form.disposal_date} onChange={setFieldEvent('disposal_date')} />
           </Field>
         </div>
       </SectionCard>

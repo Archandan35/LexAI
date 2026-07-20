@@ -13929,51 +13929,6 @@ kbd.cmd__kbd {
   border-color: var(--navy-500, var(--navy-700));
 }
 
-.datefield {
-  position: relative;
-  display: block;
-  width: 100%;
-  cursor: pointer;
-}
-
-.datefield__display {
-  width: 100%;
-  padding-right: 32px;
-  cursor: pointer;
-  pointer-events: none;
-  background: var(--surface);
-}
-
-.datefield__icon {
-  position: absolute;
-  right: 11px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--navy-600);
-  pointer-events: none;
-}
-
-.datefield__native {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.datefield__native::-webkit-calendar-picker-indicator {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  cursor: pointer;
-}
-
 .cl-filters__actions {
   display: flex;
   justify-content: space-between;
@@ -25440,6 +25395,74 @@ kbd.cmd__kbd {
 
 .ajm-date-cal-icon:hover {
   color: var(--accent);
+}
+
+/* ----- Reusable DateInput component (typing + calendar) ----- */
+.dateinput {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.dateinput:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft, rgba(99, 102, 241, 0.18));
+}
+.dateinput:hover {
+  border-color: var(--border-strong);
+}
+.dateinput[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.dateinput__field {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 8.5px 0;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  min-width: 0;
+}
+.dateinput__cal {
+  position: relative;
+  z-index: 1;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px -4px 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dateinput__cal:hover {
+  color: var(--accent);
+}
+.dateinput__native {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 38px;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: none;
 }
 
 .ajm-save-error {

@@ -26,6 +26,7 @@ import { stripHtml, useFormat } from '@/utils/format.js';
 import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import DateInput from '@/components/DateInput.jsx';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -718,8 +719,8 @@ export default function OrderSheet() {
                       </div>
                     </div>
                     <div className="flex-row gap-8 mb-10">
-                      <Input type="date" value={dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) ? dateFrom : ''} onChange={(e) => setDateFrom(e.target.value)} className="flex-1" />
-                      <Input type="date" value={dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : ''} onChange={(e) => setDateTo(e.target.value)} className="flex-1" />
+                      <DateInput value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="flex-1" />
+                      <DateInput value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="flex-1" />
                     </div>
 
                     {/* Search */}
@@ -1062,10 +1063,10 @@ export default function OrderSheet() {
                   {showDatePicker && (
                     <div className="order-sheet__datepicker-popover" onClick={(e) => e.stopPropagation()}>
                       <Field label="From Date">
-                        <Input type="date" value={tempDateFrom && /^\d{4}-\d{2}-\d{2}$/.test(tempDateFrom) ? tempDateFrom : ''} onChange={(e) => setTempDateFrom(e.target.value)} />
+                        <DateInput value={tempDateFrom} onChange={(e) => setTempDateFrom(e.target.value)} />
                       </Field>
                       <Field label="To Date">
-                        <Input type="date" value={tempDateTo && /^\d{4}-\d{2}-\d{2}$/.test(tempDateTo) ? tempDateTo : ''} onChange={(e) => setTempDateTo(e.target.value)} />
+                        <DateInput value={tempDateTo} onChange={(e) => setTempDateTo(e.target.value)} />
                       </Field>
                       <div className="flex gap-8 mt-10">
                         <Button size="sm" variant="ghost" onClick={() => { setTempDateFrom(''); setTempDateTo(''); setDateFrom(''); setDateTo(''); setShowDatePicker(false); }}>Clear</Button>
@@ -1759,8 +1760,7 @@ export default function OrderSheet() {
               </div>
               <div className="input-row">
                 <Field label="Hearing Date">
-                  <Input
-                    type="date"
+                  <DateInput
                     value={form.date && /^\d{4}-\d{2}-\d{2}$/.test(form.date) ? form.date : ''}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                   />
@@ -1782,7 +1782,7 @@ export default function OrderSheet() {
                   <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
                 </Field>
                 <Field label="Next Hearing Date">
-                  <Input type="date" value={form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate) ? form.nextHearingDate : ''} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
+                  <DateInput value={form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate) ? form.nextHearingDate : ''} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
                 </Field>
               </div>
               <div className="input-row">

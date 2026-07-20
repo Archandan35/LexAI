@@ -22,6 +22,7 @@ import Badge from '@/components/Badge.jsx';
 import Button from '@/components/Button.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { Input, Textarea, Select } from '@/components/Field.jsx';
+import DateInput from '@/components/DateInput.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
@@ -318,10 +319,11 @@ function CalendarView({ events, loading, onView, cases }) {
           </div>
           <div className="cal-jump">
             {showJump ? (
-              <input type="date" className="cal-jump-input" value={jump} autoFocus
-                onChange={(e) => { setJump(e.target.value); }}
-                onBlur={() => { if (jump) { setCursor(startOfDay(new Date(jump))); } setShowJump(false); }}
-                onKeyDown={(e) => { if (e.key === 'Enter' && jump) { setCursor(startOfDay(new Date(jump))); setShowJump(false); } }} />
+              <DateInput
+                value={jump}
+                onChange={(e) => { const v = e.target.value; setJump(v); if (v) { setCursor(startOfDay(new Date(v))); setShowJump(false); } }}
+                autoFocus
+              />
             ) : (
               <button className="cal-nav-btn" onClick={() => { setJump(dayKey(cursor)); setShowJump(true); }} title="Jump to date"><Icon name="search" size={15} /></button>
             )}
@@ -672,7 +674,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
         </div>
 
         <div className="tasks-filter-row">
-          <input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
+          <Input type="date" className="input" value={filters.date} onChange={(e) => setFilters({ ...filters, date: e.target.value })} />
           <Select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="due_asc">Sort: Due (earliest)</option>
             <option value="due_desc">Sort: Due (latest)</option>

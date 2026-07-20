@@ -26,13 +26,13 @@ import { actLogic } from '@/logic/actLogic.js';
 import { courtsLogic } from '@/logic/courtsLogic.js';
 import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
+import DateInput from '@/components/DateInput.jsx';
 import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
-import { DateEngine } from '@/core/DateEngine.js';
 
 const TABS = [
   { key: 'general', label: 'General Information', icon: 'info' },
@@ -426,77 +426,6 @@ function SelectWithCrud({ label, required, value, onChange, placeholder, options
   );
 }
 
-// Parse a date string typed with dd/mm/yyyy or dd-mm-yyyy into yyyy-mm-dd.
-function parseToISO(str) {
-  if (!str) return '';
-  const s = String(str).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const m = /^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/.exec(s);
-  if (m) {
-    const [d, mo, y] = [m[1], m[2], m[3]];
-    const dt = new Date(`${y}-${mo}-${d}T00:00:00.000Z`);
-    return Number.isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0, 10);
-  }
-  return '';
-}
-
-// Date field that honours the global date-format setting: shows the value in
-// the configured format, accepts typed input, and opens a native date picker
-// (single calendar icon) only when the calendar icon is clicked.
-function DateInput({ value, placeholder, onCommit }) {
-  const [text, setText] = useState(value ? DateEngine.formatDate(value) : '');
-  const [focused, setFocused] = useState(false);
-  const hiddenRef = useRef(null);
-  const openPicker = () => {
-    const el = hiddenRef.current;
-    if (el && el.showPicker) { try { el.showPicker(); } catch { /* ignore */ } }
-  };
-
-  const fmt = (v) => v ? DateEngine.formatDate(v) : '';
-
-  useEffect(() => {
-    if (!focused) setText(fmt(value));
-  }, [value, focused]);
-
-  const handleChange = (e) => {
-    const raw = e.target.value;
-    setText(raw);
-    if (!raw) { onCommit(''); return; }
-    const iso = parseToISO(raw);
-    if (iso) onCommit(iso);
-  };
-
-  return (
-    <div className="ajm-date-input">
-      <input
-        type="text"
-        className="ajm-input ajm-date-field"
-        placeholder={placeholder}
-        value={text}
-        onChange={handleChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      />
-      <button
-        type="button"
-        className="ajm-date-cal-icon"
-        title="Pick date"
-        onClick={openPicker}
-        tabIndex={-1}
-      >
-        <Icon name="calendar" size={14} />
-      </button>
-      <input
-        ref={hiddenRef}
-        type="date"
-        className="ajm-date-native"
-        value={DateEngine.toInputDate(value)}
-        onChange={(e) => { onCommit(e.target.value); setText(fmt(e.target.value)); }}
-      />
-    </div>
-  );
-}
-
 export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState('general');
@@ -714,7 +643,7 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
           <DateInput
             value={form[fieldKey]}
             placeholder="23/05/2026"
-            onCommit={(iso) => set(fieldKey, iso)}
+            onChange={(e) => set(fieldKey, e.target.value)}
           />
         ) : (
           <div className={readonly ? 'ajm-field-readonly' : ''}>

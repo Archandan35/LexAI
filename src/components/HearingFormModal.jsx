@@ -19,6 +19,7 @@ import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useFormat } from '@/utils/format.js';
+import DateInput from '@/components/DateInput.jsx';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 
@@ -410,8 +411,7 @@ export default function HearingFormModal({ open, onClose, onSaved, initialCaseId
               </div>
               <div className="input-row">
                 <Field label="Hearing Date">
-                  <Input
-                    type="date"
+                  <DateInput
                     value={form.date && /^\d{4}-\d{2}-\d{2}$/.test(form.date) ? form.date : ''}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                   />
@@ -433,7 +433,7 @@ export default function HearingFormModal({ open, onClose, onSaved, initialCaseId
                   <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} placeholder="e.g. Defendant Evidence" />
                 </Field>
                 <Field label="Next Hearing Date">
-                  <Input type="date" value={form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate) ? form.nextHearingDate : ''} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
+                  <DateInput value={form.nextHearingDate && /^\d{4}-\d{2}-\d{2}$/.test(form.nextHearingDate) ? form.nextHearingDate : ''} onChange={(e) => setForm({ ...form, nextHearingDate: e.target.value })} />
                 </Field>
               </div>
               <div className="input-row">
