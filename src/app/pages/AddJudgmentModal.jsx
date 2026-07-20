@@ -1078,11 +1078,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Court Name', required: true, placeholder: 'e.g. Supreme Court of India' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. SC-IND' },
+      { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
       { key: 'level', label: 'Court Level', required: true, placeholder: 'e.g. 1 (Supreme), 2 (High Court)' },
       { key: 'parent_id', label: 'Parent Court', required: false, placeholder: 'Parent court ID (optional)' },
-      { key: 'status', label: 'Status', required: true },
     ],
-    defaults: { status: 'Active', level: '1' },
+    defaults: { status: 'Active', color: '#6b7280', level: '1' },
   };
 
   const benchConfig = {
@@ -1091,8 +1092,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Bench Type Name', required: true, placeholder: 'e.g. Division Bench' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. DIV-BENCH' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const judgeConfig = {
@@ -1100,11 +1102,12 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     fields: [
       { key: 'name', label: 'Judge Name', required: true, placeholder: 'e.g. Justice A.K. Sharma' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. J-AKS' },
+      { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
       { key: 'designation', label: 'Designation', required: true, placeholder: 'e.g. Chief Justice, Justice' },
       { key: 'court', label: 'Court', required: false, placeholder: 'Associated court' },
-      { key: 'status', label: 'Status', required: true },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const caseTypeConfig = {
@@ -1113,8 +1116,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Case Type Name', required: true, placeholder: 'e.g. Civil Appeal' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CA' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const jurisdictionConfig = {
@@ -1123,8 +1127,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Jurisdiction Name', required: true, placeholder: 'e.g. Civil' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. CIV' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const stageConfig = {
@@ -1133,8 +1138,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Stage Name', required: true, placeholder: 'e.g. Pleading' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PL' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const caseStatusConfig = {
@@ -1154,8 +1160,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Priority Name', required: true, placeholder: 'e.g. High' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. HI' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const partyTypeConfig = {
@@ -1164,8 +1171,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       { key: 'name', label: 'Party Type Name', required: true, placeholder: 'e.g. Plaintiff' },
       { key: 'short_code', label: 'Short Code', required: true, placeholder: 'e.g. PLT' },
       { key: 'status', label: 'Status', required: true },
+      { key: 'color', label: 'Badge Color', type: 'color' },
     ],
-    defaults: { status: 'Active' },
+    defaults: { status: 'Active', color: '#6b7280' },
   };
 
   const areaOfLawConfig = {
