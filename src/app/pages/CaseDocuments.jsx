@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import { Input } from '@/components/Field.jsx';
-import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
-import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
-import storageService from '@/services/storageService.js';
+import { documentLogic } from '@/logic/documentLogic.js';
+import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { bytes, useFormat } from '@/utils/format.js';
@@ -102,8 +101,8 @@ export default function CaseDocuments() {
   const load = useCallback(async () => {
     setLoading(true);
     const [d, f] = await Promise.all([
-      documentsRepository.getAll().catch(() => []),
-      caseFoldersRepository.getAll().catch(() => []),
+      documentLogic.getAll().then((r) => r?.ok ? r.value : []).catch(() => []),
+      caseFolderLogic.listAll().catch(() => []),
     ]);
     setDocs(Array.isArray(d) ? d : []);
     setFolders(Array.isArray(f) ? f : []);
@@ -236,7 +235,7 @@ export default function CaseDocuments() {
     const name = newName.trim();
     if (!name) { toast.push('Folder name is required.', 'error'); return; }
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
-    const res = await caseFoldersRepository.create({ name, kind: 'document', parent_id: activeFolder || null, order, system: false, created_at: new Date().toISOString() }).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
+    const res = await caseFolderLogic.createGlobal(name, 'document', activeFolder, order).then((r) => r?.ok ? r.value : null).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
     if (res) { toast.push('Folder created.', 'success'); setNewName(''); setCreating(false); await load(); if (activeFolder) setExpanded((p) => ({ ...p, [activeFolder]: true })); }
   };
 
@@ -246,7 +245,7 @@ export default function CaseDocuments() {
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
     let created = 0;
     for (let i = 0; i < names.length; i++) {
-      const res = await caseFoldersRepository.create({ name: names[i], kind: 'document', parent_id: activeFolder || null, order: order + i, system: false, created_at: new Date().toISOString() }).catch(() => null);
+      const res = await caseFolderLogic.createGlobal(names[i], 'document', activeFolder, order + i).then((r) => r?.ok ? r.value : null).catch(() => null);
       if (res) created++;
     }
     toast.push(`${created} folder(s) created.`, 'success');
@@ -258,7 +257,7 @@ export default function CaseDocuments() {
   const saveRename = async () => {
     const name = editName.trim();
     if (!name) { setEditingId(null); return; }
-    await caseFoldersRepository.update(editingId, { name }).catch(() => { });
+    await caseFolderLogic.updateGlobal(editingId, { name }).catch(() => { });
     setEditingId(null); await load();
   };
   const cancelRename = () => setEditingId(null);
@@ -298,14 +297,14 @@ export default function CaseDocuments() {
       const descIds = getAllDescendantIds(folder.id);
       if (descIds.includes(targetId)) { toast.push('Cannot move folder into its own sub-folder.', 'error'); return; }
       if (targetId && getChildren(targetId).some((f) => f.name.toLowerCase() === folder.name.toLowerCase())) { toast.push('A folder with that name already exists.', 'error'); return; }
-      await caseFoldersRepository.update(folder.id, { parent_id: targetId || null }).catch(() => { });
+      await caseFolderLogic.moveGlobal(folder.id, targetId).catch(() => { });
       toast.push('Folder moved.', 'success');
     } else if (type === 'copy') {
       const copyRecursive = async (sourceId, newParentId) => {
         const source = folders.find((f) => f.id === sourceId);
         if (!source) return;
         const children = getChildren(sourceId);
-        const newFolder = await caseFoldersRepository.create({ name: source.name, kind: source.kind, parent_id: newParentId || null, order: source.order ?? 0, system: false, created_at: new Date().toISOString() }).catch(() => null);
+        const newFolder = await caseFolderLogic.copyGlobal(source, newParentId).then((r) => r?.ok ? r.value : null).catch(() => null);
         if (!newFolder) return;
         for (const child of children) await copyRecursive(child.id, newFolder.id);
       };
@@ -330,7 +329,7 @@ export default function CaseDocuments() {
     setUploading(true);
     try {
       const folder = activeFolder ? getFolderName(activeFolder) || 'Miscellaneous' : 'Miscellaneous';
-      await storageService.uploadDocument(file, { folder, folderId: activeFolder });
+      await fileLogic.uploadDocument(file, { folder, folderId: activeFolder }, user);
       toast.push('Document uploaded.', 'success');
       await load();
     } catch (err) {

@@ -3,11 +3,45 @@ import { caseActivityService } from '@/services/caseActivityService.js';
 import { storageService } from '@/services/storageService.js';
 import { draftsRepository } from '@/data-layer/repositories/draftsRepository.js';
 import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
+import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
 import { ok, fail } from '@/utils/result.js';
 import { DateEngine } from '@/core/index.js';
 
 // caseFolderLogic — per-case folder management for documents and drafts.
 export const caseFolderLogic = {
+  async listAll() {
+    try { return await caseFoldersRepository.getAll(); } catch (err) { return []; }
+  },
+
+  async createGlobal(name, kind, parentId, order) {
+    const n = (name || '').trim();
+    if (!n) return fail('Folder name is required.');
+    try {
+      return ok(await caseFoldersRepository.create({
+        name: n, kind: kind || 'document', parent_id: parentId || null,
+        order: order ?? 0, system: false, created_at: new Date().toISOString(),
+      }));
+    } catch (err) { return fail(err); }
+  },
+
+  async updateGlobal(id, data) {
+    try { return ok(await caseFoldersRepository.update(id, data)); } catch (err) { return fail(err); }
+  },
+
+  async moveGlobal(id, parentId) {
+    try { return ok(await caseFoldersRepository.update(id, { parent_id: parentId || null })); } catch (err) { return fail(err); }
+  },
+
+  async copyGlobal(source, newParentId, order) {
+    const n = (source.name || '').trim();
+    if (!n) return fail('Source folder name is required.');
+    try {
+      return ok(await caseFoldersRepository.create({
+        name: n, kind: source.kind, parent_id: newParentId || null,
+        order: order ?? (source.order ?? 0), system: false, created_at: new Date().toISOString(),
+      }));
+    } catch (err) { return fail(err); }
+  },
   // Return existing folders for a case. No auto-creation of template subfolders.
   // The parent case folder is created in caseLogic.create().
   async ensureForCase(caseId) {

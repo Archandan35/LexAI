@@ -3,9 +3,9 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { userService } from '@/services/userService.js';
 import { caseService } from '@/services/caseService.js';
-import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
+import { documentLogic } from '@/logic/documentLogic.js';
+import { fileLogic } from '@/logic/fileLogic.js';
 import { caseActivityService } from '@/services/caseActivityService.js';
-import { storageService } from '@/services/storageService.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -36,14 +36,14 @@ export default function DmcDeleteManager() {
     if (scope === 'user') {
       const targetUser = users.find((u) => u.id === selectedUserId);
       const userCases = cases.filter((c) => c.advocate === targetUser?.name || c.createdBy === targetUser?.id);
-      const userDocs = await documentsRepository.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).catch(() => []);
+      const userDocs = await documentLogic.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).then((r) => r?.ok ? r.value : []).catch(() => []);
       setPreview({
         type: 'user', label: `Data for ${targetUser?.name || selectedUserId}`,
         cases: userCases.length, documents: userDocs.length, collections: 1,
         records: userCases.length + userDocs.length, userCases, userDocs,
       });
     } else {
-      const repo = { documents: documentsRepository }[selectedCollection];
+      const repo = { documents: { getAll: (q) => documentLogic.getAll(q).then((r) => r?.ok ? r.value : []) } }[selectedCollection];
       if (!repo) { toast.push('Collection scanning not available for this collection.', 'error'); return; }
       const all = await repo.getAll().catch(() => []);
       setPreview({ type: 'collection', label: `All records in "${selectedCollection}"`, collections: 1, records: all.length, sample: all.slice(0, 5) });
@@ -61,7 +61,7 @@ export default function DmcDeleteManager() {
           await caseService.deleteCase(c.id);
         }
         for (const d of preview.userDocs) {
-          await storageService.deleteDocument(d.id, d.ref).catch(() => {});
+          try { await fileLogic.deleteDocument({ id: d.id, ref: d.ref, caseId: d.caseId }, user); } catch {}
         }
         await caseActivityService.record('system', 'delete.user', `Deleted data for user ${preview.label}`, user);
         toast.push(`Deleted ${preview.records} record(s) for ${preview.label}.`, 'success');

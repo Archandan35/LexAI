@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
-import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
+import { auditLogLogic } from '@/logic/auditLogLogic.js';
 
 const TABS = ['logs', 'reports'];
 
@@ -12,8 +12,8 @@ export default function AiUsage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    auditLogsRepository.getAll()
-      .then((all) => setLogs((Array.isArray(all) ? all : []).filter((l) => l.module === 'ai')))
+    auditLogLogic.getAiUsage()
+      .then((result) => setLogs(result?.ok ? result.value : []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

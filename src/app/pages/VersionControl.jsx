@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
-import { draftsRepository } from '@/data-layer/repositories/draftsRepository.js';
+import { versionControlLogic } from '@/logic/versionControlLogic.js';
 
 export default function VersionControl() {
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    draftsRepository
-      .getAll()
-      .then(setDrafts)
+    versionControlLogic.getAllDrafts()
+      .then((result) => setDrafts(result?.ok ? result.value : []))
       .catch(() => console.warn('VersionControl: failed to load drafts'))
       .finally(() => setLoading(false));
   }, []);

@@ -603,7 +603,7 @@ create index if not exists idx_roles_status on "roles" ("status");
 -- roles (client, manager, user, etc.) can be created later by the admin from
 -- within the app's Role Management UI.
 insert into "roles" ("id", "code", "name", "description", "permissions", "all", "inherits_hierarchy", "system", "status", "created_at", "updated_at") values
-(gen_random_uuid()::text, 'admin', 'Admin', 'Administrator with full system access', '{}', true, true, true, 'active', now(), now())
+(gen_random_uuid()::text, 'Admin', 'Administrator', 'Administrator with full system access (auto-provisioned on first install)', '{}', true, true, true, 'active', now(), now())
 on conflict ("code") do nothing;
 
 create table if not exists "permissions" (

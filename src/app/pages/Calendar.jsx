@@ -31,9 +31,7 @@ import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { useFabAction } from '@/data-layer/FABContext.jsx';
 import { useFormat } from '@/utils/format.js';
-import { hearingsRepository } from '@/data-layer/repositories/hearingsRepository.js';
-import { remindersRepository } from '@/data-layer/repositories/remindersRepository.js';
-import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
+import { calendarLogic } from '@/logic/calendarLogic.js';
 import { taskLogic } from '@/logic/taskLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
 import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
@@ -84,17 +82,17 @@ export default function Calendar() {
 
   const refreshTasks = useCallback(() => {
     taskLogic.list().then((r) => setTasks(r.ok ? (r.data || []) : [])).catch(() => {});
-    casesRepository.getAll().then((c) => setCases(Array.isArray(c) ? c : [])).catch(() => {});
+    calendarLogic.getCases().then((r) => setCases(Array.isArray(r) ? r : [])).catch(() => {});
   }, []);
 
   const loadAll = useCallback((bypassCache = false) => {
     setLoading(true);
     const orCached = (name, fn) => bypassCache ? fn() : cachedRef(name, fn);
     Promise.all([
-      hearingsRepository.getAll().catch(() => []),
-      remindersRepository.getAll().catch(() => []),
+      calendarLogic.getHearings().then((r) => Array.isArray(r) ? r : []).catch(() => []),
+      calendarLogic.getReminders().then((r) => Array.isArray(r) ? r : []).catch(() => []),
       taskLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => []),
-      casesRepository.getAll({ select: 'id,title,case_number_str,case_display_number,next_hearing,status' }).catch(() => []),
+      calendarLogic.getCases({ select: 'id,title,case_number_str,case_display_number,next_hearing,status' }).then((r) => Array.isArray(r) ? r : []).catch(() => []),
       orCached('priorities', () => priorityLogic.list().catch(() => [])),
       orCached('categories', () => taskCategoryLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),
       orCached('statuses', () => taskStatusLogic.list().then((r) => r.ok ? r.data || [] : []).catch(() => [])),

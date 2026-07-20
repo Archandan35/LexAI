@@ -5,8 +5,7 @@ import Button from '@/components/Button.jsx';
 import Badge from '@/components/Badge.jsx';
 import Icon from '@/components/Icon.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
-import { storageStatsService } from '@/services/storageStatsService.js';
-import { fileLogic } from '@/logic/fileLogic.js';
+import { storageLogic } from '@/logic/storageLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { bytes, useFormat } from '@/utils/format.js';
 
@@ -18,18 +17,18 @@ export default function StorageSettings() {
   const [summary, setSummary] = useState(null);
   const [busy, setBusy] = useState('');
 
-  const load = useCallback(async () => { setSummary(await storageStatsService.summary()); }, []);
+  const load = useCallback(async () => { setSummary(await storageLogic.summary()); }, []);
   useEffect(() => { load(); }, [load]);
 
   const testConnection = async () => {
     setBusy('test');
-    const res = await storageStatsService.testConnection();
+    const res = await storageLogic.testConnection();
     setBusy('');
     toast.push(res?.ok ? `Connection OK — ${res.message || res.provider}` : `Connection failed: ${res?.message || 'unknown error'}`, res?.ok ? 'success' : 'error');
   };
   const syncNow = async () => {
     setBusy('sync');
-    const res = await fileLogic.syncAll();
+    const res = await storageLogic.syncAll();
     setBusy('');
     toast.push(`Synced ${res.synced}/${res.total} file(s).`, 'success');
     load();

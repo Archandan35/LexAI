@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
+import { caseLogic } from '@/logic/caseLogic.js';
 
 export default function CaseReports() {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    casesRepository.getAll().then(setCases).catch(() => {}).finally(() => setLoading(false));
+    Promise.resolve(caseLogic.list()).then((result) => setCases(Array.isArray(result) ? result : [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const stats = {

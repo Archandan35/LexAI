@@ -3,18 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
-import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
-import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
-import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
-import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
-import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
-import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
-import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
-import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
-import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
-import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
-import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
-import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
+import { judgmentLogic } from '@/logic/judgmentLogic.js';
+import { courtLogic } from '@/logic/courtLogic.js';
+import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
+import { judgeLogic } from '@/logic/judgeLogic.js';
+import { actLogic } from '@/logic/actLogic.js';
+import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
+import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
+import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
+import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
+import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
@@ -110,7 +109,7 @@ export default function JudgmentLibrary() {
 
   const loadJudgments = useCallback(() => {
     setLoading(true);
-    judgmentsRepository.getAll()
+    judgmentLogic.list()
       .then((data) => setJudgments(data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -118,16 +117,16 @@ export default function JudgmentLibrary() {
 
   useEffect(() => {
     loadJudgments();
-    courtsRepository.getAll().then(setCourts).catch(() => {});
-    benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
-    judgesRepository.getAll().then(setJudges).catch(() => {});
-    actsRepository.getAll().then(setActs).catch(() => {});
-    caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
-    caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
-    areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
-    typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
-    natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
-    provisionsRepository.getAll().then(setProvisions).catch(() => {});
+    courtLogic.list().then((r) => setCourts(Array.isArray(r) ? r : [])).catch(() => {});
+    benchTypeLogic.list().then((r) => setBenchTypes(Array.isArray(r) ? r : [])).catch(() => {});
+    judgeLogic.list().then((r) => setJudges(Array.isArray(r) ? r : [])).catch(() => {});
+    actLogic.list().then((r) => setActs(Array.isArray(r) ? r : [])).catch(() => {});
+    caseTypeLogic.list().then((r) => setCaseTypes(Array.isArray(r) ? r : [])).catch(() => {});
+    caseStageLogic.list().then((r) => setCaseStages(Array.isArray(r) ? r : [])).catch(() => {});
+    areaOfLawLogic.list().then((r) => setAreaOfLaws(Array.isArray(r) ? r : [])).catch(() => {});
+    typeOfProceedingLogic.list().then((r) => setTypeOfProceedings(Array.isArray(r) ? r : [])).catch(() => {});
+    natureOfDisputeLogic.list().then((r) => setNatureOfDisputes(Array.isArray(r) ? r : [])).catch(() => {});
+    provisionsLogic.list().then((r) => setProvisions(Array.isArray(r) ? r : [])).catch(() => {});
   }, [loadJudgments]);
 
   const [editing, setEditing] = useState(null);
@@ -141,21 +140,7 @@ export default function JudgmentLibrary() {
     const delId = deleteTarget.id;
     const label = deleteTarget.title || deleteTarget.citation || 'Untitled';
     setDeleteTarget(null);
-    judgmentsRepository.delete(delId)
-      .then((ok) => {
-        if (!ok) {
-          console.error('[JudgmentLibrary] delete returned no rows for id', delId);
-          return;
-        }
-        auditLogsRepository.create({
-          action: 'delete',
-          module: 'judgments',
-          user_name: 'current user',
-          details: `Deleted judgment: ${label}`,
-          at: new Date().toISOString(),
-        }).catch(() => {});
-        loadJudgments();
-      })
+    judgmentLogic.remove(delId).then(() => { loadJudgments(); })
       .catch((e) => {
         console.error('[JudgmentLibrary] delete failed:', e);
       });
@@ -163,14 +148,12 @@ export default function JudgmentLibrary() {
 
   const handleDuplicate = (j) => {
     const { id, createdAt, updatedAt, ...rest } = j;
-    judgmentsRepository.create({
+    judgmentLogic.create({
       ...rest,
       title: rest.title ? `${rest.title} (Copy)` : rest.title,
       citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
       status: 'Draft',
-    })
-      .then(() => loadJudgments())
-      .catch(() => {});
+    }).then(() => loadJudgments()).catch(() => {});
   };
 
   const nameMap = useMemo(() => {
@@ -432,9 +415,7 @@ export default function JudgmentLibrary() {
           paragraphs: [],
         }));
       if (records.length) {
-        judgmentsRepository.bulkCreate(records)
-          .then(() => { loadJudgments(); setPage(1); })
-          .catch(() => {});
+        judgmentLogic.bulkCreate(records).then(() => { loadJudgments(); setPage(1); }).catch(() => {});
       }
       if (fileInputRef.current) fileInputRef.current.value = '';
     };

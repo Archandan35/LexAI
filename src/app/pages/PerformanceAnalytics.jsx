@@ -1,31 +1,15 @@
 import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
-import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
-import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
-import { auditLogsRepository } from '@/data-layer/repositories/auditLogsRepository.js';
+import { analyticsLogic } from '@/logic/analyticsLogic.js';
 
 export default function PerformanceAnalytics() {
   const [metrics, setMetrics] = useState({ cases: 0, documents: 0, logs: 0, aiLogs: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      casesRepository.getAll().catch(() => []),
-      documentsRepository.getAll().catch(() => []),
-      auditLogsRepository.getAll().catch(() => []),
-    ])
-      .then(([cases, docs, logs]) => {
-        const c = Array.isArray(cases) ? cases : [];
-        const d = Array.isArray(docs) ? docs : [];
-        const l = Array.isArray(logs) ? logs : [];
-        setMetrics({
-          cases: c.length,
-          documents: d.length,
-          logs: l.length,
-          aiLogs: l.filter((lg) => lg.module === 'ai').length,
-        });
-      })
+    analyticsLogic.getMetrics()
+      .then((result) => { if (result?.ok) setMetrics(result.value); })
       .finally(() => setLoading(false));
   }, []);
 

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
-import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
-import { casesRepository } from '@/data-layer/repositories/casesRepository.js';
+import { courtLogic } from '@/logic/courtLogic.js';
+import { caseLogic } from '@/logic/caseLogic.js';
 
 export default function CourtReports() {
   const [courts, setCourts] = useState([]);
@@ -12,8 +12,8 @@ export default function CourtReports() {
 
   useEffect(() => {
     Promise.all([
-      courtsRepository.getAll().catch(() => []),
-      casesRepository.getAll().catch(() => []),
+      Promise.resolve(courtLogic.list()).then((r) => Array.isArray(r) ? r : []).catch(() => []),
+      Promise.resolve(caseLogic.list()).then((r) => Array.isArray(r) ? r : []).catch(() => []),
     ]).then(([c, ca]) => {
       setCourts(Array.isArray(c) ? c : []);
       setAllCases(Array.isArray(ca) ? ca : []);

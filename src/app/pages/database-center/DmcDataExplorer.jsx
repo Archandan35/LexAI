@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { databaseAdminService } from '@/services/databaseAdminService.js';
-import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
+import { documentLogic } from '@/logic/documentLogic.js';
+import { fileLogic } from '@/logic/fileLogic.js';
 import { caseService } from '@/services/caseService.js';
 import { bytes, useFormat } from '@/utils/format.js';
-import { storageService } from '@/services/storageService.js';
 import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Modal from '@/components/Modal.jsx';
@@ -44,7 +44,7 @@ export default function DmcDataExplorer() {
   const load = async () => {
     setLoading(true);
     try {
-      if (collection === 'documents') setRows(await documentsRepository.getAll().catch(() => []));
+      if (collection === 'documents') setRows(await documentLogic.getAll().then((r) => r?.ok ? r.value : []).catch(() => []));
       else if (collection === 'cases') setRows(await caseService.listCases().catch(() => []));
       else setRows([]);
     } catch { setRows([]); }
@@ -204,7 +204,7 @@ export default function DmcDataExplorer() {
         </div>
         {isDoc && detailItem.ref && (
           <div style={{ marginTop: 16 }}>
-            <Button variant="outline" size="sm" onClick={() => storageService.getUrl(detailItem.ref).then((url) => url && window.open(url, '_blank'))}>
+            <Button variant="outline" size="sm" onClick={() => Promise.resolve(fileLogic.getUrl(detailItem.ref)).then((url) => url && window.open(url, '_blank'))}>
               <Icon name="eye" size={14} /> View File
             </Button>
           </div>
@@ -347,7 +347,7 @@ export default function DmcDataExplorer() {
               </div>
               {previewDoc.ref && (
                 <div className="dmc-preview-panel__actions">
-                  <Button variant="outline" size="sm" onClick={() => storageService.getUrl(previewDoc.ref).then((url) => url && window.open(url, '_blank'))}>
+                  <Button variant="outline" size="sm" onClick={() => Promise.resolve(fileLogic.getUrl(previewDoc.ref)).then((url) => url && window.open(url, '_blank'))}>
                     <Icon name="eye" size={14} /> View File
                   </Button>
                 </div>

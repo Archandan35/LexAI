@@ -17387,7 +17387,7 @@ kbd.cmd__kbd {
 }
 
 .manage-cases__hero {
-  background: url('/images/Pages-hero-banner/mc-hero-12.png') center/contain no-repeat;
+  background: url('/images/Pages-hero-banner/mc-hero-12.png') center center / cover no-repeat;
 }
 
 .bench-types__hero-icon {
@@ -18048,7 +18048,7 @@ kbd.cmd__kbd {
   }
 
   .manage-cases__hero {
-    background: url('/images/Pages-hero-banner/mc-hero-21.png') center/contain no-repeat;
+    background: url('/images/Pages-hero-banner/mc-hero-21.png') center center / cover no-repeat;
   }
 
   .bench-types__hero::after {

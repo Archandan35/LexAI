@@ -3,7 +3,7 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input } from '@/components/Field.jsx';
-import { documentsRepository } from '@/data-layer/repositories/documentsRepository.js';
+import { documentLogic } from '@/logic/documentLogic.js';
 
 export default function DocumentArchive() {
   const [docs, setDocs] = useState([]);
@@ -11,14 +11,8 @@ export default function DocumentArchive() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    documentsRepository
-      .getAll()
-      .then((all) => {
-        const archived = (Array.isArray(all) ? all : []).filter(
-          (d) => d.archived || d.status === 'Archived'
-        );
-        setDocs(archived);
-      })
+    documentLogic.getArchived()
+      .then((result) => setDocs(result?.ok ? result.value : []))
       .catch(() => console.warn('DocumentArchive: failed to load documents'))
       .finally(() => setLoading(false));
   }, []);

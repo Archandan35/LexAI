@@ -14,7 +14,6 @@ import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
 import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { priorityLogic } from '@/logic/priorityLogic.js';
-import { caseFoldersRepository } from '@/data-layer/repositories/caseFoldersRepository.js';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
@@ -26,6 +25,7 @@ import { useBenchTypes } from '@/hooks/useBenchTypes.js';
 import { useJurisdictions } from '@/hooks/useJurisdictions.js';
 import { useJudges } from '@/hooks/useJudges.js';
 import { judgeLogic } from '@/logic/judgeLogic.js';
+import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import Button from '@/components/Button.jsx';
 import DateInput from '@/components/DateInput.jsx';
 
@@ -181,7 +181,7 @@ export default function CreateCase() {
   const [autoCreateFolder, setAutoCreateFolder] = useState(true);
 
   useEffect(() => {
-    caseFoldersRepository.getAll().then((r) => setAllFolders(Array.isArray(r) ? r : [])).catch(() => {});
+    caseFolderLogic.listAll().then((r) => setAllFolders(Array.isArray(r) ? r : [])).catch(() => {});
   }, []);
 
   const openCrudManager = useCallback((entity) => setCrudEntity(entity), []);

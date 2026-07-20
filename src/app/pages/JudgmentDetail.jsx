@@ -4,20 +4,20 @@ import Icon from '@/components/Icon.jsx';
 import Button from '@/components/Button.jsx';
 import Spinner from '@/components/Spinner.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
-import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
-import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
-import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
-import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
-import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
-import { jurisdictionsRepository } from '@/data-layer/repositories/jurisdictionsRepository.js';
-import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
-import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
-import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
-import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
-import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
-import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
-import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
-import { provisionsRepository } from '@/data-layer/repositories/provisionsRepository.js';
+import { judgmentLogic } from '@/logic/judgmentLogic.js';
+import { courtLogic } from '@/logic/courtLogic.js';
+import { benchTypeLogic } from '@/logic/benchTypeLogic.js';
+import { judgeLogic } from '@/logic/judgeLogic.js';
+import { caseTypeLogic } from '@/logic/caseTypeLogic.js';
+import { jurisdictionLogic } from '@/logic/jurisdictionLogic.js';
+import { caseStageLogic } from '@/logic/caseStageLogic.js';
+import { partyTypeLogic } from '@/logic/partyTypeLogic.js';
+import { caseStatusLogic } from '@/logic/caseStatusLogic.js';
+import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
+import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
+import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
+import { actLogic } from '@/logic/actLogic.js';
+import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import RelatedJudgmentCard from '@/components/RelatedJudgmentCard.jsx';
@@ -182,7 +182,7 @@ export default function JudgmentDetail() {
 
   useEffect(() => {
     let cancelled = false;
-    judgmentsRepository.getById(id)
+    judgmentLogic.getById(id)
       .then((data) => {
         if (cancelled) return;
         setJudgment(data || null);
@@ -191,22 +191,22 @@ export default function JudgmentDetail() {
       })
       .catch(() => { if (!cancelled) setJudgment(null); })
       .finally(() => { if (!cancelled) setLoading(false); });
-    judgmentsRepository.getAll()
+    judgmentLogic.list()
       .then((data) => { if (!cancelled) setAllJudgments(data || []); })
       .catch(() => {});
-    courtsRepository.getAll().then(setCourts).catch(() => {});
-    benchTypesRepository.getAll().then(setBenchTypes).catch(() => {});
-    judgesRepository.getAll().then(setJudges).catch(() => {});
-    caseTypesRepository.getAll().then(setCaseTypes).catch(() => {});
-    jurisdictionsRepository.getAll().then(setJurisdictions).catch(() => {});
-    caseStagesRepository.getAll().then(setCaseStages).catch(() => {});
-    partyTypesRepository.getAll().then(setPartyTypes).catch(() => {});
-    caseStatusesRepository.getAll().then(setCaseStatuses).catch(() => {});
-    areaOfLawRepository.getAll().then(setAreaOfLaws).catch(() => {});
-    typeOfProceedingRepository.getAll().then(setTypeOfProceedings).catch(() => {});
-    natureOfDisputeRepository.getAll().then(setNatureOfDisputes).catch(() => {});
-    actsRepository.getAll().then((data) => { if (!cancelled) setAllActs(data || []); }).catch(() => {});
-    provisionsRepository.getAll().then((data) => { if (!cancelled) setAllProvisions(data || []); }).catch(() => {});
+    courtLogic.list().then((r) => setCourts(Array.isArray(r) ? r : [])).catch(() => {});
+    benchTypeLogic.list().then((r) => setBenchTypes(Array.isArray(r) ? r : [])).catch(() => {});
+    judgeLogic.list().then((r) => setJudges(Array.isArray(r) ? r : [])).catch(() => {});
+    caseTypeLogic.list().then((r) => setCaseTypes(Array.isArray(r) ? r : [])).catch(() => {});
+    jurisdictionLogic.list().then((r) => setJurisdictions(Array.isArray(r) ? r : [])).catch(() => {});
+    caseStageLogic.list().then((r) => setCaseStages(Array.isArray(r) ? r : [])).catch(() => {});
+    partyTypeLogic.list().then((r) => setPartyTypes(Array.isArray(r) ? r : [])).catch(() => {});
+    caseStatusLogic.list().then((r) => setCaseStatuses(Array.isArray(r) ? r : [])).catch(() => {});
+    areaOfLawLogic.list().then((r) => setAreaOfLaws(Array.isArray(r) ? r : [])).catch(() => {});
+    typeOfProceedingLogic.list().then((r) => setTypeOfProceedings(Array.isArray(r) ? r : [])).catch(() => {});
+    natureOfDisputeLogic.list().then((r) => setNatureOfDisputes(Array.isArray(r) ? r : [])).catch(() => {});
+    actLogic.list().then((data) => { if (!cancelled) setAllActs(Array.isArray(data) ? data : []); }).catch(() => {});
+    provisionsLogic.list().then((data) => { if (!cancelled) setAllProvisions(Array.isArray(data) ? data : []); }).catch(() => {});
     return () => { cancelled = true; };
   }, [id]);
 
@@ -220,7 +220,7 @@ export default function JudgmentDetail() {
     if (!missing.length) return;
     let cancelled = false;
     missing.forEach((aid) => {
-      actsRepository.getById(aid).then((act) => {
+      actLogic.get(aid).then((act) => {
         if (cancelled || !act) return;
         setActDetailsMap((prev) => ({ ...prev, [aid]: act }));
       }).catch(() => {});
@@ -236,7 +236,7 @@ export default function JudgmentDetail() {
     if (!missing.length) return;
     let cancelled = false;
     missing.forEach((pid) => {
-      provisionsRepository.getById(pid).then((prov) => {
+      provisionsLogic.get(pid).then((prov) => {
         if (cancelled || !prov) return;
         setProvisionDetailsMap((prev) => ({ ...prev, [pid]: prov }));
       }).catch(() => {});
@@ -333,14 +333,12 @@ export default function JudgmentDetail() {
   const handleDuplicate = () => {
     if (!judgment) return;
     const { id: _id, createdAt, updatedAt, ...rest } = judgment;
-    judgmentsRepository.create({
+    judgmentLogic.create({
       ...rest,
       title: rest.title ? `${rest.title} (Copy)` : rest.title,
       citation: rest.citation ? `${rest.citation} (Copy)` : rest.citation,
       status: 'Draft',
-    })
-      .then(() => navigate('/judgment-library'))
-      .catch(() => {});
+    }).then(() => navigate('/judgment-library')).catch(() => {});
   };
 
   const handleShare = () => {
@@ -356,8 +354,7 @@ export default function JudgmentDetail() {
     if (!judgment) return;
     const next = !pinned;
     setPinned(next);
-    judgmentsRepository.update(judgment.id, { pinned: next })
-      .catch(() => { setPinned(!next); });
+    judgmentLogic.update(judgment.id, { pinned: next }).catch(() => { setPinned(!next); });
   };
 
   const handleCopyCitation = () => {
@@ -394,9 +391,7 @@ export default function JudgmentDetail() {
     if (!judgment) return;
     const delId = judgment.id;
     setConfirmDelete(false);
-    judgmentsRepository.delete(delId)
-      .then(() => navigate('/judgment-library'))
-      .catch(() => {});
+    judgmentLogic.remove(delId).then(() => navigate('/judgment-library')).catch(() => {});
   };
 
   const classification = useMemo(() => {
@@ -1159,7 +1154,7 @@ export default function JudgmentDetail() {
         onClose={() => setShowEditModal(false)}
         onSaved={() => {
           setShowEditModal(false);
-          judgmentsRepository.getById(id).then((d) => d && setJudgment(d)).catch(() => {});
+          judgmentLogic.getById(id).then((d) => d && setJudgment(d)).catch(() => {});
         }}
       />
     </div>

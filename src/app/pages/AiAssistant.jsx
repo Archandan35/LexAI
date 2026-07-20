@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
-import { aiService } from '@/services/aiService.js';
+import { aiLogic } from '@/logic/aiLogic.js';
 
 export default function AiAssistant() {
   const [messages, setMessages] = useState([]);
@@ -16,7 +16,8 @@ export default function AiAssistant() {
     setInput('');
     setThinking(true);
     try {
-      const reply = await aiService.ask(userMsg.content);
+      const result = await aiLogic.ask(userMsg.content);
+      const reply = result?.ok ? result.value : (result?.error || 'No response.');
       setMessages((prev) => [...prev, { role: 'assistant', content: reply || 'No response.', timestamp: new Date().toISOString() }]);
     } catch {
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, an error occurred.', timestamp: new Date().toISOString() }]);

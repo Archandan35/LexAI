@@ -5,20 +5,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager.jsx';
-import { judgmentsRepository } from '@/data-layer/repositories/judgmentsRepository.js';
-import { courtsRepository } from '@/data-layer/repositories/courtsRepository.js';
-import { benchTypesRepository } from '@/data-layer/repositories/benchTypesRepository.js';
-import { judgesRepository } from '@/data-layer/repositories/judgesRepository.js';
-import { caseTypesRepository } from '@/data-layer/repositories/caseTypesRepository.js';
-import { jurisdictionsRepository } from '@/data-layer/repositories/jurisdictionsRepository.js';
-import { caseStagesRepository } from '@/data-layer/repositories/caseStagesRepository.js';
-import { caseStatusesRepository } from '@/data-layer/repositories/caseStatusesRepository.js';
-import { prioritiesRepository } from '@/data-layer/repositories/prioritiesRepository.js';
-import { partyTypesRepository } from '@/data-layer/repositories/partyTypesRepository.js';
-import { areaOfLawRepository } from '@/data-layer/repositories/areaOfLawRepository.js';
-import { typeOfProceedingRepository } from '@/data-layer/repositories/typeOfProceedingRepository.js';
-import { natureOfDisputeRepository } from '@/data-layer/repositories/natureOfDisputeRepository.js';
-import { actsRepository } from '@/data-layer/repositories/actsRepository.js';
+import { judgmentLogic } from '@/logic/judgmentLogic.js';
 import { areaOfLawLogic } from '@/logic/areaOfLawLogic.js';
 import { typeOfProceedingLogic } from '@/logic/typeOfProceedingLogic.js';
 import { natureOfDisputeLogic } from '@/logic/natureOfDisputeLogic.js';
@@ -461,19 +448,19 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
   const [showTypeOfProceedingCrud, setShowTypeOfProceedingCrud] = useState(false);
   const [showNatureOfDisputeCrud, setShowNatureOfDisputeCrud] = useState(false);
   const refreshAll = useMemo(() => ({
-    courts: () => courtsRepository.getAll({ status: 'Active' }).then(setCourts).catch(() => {}),
-    benchTypes: () => benchTypesRepository.getAll({ status: 'Active' }).then(setBenchTypes).catch(() => {}),
-    judges: () => judgesRepository.getAll({ status: 'Active' }).then(setJudges).catch(() => {}),
-    caseTypes: () => caseTypesRepository.getAll({ status: 'Active' }).then(setCaseTypes).catch(() => {}),
-    jurisdictions: () => jurisdictionsRepository.getAll({ status: 'Active' }).then(setJurisdictions).catch(() => {}),
-    caseStages: () => caseStagesRepository.getAll({ status: 'Active' }).then(setCaseStages).catch(() => {}),
-    caseStatuses: () => caseStatusesRepository.getAll({ status: 'Active' }).then(setCaseStatuses).catch(() => {}),
-    priorities: () => prioritiesRepository.getAll({ status: 'Active' }).then(setPriorities).catch(() => {}),
-    partyTypes: () => partyTypesRepository.getAll({ status: 'Active' }).then(setPartyTypes).catch(() => {}),
-    areaOfLaws: () => areaOfLawRepository.getAll({ status: 'Active' }).then(setAreaOfLaws).catch(() => {}),
-    typeOfProceedings: () => typeOfProceedingRepository.getAll({ status: 'Active' }).then(setTypeOfProceedings).catch(() => {}),
-    natureOfDisputes: () => natureOfDisputeRepository.getAll({ status: 'Active' }).then(setNatureOfDisputes).catch(() => {}),
-    allActs: () => actsRepository.getAll({ status: 'Active' }).then(setAllActs).catch(() => {}),
+    courts: () => courtsLogic.list().then((r) => setCourts(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    benchTypes: () => benchTypeLogic.list().then((r) => setBenchTypes(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    judges: () => judgeLogic.list().then((r) => setJudges(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    caseTypes: () => caseTypeLogic.list().then((r) => setCaseTypes(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    jurisdictions: () => jurisdictionLogic.list().then((r) => setJurisdictions(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    caseStages: () => caseStageLogic.list().then((r) => setCaseStages(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    caseStatuses: () => caseStatusLogic.list().then((r) => setCaseStatuses(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    priorities: () => priorityLogic.list().then((r) => setPriorities(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    partyTypes: () => partyTypeLogic.list().then((r) => setPartyTypes(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    areaOfLaws: () => areaOfLawLogic.list().then((r) => setAreaOfLaws(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    typeOfProceedings: () => typeOfProceedingLogic.list().then((r) => setTypeOfProceedings(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    natureOfDisputes: () => natureOfDisputeLogic.list().then((r) => setNatureOfDisputes(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
+    allActs: () => actLogic.list().then((r) => setAllActs(Array.isArray(r) ? r.filter((x) => x.status === 'Active') : [])).catch(() => {}),
   }), []);
 
   useEffect(() => {
@@ -494,20 +481,20 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
     setForm(merged);
     setTab('general');
     Promise.all([
-      judgmentsRepository.getAll().catch(() => []),
-      courtsRepository.getAll({ status: 'Active' }).catch(() => []),
-      benchTypesRepository.getAll({ status: 'Active' }).catch(() => []),
-      judgesRepository.getAll({ status: 'Active' }).catch(() => []),
-      caseTypesRepository.getAll({ status: 'Active' }).catch(() => []),
-      jurisdictionsRepository.getAll({ status: 'Active' }).catch(() => []),
-      caseStagesRepository.getAll({ status: 'Active' }).catch(() => []),
-      caseStatusesRepository.getAll({ status: 'Active' }).catch(() => []),
-      prioritiesRepository.getAll({ status: 'Active' }).catch(() => []),
-      partyTypesRepository.getAll({ status: 'Active' }).catch(() => []),
-      areaOfLawRepository.getAll({ status: 'Active' }).catch(() => []),
-      typeOfProceedingRepository.getAll({ status: 'Active' }).catch(() => []),
-      natureOfDisputeRepository.getAll({ status: 'Active' }).catch(() => []),
-      actsRepository.getAll({ status: 'Active' }).catch(() => []),
+      judgmentLogic.list().then((r) => Array.isArray(r) ? r : []).catch(() => []),
+      courtsLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      benchTypeLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      judgeLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      caseTypeLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      jurisdictionLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      caseStageLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      caseStatusLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      priorityLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      partyTypeLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      areaOfLawLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      typeOfProceedingLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      natureOfDisputeLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
+      actLogic.list().then((r) => Array.isArray(r) ? r.filter((x) => x.status === 'Active') : []).catch(() => []),
     ]).then(([j, c, bt, jg, ct, jr, cs, cst, pr, pt, al, top, nod, act]) => {
       setExistingJudgments(j);
       setCourts(c);
@@ -614,9 +601,9 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       if (!Array.isArray(entry.applicableStages)) entry.applicableStages = [];
       let result;
       if (editing && editing.id) {
-        result = await judgmentsRepository.update(editing.id, entry);
+        result = await judgmentLogic.update(editing.id, entry).then((r) => r?.ok ? r.value : null);
       } else {
-        result = await judgmentsRepository.create({ ...entry, createdAt: new Date().toISOString() });
+        result = await judgmentLogic.create({ ...entry, createdAt: new Date().toISOString() }).then((r) => r?.ok ? r.value : null);
       }
       if (!result) throw new Error('Save returned no record');
       onSaved?.(result);
