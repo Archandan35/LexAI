@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_GROUPS } from '@/routes/navigation.js';
 import { config } from '@/config/config.js';
@@ -63,6 +63,26 @@ function SubmenuGroup({ item, collapsed, canViewModule }) {
   );
 }
 
+// Pair each heading with the group that immediately follows it so the heading
+// can be hidden when its group has no visible items.
+function buildSections() {
+  const sections = [];
+  for (let i = 0; i < NAV_GROUPS.length; i += 1) {
+    const entry = NAV_GROUPS[i];
+    if (entry.type === 'heading') {
+      const next = NAV_GROUPS[i + 1];
+      if (next && next.type !== 'heading') {
+        sections.push({ heading: entry.label, group: next });
+        i += 1; // consume the group we just paired
+      }
+      // A heading without a following group is dropped entirely.
+    } else {
+      sections.push({ heading: null, group: entry });
+    }
+  }
+  return sections;
+}
+
 export default function Sidebar({ collapsed, mobileOpen }) {
   const { canViewModule } = useAuth();
   const { settings } = useSettings();
@@ -84,26 +104,30 @@ export default function Sidebar({ collapsed, mobileOpen }) {
       </div>
 
       <nav className="sidebar__nav">
-        {NAV_GROUPS.map((entry, i) => {
-          if (entry.type === 'heading') {
-            return <div key={i} className="nav-heading">{entry.label}</div>;
-          }
+        {buildSections().map((section, i) => {
+          const { heading, group } = section;
+          if (!group) return null;
 
-          const visibleItems = (entry.items || []).filter((item) => {
+          const visibleItems = (group.items || []).filter((item) => {
             if (item.children) {
               return item.children.some((c) => !c.module || canViewModule(c.module));
             }
             return !item.module || canViewModule(item.module);
           });
+
+          // Empty groups (and their parent heading) must never be rendered.
           if (visibleItems.length === 0) return null;
 
           return (
-            <div className="nav-group" key={i}>
-              {entry.label && <div className="nav-group__label">{entry.label}</div>}
-              {visibleItems.map((item, j) => (
-                <SidebarItem key={j} item={item} collapsed={collapsed} />
-              ))}
-            </div>
+            <Fragment key={i}>
+              {heading && <div className="nav-heading">{heading}</div>}
+              <div className="nav-group">
+                {group.label && <div className="nav-group__label">{group.label}</div>}
+                {visibleItems.map((item, j) => (
+                  <SidebarItem key={j} item={item} collapsed={collapsed} />
+                ))}
+              </div>
+            </Fragment>
           );
         })}
       </nav>

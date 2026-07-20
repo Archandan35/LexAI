@@ -124,13 +124,13 @@ export default function AppRoutes() {
         {/* ── Drafting Center ── */}
         <Route path="/drafting" element={G('drafting', <DraftingStudio />)} />
         <Route path="/drafting/templates" element={G('drafting', <TemplatesLibrary />)} />
-        <Route path="/drafting/legal-notices" element={G('drafting', <LegalNotices />)} />
+        <Route path="/drafting/legal-notices" element={G('legalNotices', <LegalNotices />)} />
         <Route path="/drafting/version-control" element={G('drafting', <VersionControl />)} />
         <Route path="/drafting/archive" element={G('drafting', <DocumentArchive />)} />
 
         {/* ── Document Center ── */}
         <Route path="/documents/review" element={G('documents', <DocumentReview />)} />
-        <Route path="/documents" element={G('caseManage', <CaseDocuments />)} />
+        <Route path="/documents" element={G('documents', <CaseDocuments />)} />
 
         {/* ── Research & Analysis ── */}
         <Route path="/research/citations" element={G('citations', <CitationSearch />)} />
@@ -141,9 +141,9 @@ export default function AppRoutes() {
         <Route path="/research/evidence-gap" element={G('evidence', <EvidenceGap />)} />
 
         {/* ── Knowledge Library ── */}
-        <Route path="/research/act-library" element={G('research', <ActLibrary />)} />
-        <Route path="/judgment-library" element={G('research', <JudgmentLibrary />)} />
-        <Route path="/judgment-library/:id" element={G('research', <JudgmentDetail />)} />
+        <Route path="/research/act-library" element={G('actLibrary', <ActLibrary />)} />
+        <Route path="/judgment-library" element={G('judgmentLibrary', <JudgmentLibrary />)} />
+        <Route path="/judgment-library/:id" element={G('judgmentLibrary', <JudgmentDetail />)} />
         <Route path="/research" element={G('research', <LegalResearch />)} />
 
         {/* ── Court Management ── */}
@@ -161,7 +161,7 @@ export default function AppRoutes() {
         <Route path="/admin/users" element={G('users', <UserManagement />)} />
         <Route path="/admin/users/:id" element={G('users', <UserDetails />)} />
         <Route path="/admin/roles-permissions" element={<Navigate to="/admin/roles" replace />} />
-        <Route path="/admin/security" element={G('settings', <SecuritySettings />)} />
+        <Route path="/admin/security" element={G('security', <SecuritySettings />)} />
         <Route path="/admin/env-api" element={G('env', <EnvApiManager />)} />
         <Route path="/admin/storage" element={G('storage', <StorageSettings />)} />
         <Route path="/admin/setup-wizard" element={G('setupWizard', <SetupWizard />)} />
@@ -211,8 +211,8 @@ export default function AppRoutes() {
         <Route path="/case-manage" element={<Navigate to="/cases" replace />} />
         <Route path="/hearing-notes" element={<Navigate to="/cases/hearings" replace />} />
         <Route path="/timeline" element={<Navigate to="/cases/case-timeline" replace />} />
-        <Route path="/judgment-library" element={G('research', <JudgmentLibrary />)} />
-        <Route path="/judgment-library/:id" element={G('research', <JudgmentDetail />)} />
+        <Route path="/judgment-library" element={G('judgmentLibrary', <JudgmentLibrary />)} />
+        <Route path="/judgment-library/:id" element={G('judgmentLibrary', <JudgmentDetail />)} />
         <Route path="/citations" element={<Navigate to="/research/citations" replace />} />
         <Route path="/verify" element={<Navigate to="/research/citation-verify" replace />} />
         <Route path="/analysis" element={<Navigate to="/research/case-analysis" replace />} />

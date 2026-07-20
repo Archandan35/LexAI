@@ -43,7 +43,7 @@ export const NAV_GROUPS = [
   {
     label: '',
     items: [
-      { to: '/documents', label: 'Case Documents', icon: 'folder', end: true, module: 'caseManage' },
+      { to: '/documents', label: 'Case Documents', icon: 'folder', end: true, module: 'documents' },
       { to: '/documents/review', label: 'Document Review', icon: 'scan', module: 'documents' },
     ],
   },
@@ -51,8 +51,8 @@ export const NAV_GROUPS = [
   {
     label: '',
     items: [
-      { to: '/judgment-library', label: 'Judgment Library', icon: 'book', module: 'research' },
-      { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'research' },
+      { to: '/judgment-library', label: 'Judgment Library', icon: 'book', module: 'judgmentLibrary' },
+      { to: '/research/act-library', label: 'Act Library', icon: 'book', module: 'actLibrary' },
     ],
   },
   { type: 'heading', label: 'Drafting Center' },
@@ -61,7 +61,7 @@ export const NAV_GROUPS = [
     items: [
       { to: '/drafting', label: 'Drafting Studio', icon: 'pen', end: true, module: 'drafting' },
       { to: '/drafting/templates', label: 'Templates Library', icon: 'copy', module: 'drafting' },
-      { to: '/drafting/legal-notices', label: 'Legal Notices', icon: 'doc', module: 'drafting' },
+      { to: '/drafting/legal-notices', label: 'Legal Notices', icon: 'doc', module: 'legalNotices' },
       { to: '/drafting/version-control', label: 'Version Control', icon: 'history', module: 'drafting' },
       { to: '/drafting/archive', label: 'Document Archive', icon: 'folder', module: 'drafting' },
     ],
@@ -122,7 +122,7 @@ export const NAV_GROUPS = [
       {
         label: 'System Config', icon: 'gear',
         children: [
-          { to: '/admin/security', label: 'Security Settings', icon: 'shield', module: 'settings' },
+          { to: '/admin/security', label: 'Security Settings', icon: 'shield', module: 'security' },
           { to: '/admin/env-api', label: 'Env & API Manager', icon: 'globe', module: 'env' },
           { to: '/admin/storage', label: 'Storage Settings', icon: 'folder', module: 'storage' },
           { to: '/admin/permission-manager', label: 'Permission Manager', icon: 'lock', module: 'permissions' },
