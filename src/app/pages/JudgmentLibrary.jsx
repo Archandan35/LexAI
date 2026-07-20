@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -454,7 +455,7 @@ export default function JudgmentLibrary() {
               <p>Browse, search, and manage archived judgments and case precedents.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" className="jl-add-btn" onClick={() => setShowAddModal(true)}>Add Judgment</Button>
+            <PermissionGate module="judgmentLibrary" action="create"><Button icon="plus" className="jl-add-btn" onClick={() => setShowAddModal(true)}>Add Judgment</Button></PermissionGate>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -544,7 +545,7 @@ export default function JudgmentLibrary() {
               <h2>Case Precedents</h2>
               <p>Browse, search, and manage archived judgments.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={() => setShowAddModal(true)}>Add Judgment</Button>
+              <PermissionGate module="judgmentLibrary" action="create"><Button icon="plus" onClick={() => setShowAddModal(true)}>Add Judgment</Button></PermissionGate>
             </div>
             <Icon name="book" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -584,8 +585,8 @@ export default function JudgmentLibrary() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        <Button variant="ghost" icon="download" onClick={() => fileInputRef.current && fileInputRef.current.click()}>Import</Button>
-        <Button variant="ghost" icon="upload" onClick={exportCsv}>Export</Button>
+        <PermissionGate module="judgmentLibrary" action="import"><Button variant="ghost" icon="download" onClick={() => fileInputRef.current && fileInputRef.current.click()}>Import</Button></PermissionGate>
+        <PermissionGate module="judgmentLibrary" action="export"><Button variant="ghost" icon="upload" onClick={exportCsv}>Export</Button></PermissionGate>
         <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenFilterPopup}>
           {Object.values(filters).some((v) => v.length > 0) ? `Filter (${Object.values(filters).reduce((s, v) => s + v.length, 0)})` : 'Filter'}
         </Button>
@@ -685,9 +686,9 @@ export default function JudgmentLibrary() {
                         <td data-label="Actions">
                           <div className="jl-actions">
                             <button title="View" onClick={() => navigate(`/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
-                            <button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button>
-                            <button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button>
-                            <button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button>
+                            <PermissionGate module="judgmentLibrary" action="edit"><button title="Edit" onClick={() => { setEditing(j); setShowAddModal(true); }}><Icon name="pen" size={15} /></button></PermissionGate>
+                            <PermissionGate module="judgmentLibrary" action="duplicate"><button title="Duplicate" onClick={() => handleDuplicate(j)}><Icon name="copy" size={15} /></button></PermissionGate>
+                            <PermissionGate module="judgmentLibrary" action="delete"><button title="Delete" onClick={() => handleDelete(j)}><Icon name="trash" size={15} /></button></PermissionGate>
                           </div>
                         </td>
                       </tr>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -59,7 +60,7 @@ export default function HearingNotes() {
             <p>Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points — ready for the next date.</p>
             <div className="bench-types__hero-accent" />
           </div>
-          {notes && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportNotes}>Export PDF</Button>}
+          <PermissionGate module="hearingNotes" action="download">{notes && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportNotes}>Export PDF</Button>}</PermissionGate>
           <Icon name="notes" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       ) : (
@@ -69,7 +70,7 @@ export default function HearingNotes() {
             <h2>Hearing Notes</h2>
             <p>Generate structured hearing notes — facts, issues, evidence, verified citations and oral submission points.</p>
             <div className="bench-types__hero-accent" />
-            {notes && <Button variant="ghost" icon="download" onClick={exportNotes}>Export PDF</Button>}
+            <PermissionGate module="hearingNotes" action="download">{notes && <Button variant="ghost" icon="download" onClick={exportNotes}>Export PDF</Button>}</PermissionGate>
           </div>
           <Icon name="notes" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>

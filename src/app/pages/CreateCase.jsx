@@ -28,6 +28,7 @@ import { judgeLogic } from '@/logic/judgeLogic.js';
 import { caseFolderLogic } from '@/logic/caseFolderLogic.js';
 import Button from '@/components/Button.jsx';
 import DateInput from '@/components/DateInput.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const INITIAL_FORM = {
   case_number: '', case_year: '', case_type: '',
@@ -604,12 +605,12 @@ export default function CreateCase() {
           <Icon name="close" size={15} /> Cancel
         </button>
         <div className="cc-footer__spacer" />
-        <button className="btn btn--ghost" onClick={() => submitCase(true)} disabled={saving}>
+        <PermissionGate module="manageCase" action="create"><button className="btn btn--ghost" onClick={() => submitCase(true)} disabled={saving}>
           <Icon name="save" size={15} /> Save Draft
-        </button>
-        <button className="btn btn--primary" onClick={() => submitCase(false)} disabled={saving}>
+        </button></PermissionGate>
+        <PermissionGate module="manageCase" action="create"><button className="btn btn--primary" onClick={() => submitCase(false)} disabled={saving}>
           <Icon name="check" size={15} /> {saving ? 'Creating...' : 'Create Cases'}
-        </button>
+        </button></PermissionGate>
       </div>
     </div>
   );

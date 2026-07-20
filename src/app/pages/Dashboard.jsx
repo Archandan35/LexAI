@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '@/hooks/useDashboard.js';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Icon from '@/components/Icon.jsx';
 import Badge from '@/components/Badge.jsx';
 import Spinner from '@/components/Spinner.jsx';
@@ -142,9 +143,9 @@ export default function Dashboard() {
             <Icon name="calendar" size={15} />
             <span>{formatDate(new Date())}</span>
           </div>
-          <button className="btn btn--primary" onClick={() => nav('/cases/create')}>
+          <PermissionGate module="dashboard" action="create"><button className="btn btn--primary" onClick={() => nav('/cases/create')}>
             <Icon name="plus" size={15} /> Add New
-          </button>
+          </button></PermissionGate>
         </div>
       </div>
 
@@ -489,10 +490,10 @@ export default function Dashboard() {
             <Icon name="calendar" size={17} />
             {formatDate(new Date())}
           </div>
-          <button className="lexm-add-btn" onClick={() => nav('/cases/create')}>
+          <PermissionGate module="dashboard" action="create"><button className="lexm-add-btn" onClick={() => nav('/cases/create')}>
             <Icon name="plus" size={15} />
             Add New
-          </button>
+          </button></PermissionGate>
         </div>
 
         <div className="lexm-stat-grid">

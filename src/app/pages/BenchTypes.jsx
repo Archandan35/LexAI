@@ -11,6 +11,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const ENTITY_PREFIX = 'BENT';
 
@@ -438,15 +439,20 @@ export default function BenchTypes() {
       <div className="bench-types__toolbar">
         <div className="bench-types__toolbar-left">
           {ACTIONS.map(a => (
-            <Button
+            <PermissionGate
               key={a.key}
-              icon={a.icon}
-              variant={activeAction === a.key ? a.variant : 'ghost'}
-              onClick={() => activate(a.key)}
-              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              module="courtTypes"
+              action={a.key === 'add' ? 'create' : a.key === 'edit' ? 'edit' : a.key === 'delete' ? 'delete' : 'import'}
             >
-              {a.label}
-            </Button>
+              <Button
+                icon={a.icon}
+                variant={activeAction === a.key ? a.variant : 'ghost'}
+                onClick={() => activate(a.key)}
+                className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              >
+                {a.label}
+              </Button>
+            </PermissionGate>
           ))}
         </div>
         <div className="bench-types__toolbar-right">
@@ -455,9 +461,11 @@ export default function BenchTypes() {
           </button>
         </div>
       </div>
-      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
-        <Icon name="upload" size={16} /> Import
-      </button>
+      <PermissionGate module="courtTypes" action="import">
+        <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={16} /> Import
+        </button>
+      </PermissionGate>
 
       {activeAction && (
         <Card className="bench-types__form">

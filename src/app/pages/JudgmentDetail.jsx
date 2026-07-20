@@ -21,6 +21,7 @@ import { provisionsLogic } from '@/logic/provisionsLogic.js';
 import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import RelatedJudgmentCard from '@/components/RelatedJudgmentCard.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -503,9 +504,9 @@ export default function JudgmentDetail() {
       </button>
 
       <div className="jd-toolbar">
-        <button type="button" className="jd-tool-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={16} /> Edit</button>
+        <PermissionGate module="judgmentLibrary" action="edit"><button type="button" className="jd-tool-btn" onClick={() => setShowEditModal(true)}><Icon name="pen" size={16} /> Edit</button></PermissionGate>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={16} /> Duplicate</button>
+        <PermissionGate module="judgmentLibrary" action="duplicate"><button type="button" className="jd-tool-btn" title="Duplicate" onClick={handleDuplicate}><Icon name="copy" size={16} /> Duplicate</button></PermissionGate>
         <div className="jd-tool-divider" />
         <button
           type="button"
@@ -518,15 +519,15 @@ export default function JudgmentDetail() {
         <div className="jd-tool-divider" />
         <button type="button" className={`jd-tool-btn${pinned ? ' jd-tool-btn--active' : ''}`} title="Pin" onClick={handlePin}><Icon name="pin" size={16} /> Pin</button>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" title="Share" onClick={handleShare}><Icon name="share" size={16} /> Share</button>
+        <PermissionGate module="judgmentLibrary" action="share"><button type="button" className="jd-tool-btn" title="Share" onClick={handleShare}><Icon name="share" size={16} /> Share</button></PermissionGate>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" title="Print" onClick={() => window.print()}><Icon name="print" size={16} /> Print</button>
+        <PermissionGate module="judgmentLibrary" action="print"><button type="button" className="jd-tool-btn" title="Print" onClick={() => window.print()}><Icon name="print" size={16} /> Print</button></PermissionGate>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn" title="Download" onClick={handleShare}><Icon name="download" size={16} /> Download</button>
+        <PermissionGate module="judgmentLibrary" action="download"><button type="button" className="jd-tool-btn" title="Download" onClick={handleShare}><Icon name="download" size={16} /> Download</button></PermissionGate>
         <div className="jd-tool-divider" />
         <button type="button" className={`jd-tool-btn${copied ? ' jd-tool-btn--active' : ''}`} onClick={handleCopyCitation}><Icon name={copied ? 'check' : 'doclines'} size={16} /> {copied ? 'Copied!' : 'Copy Citation'}</button>
         <div className="jd-tool-divider" />
-        <button type="button" className="jd-tool-btn jd-tool-btn--danger" title="Delete" onClick={handleDelete}><Icon name="trash" size={16} /> Delete</button>
+        <PermissionGate module="judgmentLibrary" action="delete"><button type="button" className="jd-tool-btn jd-tool-btn--danger" title="Delete" onClick={handleDelete}><Icon name="trash" size={16} /> Delete</button></PermissionGate>
         <div className="jd-tool-divider" />
         <button type="button" className="jd-tool-btn" title="More"><Icon name="more-horizontal" size={16} /> More</button>
       </div>

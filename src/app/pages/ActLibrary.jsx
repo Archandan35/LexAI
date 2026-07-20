@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -433,15 +434,20 @@ export default function ActLibrary() {
       <div className="bench-types__toolbar">
         <div className="bench-types__toolbar-left">
           {ACTIONS.map(a => (
-            <Button
+            <PermissionGate
               key={a.key}
-              icon={a.icon}
-              variant={activeAction === a.key ? a.variant : 'ghost'}
-              onClick={() => activate(a.key)}
-              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              module="actLibrary"
+              action={a.key === 'add' ? 'create' : a.key === 'edit' ? 'edit' : a.key === 'delete' ? 'delete' : 'import'}
             >
-              {a.label}
-            </Button>
+              <Button
+                icon={a.icon}
+                variant={activeAction === a.key ? a.variant : 'ghost'}
+                onClick={() => activate(a.key)}
+                className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              >
+                {a.label}
+              </Button>
+            </PermissionGate>
           ))}
         </div>
         <div className="bench-types__toolbar-right">
@@ -456,9 +462,11 @@ export default function ActLibrary() {
         </div>
       </div>
 
-      <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
-        <Icon name="upload" size={16} /> Import
-      </button>
+      <PermissionGate module="actLibrary" action="import">
+        <button className="bench-types__import-mobile bench-types__mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={16} /> Import
+        </button>
+      </PermissionGate>
 
       {/* ── Action forms ── */}
       {activeAction && (
@@ -664,12 +672,12 @@ export default function ActLibrary() {
           </div>
           <div className="bench-types__form-footer">
             <Button variant="ghost" onClick={reset} disabled={busy}>Cancel</Button>
-            {activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}
-            {activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}
-            {activeAction === 'edit' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}
-            {activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}
-            {activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}
-            {activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}
+            <PermissionGate module="actLibrary" action="create">{activeAction === 'add' && subMode === 'single' && <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>}</PermissionGate>
+            <PermissionGate module="actLibrary" action="create">{activeAction === 'add' && subMode === 'bulk' && <Button icon="users" onClick={doBulkAdd} disabled={busy}>{busy ? 'Adding…' : 'Add All'}</Button>}</PermissionGate>
+            <PermissionGate module="actLibrary" action="edit">{activeAction === 'edit' && <Button icon="check" onClick={doEdit} disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</Button>}</PermissionGate>
+            <PermissionGate module="actLibrary" action="delete">{activeAction === 'delete' && subMode === 'single' && <Button variant="danger" icon="trash" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete'}</Button>}</PermissionGate>
+            <PermissionGate module="actLibrary" action="bulkDelete">{activeAction === 'delete' && subMode === 'bulk' && <Button variant="danger" icon="trash" onClick={doBulkDelete} disabled={busy}>{busy ? 'Deleting…' : 'Delete All Matched'}</Button>}</PermissionGate>
+            <PermissionGate module="actLibrary" action="import">{activeAction === 'import' && <Button icon="upload" onClick={doImport} disabled={!importFile || busy}>Import</Button>}</PermissionGate>
           </div>
         </Card>
       )}
@@ -769,9 +777,9 @@ export default function ActLibrary() {
                     <td>
                       <div className="cmp-actions">
                         <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => setViewItem(item)}><Icon name="eye" size={15} /></button>
-                        <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button>
-                        <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button>
-                        <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button>
+                        <PermissionGate module="actLibrary" action="edit"><button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" size={15} /></button></PermissionGate>
+                        <PermissionGate module="actLibrary" action="create"><button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" size={15} /></button></PermissionGate>
+                        <PermissionGate module="actLibrary" action="delete"><button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" size={15} /></button></PermissionGate>
                       </div>
                     </td>
                   </tr>
@@ -826,18 +834,18 @@ export default function ActLibrary() {
                     <span className="bench-types__mobile-action-icon"><Icon name="eye" size={15} /></span>
                     <span className="bench-types__mobile-action-label">View</span>
                   </button>
-                  <button className="bench-types__mobile-action" title="Edit" onClick={() => startEdit(item)}>
+                  <PermissionGate module="actLibrary" action="edit"><button className="bench-types__mobile-action" title="Edit" onClick={() => startEdit(item)}>
                     <span className="bench-types__mobile-action-icon"><Icon name="edit" size={15} /></span>
                     <span className="bench-types__mobile-action-label">Edit</span>
-                  </button>
-                  <button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}>
+                  </button></PermissionGate>
+                  <PermissionGate module="actLibrary" action="create"><button className="bench-types__mobile-action bench-types__mobile-action--copy" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}>
                     <span className="bench-types__mobile-action-icon"><Icon name="copy" size={15} /></span>
                     <span className="bench-types__mobile-action-label">Duplicate</span>
-                  </button>
-                  <button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
+                  </button></PermissionGate>
+                  <PermissionGate module="actLibrary" action="delete"><button className="bench-types__mobile-action bench-types__mobile-action--del" title="Delete" onClick={() => confirmDeleteItem(item)}>
                     <span className="bench-types__mobile-action-icon"><Icon name="trash" size={15} /></span>
                     <span className="bench-types__mobile-action-label">Delete</span>
-                  </button>
+                  </button></PermissionGate>
                 </div>
               </div>
             ))}
@@ -880,18 +888,18 @@ export default function ActLibrary() {
                       <button className="cmp-act-btn" title="View" onClick={() => setViewItem(item)}><Icon name="eye" /></button>
                       <span className="cmp-act-label">View</span>
                     </div>
-                    <div className="bench-types__grid-card-action-item">
+                    <PermissionGate module="actLibrary" action="edit"><div className="bench-types__grid-card-action-item">
                       <button className="cmp-act-btn" title="Edit" onClick={() => startEdit(item)}><Icon name="edit" /></button>
                       <span className="cmp-act-label">Edit</span>
-                    </div>
-                    <div className="bench-types__grid-card-action-item">
+                    </div></PermissionGate>
+                    <PermissionGate module="actLibrary" action="create"><div className="bench-types__grid-card-action-item">
                       <button className="cmp-act-btn" title="Duplicate" onClick={() => { startDuplicate(item); setActiveAction('add'); }}><Icon name="copy" /></button>
                       <span className="cmp-act-label">Copy</span>
-                    </div>
-                    <div className="bench-types__grid-card-action-item">
+                    </div></PermissionGate>
+                    <PermissionGate module="actLibrary" action="delete"><div className="bench-types__grid-card-action-item">
                       <button className="cmp-act-btn" title="Delete" onClick={() => confirmDeleteItem(item)}><Icon name="trash" /></button>
                       <span className="cmp-act-label">Delete</span>
-                    </div>
+                    </div></PermissionGate>
                   </div>
                 </div>
               </div>
@@ -1062,7 +1070,7 @@ export default function ActLibrary() {
       <Modal open={!!dupTarget} title="Duplicate Act" onClose={() => setDupTarget(null)} size="lg" className="modal--sixty"
         footer={<div className="cmp-modal-footer">
           <Button variant="ghost" onClick={() => setDupTarget(null)} disabled={busy}>Cancel</Button>
-          <Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button>
+          <PermissionGate module="actLibrary" action="create"><Button icon="plus" onClick={doAdd} disabled={busy}>{busy ? 'Adding…' : 'Add Act'}</Button></PermissionGate>
         </div>}>
         <div className="bench-types__form-grid">
           <div className="bench-types__field bench-types__field--full">

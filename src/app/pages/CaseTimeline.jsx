@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Card from '@/components/Card.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -70,7 +71,7 @@ export default function CaseTimeline() {
             <p>Auto-create a chronology from case documents. OCR extracts text, then dates are mined and ordered into an evidentiary timeline.</p>
             <div className="bench-types__hero-accent" />
           </div>
-          {events?.length > 0 && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportTimeline}>Export</Button>}
+          <PermissionGate module="timeline" action="export">{events?.length > 0 && <Button variant="ghost" icon="download" className="ml-auto" onClick={exportTimeline}>Export</Button>}</PermissionGate>
           <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
       ) : (
@@ -80,7 +81,7 @@ export default function CaseTimeline() {
             <h2>Case Timeline</h2>
             <p>Auto-create a chronology from case documents.</p>
             <div className="bench-types__hero-accent" />
-            {events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}
+            <PermissionGate module="timeline" action="export">{events?.length > 0 && <Button variant="ghost" icon="download" onClick={exportTimeline}>Export</Button>}</PermissionGate>
           </div>
           <Icon name="clock" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>

@@ -10,6 +10,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const ACTIONS = [
   { key: 'add', label: 'Add', icon: 'plus', variant: 'primary' },
@@ -409,15 +410,20 @@ export default function CaseStages() {
       <div className="cmp-toolbar">
         <div className="cmp-toolbar-left">
           {ACTIONS.map(a => (
-            <Button
+            <PermissionGate
               key={a.key}
-              icon={a.icon}
-              variant={activeAction === a.key ? a.variant : 'ghost'}
-              onClick={() => activate(a.key)}
-              className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              module="courtTypes"
+              action={a.key === 'add' ? 'create' : a.key === 'edit' ? 'edit' : a.key === 'delete' ? 'delete' : 'import'}
             >
-              {a.label}
-            </Button>
+              <Button
+                icon={a.icon}
+                variant={activeAction === a.key ? a.variant : 'ghost'}
+                onClick={() => activate(a.key)}
+                className={a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : ''}
+              >
+                {a.label}
+              </Button>
+            </PermissionGate>
           ))}
         </div>
         <div className="cmp-toolbar-right">
@@ -427,9 +433,11 @@ export default function CaseStages() {
         </div>
       </div>
 
-      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
-        <Icon name="upload" size={14} /> Import CSV
-      </button>
+      <PermissionGate module="courtTypes" action="import">
+        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={14} /> Import CSV
+        </button>
+      </PermissionGate>
 
       {activeAction && (
         <Card className="cmp-form">

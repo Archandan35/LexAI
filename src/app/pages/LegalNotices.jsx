@@ -34,6 +34,7 @@ export default function LegalNotices() {
     <CrudListPage
       title="Legal Notices"
       icon="file-text"
+      module="legalNotices"
       logic={legalNoticeLogic}
       searchFields={['notice_number', 'recipient']}
       emptyText="No notices yet."

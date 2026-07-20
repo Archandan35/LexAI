@@ -11,6 +11,7 @@ import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import PermissionGate from '@/components/PermissionGate.jsx';
 
 const ENTITY_PREFIX = 'CAST';
 
@@ -431,13 +432,18 @@ export default function CaseTypes() {
       <div className="cmp-toolbar">
         <div className="cmp-toolbar-left">
           {ACTIONS.map(a => (
-            <button
+            <PermissionGate
               key={a.key}
-              className={a.variant === 'primary' ? 'btn btn--primary' : a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : 'btn btn--ghost'}
-              onClick={() => activate(a.key)}
+              module="courtTypes"
+              action={a.key === 'add' ? 'create' : a.key === 'edit' ? 'edit' : a.key === 'delete' ? 'delete' : 'import'}
             >
-              <Icon name={a.icon} size={15} /> {a.label}
-            </button>
+              <button
+                className={a.variant === 'primary' ? 'btn btn--primary' : a.variant === 'danger-outline' ? 'cmp-btn-danger-outline' : 'btn btn--ghost'}
+                onClick={() => activate(a.key)}
+              >
+                <Icon name={a.icon} size={15} /> {a.label}
+              </button>
+            </PermissionGate>
           ))}
         </div>
         <div className="cmp-toolbar-right">
@@ -447,9 +453,11 @@ export default function CaseTypes() {
         </div>
       </div>
 
-      <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
-        <Icon name="upload" size={14} /> Import CSV
-      </button>
+      <PermissionGate module="courtTypes" action="import">
+        <button className="cmp-mobile-import cmp-mobile-only" onClick={() => activate('import')}>
+          <Icon name="upload" size={14} /> Import CSV
+        </button>
+      </PermissionGate>
 
       {/* Form Card */}
       {activeAction && (

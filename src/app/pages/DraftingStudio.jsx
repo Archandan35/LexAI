@@ -241,13 +241,13 @@ export default function DraftingStudio() {
                         <button className={`seg__btn ${mode === 'view' ? 'active' : ''}`} onClick={() => setMode('view')} title="Read-only view"><Icon name="eye" size={14} /></button>
                       </div>
                       <Button variant="ghost" size="sm" icon="history" onClick={() => setVerOpen(true)}>Versions ({(active.versions || []).length})</Button>
-                      <Button variant="ghost" size="sm" icon="copy" onClick={onDuplicate}>Duplicate</Button>
-                      <Button variant="ghost" size="sm" icon="download" onClick={() => exportPdf(active.title, content)}>PDF</Button>
-                      <Button variant="ghost" size="sm" icon="download" onClick={() => exportDocx(active.title, content)}>DOCX</Button>
-                      <Button variant="ghost" size="sm" icon="download" onClick={() => exportHtml(active.title, content)}>HTML</Button>
-                      <Button variant="ghost" size="sm" icon="download" onClick={() => exportTxt(active.title, content)}>TXT</Button>
-                      <PermissionGate perm="drafting.export"><Button variant="ghost" size="sm" icon="save" onClick={() => setStoreOpen(true)}>Store in Case</Button></PermissionGate>
-                      <Button size="sm" icon="save" loading={busy} disabled={!dirty || mode === 'view'} onClick={() => doSave(false)}>Save</Button>
+                      <PermissionGate module="drafting" action="duplicate"><Button variant="ghost" size="sm" icon="copy" onClick={onDuplicate}>Duplicate</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportPdf(active.title, content)}>PDF</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportDocx(active.title, content)}>DOCX</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportHtml(active.title, content)}>HTML</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="export"><Button variant="ghost" size="sm" icon="download" onClick={() => exportTxt(active.title, content)}>TXT</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="export"><Button variant="ghost" size="sm" icon="save" onClick={() => setStoreOpen(true)}>Store in Case</Button></PermissionGate>
+                      <PermissionGate module="drafting" action="edit"><Button size="sm" icon="save" loading={busy} disabled={!dirty || mode === 'view'} onClick={() => doSave(false)}>Save</Button></PermissionGate>
                     </div>
                   )}
                 >
@@ -328,7 +328,7 @@ export default function DraftingStudio() {
           <div key={v.id} className="qa-card">
             <div className="flex-row items-center justify-between">
               <div><strong>Version {(active.versions.length - i)}</strong><div className="qa-card__p">{formatDateTime(v.savedAt)}</div></div>
-              <Button size="sm" variant="ghost" icon="history" onClick={() => onRestore(v.id)}>Restore</Button>
+              <PermissionGate module="drafting" action="edit"><Button size="sm" variant="ghost" icon="history" onClick={() => onRestore(v.id)}>Restore</Button></PermissionGate>
             </div>
             <div className="ds__version-preview">{(v.content || '').replace(/<[^>]+>/g, ' ').slice(0, 180)}…</div>
           </div>
@@ -356,7 +356,7 @@ function DraftFolderManager({ open, folders, onClose, onSave }) {
     <Modal open={open} title="Manage Draft Folders" onClose={onClose}>
       <div className="flex-row gap-8 mb-12">
         <Input value={name} placeholder="New folder…" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
-        <Button icon="folderPlus" onClick={add}>Add</Button>
+        <PermissionGate module="drafting" action="create"><Button icon="folderPlus" onClick={add}>Add</Button></PermissionGate>
       </div>
       <div className="table-scroll ds__folder-table-scroll">
         <table className="table">
@@ -364,7 +364,7 @@ function DraftFolderManager({ open, folders, onClose, onSave }) {
             {list.map((f, i) => (
               <tr key={f}>
                 <td><Input value={f} onChange={(e) => rename(i, e.target.value)} /></td>
-                <td className="col-min-50"><button className="iconbtn iconbtn--danger" onClick={() => del(i)}><Icon name="trash" size={14} /></button></td>
+                <td className="col-min-50"><PermissionGate module="drafting" action="delete"><button className="iconbtn iconbtn--danger" onClick={() => del(i)}><Icon name="trash" size={14} /></button></PermissionGate></td>
               </tr>
             ))}
           </tbody>

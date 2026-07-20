@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Toggle from '@/components/Toggle.jsx';
 
 // Light tint of a hex color for event backgrounds.
@@ -204,7 +205,7 @@ export default function Calendar() {
             <div className="bench-types__hero-accent" />
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
-          <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} className="ml-auto">Add Task</Button>
+          <PermissionGate module="calendar" action="create"><Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }} className="ml-auto">Add Task</Button></PermissionGate>
         </div>
       ) : (
         <div className="bench-types__hero mb-20">
@@ -213,7 +214,7 @@ export default function Calendar() {
             <h2>Calendar & Tasks</h2>
             <p>Manage hearings, events, reminders and tasks in one place.</p>
             <div className="bench-types__hero-accent" />
-            <Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }}>Add Task</Button>
+              <PermissionGate module="calendar" action="create"><Button icon="plus" onClick={() => { setTab('tasks'); setTaskAddOpen(true); }}>Add Task</Button></PermissionGate>
           </div>
           <Icon name="calendar" className="bench-types__hero-watermark bench-types__watermark-icon" />
         </div>
@@ -655,13 +656,13 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       <Card noPad className="tasks-toolbar-card">
         <div className="tasks-toolbar">
           <div className="tasks-toolbar-left">
-            <Button icon="plus" onClick={openAdd}>Add Task</Button>
-            <button className="btn btn--outline" onClick={() => setCrud('category')}><Icon name="tag" size={15} /> Categories</button>
-            <button className="btn btn--outline" onClick={() => setCrud('status')}><Icon name="flag" size={15} /> Statuses</button>
+            <PermissionGate module="calendar" action="create"><Button icon="plus" onClick={openAdd}>Add Task</Button></PermissionGate>
+            <PermissionGate module="calendar" action="create"><button className="btn btn--outline" onClick={() => setCrud('category')}><Icon name="tag" size={15} /> Categories</button></PermissionGate>
+            <PermissionGate module="calendar" action="create"><button className="btn btn--outline" onClick={() => setCrud('status')}><Icon name="flag" size={15} /> Statuses</button></PermissionGate>
           </div>
           <div className="tasks-toolbar-right">
-            <button className="btn btn--ghost" onClick={exportCsv}><Icon name="download" size={15} /> Export</button>
-            <button className="btn btn--ghost" onClick={printTasks}><Icon name="print" size={15} /> Print</button>
+            <PermissionGate module="calendar" action="export"><button className="btn btn--ghost" onClick={exportCsv}><Icon name="download" size={15} /> Export</button></PermissionGate>
+            <PermissionGate module="calendar" action="print"><button className="btn btn--ghost" onClick={printTasks}><Icon name="print" size={15} /> Print</button></PermissionGate>
           </div>
         </div>
 
@@ -697,7 +698,7 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
       {selected.length > 0 && (
         <div className="tasks-bulkbar">
           <span>{selected.length} selected</span>
-          <button className="btn btn--danger-outline" onClick={bulkDelete}><Icon name="trash" size={14} /> Delete</button>
+          <PermissionGate module="calendar" action="bulkDelete"><button className="btn btn--danger-outline" onClick={bulkDelete}><Icon name="trash" size={14} /> Delete</button></PermissionGate>
           <button className="btn btn--ghost" onClick={() => setSelected([])}>Clear</button>
         </div>
       )}
@@ -751,19 +752,19 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                         <td>
                           <div className="cmp-actions">
                             <button className="cmp-act-btn cmp-act-btn--view" title="View" onClick={() => openView(t)}><Icon name="eye" size={15} /></button>
-                            <button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => openEdit(t)}><Icon name="edit" size={15} /></button>
-                            <button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => doAction(taskLogic.duplicate(t.id).then((r) => { onChanged(); return r; }))}><Icon name="copy" size={15} /></button>
-                            {t.status !== 'Completed' ? (
+                            <PermissionGate module="calendar" action="edit"><button className="cmp-act-btn cmp-act-btn--edit" title="Edit" onClick={() => openEdit(t)}><Icon name="edit" size={15} /></button></PermissionGate>
+                            <PermissionGate module="calendar" action="duplicate"><button className="cmp-act-btn cmp-act-btn--copy" title="Duplicate" onClick={() => doAction(taskLogic.duplicate(t.id).then((r) => { onChanged(); return r; }))}><Icon name="copy" size={15} /></button></PermissionGate>
+                            <PermissionGate module="calendar" action="edit">{t.status !== 'Completed' ? (
                               <button className="cmp-act-btn cmp-act-btn--toggle-on" title="Mark Complete" onClick={() => doAction(taskLogic.markComplete(t.id))}><Icon name="check-circle" size={15} /></button>
                             ) : (
                               <button className="cmp-act-btn cmp-act-btn--toggle-off" title="Mark Pending" onClick={() => doAction(taskLogic.markPending(t.id))}><Icon name="refresh" size={15} /></button>
-                            )}
-                            {!t.archived ? (
+                            )}</PermissionGate>
+                            <PermissionGate module="calendar" action="archive">{!t.archived ? (
                               <button className="cmp-act-btn" title="Archive" onClick={() => doAction(taskLogic.archive(t.id))}><Icon name="archive" size={15} /></button>
                             ) : (
                               <button className="cmp-act-btn" title="Restore" onClick={() => doAction(taskLogic.restore(t.id))}><Icon name="refresh" size={15} /></button>
-                            )}
-                            <button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })}><Icon name="trash" size={15} /></button>
+                            )}</PermissionGate>
+                            <PermissionGate module="calendar" action="delete"><button className="cmp-act-btn cmp-act-btn--del" title="Delete" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })}><Icon name="trash" size={15} /></button></PermissionGate>
                           </div>
                         </td>
                       </tr>
@@ -857,13 +858,13 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                     <div className="task-card__actions-sep" />
                     <div className="task-card__actions" role="toolbar" aria-label="Task actions">
                       <button className="cv-action-btn" onClick={() => openView(t)} aria-label="View"><Icon name="eye" size={16} /><span>View</span></button>
-                      <button className="cv-action-btn" onClick={() => openEdit(t)} aria-label="Edit"><Icon name="edit" size={16} /><span>Edit</span></button>
-                      <button className="cv-action-btn" onClick={() => doAction(taskLogic.duplicate(t.id).then(() => onChanged()))} aria-label="Duplicate"><Icon name="copy" size={16} /><span>Duplicate</span></button>
-                      {t.status !== 'Completed'
+                      <PermissionGate module="calendar" action="edit"><button className="cv-action-btn" onClick={() => openEdit(t)} aria-label="Edit"><Icon name="edit" size={16} /><span>Edit</span></button></PermissionGate>
+                      <PermissionGate module="calendar" action="duplicate"><button className="cv-action-btn" onClick={() => doAction(taskLogic.duplicate(t.id).then(() => onChanged()))} aria-label="Duplicate"><Icon name="copy" size={16} /><span>Duplicate</span></button></PermissionGate>
+                      <PermissionGate module="calendar" action="edit">{t.status !== 'Completed'
                         ? <button className="cv-action-btn" onClick={() => doAction(taskLogic.markComplete(t.id))} aria-label="Complete"><Icon name="check-circle" size={16} /><span>Done</span></button>
-                        : <button className="cv-action-btn" onClick={() => doAction(taskLogic.markPending(t.id))} aria-label="Pending"><Icon name="refresh" size={16} /><span>Pending</span></button>}
-                      <button className="cv-action-btn" onClick={() => doAction(t.archived ? taskLogic.restore(t.id) : taskLogic.archive(t.id))} aria-label={t.archived ? 'Restore' : 'Archive'}><Icon name={t.archived ? 'refresh' : 'archive'} size={16} /><span>{t.archived ? 'Restore' : 'Archive'}</span></button>
-                      <button className="cv-action-btn cv-action-btn--danger" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })} aria-label="Delete"><Icon name="trash" size={16} /><span>Delete</span></button>
+                        : <button className="cv-action-btn" onClick={() => doAction(taskLogic.markPending(t.id))} aria-label="Pending"><Icon name="refresh" size={16} /><span>Pending</span></button>}</PermissionGate>
+                      <PermissionGate module="calendar" action="archive"><button className="cv-action-btn" onClick={() => doAction(t.archived ? taskLogic.restore(t.id) : taskLogic.archive(t.id))} aria-label={t.archived ? 'Restore' : 'Archive'}><Icon name={t.archived ? 'refresh' : 'archive'} size={16} /><span>{t.archived ? 'Restore' : 'Archive'}</span></button></PermissionGate>
+                      <PermissionGate module="calendar" action="delete"><button className="cv-action-btn cv-action-btn--danger" onClick={() => setConfirm({ title: 'Delete Task', message: `Delete "${t.title}"?`, variant: 'danger', confirmLabel: 'Delete', onConfirm: async () => { setConfirm(null); await taskLogic.remove(t.id); onChanged(); toast.push('Task deleted.', 'success'); }, onCancel: () => setConfirm(null) })} aria-label="Delete"><Icon name="trash" size={16} /><span>Delete</span></button></PermissionGate>
                     </div>
                   </article>
                 );

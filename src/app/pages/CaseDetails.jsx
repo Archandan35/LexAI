@@ -621,7 +621,7 @@ export default function CaseDetails() {
 
               <Card
                 title="History Timeline"
-                actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+                actions={<PermissionGate module="manageCase" action="create"><Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button></PermissionGate>}
               >
                 <HearingHistoryView
                   hearings={hearings}
@@ -640,7 +640,7 @@ export default function CaseDetails() {
           {tab === 'History' && (
             <Card
               title="Hearing History"
-              actions={<Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button>}
+              actions={<PermissionGate module="manageCase" action="create"><Button size="sm" icon="plus" onClick={() => { setEditingHearing(null); setHearingOpen(true); }}>Add Hearing</Button></PermissionGate>}
             >
               <HearingHistoryView
                 hearings={hearings}

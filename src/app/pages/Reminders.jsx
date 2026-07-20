@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import PermissionGate from '@/components/PermissionGate.jsx';
 import Modal from '@/components/Modal.jsx';
 import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
@@ -142,7 +143,7 @@ export default function Reminders() {
               <p>All hearing, filing, evidence & compliance deadlines.</p>
               <div className="bench-types__hero-accent" />
             </div>
-            <Button icon="plus" onClick={openAdd} className="ml-auto">Add Reminder</Button>
+            <PermissionGate module="manageCase" action="create"><Button icon="plus" onClick={openAdd} className="ml-auto">Add Reminder</Button></PermissionGate>
             <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
 
@@ -205,7 +206,7 @@ export default function Reminders() {
               <h2>Reminders</h2>
               <p>All hearing, filing, evidence & compliance deadlines.</p>
               <div className="bench-types__hero-accent" />
-              <Button icon="plus" onClick={openAdd}>Add Reminder</Button>
+              <PermissionGate module="manageCase" action="create"><Button icon="plus" onClick={openAdd}>Add Reminder</Button></PermissionGate>
             </div>
             <Icon name="bell" className="bench-types__hero-watermark bench-types__watermark-icon" />
           </div>
@@ -259,15 +260,15 @@ export default function Reminders() {
             const c = caseMap.get(r.caseId);
             return (
               <div key={r.id} className={`reminder-row ${r.done ? 'reminder-row--done' : ''}`}>
-                <button className="iconbtn" title={r.done ? 'Mark pending' : 'Mark done'} onClick={() => toggle(r)}>
+                <PermissionGate module="manageCase" action="edit"><button className="iconbtn" title={r.done ? 'Mark pending' : 'Mark done'} onClick={() => toggle(r)}>
                   <Icon name={r.done ? 'check' : 'clock'} size={15} />
-                </button>
+                </button></PermissionGate>
                 <div className={`reminder-row__content${r.caseId ? ' reminder-row__content--link' : ''}`} onClick={() => r.caseId && nav(`/cases/${r.caseId}`)}>
                   <div className="reminder-row__title">{r.title}</div>
                   <div className="list-row__meta">{r.type}{c ? ` · ${caseLabel(c)}` : ''} · {formatDate(r.date)}</div>
                 </div>
                 <Badge tone={tone}>{when}</Badge>
-                <button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(r)}><Icon name="trash" size={14} /></button>
+                <PermissionGate module="manageCase" action="delete"><button className="iconbtn iconbtn--danger" title="Delete" onClick={() => remove(r)}><Icon name="trash" size={14} /></button></PermissionGate>
               </div>
             );
           })}
