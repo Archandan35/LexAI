@@ -17371,6 +17371,11 @@ kbd.cmd__kbd {
   overflow: hidden;
 }
 
+.manage-cases__hero {
+  background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.78) 100%),
+              url('/images/Pages-hero-banner/mc-hero-1.png') center/cover no-repeat;
+}
+
 .bench-types__hero-icon {
   width: 70px;
   height: 70px;
@@ -18026,6 +18031,11 @@ kbd.cmd__kbd {
     background: linear-gradient(120deg, #eaf0ff 0%, #f3eefc 55%, #fdf3e6 100%);
     position: relative;
     overflow: hidden;
+  }
+
+  .manage-cases__hero {
+    background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.78) 100%),
+                url('/images/Pages-hero-banner/mc-hero-1.png') center/cover no-repeat;
   }
 
   .bench-types__hero::after {
@@ -21873,7 +21883,7 @@ kbd.cmd__kbd {
 .task-card__status-badge { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--green-soft); color: var(--green); border: 1px solid #b8e6d1; white-space: nowrap; }
 .task-card__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: cv-blink 1.2s ease-in-out infinite; }
 .task-card--archived .task-card__status-badge { background: var(--amber-soft); color: var(--amber); border-color: #f0dba8; }
-.task-card__case-title { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+.task-card__case-title { margin-top: 8px; font-size: 12px; color: var(--text-soft); line-height: 1.4; }
 
 .task-card__fields { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
 .task-card__field { display: flex; align-items: center; gap: 6px; }
@@ -21987,6 +21997,7 @@ kbd.cmd__kbd {
   vertical-align: middle;
 }
 .task-card__case-title {
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-soft);
   line-height: 1.4;

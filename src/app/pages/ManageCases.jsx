@@ -173,7 +173,7 @@ export default function ManageCases() {
     <>
       {!isMobile && (
         <div className="fade-in cv-desktop-view">
-          <div className="bench-types__hero">
+          <div className="bench-types__hero manage-cases__hero">
             <div className="bench-types__hero-icon"><Icon name="vault" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Manage Cases</h2>
@@ -328,7 +328,7 @@ export default function ManageCases() {
       {isMobile && (
         <div className="cl-mobile-view fade-in">
 
-          <div className="bench-types__hero" style={{ margin: '0 0 20px' }}>
+          <div className="bench-types__hero manage-cases__hero" style={{ margin: '0 0 20px' }}>
             <div className="bench-types__hero-icon"><Icon name="vault" size={34} /></div>
             <div className="bench-types__hero-text">
               <h2>Manage Cases</h2>

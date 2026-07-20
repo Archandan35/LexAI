@@ -141,7 +141,7 @@ export const caseLogic = {
       const [
         cases, draftCount, drafts, docCount, documents, hearings, tasks,
       ] = await Promise.all([
-        caseService.listCases({ select: 'id,status,case_type,title,case_number,case_year,next_hearing,archived' }).catch(() => []),
+        caseService.listCases({ select: 'id,status,case_type,title,case_number,case_number_str,case_display_number,case_year,next_hearing,archived,client,created_at,updated_at' }).catch(() => []),
         draftsRepository.count().catch(() => 0),
         draftsRepository.getAll({ limit: 5, order: 'updated_at.desc' }).catch(() => []),
         documentsRepository.count().catch(() => 0),
