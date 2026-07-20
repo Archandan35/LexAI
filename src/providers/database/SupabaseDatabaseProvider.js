@@ -184,9 +184,11 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     const rows = await res.json();
     // Empty array = no row matched `id` (wrong id, or RLS blocked it) — the
     // update did NOT happen, even though the HTTP call itself was 200 OK.
-    // Returning null here lets userLogic.update surface this truthfully
-    // instead of reporting success for a no-op write.
-    return rows[0] || null;
+    // Throw so the repository's auto-provisioning/grant path can self-heal
+    // (mirrors create), instead of silently returning null and reporting a
+    // false "no record" failure.
+    if (!rows[0]) throw new Error(`Supabase update ${collection} returned no row — check RLS policies.`);
+    return rows[0];
   }
 
   // Execute arbitrary SQL via the exec_sql RPC (requires custom function in Supabase).

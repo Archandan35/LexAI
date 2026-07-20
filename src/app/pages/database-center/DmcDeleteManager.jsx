@@ -37,14 +37,14 @@ export default function DmcDeleteManager() {
     if (scope === 'user') {
       const targetUser = users.find((u) => u.id === selectedUserId);
       const userCases = cases.filter((c) => c.advocate === targetUser?.name || c.createdBy === targetUser?.id);
-      const userDocs = await documentLogic.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).then((r) => r?.ok ? r.value : []).catch(() => []);
+      const userDocs = await documentLogic.getAll({ uploadedBy: targetUser?.id || targetUser?.name }).then((r) => r?.ok ? r.data : []).catch(() => []);
       setPreview({
         type: 'user', label: `Data for ${targetUser?.name || selectedUserId}`,
         cases: userCases.length, documents: userDocs.length, collections: 1,
         records: userCases.length + userDocs.length, userCases, userDocs,
       });
     } else {
-      const repo = { documents: { getAll: (q) => documentLogic.getAll(q).then((r) => r?.ok ? r.value : []) } }[selectedCollection];
+      const repo = { documents: { getAll: (q) => documentLogic.getAll(q).then((r) => r?.ok ? r.data : []) } }[selectedCollection];
       if (!repo) { toast.push('Collection scanning not available for this collection.', 'error'); return; }
       const all = await repo.getAll().catch(() => []);
       setPreview({ type: 'collection', label: `All records in "${selectedCollection}"`, collections: 1, records: all.length, sample: all.slice(0, 5) });

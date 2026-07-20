@@ -44,7 +44,7 @@ export default function DmcDataExplorer() {
   const load = async () => {
     setLoading(true);
     try {
-      if (collection === 'documents') setRows(await documentLogic.getAll().then((r) => r?.ok ? r.value : []).catch(() => []));
+      if (collection === 'documents') setRows(await documentLogic.getAll().then((r) => r?.ok ? r.data : []).catch(() => []));
       else if (collection === 'cases') setRows(await caseService.listCases().catch(() => []));
       else setRows([]);
     } catch { setRows([]); }

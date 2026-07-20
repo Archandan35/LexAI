@@ -102,7 +102,7 @@ export default function CaseDocuments() {
   const load = useCallback(async () => {
     setLoading(true);
     const [d, f] = await Promise.all([
-      documentLogic.getAll().then((r) => r?.ok ? r.value : []).catch(() => []),
+      documentLogic.getAll().then((r) => r?.ok ? r.data : []).catch(() => []),
       caseFolderLogic.listAll().catch(() => []),
     ]);
     setDocs(Array.isArray(d) ? d : []);
@@ -236,7 +236,7 @@ export default function CaseDocuments() {
     const name = newName.trim();
     if (!name) { toast.push('Folder name is required.', 'error'); return; }
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
-    const res = await caseFolderLogic.createGlobal(name, 'document', activeFolder, order).then((r) => r?.ok ? r.value : null).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
+    const res = await caseFolderLogic.createGlobal(name, 'document', activeFolder, order).then((r) => r?.ok ? r.data : null).catch((e) => { toast.push(e?.message || 'Failed to create folder.', 'error'); return null; });
     if (res) { toast.push('Folder created.', 'success'); setNewName(''); setCreating(false); await load(); if (activeFolder) setExpanded((p) => ({ ...p, [activeFolder]: true })); }
   };
 
@@ -246,7 +246,7 @@ export default function CaseDocuments() {
     const order = folders.reduce((m, f) => Math.max(m, f.order ?? 0), 0) + 1;
     let created = 0;
     for (let i = 0; i < names.length; i++) {
-      const res = await caseFolderLogic.createGlobal(names[i], 'document', activeFolder, order + i).then((r) => r?.ok ? r.value : null).catch(() => null);
+      const res = await caseFolderLogic.createGlobal(names[i], 'document', activeFolder, order + i).then((r) => r?.ok ? r.data : null).catch(() => null);
       if (res) created++;
     }
     toast.push(`${created} folder(s) created.`, 'success');
@@ -305,7 +305,7 @@ export default function CaseDocuments() {
         const source = folders.find((f) => f.id === sourceId);
         if (!source) return;
         const children = getChildren(sourceId);
-        const newFolder = await caseFolderLogic.copyGlobal(source, newParentId).then((r) => r?.ok ? r.value : null).catch(() => null);
+        const newFolder = await caseFolderLogic.copyGlobal(source, newParentId).then((r) => r?.ok ? r.data : null).catch(() => null);
         if (!newFolder) return;
         for (const child of children) await copyRecursive(child.id, newFolder.id);
       };

@@ -602,9 +602,13 @@ export default function AddJudgmentModal({ open, onClose, onSaved, editing }) {
       if (!Array.isArray(entry.applicableStages)) entry.applicableStages = [];
       let result;
       if (editing && editing.id) {
-        result = await judgmentLogic.update(editing.id, entry).then((r) => r?.ok ? r.value : null);
+        const r = await judgmentLogic.update(editing.id, entry);
+        if (!r?.ok) throw new Error(r?.error || 'Update failed');
+        result = r.data;
       } else {
-        result = await judgmentLogic.create({ ...entry, createdAt: new Date().toISOString() }).then((r) => r?.ok ? r.value : null);
+        const r = await judgmentLogic.create({ ...entry, createdAt: new Date().toISOString() });
+        if (!r?.ok) throw new Error(r?.error || 'Create failed');
+        result = r.data;
       }
       if (!result) throw new Error('Save returned no record');
       onSaved?.(result);
