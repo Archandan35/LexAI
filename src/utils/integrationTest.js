@@ -22,7 +22,7 @@ export async function runIntegrationTest() {
 
     // 3. Create Admin (Bootstrap)
     const bootstrapRes = await authLogic.bootstrapAdmin({
-      name: 'Administrator',
+      name: 'System Owner',
       email: 'admin@lexai.local',
       password: 'AdminPassword@123',
     });

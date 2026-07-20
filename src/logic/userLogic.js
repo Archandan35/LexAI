@@ -67,7 +67,7 @@ export const userLogic = {
       if (!isFirstAccount) {
         const targetRole = allRoles.find((r) => r.code === roleCode);
         if (targetRole?.all) {
-          return fail('Administrator role cannot be self-assigned. Contact an existing administrator.');
+          return fail('System Owner role cannot be self-assigned. Contact an existing System Owner.');
         }
       }
       // First-account bootstrap: if the requested role is missing and this is
@@ -77,7 +77,7 @@ export const userLogic = {
       if (!roleExists) {
         if (isFirstAccount) {
           const created = await roleService.create({ ...SEED_SUPER_ROLE, createdAt: nowISO() });
-          if (!created) return fail('Failed to provision the initial administrator role.');
+          if (!created) return fail('Failed to provision the initial System Owner role.');
           roleCode = created.code;
         } else {
           return fail(`Role "${roleCode}" does not exist. Create it first in Role Management.`);

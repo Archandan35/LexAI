@@ -39,7 +39,7 @@ export default function VerifyAccount() {
             </div>
             <div className="alert alert--warn alert--mb">
               <Icon name="alert" size={16} />
-              <span>Please contact an administrator or request a new verification email.</span>
+              <span>Please contact a System Owner or request a new verification email.</span>
             </div>
             <div className="auth-foot">
               <Link to="/login" className="auth-link">&larr; Back to sign in</Link>

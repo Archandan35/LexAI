@@ -215,7 +215,7 @@ export default function AdminSetup() {
         </div>
 
         <h1 className="auth-title">Bootstrap System</h1>
-        <p className="auth-sub">Create the first Administrator account to begin setup.</p>
+        <p className="auth-sub">Create the first System Owner account to begin setup.</p>
 
         {error && (
           <div className="alert alert--danger alert--mb">
@@ -229,7 +229,7 @@ export default function AdminSetup() {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. System Administrator"
+              placeholder="e.g. System Owner"
               autoFocus
               required
             />

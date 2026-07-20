@@ -81,7 +81,7 @@ export default function Login() {
           <div className="alert alert--warn alert--mb">
             <Icon name="alert" size={16} />
             <span>
-              No administrator account exists. You must bootstrap the system before you can log in.
+              No System Owner account exists. You must bootstrap the system before you can log in.
               <br />
               <Link to="/bootstrap-admin" className="login__bootstrap-link">
                 Bootstrap First Super Admin →

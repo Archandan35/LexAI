@@ -51,7 +51,7 @@ export default function Register() {
             )}
           </div>
           <h1 className="auth-title">Registration Disabled</h1>
-          <p className="auth-sub">Public registration is currently disabled. Contact an administrator for an invitation.</p>
+          <p className="auth-sub">Public registration is currently disabled. Contact a System Owner for an invitation.</p>
           <div className="auth-foot">
             <Link to="/login" className="auth-link">&larr; Back to sign in</Link>
           </div>
@@ -224,8 +224,8 @@ export default function Register() {
                 <Icon name="shield" size={14} />
                 <span>
                   No assignable roles are configured yet. The <strong>first account</strong> you
-                  create will become the <strong>Administrator</strong> with full access. Additional
-                  users must be invited and assigned roles by an administrator later.
+                  create will become the <strong>System Owner</strong> with full access. Additional
+                  users must be invited and assigned roles by a System Owner later.
                 </span>
               </div>
             )}

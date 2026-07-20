@@ -115,7 +115,7 @@ export default class SupabaseAuthProvider extends AuthProvider {
       await db.create(USERS_TABLE(), FieldMapper.toProvider('users', dbUser));
     } else {
       if (dbUser.status && dbUser.status !== 'Active') {
-        throw new Error('This account is disabled. Contact an administrator.');
+        throw new Error('This account is disabled. Contact a System Owner.');
       }
       // Update last login (best-effort — non-critical for login to succeed)
       try {

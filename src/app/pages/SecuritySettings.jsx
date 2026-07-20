@@ -80,14 +80,14 @@ export default function SecuritySettings() {
       />
 
       <div className="grid-2 dm-section">
-        <Card title="Admin Status" sub="First administrator account details.">
+        <Card title="System Owner Status" sub="First System Owner account details.">
           {loading ? (
             <div className="loading-block"><span className="spinner" /> Querying status…</div>
           ) : hasSuperAdmin ? (
             <div>
               <div className="alert alert--success alert--mb">
                 <Icon name="shield" size={16} />
-                <span>System is bootstrapped. A Super Administrator account is configured.</span>
+                <span>System is bootstrapped. A System Owner account is configured.</span>
               </div>
               <div className="kv"><span>Username</span><b>{superAdminUser.username || '—'}</b></div>
               <div className="kv"><span>Email</span><span>{superAdminUser.email || '—'}</span></div>
@@ -97,7 +97,7 @@ export default function SecuritySettings() {
             <div>
               <div className="alert alert--warn alert--mb">
                 <Icon name="alert" size={16} />
-                <span>System is NOT bootstrapped. No Super Administrator exists in the database.</span>
+                <span>System is NOT bootstrapped. No System Owner exists in the database.</span>
               </div>
               <p className="auth-sub auth-sub--sm">
                 You must run the bootstrap wizard to create your first admin.

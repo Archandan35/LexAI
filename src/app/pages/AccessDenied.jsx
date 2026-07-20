@@ -16,7 +16,7 @@ export default function AccessDenied() {
         <h1 className="access-denied__title">Access denied</h1>
         <p className="access-denied__text">
           You don’t have permission to view {moduleLabel ? <b>{moduleLabel}</b> : 'this page'}.
-          Contact an administrator if you believe this is a mistake.
+          Contact a System Owner if you believe this is a mistake.
         </p>
         <div className="access-denied__actions">
           <Button variant="ghost" icon="arrow" onClick={() => nav(-1)}>Go back</Button>
