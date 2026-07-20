@@ -919,13 +919,11 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                   { key: 'name', label: 'Name', placeholder: 'e.g., Urgent' },
                   { key: 'short_code', label: 'Short Code', placeholder: 'PRIT-HIGH' },
                   { key: 'color', label: 'Color', type: 'color' },
-                  { key: 'description', label: 'Description', placeholder: 'Optional' },
                 ]
               : [
                   { key: 'name', label: 'Name', placeholder: 'e.g., Hearing' },
                   { key: 'short_code', label: 'Short Code', placeholder: 'HEAR' },
                   { key: 'color', label: 'Color', type: 'color' },
-                  { key: 'description', label: 'Description', placeholder: 'Optional' },
                 ],
             defaults: {},
             refresh: onReloadMaster,
