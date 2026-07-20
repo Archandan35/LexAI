@@ -372,13 +372,7 @@ export default function ManageCases() {
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search cases"
             />
-            <span className="cv-filter-icon" role="button" aria-label="Filter"><Icon name="filter" size={16} /></span>
-          </div>
-
-          <div className="cv-filter-grid" style={{ marginBottom: '12px' }}>
-            <Button variant="ghost" icon="filter" className="jl-filter-btn" onClick={handleOpenCaseFilter} style={{ width: '100%', justifyContent: 'center' }}>
-              {[filters.court, filters.courtLocation, filters.stage, filters.status].some((v) => v.length) ? `Filter (${[filters.court, filters.courtLocation, filters.stage, filters.status].reduce((s, v) => s + v.length, 0)})` : 'Filter'}
-            </Button>
+            <span className="cv-filter-icon" role="button" aria-label="Filter" onClick={handleOpenCaseFilter}><Icon name="filter" size={16} /></span>
           </div>
 
           <div className="cv-seg" style={{ marginBottom: '12px' }}>
