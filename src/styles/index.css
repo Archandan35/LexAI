@@ -21723,6 +21723,7 @@ kbd.cmd__kbd {
 .cal-cell--today { background: var(--navy-50, #eef2fb); }
 .cal-cell-head { display: flex; align-items: center; justify-content: space-between; }
 .cal-cell-num { font-size: 13px; font-weight: 700; }
+.cal-cell-dow { display: none; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-right: 4px; text-transform: uppercase; }
 .cal-cell--today .cal-cell-num {
   background: var(--navy-700); color: #fff; width: 22px; height: 22px;
   display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
@@ -21916,6 +21917,7 @@ kbd.cmd__kbd {
   .cal-weekdays { display: none; }
   .cal-grid { grid-template-columns: 1fr; }
   .cal-cell { min-height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .cal-cell-dow { display: inline; }
   .cal-week { overflow-x: auto; }
   .cal-week-head-row, .cal-week-body { grid-template-columns: repeat(7, minmax(120px, 1fr)); }
   .cal-week-col { min-width: 120px; }
@@ -21930,6 +21932,7 @@ kbd.cmd__kbd {
   .tasks-filter-row .select, .tasks-filter-row .input { min-width: 0; width: 100%; }
   .tasks-filter-row .tasks-arch-toggle,
   .tasks-filter-row .btn--ghost { width: 100%; justify-content: center; }
+  .cl-filters .flex-row { flex-direction: column; }
 .cmp-pagination { flex-wrap: wrap; }
 .tasks-table-card .table-scroll { display: none; }
 .tasks-cards { display: block; width: 100%; padding: 0; }

@@ -69,7 +69,7 @@ export function DateInput({ value, onChange, placeholder, className, disabled, r
       <input
         type="text"
         className="dateinput__field"
-        placeholder={placeholder || DateEngine.getDatePlaceholder()}
+        placeholder={placeholder || 'dd/mm/yyyy'}
         value={text}
         onChange={handleChange}
         onFocus={handleFocus}

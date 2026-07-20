@@ -349,6 +349,7 @@ function CalendarView({ events, loading, onView, cases }) {
                   return (
                     <div key={i} className={`cal-cell${otherMonth ? ' cal-cell--muted' : ''}${isToday ? ' cal-cell--today' : ''}`}>
                       <div className="cal-cell-head">
+                        <span className="cal-cell-dow">{WEEKDAYS[(d.getDay() + 6) % 7]}</span>
                         <span className="cal-cell-num">{d.getDate()}</span>
                         {dayEvents.length > 0 && <span className="cal-cell-count">{dayEvents.length}</span>}
                       </div>
