@@ -1,0 +1,1269 @@
+Pass 1: System, Folder, Dependency & Runtime Architecture
+After deep analysis of H:\code\LexAI - Copy, here is the complete reverse-engineering:
+1. Current Architecture
+src/
+  main.jsx                  → entry point (Boot + Router)
+  app/
+    App.jsx                 → composition root (all providers nested)
+    pages/                  → 70+ page components (UI only)
+  components/               → 62 reusable UI components
+  layouts/                  → AppLayout, Sidebar, Topbar
+  logic/                    → Business rules (auth, rbac, case, citation, etc.)
+  services/                 → ~50 service files (facades over repositories)
+  data-layer/
+    repositories/           → 49 per-entity repositories (thin wrappers over provider)
+    AuthContext.jsx          → auth state + resolved permissions
+    AppDataContext.jsx       → shared case list
+    queryCache.js            → stale-while-revalidate cache
+  providers/
+    database/               → DatabaseProvider (abstract) + 3 implementations
+    auth/                   → AuthProvider (abstract) + 1 impl
+    file-storage/           → FileStorageProvider (abstract) + 2 impls + DualStorageWrapper
+    search/                 → SearchProvider (abstract) + 1 impl
+    ai/                     → AIProvider (abstract) + 2 impls
+    ocr/                    → OCRProvider (abstract) + 2 impls
+    citation/               → CitationProvider (abstract) + 2 impls
+    backup/                 → BackupTargetProvider (abstract) + 2 impls
+    preferences/            → PreferencesProvider + 1 impl
+  data-provider/
+    schema/                 → 50+ entity schemas + SchemaCompiler + SchemaDiffEngine
+    health/                 → DatabaseHealthEngine
+    udb/                    → Universal Database Backup format
+    migrations/             → Migration engine
+    seedEngine.js           → Seed data
+  core/                     → Provider-agnostic foundation
+    EntityRegistry.js       → Entity ↔ provider table name mapping
+    FieldMapper.js          → LexAI field ↔ provider column mapping
+    IDEngine.js             → LX-XXXX-00001 ID generation
+    DateEngine.js           → Timezone-aware date handling
+    settingsCache.js        → Global settings cache
+    apiClient.js            → Backend HTTP client (for optional server-side)
+  config/                   → Runtime config (env vars read ONLY here)
+    config.js               → Provider selection + credentials
+    backend.js              → Backend URL + endpoints
+    featureFlags.js         → Feature flags
+  constants/
+    permissions.js          → Module/action definitions (RBAC)
+  security/
+    clientSecretGuard.js    → Detects secrets in client bundle
+  routes/
+    index.jsx               → All routes with per-module guards
+    navigation.js           → Sidebar menu structure
+  styles/
+    index.css               → 26,675 lines (single file design system)
+2. Layer Violations & Strengths
+Concern	Status	Assessment
+Page → Provider direct	✅ Never	Strictly enforced
+Service → Provider direct	✅ Only via repository layer	Correct
+Repository → Provider	✅ Via Provider factory + FieldMapper	Clean
+Logic → Service	✅ Standard façade pattern	Correct
+Provider isolation	✅ Factory pattern with singleton	Correct
+Field mapping	✅ Dual-direction translation	Enterprise-grade
+Error handling	⚠️ Mixed	Some try/catch silent swallows
+3. Problems Found
+Critical:
+- No real backend server — This is a client-only SPA. The browser talks directly to Supabase/MongoDB/Firebase REST APIs using anon keys. This means:
+- All secrets exposed to the browser (mitigated by clientSecretGuard.js)
+- No server-side validation of business logic
+- No server-side logging/auditing of DB operations
+- Backup runs in the browser (memory-bound: can't handle >100MB DB)
+- File uploads go directly from browser to storage
+- Anyone with browser DevTools can inspect all API calls, schema, data flows
+- Single CSS file — 26,675 lines in styles/index.css. No CSS modules, no CSS-in-JS, no component-scoped styles. This is not maintainable at enterprise scale. Class name collisions, dead CSS, and specificity battles are guaranteed.
+High:
+- No TypeScript — Plain JSX means no compile-time type checking, no interface enforcement, no refactoring safety. Especially dangerous in a 70+ page, 49-repository, 50-schema application.
+- No testing infrastructure — No test files found. No Jest, Vitest, Playwright, or Cypress config.
+- 25 MB max upload with NO compression — The upload pipeline (storageService.uploadDocument) passes raw files to storage with zero client-side compression. Images, PDFs, and documents are stored as-is.
+- Query cache is in-process memory — queryCache.js is a Map in memory. If the user navigates away and back, or if the browser tab is refreshed, all cache is lost and re-fetched.
+- Search is in-memory TF only — LocalSearchProvider.js does simple term-frequency scoring on a flat array. No persistent index, no ranking, no faceted search.
+Medium:
+- ID generation is hybrid client/server — IDEngine.js tries next_lx_id RPC first, falls back to client-side _sequences collection, then to in-memory fallback. Race conditions possible in multi-tab scenarios.
+- No request deduplication in query cache — Two components mounting simultaneously with the same key will fire two identical requests.
+- React Context as state management — AuthContext, AppDataContext, SettingsContext, ToastContext, DebugContext, FABContext — contexts re-render all children on any change.
+- No React.memo, useMemo, useCallback usage in most components — leads to unnecessary re-renders.
+- exec_sql RPC granted to anon role — The Supabase database provider grants exec_sql to the anon role (unauthenticated users). While safe_ddl blocklists destructive operations, exec_sql can run arbitrary SELECT queries. This is a design compromise for the browser-only architecture.
+4. Enterprise Standard vs Current
+Concern	Current	Enterprise Standard
+Architecture	SPA (client-only)	BFF (Backend for Frontend) + SPA
+Backend	None (browser → DB directly)	REST/gRPC API server with auth middleware
+Database access	Browser holds anon key + RPC	Server-side ORM with connection pooling
+File uploads	Browser → Supabase Storage directly	Server validates, scans, compresses, stores
+Type safety	None	TypeScript throughout
+Testing	None	Unit + Integration + E2E
+CSS	Single 26K-line file	CSS Modules / Tailwind / CSS-in-JS
+State management	React Context	Zustand/Redux/Jotai (with selectors)
+Query caching	In-memory Map	React Query / SWR / TanStack Query
+Search	In-memory TF scoring	Elasticsearch / Meilisearch
+ID generation	Hybrid client/server	Server-only sequences/UUIDs
+Backups	Browser memory → download	Server-side automated to S3/GCS
+5. Architecture Score
+Dimension	Score	Justification
+Architecture	8/10	The layered provider pattern is genuinely clean and well-enforced
+Database	7/10	Good abstraction but browser-direct access is a security compromise
+Security	6/10	Client secret guard is smart, but no backend means no real security
+RBAC	9/10	Authority-based, not role-name-based. Best-in-class for a client app
+Performance	5/10	No compression, no CDN, in-memory cache only, single CSS file
+CSS/Design	4/10	Single 26K-file is a maintenance nightmare at enterprise scale
+Maintainability	7/10	Clean layers, good separation, but no TypeScript and no tests
+Scalability	4/10	Client-only, no server, no connection pooling, single-threaded
+Reliability	5/10	No error boundaries at route level, no retry logic in data fetching
+Dev Experience	6/10	Good structure but no TypeScript, no tests, slow CSS iteration
+Extensibility	8/10	Provider pattern makes swapping implementations trivial
+Testability	3/10	No test setup at all
+Modularity	8/10	Good module boundaries, though ~50 services could be organized
+Consistency	7/10	Generally consistent patterns, some older services bypass repository
+Enterprise Readiness	5/10	Architecture is solid but missing server, tests, types, CSS strategy
+Production Readiness	6/10	Works as demo, needs backend server for real production
+6. Data Flow Diagram (Text)
+USER BROWSER
+  │
+  ├── main.jsx (React boot + ScrollToTop)
+  │     └── App.jsx (composition root)
+  │           ├── ErrorBoundary
+  │           ├── ToastProvider
+  │           ├── SetupGate (checks bootstrap state)
+  │           ├── SettingsProvider
+  │           ├── AuthProviderCtx (loads user + roles → resolves permissions)
+  │           ├── AppDataProvider (loads case list)
+  │           ├── DebugProvider
+  │           └── AppRoutes
+  │
+  ├── Route Guard: RequireAuth(module)
+  │     ← useAuth().canViewModule(module)
+  │
+  ├── Page Component (UI only)
+  │     ↓
+  ├── Logic Module (business rules, no I/O)
+  │     ↓
+  ├── Service (façade, permission gate)
+  │     ↓
+  ├── Repository (schema defaults, field mapping, auto-provisioning)
+  │     ├── FieldMapper → toProvider / toLexAI
+  │     ├── EntityRegistry → entity ↔ table name
+  │     └── Schema → validateRecord / applyDefaults
+  │     ↓
+  └── DatabaseProvider (abstract)
+        ├── Local (localStorage via MemoryProvider)
+        ├── Supabase (REST + RPC)
+        ├── MongoDB (REST API)
+        └── Firebase (REST API)
+7. Key Architectural Smells
+1. exec_sql exposed to anon role (SchemaCompiler.js:378) — This is required because the SPA has no backend, but it means any website visitor can run SELECT queries against the Supabase database. Mitigated by RLS, but still an unnecessary attack surface.
+2. _sequences collection with no locking (IDEngine.js:108-118) — Multi-tab browser usage can produce duplicate IDs because get + update is not atomic on localStorage.
+3. ensureCollectionExists called on every write failure (baseRepository.js:135-142) — The repository retries every failed write by first attempting to create the table. This adds latency and complexity. Should only provision on first-write detection, not on every transient failure.
+4. Anonymous auth.uid() RLS fallback (SchemaCompiler.js:120-148) — The current_user_role() function silently falls back to 'user' when the users table is inaccessible. This means an unauthenticated request can be treated as 'user' role under error conditions.
+5. No request timeout for local provider — The abstract DatabaseProvider has no timeout, retry, or circuit-breaker. If localStorage is corrupted, calls hang.
+8. Dependency Graph (Module Level)
+pages/ (70+)  →  hooks/
+                    ↓
+               logic/ (authLogic, rbacLogic, caseLogic, citationLogic, ...)
+                    ↓
+               services/ (~50)  →  logic/permissionGuard.js
+                    ↓
+               data-layer/repositories/ (49)  →  core/ (EntityRegistry, FieldMapper, IDEngine, DateEngine)
+                    ↓                              ↓
+               providers/database/ (factory + 3 impls)  ←  config/config.js (reads env vars)
+                    ↓
+               Supabase REST / MongoDB REST / Firebase REST / localStorage
+Separate provider families (each has own factory + abstract + implementations):
+- providers/auth/ — authService → AuthProvider
+- providers/file-storage/ — storageService → FileStorageProvider
+- providers/search/ — searchService → SearchProvider  
+- providers/ai/ — AI logic → AIProvider
+- providers/ocr/ — OCR logic → OCRProvider
+- providers/citation/ — citationLogic → CitationProvider
+- providers/backup/ — backupService → BackupTargetProvider
+- providers/preferences/ — preferencesService → PreferencesProvider
+9. Specific Finding: Image Compression / Upload Pipeline
+The grep confirmed zero image compression exists. The upload flow is:
+storageService.uploadDocument(file)
+  → getFileStorageProvider().upload(file, ref)  [raw file, no processing]
+  → getOCRProvider().extract(file)              [OCR text extraction]
+  → documentsRepository.create(record)           [metadata row]
+- The maxUploadMb limit is 25 MB (config/featureFlags.js)
+- No client-side compression/resizing before upload
+- No image format conversion (PNG, JPEG, WebP → space-efficient format)
+- No thumbnail generation
+- No PDF compression
+- No virus scanning
+- No chunked upload for large files
+Enterprise standard:
+- Client-side: Compress images via Canvas API / browser createImageBitmap + OffscreenCanvas.toBlob() before upload
+- Server-side: Sharp/Pillow/VIPS for server-side recompression, thumbnail generation, WebP/AVIF conversion
+- PDF: Ghostscript/qpdf compression, OCR text layer extraction
+- All files: Virus scan, deduplication (content-hash), chunked upload with resume
+This completes Pass 1. Continue to Pass 2 (Database/Schema/Data Layer)?
+▣  Build · DeepSeek V4 Flash Free · 2m 17s
+yes
++ Thought: 1.3s
+# Todos
+[✓] Pass 1: System/Folder/Dependency/Runtime Architecture Audit
+[•] Pass 2: Database/Schema/Data Layer/Search/RLS Audit
+[ ] Pass 3: Authentication/RBAC/Authority Engine/Security Audit
+[ ] Pass 4: Business Logic/Workflows/Services/Centralized Managers Audit
+[ ] Pass 5: UI Design System/CSS/Components Audit
+[ ] Pass 6: Performance/Caching/Storage/Backup/Monitoring Audit
+[ ] Pass 7: Complete Enterprise Redesign & Migration Roadmap
+[ ] Specific Task: Server speed/performance layer & image-compression pipeline
++ Thought: 482ms
+→Read src\data-provider\schema\users.schema.js 
+→Read src\data-provider\schema\cases.schema.js 
+→Read src\data-provider\schema\roles.schema.js 
+→Read src\data-provider\schema\documents.schema.js 
+→Read src\data-provider\schema\settings.schema.js 
+→Read src\data-provider\schema\audit_logs.schema.js 
+→Read src\data-provider\schema\schema_meta.schema.js 
+→Read src\data-provider\schema\infrastructure.schema.js 
++ Thought: 644ms
+→Read src\data-provider\schema\SchemaDiffEngine.js 
+→Read src\data-provider\udb 
+→Read src\data-provider\health 
+→Read src\data-provider\migrations 
+→Read src\data-provider\seedEngine.js 
+→Read src\services\databaseAdminService.js 
+→Read src\services\schemaMappingService.js 
+→Read src\services\databaseDdlService.js 
++ Thought: 585ms
+→Read src\core\AllowlistEngine.js 
+→Read src\data-provider\udb\udbEngine.js 
+→Read src\data-provider\health\DatabaseHealthEngine.js 
++ Thought: 336ms
+Pass 2: Database, Schema, Data Layer, Search & RLS Audit
+1. Current Database Architecture
+Provider architecture:
+DatabaseProvider (abstract)         ← Core CRUD contract
+  ├── LocalDatabaseProvider          ← localStorage adapter
+  ├── SupabaseDatabaseProvider       ← PostgREST REST API
+  ├── MongoDatabaseProvider          ← MongoDB Data API
+  └── FirebaseDatabaseProvider       ← Firestore REST API
+The provider is selected via VITE_DATABASE_PROVIDER env var. The factory pattern in providers/database/index.js constructs a singleton. Every data operation flows through:
+Service → Repository → FieldMapper → DatabaseProvider → Remote API
+Schema system:
+- 50+ entity schemas in data-provider/schema/*.schema.js
+- Each schema defines: collection, fields (name → type), required, defaults, indexes, relations, primaryKey
+- SchemaCompiler.js generates provider-specific DDL (PostgreSQL, MongoDB, Firebase rules, localStorage)
+- SchemaDiffEngine.js compares canonical schema against live backend (table, column, index, type diffs)
+- EntityRegistry.js maps entity names ↔ provider table names
+- FieldMapper.js maps canonical field names ↔ provider column names
+2. Problems
+Critical:
+1. exec_sql granted to anon role (SchemaCompiler.js:378) — The exec_sql RPC function is granted to both authenticated and anon PostgreSQL roles. This means any unauthenticated website visitor can run arbitrary SQL against the Supabase database. The safe_ddl function has a blocklist, but exec_sql itself has no restriction — it executes any SQL including recursive CTEs, large JOINs, or CPU-intensive queries that could cause denial of service.
+2. No Row-Level Security (RLS) on local provider — The local (localStorage) provider has zero security. Data is stored in plaintext in the browser's localStorage. Anyone with physical access to the machine, or any browser extension, can read all data.
+3. No connection pooling — Every browser tab creates a separate provider instance. Supabase has a limited number of database connections. With 100+ simultaneous users, each with multiple tabs, connection exhaustion is guaranteed.
+4. List queries return ALL rows — The list() method on the base provider has no mandatory pagination. The SupabaseDatabaseProvider.list() applies a default limit only if one is passed. Querying provider.list('audit_logs', {}) returns every audit log row. On a system with 10M records, this single call would transfer hundreds of MB to the browser and crash the tab.
+High:
+5. Browser-side database operations are single-threaded — All CRUD operations run in the browser's main thread. A bulkCreate of 10,000 records (which iterates sequentially) or a snapshot of all collections blocks the UI for seconds.
+6. _sequences collection has no atomicity — IDEngine.generate() does a get() then update() on the _sequences collection. In localStorage, this is synchronous so it works. On Supabase/Mongo/Firebase, two browser tabs can read the same current value, both increment to current + 1, and produce identical IDs.
+7. ensureCollectionExists on every write failure (baseRepository.js:135-142) — When a create/update fails, the repository tries to create the table and retry. This means every transient network error triggers a DDL attempt. On a production system with intermittent network, this would flood the database with redundant CREATE TABLE IF NOT EXISTS calls.
+8. grantCollectionAccess creates RLS policies that allow ALL operations for anon (baseRepository.js:148-149) — The auto-provisioning path creates a policy "${table}_anon_all" that grants for all to anon using (true) with check (true). This completely bypasses RLS for any table that was auto-created.
+Medium:
+ 9. Schema version 34 has no migration files — SCHEMA_VERSION = 34 but the migrations/ directory has only 002-case-management.sql, migration-to-v18.sql, migration-to-v19.sql, migration-to-v20.sql. There's no migration path from v18→v34. A fresh install would work (creates all tables from the canonical schema), but upgrading from a prior version would require manual SQL.
+10. Indexes are not verifiable from the browser — SupabaseDatabaseProvider.listColumns() and listIndexes() return null. PostgREST doesn't expose information_schema.columns or pg_indexes. So the health engine can never verify that indexes exist on the Supabase backend, leading to silent performance degradation.
+11. No composite indexes — All schema indexes are single-column (indexes: ['email', 'role_code', 'status']). Common queries like WHERE status = 'Active' AND role_code = 'admin' need a composite index (status, role_code) for efficiency.
+12. No partial indexes — WHERE archived = false is a common filter. Adding CREATE INDEX ... WHERE archived = false would dramatically improve active-case queries.
+13. No full-text search indexes — The cases.description, documents.text, drafts.content fields are all text or string with no GIN/tsvector index. The search service does in-memory TF scoring of all rows — O(n) scan on every query.
+14. No soft-delete columns — There is no deleted_at or is_deleted field on any schema. remove() does a hard DELETE. There is no way to recover accidentally deleted records.
+15. No audit timestamps on some schemas — judgments, permissions, order_sheet_templates have no created_at/updated_at fields in their schema.
+16. Naming inconsistency — Some schemas use camelCase (createdAt, updatedAt), others use snake_case in the field definitions (created_at, role_code). The FieldMapper is supposed to handle the translation, but the canonical schema files mix both conventions. This causes silent translation failures when the mapper doesn't have an entry.
+3. Enterprise Recommendation
+Phase 1 — Immediate:
+- Add mandatory pagination to DatabaseProvider.list() — enforce { limit, offset } with a configurable max page size (e.g., 1000)
+- Remove exec_sql grants from anon — only authenticated users should execute arbitrary SQL
+- Remove _anon_all RLS policies from grantCollectionAccess() — auto-created tables should not bypass RLS
+- Add deleted_at timestamp to all schemas for soft-delete support
+Phase 2 — Short-term:
+- Add composite indexes for the most common query patterns
+- Add GIN/tsvector indexes for full-text search on cases.description, documents.text, drafts.content
+- Implement server-side pagination/cursor in the repository layer
+- Add connection retry with exponential backoff (currently single-attempt)
+Phase 3 — Long-term:
+- Introduce a backend API server (BFF) that mediates all database access
+- Remove the exec_sql RPC entirely — all DDL should go through a migration service
+- Implement proper database migration files (numbered, timestamped, versioned)
+- Add database-level audit triggers (PostgreSQL audit extension or logical replication)
+4. Real-World Example
+Imagine a bank where every teller terminal connects directly to the core banking database using a shared "teller" password. Each teller can run SQL queries, create new tables on the fly, and delete rows — all from their browser-based terminal. The bank's "security" is a sign on the wall that says "please don't delete anything important."
+
+That's what exec_sql granted to anon + _anon_all RLS policies is like.
+Ideal enterprise approach:
+The bank has a server layer. Tellers use a purpose-built UI. The server validates every request, checks permissions, logs every operation, and limits what each teller can do. The teller never touches SQL. The bank's database is firewalled — only the application server can connect.
+5. Scoring
+Concern	Score	Reasoning
+Schema design	7/10	Good entity separation, but naming conventions are mixed
+Normalization	8/10	Mostly normalized, relations defined declaratively
+Indexes	3/10	Single-column only, no composite, no partial, no full-text
+RLS	4/10	Good policy hierarchy, but _anon_all completely bypasses it
+Data integrity	5/10	No CHECK constraints, no NOT NULL enforcement at DB level
+Migration strategy	4/10	Version number exists but no migration files for current version
+Provider abstraction	9/10	Best-in-class — truly provider-agnostic with FieldMapper + EntityRegistry
+Search	2/10	In-memory O(n) TF scoring, no persistent index
+Pagination	2/10	No mandatory pagination, list() returns everything
+Backup	6/10	UDB format is well-designed, but browser memory limited
+Scalability	2/10	All browser-thread, no connection pooling, no server
+6. Data Flow: Full Request Trace
+Create a case (showing the complete data layer stack):
+Page: CreateCase.jsx
+  → onFormSubmit()
+  → caseLogic.createCase(data)
+  → caseService.create(data)
+     → requireCapability('manageCase.create')   [service-layer RBAC gate]
+  → casesRepository.create(data)
+     → applyDefaults('cases', data)              [schema defaults]
+     → IDEngine.generate('cases')                [LX-CASE-00042]
+     → denormalizeArrays()                        [array → JSON string]
+     → coerceNumericFields()                      [string → number]
+     → FieldMapper.toProvider('cases', record)    [camelCase → snake_case]
+       → { caseNumber: '...' } → { case_number_str: '...' }
+     → DatabaseProvider.create('cases', mapped)
+       → Supabase: POST /rest/v1/cases { body: mapped }
+     → FieldMapper.toLexAI('cases', result)       [snake_case → camelCase]
+       → { case_number_str: '...' } → { caseNumber: '...' }
+     → normalizeArrays()                           [JSON string → array]
+  ← { id: 'LX-CASE-00042', caseNumber: '...', ... }
+Search documents (showing search architecture):
+Page: CitationSearch.jsx
+  → citationLogic.search(query)
+  → searchService.search('evidence', { limit: 20 })
+     → reindexCaseCorpus()
+        → documentsRepository.getAll()           [fetches ALL documents]
+        → draftsRepository.getAll()              [fetches ALL drafts]
+        → casesRepository.getAll()               [fetches ALL cases]
+        → getSearchProvider().index(allDocs)     [builds in-memory TF index]
+     → getSearchProvider().search('evidence')    [O(n) scan of _blob]
+        → term frequency scoring
+        → top 20 results
+7. SQL Injection & Raw SQL Execution Audit
+Path	Risk	Details
+exec_sql RPC	CRITICAL	Granted to anon. Only safe_ddl blocklist protects it. But safe_ddl allows DO $$ ... $$ blocks which can contain arbitrary SQL.
+safe_ddl	HIGH	Blocklist can be bypassed through DO $$ blocks. Example: DO $$ BEGIN EXECUTE 'DROP TABLE users'; END $$;
+databaseDdlService.executeSql()	MEDIUM	Uses AllowlistEngine client-side. A determined user can modify the JS and bypass it.
+AllowlistEngine.splitStatements()	MEDIUM	Custom SQL parser without dollar-quote escaping edge cases. Could be confused by nested dollar-quotes.
+Field mapping	LOW	All values go through parameterized REST API calls (not string interpolation). Safe by design.
+bootstrapAdmin() raw SQL	MEDIUM	Line 82-88: constructs SQL via string concatenation for FieldMapper.toProvider values. Single-quote escaping only.
+The fundamental issue is that the entire security model assumes the client will follow the rules. In a browser-only architecture, there is no trusted computing base. Every security control (AllowlistEngine, permission guard, field validation) runs in the browser and can be bypassed by modifying the JavaScript.
+This completes Pass 2. Continue with Pass 3 (Authentication, RBAC, Security)?
+▣  Build · DeepSeek V4 Flash Free · 1m 7s
+yes
++ Thought: 2.3s
+# Todos
+[✓] Pass 1: System/Folder/Dependency/Runtime Architecture Audit
+[✓] Pass 2: Database/Schema/Data Layer/Search/RLS Audit
+[•] Pass 3: Authentication/RBAC/Authority Engine/Security Audit
+[ ] Pass 4: Business Logic/Workflows/Services/Centralized Managers Audit
+[ ] Pass 5: UI Design System/CSS/Components Audit
+[ ] Pass 6: Performance/Caching/Storage/Backup/Monitoring Audit
+[ ] Pass 7: Complete Enterprise Redesign & Migration Roadmap
+[ ] Specific Task: Server speed/performance layer & image-compression pipeline
++ Thought: 349ms
+→Read src\services\authService.js 
+→Read src\providers\auth\AuthProvider.js 
+→Read src\providers\auth\SupabaseAuthProvider.js 
+→Read src\components\PermissionGate.jsx 
+→Read src\components\PermissionCheckbox.jsx 
+→Read src\components\PermissionMatrix.jsx 
+→Read src\logic\roleLogic.js 
++ Thought: 775ms
+→Read src\services\userService.js 
+→Read src\utils\crypto.js 
+→Read src\hooks\usePermissions.js 
+→Read src\providers\auth\index.js 
+✱Grep "user\.role\s*===|user\.roleCode\s*===|\.role\s*===" in src (2 matches)
++ Thought: 857ms
+Pass 3: Authentication, RBAC, Authority Engine & Security Audit
+1. Current Architecture
+Authentication:
+- AuthProvider (abstract) → SupabaseAuthProvider (only implementation)
+- Auth flows through Supabase GoTrue REST API: signUp, signIn, signOut, getSession
+- Session stored in localStorage under lexai.auth.session
+- Token refresh via grant_type=refresh_token to Supabase /auth/v1/token
+- No local/Mock auth provider — Supabase is the only option
+Authorization / RBAC:
+- Permission strings follow module.action format (e.g., manageCase.delete, roles.edit)
+- 30 modules × 27 actions = 810 possible permission keys
+- Roles store permissions: string[], optional all: boolean flag (super admin)
+- Role inheritance via inherits: string[] (role code references)
+- Per-user overrides via grants: string[] (add) and denies: string[] (subtract)
+- Resolution: rbacLogic.resolve(user, roles) → { can(perm), has(module, action), isSuperuser, sourceOf(perm) }
+Three-layer permission enforcement:
+1. Route level: RequireAuth component wraps routes, checks canViewModule(module)
+2. UI level: PermissionGate component hides buttons/elements based on can(perm)
+3. Service level: permissionGuard.requireCapability(perm) throws PERMISSION_DENIED when called without authorization
+Database-level security (RLS):
+- lx_is_superadmin(), lx_is_manager() PostgreSQL functions that check the role's all flag and permissions in the roles table
+- Policies on every table: admin_all, manager_all, user_select, anon_select
+- user_role_registry table with trigger-sync from users table
+- current_user_role() function maps auth.uid() → role_code from users table
+2. Problems
+Critical:
+1. No server-side enforcement — The entire permission system runs in the browser. rbacLogic.resolve() runs in AuthContext's useMemo. permissionGuard.requireCapability() is a module-level variable set by syncPermissionGuard(). A user with browser DevTools can:
+- Call requireCapability with any permission → it returns from in-memory state
+- Directly call databaseService.create('cases', data) bypassing the UI entirely
+- Modify activeCan in memory to always return true
+- The service-layer guard is a facade — it protects against casual bypass but not against a determined user
+2. Password hashing is "demo-grade" in browser (crypto.js:5) — SHA-256 of salt:password with 16-byte random salt. No PBKDF2, bcrypt, scrypt, or Argon2. The code itself says "provides DEMO-grade protection only — anyone with devtools can read memory."
+3. SupabaseAuthProvider.signIn creates users with empty role (SupabaseAuthProvider.js:103-114) — When a user signs in via Supabase Auth but has no corresponding row in the application users table, it auto-creates one with roleCode: ''. This creates a user with zero permissions who can still authenticate and access public pages.
+4. No brute-force protection — The Supabase /auth/v1/token?grant_type=password endpoint is called directly from the browser with no rate limiting, no CAPTCHA, no account lockout.
+High:
+5. Session token stored in localStorage in plaintext — The JWT access token and refresh token are stored in localStorage.getItem('lexai.auth.session') as a JSON string. Any browser extension or XSS vulnerability can steal the token. Enterprise standard: httpOnly cookie or in-memory session with short-lived tokens.
+6. permissionGuard.syncPermissionGuard is a global mutable — The activeCan, activeIsSuperuser, activeUser variables are module-level mutable state. If AuthContext unmounts or the user logs out, the stale permissions remain until syncPermissionGuard() is called again. Race conditions during rapid auth changes could leak permissions.
+7. execSql RPC exposed to authenticated role — The exec_sql function is granted to authenticated via SchemaCompiler.js:379. Any authenticated user (not just admins) can run exec_sql('select * from audit_logs'). The safe_ddl blocklist blocks destructive operations but does not block SELECT queries.
+8. lx_is_superadmin() reads from roles table via security-definer — While correctly bypassing RLS recursion, this function queries the roles table on EVERY RLS evaluation. On a table with 50+ RLS policies and 100+ rows, a single query can trigger dozens of roles table lookups, creating a performance bottleneck.
+Medium:
+ 9. No permission caching — Every call to can(perm) iterates through role permissions, grants, and denies sets. With 50+ roles and 810 permissions, resolution is O(n) on every call. In a component tree with 100+ PermissionGate instances (sidebar, tables, buttons), this creates measurable re-render overhead.
+10. PermissionMatrix loads all 30 modules × 27 actions — The permission management UI shows 810 checkboxes. For a user with 10+ modules granted, this is an unwieldy interface. Enterprise systems group permissions by category and use role templates.
+11. No permission audit trail for denials — permissionGuard.requireCapability() throws a generic PERMISSION_DENIED error but does not log the denied request to the audit log. Security teams need to know who was denied access to what.
+12. all flag is binary — The all flag on a role means "can do everything." There's no concept of scoped super-admin (e.g., "can manage users but not view audit logs"). Enterprise RBAC uses hierarchical admin levels.
+13. No API key authentication — The config.js reads API keys for OpenAI, Anthropic, Gemini, etc. and ships them to the browser. Anyone can extract these from the JS bundle and use them. The clientSecretGuard.js warns but does not prevent.
+3. Enterprise Recommendation
+Immediate fixes:
+- Remove exec_sql grant from authenticated role — only service_role should execute arbitrary SQL
+- Add permission denial audit logging to requireCapability()
+- Add brute-force rate limiting to the login page (client-side delay + supabase RLS throttle)
+- Fix SupabaseAuthProvider.signIn to reject users with empty roleCode or assign a default "viewer" role
+Short-term:
+- Introduce a backend API server (BFF) that owns all authorization logic
+- Move the roles table to server-side cache (Redis) to avoid repeated RLS lookups
+- Implement permission caching with a Set cache and React useMemo with proper deps
+- Replace SHA-256 password hashing with PBKDF2 or delegate to Supabase Auth's built-in password hashing
+- Add session token rotation (short-lived access tokens, refresh token rotation)
+Long-term:
+- Implement ABAC (Attribute-Based Access Control) alongside RBAC for data-level permissions
+- Add API key authentication for external integrations
+- Implement permission groups/templates for bulk role assignment
+- Add scoped admin levels (read-only admin, user-manager admin, full admin)
+4. Real-World Example
+A bank vault has three locks: a guard at the entrance checks your ID (route guard), a sign on each room says "Authorized Personnel Only" (UI gate), and a logbook records who enters (audit log). But the vault door is always open — anyone who walks past the guard and ignores the sign can walk right in. The "security" is entirely theatrical.
+
+That's the current architecture. The route guard, PermissionGate, and permissionGuard all run in the browser. A user who opens DevTools can set activeCan = () => true and bypass everything.
+Ideal enterprise approach:
+The bank vault has a steel door that only the server can unlock. The guard checks your ID against a server-side database. The sign tells you what's in each room. The logbook is written by the server. The browser is just a dumb terminal — it shows what the server allows and can't show anything the server doesn't send.
+5. Authority Audit: Permission Checks
+Check location	Pattern	Assessment
+Route guard	canViewModule(module)	✅ Authority-based, correct
+UI elements	can('module.action')	✅ Authority-based, correct
+Service layer	requireCapability('perms.edit')	✅ Authority-based, runs in browser
+Database RLS	lx_is_superadmin(), lx_is_manager()	✅ Authority-based via roles table, security-definer
+Role resolution	roleLogic.getSuperAdminRoleCode()	✅ Queries all === true, not role name
+SEED_SUPER_ROID code	owner — but authority is from all: true	✅ Correct pattern
+Hardcoded role-name checks found: 0 — The grep confirmed zero instances of user.role === "Admin" or similar. This is a significant architectural strength.
+6. RBAC Model Summary
+User
+  ├── roleCode (primary role)
+  ├── extraRoles[] (secondary roles)
+  ├── grants[] (custom permission additions)
+  └── denies[] (custom permission removals)
+       ↓
+Roles (by code)
+  ├── permissions[] (string array)
+  ├── inherits[] (other role codes to inherit from)
+  ├── all (boolean — super admin flag)
+  └── system (boolean — system-managed)
+       ↓
+rbacLogic.resolve(user, allRoles)
+  ├── Collect role permissions (with inheritance)
+  ├── Apply grants (add)
+  ├── Apply denies (remove, wins over everything)
+  └── Returns { can(perm), has(module, action), isSuperuser, sourceOf(perm) }
+Permission source tracking:
+- inherited — from role(s)
+- custom — from user-level grants
+- denied — from user-level denies
+- none — not present
+7. Security Score
+Concern	Score	Reasoning
+Authentication	4/10	Supabase Auth is good, but session in localStorage, no MFA, no rate limiting
+Authorization	8/10	Authority-based, clean abstractions, three enforcement layers (all in browser)
+RBAC design	9/10	Inheritance, grants/denies, permission provenance — genuinely enterprise-grade
+Secret management	3/10	API keys shipped to browser, clientSecretGuard only warns
+Password security	2/10	SHA-256 (not KDF), browser-memory accessible
+SQL injection	4/10	exec_sql + anon grant = critical exposure
+Session security	3/10	Plaintext localStorage, no httpOnly, no CSP
+Audit logging	5/10	Good app-level audit, no permission denial logging, no server-side audit
+RLS policies	7/10	Well-structured hierarchy, but _anon_all bypasses and exec_sql undercuts
+OWASP alignment	4/10	Missing: XSS protection, CSP, rate limiting, secure cookies, input sanitization
+8. Threat Model
+Threat	Likelihood	Impact	Current Mitigation
+XSS → steal session	Medium	Critical	None — no CSP headers, no httpOnly cookies
+DevTools bypass	High	Critical	None — all auth runs in browser
+API key theft	High	High	clientSecretGuard warns only
+Brute force login	Medium	High	None — no rate limiting
+SQL via exec_sql	Medium	Critical	safe_ddl blocklist (easily bypassed via DO $$)
+localStorage read	Medium	High	None — tokens in plaintext
+Permission escalation	Low	High	grants[] / denies[] checked server-side only if service layer enforces
+This completes Pass 3. Continue with Pass 4 (Business Logic, Workflows, Services, Centralized Managers)?
+▣  Build · DeepSeek V4 Flash Free · 1m 2s
+yes
++ Thought: 747ms
+# Todos
+[✓] Pass 1: System/Folder/Dependency/Runtime Architecture Audit
+[✓] Pass 2: Database/Schema/Data Layer/Search/RLS Audit
+[✓] Pass 3: Authentication/RBAC/Authority Engine/Security Audit
+[•] Pass 4: Business Logic/Workflows/Services/Centralized Managers Audit
+[ ] Pass 5: UI Design System/CSS/Components Audit
+[ ] Pass 6: Performance/Caching/Storage/Backup/Monitoring Audit
+[ ] Pass 7: Complete Enterprise Redesign & Migration Roadmap
+[ ] Specific Task: Server speed/performance layer & image-compression pipeline
++ Thought: 598ms
+→Read src\logic 
+→Read src\services 
+→Read src\hooks 
+→Read src\data-layer\SettingsContext.jsx 
+→Read src\data-layer\ToastContext.jsx 
+→Read src\data-layer\DebugContext.jsx 
++ Thought: 533ms
+→Read src\logic\caseLogic.js [limit=100]
+→Read src\logic\settingsLogic.js 
+→Read src\logic\backupLogic.js 
+→Read src\logic\citationLogic.js [limit=80]
+→Read src\logic\notificationLogic.js 
+→Read src\logic\searchLogic.js 
+→Read src\services\fileSyncService.js 
+→Read src\services\preferencesService.js 
++ Thought: 697ms
+Pass 4: Business Logic, Workflows, Services & Centralized Managers Audit
+1. Current Architecture
+Layer structure:
+Logic (66 modules)    ← Pure business rules, orchestrates services
+  │
+Services (65 modules) ← Façade over repositories, most with requireCapability gates
+  │
+Repositories (49)     ← Data access, schema validation, field mapping
+Key pattern: Each domain (case, citation, drafting, backup, etc.) has exactly three layers:
+- xxxLogic.js — orchestrates workflows, calls multiple services, no I/O directly
+- xxxService.js — thin CRUD pass-through to repository, with optional permission gate
+- xxxRepository.js — data access (auto-generated from createRepository())
+Centralized Managers identified:
+Manager	File	Type
+Settings Manager	settingsLogic.js + settingsService.js + SettingsContext.jsx	✅
+Permission Manager	rbacLogic.js + permissionService.js + PermissionMatrix.jsx	✅
+Feature Flags	config/featureFlags.js	⚠️
+Notification Manager	notificationLogic.js + NotificationsBell.jsx	⚠️
+Audit Manager	auditService.js + auditLogLogic.js	✅
+Date Manager	DateEngine.js	✅
+Upload Manager	storageService.js	⚠️
+Theme Manager	styles/index.css (CSS vars)	❌
+Modal/Toast Manager	ToastContext.jsx + Modal.jsx	⚠️
+Search Manager	searchService.js + searchLogic.js	⚠️
+Export/Import Manager	exportData.js + udbEngine.js	✅
+Backup Manager	backupLogic.js + backupService.js + backupFileService.js	✅
+Setup/Wizard Manager	setup/ services + SetupGate.jsx + InstallationExecutor.js	✅
+Health Monitor	databaseHealthEngine.js + databaseHealthService.js	✅
+Logger	console.log/warn/error (ad-hoc)	❌
+Localization Manager	settingsLogic.js (locale in settings)	❌
+Validation Manager	schema/validateRecord()	⚠️
+2. Problems
+Critical:
+1. No centralized workflow engine — Business workflows (case lifecycle, citation verification, drafting approval) are scattered across 66 logic modules with no state machine, no persistence of workflow state, and no compensation/rollback for failures.
+2. No event bus or domain events — When a case is created, caseLogic.create() manually calls caseFolderService.create(), caseActivityService.record(), reminderLogic.syncHearingReminders(), and invalidateQuery(). This is procedural orchestration. In enterprise systems, a domain event (CaseCreated) would trigger these as subscribers, making the flow extensible without modifying the core logic.
+3. No transaction boundaries — caseLogic.create() has four sequential calls with no transaction. If caseFolderService.create() fails, the case row is already committed. The hearing reminder sync will never run. There is no rollback mechanism.
+4. No retry/compensation for any operation — fileSyncService.onChange() makes one attempt to push to cloud. If it fails, the sync status is set to 'error' and never retried. There's no dead-letter queue, no retry queue, no scheduled retry.
+High:
+ 5. Logic modules import repositories directly — caseLogic.js:10-11 imports draftsRepository and documentsRepository directly, bypassing the service layer. This violates the clean architecture rule that only services talk to repositories. Several logic modules have become "fat" — they both orchestrate AND access data.
+ 6. Context state management causes unnecessary re-renders — AuthContext, AppDataContext, SettingsContext, DebugContext, ToastContext are all React Context providers. When the user state changes (e.g., after login), ALL children of AuthContext re-render, including the sidebar, routes, every PermissionGate — even those that don't use auth. There are ~30 modules in the sidebar, each with multiple PermissionGate checks, creating significant re-render cascades.
+ 7. invalidateQuery('dashboard') is called on every mutation — Every case create/update/delete calls invalidateQuery('dashboard'). This forces a full re-fetch of the dashboard query on the next visit. For a user with 10,000 cases, this re-fetches ALL cases on every tab switch.
+ 8. notificationLogic fetches ALL hearings and reminders every time — notificationLogic.list() calls caseService.listHearings() and reminderService.list() with no filter. For a court system with 100,000 hearings, this fetches 100K rows just to show 7 days of notifications.
+ 9. No proper retry logic for API calls — apiClient.js has retry logic with configurable attempts, but the service layer (authService, citationService, etc.) doesn't use it. Service calls are fire-and-forget with no timeout, no circuit breaker, no exponential backoff.
+10. No idempotency keys on mutations — Creating a case with the same data twice creates duplicate cases. There's no idempotency key (idempotent token) to prevent duplicate submissions when the user double-clicks or the network retries.
+11. settingsLogic uses a single key-value row — All settings are stored in a single JSON blob under the key 'lexai_settings'. This means changing one setting (e.g., siteTitle) requires reading and rewriting the entire settings object, creating write conflicts in multi-tab scenarios.
+Medium:
+12. No approval workflow — There's no concept of draft approval, case assignment review, or document sign-off. In a legal enterprise, partner review of drafts and approval workflows are essential.
+13. keepAliveService.js exists but is unused — The service exists but doesn't appear to be invoked. If it's vestigial, it should be removed.
+14. analysisService.js and reportService.js contain business logic in services — These services compute analytics/reports but should delegate to the logic layer. Services should be thin facades.
+15. No scheduled job runner — The backupLogic has a frequency setting (daily, weekly) but there's no scheduler to run backups automatically. It relies on the user navigating to the backup page, or the keepAliveService which doesn't work reliably in a browser.
+3. Enterprise Recommendation
+Phase 1 — Immediate structural fixes:
+- Remove direct repository imports from logic modules — All data access must flow through the service layer. Create missing service methods where needed.
+- Replace invalidateQuery('dashboard') with targeted invalidation — After case creation, only invalidate the cases list, not the entire dashboard.
+- Add pagination to notificationLogic.list() — Fetch only upcoming hearings (next 7 days) via a date-filtered query rather than fetching everything.
+Phase 2 — Short-term:
+- Introduce a simple event bus — caseLogic.create() emits case.created, subscribers like reminderLogic, caseFolderLogic, activityLogic respond. This decouples the core flow from side effects.
+- Implicit transaction via operation log — For multi-step operations, write a log entry before each step, and on failure, reverse via a compensation handler.
+- Add retry queue to fileSyncService — Failed syncs go to a retry queue with exponential backoff (IndexedDB-backed).
+- Wrap apiClient calls with timeout + retry via service utility — All service calls should use the same retry mechanism.
+Phase 3 — Long-term:
+- State machine for case lifecycle — Cases go through defined states (Filed → Active → Disposed → Archived) with allowed transitions, triggers, and side effects per transition.
+- Approval pipeline — Drafts require review → approve/reject workflow. Document changes require sign-off.
+- Background scheduler — A setInterval-based scheduler in the browser (or better, on a server) that runs daily backups, cleanup jobs, and reminder notifications.
+4. Real-World Example
+A restaurant kitchen has one chef who does everything: takes orders, cooks, washes dishes, serves tables, and handles complaints. When an order comes in, the chef manually remembers to start the rice, prep the vegetables, cook the meat, plate it, and serve it — in the right order. If the rice cooker breaks mid-order, there's no backup plan. The chef simply starts over.
+
+That's caseLogic.create(). It manually orchestrates four sequential side effects with no transaction, no retry, and no rollback.
+Ideal enterprise approach:
+The restaurant has a head chef, a sous chef, a dishwasher, and a server. When an order comes in, a bell rings (event bus). The sous chef preps vegetables, the dishwasher runs, the server sets the table — all independently. If the rice cooker breaks, the sous chef starts a backup rice pot while the head chef is notified. Each station has its own backup plan.
+5. Service Layer Violations
+Violation	File	Assessment
+Logic imports repository directly	caseLogic.js:10-11	Should go through caseService / documentService
+Service contains business logic	analysisService.js, reportService.js	Business logic belongs in logic layer
+Service calls other services directly	citationService.js calling searchService.js	Acceptable cross-service call
+No permission gate on reads	roleService.list(), userService.list()	Reads have no requireCapability
+Logic does I/O	notificationLogic.list() fetches from 2 services	Acceptable for read aggregation
+Context stores mutable state	AuthContext.jsx boot() sets user	Context is the right place
+6. Centralized Managers Assessment
+Manager	Score	Issues
+Settings Manager	6/10	Single JSON blob causes write conflicts, no schema per setting
+Permission Manager	8/10	Clean UI, good provenance tracking, no caching
+Feature Flags	3/10	Hardcoded static config, no runtime toggling
+Notification Manager	4/10	Fetches all data, cache is in-memory, no real-time push
+Audit Manager	7/10	Good structure, but no permission denial logging
+Date Manager (DateEngine)	9/10	Excellent — timezone-aware, locale-aware, provider-agnostic
+Upload Manager	3/10	No queue, no progress, no chunking, no compression
+Theme Manager	2/10	Pure CSS vars, no JS manager, no runtime switching
+Modal/Toast Manager	5/10	Simple but works
+Search Manager	3/10	In-memory, fetches all data every time
+Export/Import Manager	8/10	UDB format is well-designed
+Backup Manager	7/10	Good structure, compression is simulated
+Setup Wizard	7/10	Comprehensive installer with health checks
+Health Monitor	6/10	Good design, but indexes can't be verified from browser
+Logger	0/10	No centralized logger, no log levels, no persistence
+Localization	1/10	No i18n library, no translation files, hardcoded English strings
+7. Scoring
+Dimension	Score	Reasoning
+Business logic	6/10	Clean separation logic/service/repo, but manual orchestration
+Workflow management	2/10	No event bus, no state machine, no transaction boundaries
+Service layering	7/10	Some violations of logic→repo direct access
+Centralized managers	5/10	Good foundation but missing several critical ones (logger, i18n)
+Notification system	3/10	In-memory, no real-time, no push
+Audit trail	6/10	Correct design, incomplete coverage
+Error handling	4/10	No retry, no compensation, no dead-letter queue
+State management	4/10	React Context causes excessive re-renders
+Data validation	6/10	Schema-level validation, no cross-field rules
+Idempotency	1/10	No idempotency keys anywhere
+This completes Pass 4. Continue with Pass 5 (UI Design System, CSS, Components)?
+▣  Build · DeepSeek V4 Flash Free · 1m 2s
+yes
++ Thought: 958ms
+# Todos
+[✓] Pass 1: System/Folder/Dependency/Runtime Architecture Audit
+[✓] Pass 2: Database/Schema/Data Layer/Search/RLS Audit
+[✓] Pass 3: Authentication/RBAC/Authority Engine/Security Audit
+[✓] Pass 4: Business Logic/Workflows/Services/Centralized Managers Audit
+[•] Pass 5: UI Design System/CSS/Components Audit
+[ ] Pass 6: Performance/Caching/Storage/Backup/Monitoring Audit
+[ ] Pass 7: Complete Enterprise Redesign & Migration Roadmap
+[ ] Specific Task: Server speed/performance layer & image-compression pipeline
++ Thought: 561ms
+→Read src\styles\index.css [offset=100, limit=200]
+→Read src\components\Button.jsx 
+→Read src\components\Card.jsx 
+→Read src\components\Modal.jsx 
+→Read src\components\DataTable.jsx [limit=80]
+→Read src\components\Badge.jsx 
+→Read src\components\CrudManager.jsx [limit=80]
+→Read src\components\Icon.jsx 
++ Thought: 615ms
+$ Get-Item -LiteralPath "H:\code\LexAI - Copy\src\styles\index.css" | Select-Object Length, @{Name="Lines";Expression={(Get-Content -LiteralPath $_.FullName).Length}}
+Length Lines
+------ -----
+526693 26675
+→Read src\components\Field.jsx [limit=60]
+→Read src\components\DateInput.jsx [limit=60]
+→Read src\components\SearchableSelect.jsx [limit=60]
+→Read src\components\Spinner.jsx 
+→Read src\components\EmptyState.jsx 
+→Read src\components\FilterPopup.jsx [limit=50]
++ Thought: 447ms
+Pass 5: UI Design System, CSS & Components Audit
+1. Current Architecture
+CSS: Single monolithic file src/styles/index.css — 527 KB, 26,675 lines.
+Component library: 62 components in src/components/:
+- Layout: AppLayout, Sidebar, Topbar (in layouts/)
+- Primitives: Button, Card, Badge, Icon, Spinner, Toggle, Modal, Modal pattern variants
+- Data: DataTable, CrudManager, CrudListPage, EntityManager, EntityListPage, PageHeader
+- Forms: Field, Input, Textarea, Select (in Field.jsx), DateInput, SearchableSelect, ColorPicker, PasswordInput, FileDrop
+- Permission: PermissionGate, PermissionCheckbox, PermissionMatrix
+- Domain-specific: CitationCard, CaseForm, DocEditor, RichTextEditor, CaseSelect, HearingFormModal, CaseDocTab, etc.
+Design tokens: CSS custom properties in :root:
+- Colors: navys, gold, brand, surfaces, text, status colors (green/red/amber)
+- Spacing: --sidebar-w, --topbar-h
+- Shadows: --shadow-sm, --shadow, --shadow-lg, --shadow-brand
+- Radius: --radius, --radius-sm
+- Scrollbar: --scrollbar-size, --scrollbar-thumb, --scrollbar-track
+Icon system: Inline SVG icons in Icon.jsx — 90+ path definitions, stroke-based Feather-style, plus complex multi-element icons and illustrations. No icon library dependency.
+Badge system: Dynamic color generation in badgeColors.js with hue-based color families. Active=green, Inactive=red are hard-wired regardless of input tone.
+2. Problems
+Critical:
+1. Monolithic 26,675-line CSS file — No component-scoped styles, no CSS modules, no CSS-in-JS. A single change to a button style can affect every page. Class name collisions are inevitable. Dead CSS cannot be identified or removed. Tree-shaking is impossible — the entire CSS is loaded on every page.
+2. No responsive design system — Only two breakpoints detected: @media (max-width: 767px) for mobile. No tablet, no wide desktop, no print stylesheet. The sidebar collapses to 78px on mobile but the main content area still expects a 264px margin. Many pages use hardcoded pixel values rather than fluid layouts.
+3. No CSS reset or normalization — The CSS starts with * { box-sizing: border-box; } but no consistent reset for margins, paddings, list styles, button defaults, or focus outlines. This means browser-specific rendering differences are unhandled.
+High:
+4. Inconsistent naming convention — Mix of:
+- BEM-like: card__head, card__body, card--hover
+- Utility: loading-block, scroll-area, table-scroll
+- Flat: empty, badge, toast
+- Unique: em-modal-subtitle, gs-logo-upload__input
+No single methodology is enforced.
+5. No design system documentation — No style guide, no component documentation, no visual regression tests. Developers must read the CSS or look at existing pages to understand available patterns.
+6. Accessibility gaps — Focus outlines are not consistently styled. Icon.jsx uses aria-hidden="true" but many interactive elements lack aria-label, role, or keyboard navigation support. The Modal component uses aria-label on the close button only.
+7. Hardcoded values in components — Card.jsx:2 has no variant system for different card types. Spinner.jsx has no size variants. EmptyState.jsx only has one icon size. Many components lack composability.
+8. CrudManager.jsx is 783 lines — too large — This single component handles Single Add, Single Edit, Single Delete, Bulk Add, Bulk Edit, Bulk Delete, Import, and Progress Bar. It's a monolith that violates the single-responsibility principle.
+9. No dark mode — The entire design system uses light-mode colors only. No prefers-color-scheme: dark media query. No CSS custom property overrides for dark theme.
+Medium:
+10. CSS custom properties are not comprehensive — Missing: font sizes scale, spacing scale (4/8/12/16/20/24/32), animation durations, z-index scale, and color opacity variants.
+11. Font loading not optimized — font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif relies on system fonts with no @font-face declaration. Inter is not loaded. On Windows, it falls back to Segoe UI which has different metrics.
+12. SearchableSelect.jsx uses position: fixed with manual positioning — The dropdown uses getBoundingClientRect() and position: fixed with hardcoded z-index 9999. This breaks in modals, scrolling containers, and nested stacking contexts.
+13. No CSS containment — No contain: layout style paint or content-visibility: auto on large lists, tables, or off-screen content. This means the browser layouts every DOM node even when invisible.
+14. Inline SVG icons cannot be themed — The Icon component uses stroke="currentColor" on simple paths, but COMPLEX icons use stroke="currentColor" on each element. The ILLUSTRATIONS use mixed fill="currentColor" and hardcoded fill="#fff" — the white fill breaks on dark backgrounds.
+15. No design tokens file — CSS custom properties are defined in index.css with the rest of the CSS. Enterprise design systems keep tokens in a separate file or import from a design tool (Figma tokens plugin).
+16. DateInput is a dual-input hack — Uses a visible text input for display + a hidden <input type="date"> for the native picker. The showPicker() API is non-standard (Chrome-only). On Firefox, the calendar picker icon is invisible.
+3. Enterprise Recommendation
+Phase 1 — CSS Architecture:
+- Split index.css into modules: tokens.css, reset.css, layout.css, components/ (one per component), pages/, utilities.css
+- Move all design tokens to tokens.css — colors, spacing scale, typography scale, shadows, z-index, animation
+- Adopt CSS Modules (.module.css) for component-scoped styles — zero global leakage, dead code elimination via Vite
+- Add :focus-visible outline style for accessibility
+Phase 2 — Design System:
+- Create a central components/design-system/ directory with primitives
+- Extract CrudManager into separate components: CrudSingleForm, CrudBulkForm, CrudImport, ProgressBar
+- Add component variants: Button variants (primary, secondary, ghost, danger, outline), sizes (sm, md, lg)
+- Add dark mode via prefers-color-scheme and manual toggle
+- Add responsive grid system with defined breakpoints
+Phase 3 — Tooling:
+- Add Storybook for visual component development and documentation
+- Add visual regression testing (Chromatic/Playwright)
+- Add design token export from Figma (via style-dictionary or similar)
+- Add content-visibility: auto on large data tables and lists for rendering performance
+- Replace position: fixed dropdown with position: absolute + overflow: visible on a portal
+4. Real-World Example
+A library with 26,675 books, all piled in one giant room with no shelves, no labels, no sections, and no catalog. To find a book, you read every spine until you find it. To add a book, you throw it on the pile. To know if a book exists, you must search the entire pile. Two librarians can't work simultaneously without tripping over each other.
+
+That's the current CSS. One file, no structure, no isolation, no tree-shaking.
+Ideal approach:
+The library has labeled sections (cards, typography, layout, pages), each with its own shelf (CSS module). A catalog (Storybook) documents every book. Removing a book is safe because we know exactly where it is.
+5. Component Inventory
+Component	Reusable?	Variants	Accessibility
+Button	✅	primary, sm, loading	✅ aria-disabled
+Card	✅	hover, noPad	❌ no aria
+Modal	✅	lg	⚠️ close btn aria only
+Badge	✅	dynamic tone	⚠️ color-only semantics
+Icon	✅	size, strokeWidth	✅ aria-hidden
+DataTable	✅	search, sort, select	❌ no aria-sort/role
+Spinner	✅	none	⚠️ aria-busy missing
+EmptyState	✅	icon, hint, action	⚠️ no role="status"
+Field	✅	label, hint	⚠️ no htmlFor auto-link
+DateInput	⚠️	—	❌ no datepicker label
+SearchableSelect	✅	—	❌ no aria-expanded
+PermissionGate	✅	module+action	✅
+CrudManager	⚠️	7 tabs, progress	❌ no aria
+Toggle	✅	—	⚠️ no role="switch"
+FileDrop	✅	—	❌ no aria
+RichTextEditor	❌	—	❌ contentEditable
+DocEditor	❌	—	❌ contentEditable
+6. CSS Architecture Score
+Dimension	Score	Reasoning
+Design tokens	5/10	CSS vars exist but incomplete, no typography scale, no spacing scale
+Component CSS	1/10	All in one file, no isolation, no modules
+Responsiveness	2/10	Single mobile breakpoint, hardcoded widths
+Accessibility	3/10	Some aria-hidden, missing roles, properties, keyboard
+Dark mode	0/10	Not supported
+Animation	6/10	CSS transitions on sidebar, some hover effects
+Typography	4/10	System fonts, no @font-face, no type scale
+Icon system	8/10	Clean, no dep, 90+ icons
+Component count	62	Good breadth, but not individually documented
+Maintainability	2/10	26K-line file is a liability
+This completes Pass 5. 
+                              
+Continue with Pass 6 (Performance, Caching, Storage, Backup, Monitoring)?
+
+Pass 6: Performance, Caching, Storage, Backup & Monitoring Audit
+1. Caching Architecture
+queryCache.js (src/data-layer/queryCache.js) — 124 lines:
+store = new Map()      → keyed by query string
+  each entry:
+    data              → last fetched result
+    error             → last error
+    status            → idle | loading | refreshing | success | error
+    promise           → deduplication (one in-flight per key)
+    ts                → timestamp of last successful fetch
+    version           → bump count for React subscription
+    fetcher           → stored fetcher function
+    subs              → Set<callback> for useSyncExternalStore
+Strengths:
+- Uses useSyncExternalStore — React 18 concurrent-safe, no tearing
+- Stale-while-revalidate pattern: returns stale data immediately, refetches in background
+- In-flight deduplication: same key, multiple subscribers get one network call
+- Dedicated mutation helpers: invalidateQuery(), setQueryData() for optimistic updates
+- setQueryData supports functional updater (prev) => next
+Problems:
+Problem	Severity	Detail
+No memory limit	Critical	Map grows unboundedly. A page that visits 1000 different records creates 1000 cache entries that are never evicted. Memory leak under extended usage.
+No cache persistence	High	All data lost on page refresh/close. A full page navigation triggers a full reload from the database. No localStorage, IndexedDB, or service worker backing.
+No cross-tab coherence	High	Two tabs see independent caches. Mutate on Tab A → Tab B serves stale data for up to 5 minutes.
+Default staleTime = 5 min	Medium	Records, statuses, or shared data stale for 5 minutes. invalidateQuery() must be called manually after every mutation, but no mechanism enforces this.
+No GC/eviction	Medium	Entries for unmounted components remain in memory forever. No WeakRef, no TTL, no LRU.
+No cache-busting for schema changes	Medium	Schema migrations don't invalidate cache. Stale schema data served post-migration.
+settingsCache.js (src/core/settingsCache.js):
+Simple object cache with subscriber pattern. Entire cache replaced on setAll. No persistence, no TTL. Acceptable for its narrow use case but could leak stale settings.
+Service Workers: None. No offline support, no push, no background sync, no cached asset shell.
+2. Storage Pipeline
+storageService.js (src/services/storageService.js):
+User upload → storageService.upload()
+  → getFileStorageProvider().upload(file)     [no compression]
+  → (optional OCR) → getOCRProvider().extract(file)
+  → documentsRepository.create(...)
+  → fileSyncService.onChange('create', record)
+  → return { stored, text, caseId, folder }
+Problem	Severity	Detail
+No client-side compression	Critical	upload(file) passes raw file as-is. A 20MB PDF is stored as 20MB. No image resize, no JPEG compression, no chunking. The compression flag in backup settings is explicitly documented as "simulated."
+No upload progress	High	User sees no progress bar for large files. On slow connections the UI hangs until upload completes.
+No chunked uploads	High	Files above Supabase Storage's size limit (6MB on free tier, varies) silently fail. No pause/resume for large uploads.
+No file type validation	Medium	upload() accepts any File object. No MIME type whitelist, no magic byte check, no extension verification. Malicious file uploads are possible.
+No size limit	Medium	No maxSize check before upload. User can attempt to upload a 4GB file to a provider that allows only 100MB.
+Silent OCR failure	Low	OCR errors are caught and replaced with ''. The user sees no feedback that OCR failed.
+copyDocument re-uploads	Low	Copies the database record but not the underlying file. The copy shares the original's storage reference. Deleting the original would break the copy.
+No image compression pipeline exists — tools/ has no image processing, no canvas-based resize, no WebP conversion. The only "compression" is a boolean flag that does nothing.
+3. Backup System
+Components:
+Module	Lines	Role
+backupLogic.js	292	Business logic — create, list, verify, restore, export, import, retention
+backupService.js	28	Low-level storage — catalog + settings via preferencesService
+backupFileService.js	115	File storage backup — UDB export + case file mirror
+udbEngine.js	190	Universal Database format — build, validate, repair, verify checksums, import
+Format: UDB v3.0 — self-describing JSON package:
+{
+  format: "UDB",
+  manifest: { app, udbVersion, schemaVersion, sourceProvider, exportedAt, collections, counts, checksum, checksums },
+  version: { udbVersion, schemaVersion, ... },
+  schema: schemas,
+  permissions: [],
+  relationships: [],
+  settings: [],
+  data: { collection: rows },
+  attachments: {},
+  logs: [],
+  checksum: "sha256"
+}
+Strengths:
+- Provider-independent format — export from Supabase, import into Firebase
+- Canonical key ordering for deterministic checksums
+- Per-section checksums (data, logs, settings, permissions)
+- Auto-repair on malformed imports
+- FIFO retention with protected backups excluded from cleanup
+- File storage backup mirrors both database UDB + all case files at concurrency 3
+Problems:
+Problem	Severity	Detail
+Encryption flag is simulated	Critical	encryption: true in settings does nothing. Comment says "demo only — see note." Backup files contain unencrypted JSON with all case data, client names, documents.
+Compression flag is simulated	Critical	compression: true in settings does nothing. Comment says "simulated flag — no real compression." Backups are full-size JSON.
+Full snapshot every time	High	No incremental backups. A 10MB database produces a 10MB+ backup every run. No delta/differential.
+Catalog stored in preferences	High	preferencesService.get() returns entire JSON catalog. On Supabase, this means a single row stores all backup records including full data payloads. For 100 backups × 10MB each = 1GB in a single preferences row.
+No restore dry-run	Medium	restore() immediately writes to the active database. No --dry-run or preview of what would change.
+No backup scheduler	Medium	frequency: 'daily', time: '02:00' are settings only. No setInterval/cron/service worker actually runs backups automatically. User must trigger manually.
+SCHEMA_VERSION mismatch	Low	backupLogic.SCHEMA_VERSION = 15 hardcoded, while udbEngine uses SCHEMA_VERSION from schema/index.js (34). If these drift, backups from a future version may fail validation.
+File backup is download-reupload	Medium	backupFileService.createDatafileBackup() downloads every file from primary storage, then uploads to Backup folder. For 1000 files at 10MB each = 10GB of download + 10GB of upload. No provider-side copy/fetch API used.
+No automated restore verification	Low	After restore, no automated checks run to verify data integrity (e.g., row counts match, foreign keys intact).
+4. Monitoring & Observability
+auditService.js (src/services/auditService.js):
+- Record: { action, module, user, details, meta } → auditLogs collection
+- ip is hardcoded to 'client' — no server means no real source IP
+- Errors silently swallowed
+- list() calls getAll({...query}) with no pagination, no time-range filtering
+- No audit log retention/rotation policy
+PerformanceAnalytics.jsx:
+- Hardcoded values: 99.8% Uptime, 210ms Avg Response Time — not real metrics
+- Error rate table shows all zeros — no actual error tracking infrastructure
+- Calls analyticsLogic.getMetrics() which returns basic record counts only
+ErrorBoundary.jsx (src/components/ErrorBoundary.jsx):
+- Wraps entire app in App.jsx
+- Only renders error message + stack trace to screen
+- No error reporting service (Sentry, Rollbar, Datadog)
+- No retry button for user
+- No network error distinction from render errors
+console.log usage: 99 occurrences across the codebase:
+- AdminSetup.jsx: 18 console.log calls for debugging bootstrap flow
+- authLogic.js: 15 console.log/warn/error calls logging passwords, email, user IDs
+- databaseManagerLogic.js: 13 console.log calls logging install steps
+- Security concern: authLogic.js:25 logs password length: console.log('[Bootstrap] signup password length:', password.length)
+Monitoring gaps:
+Gap	Severity	Detail
+No real performance metrics	Critical	No Web Vitals (LCP, FID, CLS), no API response timing, no render tracking
+No error reporting	Critical	No Sentry/Datadog/Bugsnag. Errors only show in console or ErrorBoundary UI.
+No uptime monitoring	High	The hardcoded "99.8% Uptime" is meaningless. No actual uptime tracking.
+No request tracing	High	No correlation IDs, no waterfall timing for API calls
+No user session tracking	Medium	No analytics (PostHog/Plausible), no page view tracking, no feature usage
+No log levels	Medium	No logger.info/warn/error/fatal abstraction — raw console.log everywhere
+No production log stripping	Medium	Console logs in development builds (fine), but also present in production Vite build
+Password lengths logged	High	authLogic.js:25 logs password.length — not the password itself, but a security smell
+5. React Performance
+Pattern	Found?	Count	Quality
+React.lazy + Suspense	✅	Via lazyWithRetry	Good — enables code splitting
+React.memo	❌	0	No component memoization
+useMemo	✅	100+	Widely used, mostly correctly
+useCallback	✅	100+	Widely used, mostly correctly
+useTransition	❌	0	No concurrent rendering
+startTransition	❌	0	No urgent/non-urgent distinction
+Virtualization	❌	0	DataTable loads all rows into DOM
+content-visibility	❌	0	No CSS containment on large lists
+Service Worker	❌	0	No offline shell
+Code splitting status:
+- Routes defined in routes/index.jsx use React.lazy via lazyWithRetry
+- Only route-level splitting — no component-level chunking
+- No preload/prefetch hints for anticipated routes
+6. Scoring
+Dimension	Score	Reasoning
+Query caching	7/10	Good stale-while-revalidate pattern, dedup, useSyncExternalStore. Lacks eviction, persistence, cross-tab sync.
+Settings caching	5/10	Simple, works, but no invalidation or isolation.
+Storage pipeline	3/10	No compression, no progress, no chunking, no validation. Simulated flags do nothing.
+Backup system	6/10	Excellent UDB format, per-section checksums, auto-repair, retention, protection. But encryption and compression are fiction, no increments, no scheduler.
+Monitoring	1/10	No real metrics, no error reporting, no tracing, no analytics. Performance page shows hardcoded values.
+Logging	3/10	auditService exists but is lean. 99 console.log calls, including password lengths. No log levels.
+Error handling	4/10	ErrorBoundary exists, lazyWithRetry handles chunk failures. No error reporting service, no retry.
+React performance	5/10	Code splitting, good memo usage but no memo(), no concurrent features, no virtualization.
+Offline support	0/10	No service worker, no offline mode, no persisted cache.
+Web Vitals	0/10	No PerformanceObserver, no real user monitoring.
+Overall Pass 6 Score: 34/100 — The backup format design is the standout. Everything else (performance measurement, storage pipeline, monitoring, offline) needs fundamental overhaul.
+This completes Pass 6. Proceed with Pass 7: Complete Enterprise Redesign & Migration Roadmap?
+▣  Build · DeepSeek V4 Flash Free · 1m 30s
+yes
++ Thought: 3.2s
+# Todos
+[•] Pass 7: Complete Enterprise Redesign & Migration Roadmap — target architecture, phased migration, critical fixes, new backend, auth overhaul, data layer, storage, caching, monitoring, testing, CI/CD, security hardening, performance budgets
++ Thought: 694ms
+Pass 7: Complete Enterprise Redesign & Migration Roadmap
+0. Executive Summary
+LexAI is a remarkably ambitious SPA with excellent architectural intent (clean layers, provider abstraction, authority-based RBAC) but has five fundamental problems that prevent it from being a production legal SaaS:
+1. No backend server — Browser talks directly to Supabase with anon key. Every security control runs client-side. Any user with devtools can bypass everything.
+2. No test infrastructure — 0 tests across 200+ modules. A single regression can break the entire app silently.
+3. Monolithic CSS + no design system — 27K lines of CSS in one file, no component isolation, no dark mode.
+4. Simulated features — "Encryption", "compression", "OCR success" are flags that do nothing.
+5. No monitoring, no offline, no performance measurement — The "Performance Analytics" page shows hardcoded values.
+This plan fixes all five in four phases over ~6 months.
+1. Target Architecture
+┌─────────────────────────────────────────────────────────┐
+│                   Browser (React SPA)                    │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │  Pages   │  │  Logic   │  │  Hooks   │              │
+│  │  (slim)  │  │  (thin)  │  │  + SWR   │              │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘              │
+│       │              │              │                    │
+│  ┌────▼──────────────▼──────────────▼─────┐             │
+│  │        GraphQL Client (Apollo)         │             │
+│  │        + REST fallback                 │             │
+│  └────────────────┬───────────────────────┘             │
+└───────────────────┼─────────────────────────────────────┘
+                    │ HTTPS + JWT
+┌───────────────────▼─────────────────────────────────────┐
+│              Backend (Node.js + Fastify)                 │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
+│  │  Auth    │  │  GraphQL │  │  REST    │  │  Admin │ │
+│  │  Module  │  │  Gateway │  │  API     │  │  API   │ │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬────┘ │
+│       │              │              │              │     │
+│  ┌────▼──────────────▼──────────────▼──────────────▼──┐ │
+│  │              Service Layer                          │ │
+│  │  Cases │ Docs │ Auth │ Search │ Backup │ AI │ Notif │ │
+│  └─────────────────────┬──────────────────────────────┘ │
+│                        │                                 │
+│  ┌─────────────────────▼──────────────────────────────┐ │
+│  │              Data Layer                             │ │
+│  │  Kysely (SQL) │ Redis (cache) │ Minio (files)      │ │
+│  └────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+Key architectural decisions:
+- Abandon the "no backend" SPA approach. A legal application handling PII, case documents, and court data must have a server-side enforcement layer.
+- GraphQL primary, REST secondary. GraphQL gives typed queries, avoids over/under-fetching, and allows one round trip for complex pages. Apollo Client replaces queryCache.js.
+- PostgreSQL via Kysely (type-safe query builder) — not raw Supabase REST. Kysely generates SQL, enforces types, and works with any pg driver.
+- Redis for session cache, query cache, rate limiter counters, and pub/sub for cross-tab invalidation.
+- Minio (S3-compatible) for file storage, with signed URLs. Replaces direct Supabase Storage access.
+- BullMQ for background jobs (backup, OCR, sync, bulk email).
+2. Phase Plan (6 Months)
+Phase 0: Critical Security Patch (Week 1)
+Action	Risk
+Revoke anon role's exec_sql permission	🔴 Critical
+Move all API keys to backend env vars only	🔴 Critical
+Add Supabase RLS row-level security on all tables	🔴 Critical
+Replace localStorage session with httpOnly cookie	🔴 Critical
+Add CSP headers preventing inline script execution	🔴 Critical
+Strip console.log calls from production build	High
+These are non-negotiable. Every single one is a CVE-level vulnerability today. Do these before adding any feature.
+Phase 1: Backend Foundation (Weeks 2-6)
+Backend scaffold:
+backend/
+├── src/
+│   ├── index.ts              # Fastify server entry
+│   ├── config/               # Env-based config, secrets
+│   ├── auth/                 # JWT issue/verify, Supabase integration
+│   ├── graphql/              # GraphQL schema, resolvers
+│   │   ├── schema.graphql    # Type definitions
+│   │   ├── resolvers/        # Per-entity resolvers
+│   │   └── context.ts        # Auth context, loaders
+│   ├── services/             # Business logic (moved from frontend)
+│   ├── db/                   # Kysely schema, migrations, seeds
+│   ├── storage/              # Minio client, signed URLs
+│   ├── queue/                # BullMQ job definitions
+│   ├── middleware/           # Rate limit, audit, cors
+│   └── types/                # Shared TypeScript types
+├── migrations/               # SQL migration files (timestamped)
+├── package.json
+└── tsconfig.json
+Migration strategy: Build backend alongside the SPA. The SPA currently calls Supabase directly. During Phase 1, the SPA gains a feature flag: if VITE_API_URL is set, all data calls go to the backend instead. This allows incremental rollout.
+Deliverables:
+- Fastify server with JWT auth
+- GraphQL schema covering all 50+ entities
+- Kysely migrations from current schema (v34)
+- Minio storage integration
+- 10 core GraphQL resolvers (cases, documents, users, roles, courts, hearings, tasks, contacts, settings, auditLogs)
+- Rate limiting (100 req/min per user)
+- Audit logging on the server side
+Frontend changes in Phase 1:
+- Replace queryCache.js with @apollo/client
+- Create Apollo Client instance with auth link (JWT from cookie)
+- useQuery() hook → Apollo's useQuery()
+- invalidateQuery() → Apollo's refetchQueries or cache evict
+- Backend feature flag: if VITE_API_URL is unset, fall back to current direct-Supabase calls (for development/offline)
+Phase 2: Auth & Security Overhaul (Weeks 7-10)
+Current: SupabaseAuthProvider.js + localStorage tokens + client-side RBAC
+Target:
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Login Page  │────>│  /api/auth   │────>│  Supabase    │
+│              │<────│  (Fastify)   │<────│  Auth (SSR)  │
+└──────────────┘     └──────┬───────┘     └──────────────┘
+                            │
+                    ┌───────▼───────┐
+                    │  httpOnly     │
+                    │  JWT cookie   │
+                    │  (signed,     │
+                    │   sameSite,   │
+                    │   secure)     │
+                    └───────────────┘
+Changes:
+- Signup/signin calls the backend, which calls Supabase Auth server-side
+- Backend returns JWT in httpOnly secure SameSite=Strict cookie
+- SupabaseAuthProvider is replaced with a thin AuthContext that reads the cookie
+- Client-side RBAC (rbacLogic.js) becomes a cache of server-enforced permissions. The server is the authority. Every backend request checks JWT claims.
+- permissionGuard.js moves to the backend as middleware
+- PermissionGate.jsx becomes a UX convenience only — the server will reject unauthorized requests regardless
+Phase 3: Testing & Design System (Weeks 11-16)
+Testing infrastructure:
+Layer	Tool	Target Coverage
+Unit (services)	Vitest	80%+
+Integration (API)	Supertest + Fastify	90% of endpoints
+Component	Vitest + Testing Library	60%+
+E2E	Playwright	20 critical paths
+Visual regression	Chromatic (Storybook)	All components
+Design system rebuild:
+- Split styles/index.css into CSS Modules per component
+- Design tokens in tokens.css with CSS custom properties
+- Storybook with all 62 components documented
+- Dark mode via prefers-color-scheme + manual toggle
+- Responsive grid with 4 breakpoints
+- CSS containment on DataTable for large lists
+User-facing improvements:
+- Dark mode toggle in Settings
+- Responsive tablet layout
+- Searchable component library (Storybook)
+Phase 4: Production Hardening (Weeks 17-24)
+Workstream	Details
+Performance	Web Vitals tracking via web-vitals library, Lighthouse CI, bundle analyzer, code-split below 200KB per route
+Offline	Service worker with workbox, cache-first for assets, network-first for data, offline fallback page
+Backup	Move backup scheduler to BullMQ (server-side cron), real AES-256 encryption, incremental backups via WAL, backup verification reports
+Storage	Client-side image compression via canvas (resize to 1920px max, WebP), chunked uploads via tus protocol, upload progress via XHR progress event
+Monitoring	Sentry for error tracking, Datadog/Grafana for metrics, structured logging via pino, health check endpoints
+File type validation	Magic byte checking on the server, MIME whitelist, antivirus scan via ClamAV
+Search	Replace LocalSearchProvider.js with PostgreSQL full-text search + triggers (tsvector/tsquery)
+3. Critical Path Dependencies
+Phase 0 (Security)
+    │
+    ▼
+Phase 1 (Backend) ──────► Phase 2 (Auth)
+    │                            │
+    │                            ▼
+    └─────────────► Phase 3 (Testing + Design System)
+                            │
+                            ▼
+                    Phase 4 (Production Hardening)
+- Phase 0 must be first — security holes make everything else moot.
+- Phase 2 depends on Phase 1 (backend must exist before auth can move server-side).
+- Phase 3 can start partially in parallel with Phase 1 (Storybook can be scaffolded independently, CSS module split can begin anytime).
+- Phase 4 depends on everything before it.
+4. Backend Service Migration Map
+Each frontend logic/ module has a corresponding backend service:
+Frontend Logic	Backend Service	Priority	Notes
+authLogic.js	AuthService	P0	Must move to server immediately
+rbacLogic.js	RBACMiddleware	P0	Server must enforce; client caches
+caseLogic.js	CaseService	P1	Core domain
+userLogic.js	UserService	P1	Auth dependency
+roleLogic.js	RoleService	P1	Auth dependency
+documentLogic.js	DocumentService	P1	Core domain
+hearingLogic.js	HearingService	P1	Core domain
+taskLogic.js	TaskService	P2	 
+contactLogic.js	ContactService	P2	 
+courtLogic.js	CourtService	P2	Reference data
+backupLogic.js	BackupService	P2	Server-side cron
+searchLogic.js	SearchService	P2	PostgreSQL FTS
+notificationLogic.js	NotificationService	P3	 
+citationLogic.js	CitationService	P3	External API
+analyticsLogic.js	AnalyticsService	P3	Real metrics
+versionLogic.js	VersionService	P3	 
+settingsLogic.js	SettingsService	P3	 
+Frontend logic modules after migration become thin validation + error handling shells that call backend GraphQL resolvers via Apollo Client hooks.
+5. File Deletion / Deprecation Plan
+File	Action	Phase	Reason
+providers/database/*	Delete	Phase 1	Backend owns all database access
+providers/auth/*	Delete	Phase 2	Backend owns all auth
+providers/file-storage/*	Delete	Phase 1	Backend proxies storage
+providers/search/LocalSearchProvider.js	Delete	Phase 4	Replaced by PostgreSQL FTS
+providers/ocr/*	Delete	Phase 4	OCR runs server-side
+data-layer/queryCache.js	Delete	Phase 1	Replaced by Apollo Client cache
+data-layer/AuthContext.jsx	Rewrite	Phase 2	Simplified to cookie reader
+data-layer/AppDataContext.jsx	Delete	Phase 1	Replaced by Apollo reactive vars
+data-layer/repositories/* (49 files)	Delete	Phase 1	Replaced by GraphQL + service layer
+logic/* (66 files)	Thin to ~20%	Phase 1-3	Heavy logic moves to backend
+core/apiClient.js	Delete	Phase 1	Replaced by Apollo Link
+core/AllowlistEngine.js	Delete	Phase 1	Server-side query validation
+core/settingsCache.js	Delete	Phase 1	Apollo cache handles this
+security/clientSecretGuard.js	Keep → Improve	Phase 0	Still useful for dev environment
+utils/crypto.js	Delete	Phase 2	Hashing done server-side
+styles/index.css	Split	Phase 3	26K → CSS Modules
+components/ErrorBoundary.jsx	Rewrite	Phase 4	Add Sentry integration
+components/DebugPanel.jsx	Delete	Phase 3	Dev-only, remove from production
+components/CrudManager.jsx	Split	Phase 3	Too large for one component
+Files to KEEP (with modifications):
+- All 62 components/* — UI stays in frontend (thin wrappers)
+- routes/navigation.js, routes/index.jsx — Routing stays
+- app/pages/* — Pages stay, data fetching changes
+- config/config.js, config/featureFlags.js — Config stays
+- constants/permissions.js — Permission definitions stay (shared with backend)
+- styles/index.css → broken into modules, not deleted
+- utils/id.js, utils/DateEngine.js, utils/FieldMapper.js — Utility helpers stay
+- data-provider/schema/* — Schema definitions stay (shared with backend)
+- data-provider/health/* — Health engine stays (client-side diagnostic)
+- data-provider/udb/udbEngine.js — UDB format stays (both client and server use this)
+6. New File Structure (Target)
+lexai/
+├── frontend/                     # React SPA (existing code, refactored)
+│   ├── src/
+│   │   ├── app/                  # Already here
+│   │   ├── components/           # Already here (62 components, thin)
+│   │   ├── pages/                # Already here
+│   │   ├── hooks/                # NEW — Apollo hooks, custom hooks
+│   │   ├── graphql/              # NEW — queries, mutations, fragments
+│   │   ├── styles/               # CSS Modules (restructured)
+│   │   │   ├── tokens.css
+│   │   │   ├── reset.css
+│   │   │   └── components/       # *.module.css
+│   │   ├── shared/               # Shared types, constants
+│   │   │   ├── permissions.js    # From constants/permissions.js
+│   │   │   └── types.ts          # NEW — shared types
+│   │   ├── utils/                # Keep utilities
+│   │   └── main.jsx              # Entry point
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── backend/                      # NEW — Fastify server
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── config/
+│   │   ├── auth/
+│   │   ├── graphql/
+│   │   ├── services/
+│   │   ├── db/
+│   │   │   ├── migrations/
+│   │   │   ├── seeds/
+│   │   │   └── kysely.ts
+│   │   ├── storage/
+│   │   ├── queue/
+│   │   ├── middleware/
+│   │   └── types/
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── shared/                       # NEW — shared between frontend & backend
+│   ├── permissions.ts
+│   ├── schemas.ts
+│   └── types.ts
+│
+├── docs/                         # Already exists
+├── tools/                        # Already exists
+└── package.json                  # Root workspace config
+Root package.json (npm workspaces):
+{
+  "workspaces": ["frontend", "backend", "shared"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm run build --workspace=shared && npm run build --workspace=frontend && npm run build --workspace=backend",
+    "test": "npm run test --workspaces --if-present"
+  }
+}
+7. Production Infrastructure
+                            ┌──────────────┐
+                            │  Cloudflare   │
+                            │  (CDN, WAF,   │
+                            │   DDoS, CSP)  │
+                            └──────┬───────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │         Load Balancer        │
+                    │         (nginx/ALB)          │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+       ┌──────▼──────┐     ┌──────▼──────┐     ┌──────▼──────┐
+       │  Fastify    │     │  Fastify    │     │  Fastify    │
+       │  (primary)  │     │  (replica)  │     │  (replica)  │
+       └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+              │                    │                    │
+              └────────────────────┼────────────────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │         Redis Cluster        │
+                    │  (session, cache, queue)     │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+       ┌──────▼──────┐     ┌──────▼──────┐     ┌──────▼──────┐
+       │  PostgreSQL │     │   Minio     │     │   BullMQ    │
+       │  (RDS)      │     │  (S3)       │     │  (workers)  │
+       │  + pgvector │     │  + CDN      │     │  + OCR, AI  │
+       └─────────────┘     └─────────────┘     └─────────────┘
+Infrastructure as Code (Terraform):
+- AWS ECS Fargate for backend (auto-scaling)
+- RDS PostgreSQL with read replicas
+- ElastiCache Redis cluster
+- S3 + CloudFront for file storage
+- Route53 + Cloudflare for DNS + security
+8. Adoption Cost Estimate
+Phase	Duration	Team	Cost (USD)	Risk
+Phase 0: Security	1 week	1 dev	$2k	None — must do
+Phase 1: Backend	5 weeks	2 devs	$20k	Medium — new code, regression risk
+Phase 2: Auth	4 weeks	1-2 devs	$12k	High — auth is foundational
+Phase 3: Testing + Design	6 weeks	2-3 devs	$30k	Low — parallelizable
+Phase 4: Hardening	8 weeks	2-3 devs	$40k	Medium — many unknowns
+Total	24 weeks	2-3 devs	~$104k	 
+Off-ramp after Phase 2: After 10 weeks, the system has a working backend, secure auth, and the exec_sql vulnerability is gone. The SPA is no longer exposing secrets. This is the minimum viable production state.
+9. What NOT to Do
+Avoid	Reason
+Rewriting everything at once	"Big Bang" rewrite will take 12+ months and die. Incremental migration is the only path.
+Porting to TypeScript before Phase 3	The JS codebase works. Adding types first adds churn with zero user benefit. Do it during Phase 3 when tests validate correctness.
+Building a real-time sync engine	Offline sync is complex. Add service worker cache-first for reads in Phase 4, skip offline writes for v1.
+Replacing React	React works fine. The problem is missing backend, not the frontend framework.
+Microservices	The app is a legal CRM. A monolith with clear module boundaries handles 100K users. Microservices add complexity without benefit.
+Keeping the "no backend" architecture	It's architecturally unsound for any app handling PII. Legal data requires server-side audit trails, access logs, and encryption at rest.
+10. File-Specific Migration Checklist
+For each of the 49 repositories and 66 logic modules:
+1. Copy the business logic to backend/src/services/
+2. Create GraphQL resolver for it
+3. Create Apollo hook in frontend/src/hooks/
+4. Add feature flag gating (VITE_API_URL)
+5. Once flag is on for 2 weeks without issues, delete the frontend logic copy
+Priority ordering for migration:
+1. authLogic.js + rbacLogic.js — must move first (security)
+2. caseLogic.js + documentLogic.js — core domain, highest traffic
+3. courtLogic.js + hearingLogic.js + taskLogic.js — heavy read volume
+4. userLogic.js + roleLogic.js — admin functions
+5. settingsLogic.js + backupLogic.js — admin/config
+6. notificationLogic.js + searchLogic.js + citationLogic.js — auxiliary
+7. analyticsLogic.js + reportLogic.js — reporting, low priority
+# Todos
+[✓] Pass 7: Complete Enterprise Redesign & Migration Roadmap — target architecture, phased migration, critical fixes, new backend, auth overhaul, data layer, storage, caching, monitoring, testing, CI/CD, security hardening, performance budgets
+All 7 passes are complete. Summary of what was delivered:
+Pass	Focus	Score
+1	System/Folder/Dependency/Runtime Architecture	8/10 Architecture, 5/10 Enterprise Readiness
+2	Database/Schema/Data Layer/Search/RLS	7/10 Schema, 2/10 Search
+3	Auth/RBAC/Security	9/10 RBAC design, 2/10 Password security
+4	Business Logic/Workflows/Services	2/10 Workflow, 1/10 Idempotency
+5	UI Design System/CSS/Components	2/10 Theme, 5/10 Component structure
+6	Performance/Caching/Storage/Backup/Monitoring	34/100 overall (backup format 6/10, everything else needs fundamental overhaul)
+7	Enterprise Redesign & Migration Roadmap	4-phase, 24-week plan with Phase 0 security critical patch
+The single biggest finding across all 7 passes: exec_sql granted to anon role. Fix that today. Everything else is engineering improvement; that one is a liability.
