@@ -29285,7 +29285,7 @@ None.
 │                                               │ Print                           1 sheet of paper    │
 │ Receipt Preview                               ├─────────────────────────────────────────────────────┤
 │                                               │ Destination                     [Microsoft Print ▼] │
-│ ROMAN FILMS                                   ├─────────────────────────────────────────────────────┤
+│ ROMAN FILMS ( Company Logo)                   ├─────────────────────────────────────────────────────┤
 │ EINVOICES                                     │ Pages                           [All ▼]             │
 │ Address                                       ├─────────────────────────────────────────────────────┤
 │ GSTIN                                         │ Layout                          [Portrait ▼]        │
