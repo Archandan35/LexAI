@@ -1752,7 +1752,7 @@ Watermark
 
 Image Preview
 
-Swipe logo
+  CoreX logo
 
 ---
 
@@ -1766,7 +1766,7 @@ Textarea
 
 Placeholder / Default
 
-Swipe | Simple Invoicing, Billing and Payments | Visit getswipe.in
+  CoreX | Simple Invoicing, Billing and Payments | Visit Core X
 
 ---
 
@@ -1776,7 +1776,7 @@ Textarea
 
 Default
 
-Powered by Swipe POS, [https://getSwipe.in](https://getSwipe.in)
+Powered by Core X,  
 
 ---
 
@@ -2128,13 +2128,13 @@ FOOTER
 PDF Footer
 
 ┌────────────────────────────────────────────────────────────┐
-│ Swipe | Simple Invoicing...                               │
+│   CoreX | Simple Invoicing...                               │
 └────────────────────────────────────────────────────────────┘
 
 Thermal Print Footer
 
 ┌────────────────────────────────────────────────────────────┐
-│ Powered by Swipe POS...                                   │
+│ Powered by Core X...                                   │
 └────────────────────────────────────────────────────────────┘
 
 ──────────────────────────────────────────────────────────────────────────────
@@ -2156,7 +2156,7 @@ This settings drawer is a **well-structured enterprise configuration panel**, us
 
 # UI Layout Analysis – Sales (Invoice Listing Page)
 
-> **Context:** This is the **Sales** dashboard/listing page in Swipe. It serves as the central screen for managing invoices before opening the **Create Invoice** page. The **Document Settings** button opens the slide-over drawer analyzed previously.
+> **Context:** This is the **Sales** dashboard/listing page in   CoreX. It serves as the central screen for managing invoices before opening the **Create Invoice** page. The **Document Settings** button opens the slide-over drawer analyzed previously.
 
 ---
 
@@ -2210,9 +2210,9 @@ Application branding, company selection, global search, and utility actions.
 
 | Column | Label                                         | Type                        |
 | ------ | --------------------------------------------- | --------------------------- |
-| 1      | swipe                                         | Logo                        |
+| 1      |   CoreX                                         | Logo                        |
 | 2      | MARUF DRESSES                                 | Company Selector            |
-| 3      | How to remove Swipe branding from my invoice? | Global Search               |
+| 3      | How to remove   CoreX branding from my invoice? | Global Search               |
 | 4      | ctrl+k                                        | Keyboard Shortcut Indicator |
 | 5      | Utility Icons                                 | Icon Buttons                |
 
@@ -2243,7 +2243,7 @@ Submenu
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Invite Users
@@ -2483,7 +2483,7 @@ Tally Integration
 
 Description
 
-Automatically sync your Swipe data with Tally.
+Automatically sync your   CoreX data with Tally.
 
 Button
 
@@ -2509,11 +2509,11 @@ Talk to Specialist →
 
 Logo
 
-swipe
+  CoreX
 
 Text
 
-©2026 NextSpeed Technologies Private Limited. All rights reserved.
+©2026   CoreX Technologies. All rights reserved.
 
 Security Link
 
@@ -2600,7 +2600,7 @@ Quotations+
 
 Expenses+
 
-SwipeAI
+  CoreXAI
 
 Products & Services
 
@@ -2704,7 +2704,7 @@ Left Sidebar │ Main Content
 | Section          | Row    | Column | Label                                           | Field Type                 |
 | ---------------- | ------ | ------ | ----------------------------------------------- | -------------------------- |
 | Global Header    | 1      | 2      | MARUF DRESSES                                   | Company Selector           |
-| Global Header    | 1      | 3      | How to remove Swipe branding from my invoice?   | Search Input               |
+| Global Header    | 1      | 3      | How to remove   CoreX branding from my invoice?   | Search Input               |
 | Sales Header     | 1      | 2      | Document Settings                               | Button                     |
 | Sales Header     | 1      | 3      | + Create Invoice                                | Primary Button             |
 | Status Tabs      | 1      | 1      | All                                             | Tab                        |
@@ -2751,7 +2751,7 @@ Left Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ How to remove Swipe branding from my invoice? ] | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ How to remove   CoreX branding from my invoice? ] | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ───────────┐  ┌──────────────────────────────────────────────────────┐
@@ -2763,7 +2763,7 @@ swipe | MARUF DRESSES | [ How to remove Swipe branding from my invoice? ] | ⚡ 
 │ Purchases                      │  │ [All] [Pending] [Paid] [Cancelled] [Drafts]          │
 │ Quotations+                    │  ├──────────────────────────────────────────────────────┤
 │ Expenses+                      │  │ [ Search by transaction, customers, invoice etc.. ] │
-│ SwipeAI                        │  │ [ This Year ▼ ]   [ Actions ▼ ]   [⚙ Filter]         │
+│   CoreXAI                        │  │ [ This Year ▼ ]   [ Actions ▼ ]   [⚙ Filter]         │
 │ Products & Services            │  ├──────────────────────────────────────────────────────┤
 │ Inventory                      │  │ Amount | Status | Mode | Bill # | Customer | Date    │
 │ Invite Users                   │  │ ₹180   | paid  | Cash | INV-157| SATYAM... | 21 Jul │
@@ -2775,7 +2775,7 @@ swipe | MARUF DRESSES | [ How to remove Swipe branding from my invoice? ] | ⚡ 
                                     │ [Talk to Specialist] [Talk to Specialist] [Talk...] │
                                     └──────────────────────────────────────────────────────┘
 
-Footer: swipe | ©2026 NextSpeed Technologies Private Limited | Data is secured via 'bank-grade' security
+Footer:   CoreX | ©2026   CoreX Technologies | Data is secured via 'bank-grade' security
 
                                                        ◉ WhatsApp Floating Button
 ```
@@ -2785,7 +2785,7 @@ This page follows a **modern SaaS ERP master-list pattern** with a persistent **
 
 # UI Layout Analysis – Purchases (Purchase Listing Page)
 
-> **Context:** This is the **Purchases** listing page of Swipe. It is the purchase-side equivalent of the Sales module, used for managing purchase invoices, vendor bills, debit notes, and related procurement records.
+> **Context:** This is the **Purchases** listing page of   CoreX. It is the purchase-side equivalent of the Sales module, used for managing purchase invoices, vendor bills, debit notes, and related procurement records.
 
 ---
 
@@ -2839,7 +2839,7 @@ Global application header containing branding, company selector, global search, 
 
 | Column | Label                                        | Field Type                  |
 | ------ | -------------------------------------------- | --------------------------- |
-| 1      | swipe                                        | Logo                        |
+| 1      |   CoreX                                        | Logo                        |
 | 2      | MARUF DRESSES                                | Company Selector            |
 | 3      | How to add a payment QR code to the invoice? | Global Search               |
 | 4      | ctrl+k                                       | Keyboard Shortcut Indicator |
@@ -2873,7 +2873,7 @@ Global application header containing branding, company selector, global search, 
 * Sales
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments (partially visible)
@@ -3140,7 +3140,7 @@ Tally Integration
 
 Description
 
-Automatically sync your Swipe data with Tally.
+Automatically sync your   CoreX data with Tally.
 
 Button
 
@@ -3168,11 +3168,11 @@ Talk to Specialist →
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -3263,7 +3263,7 @@ Expanded
 
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments (partially visible)
@@ -3402,7 +3402,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ How to add a payment QR code to the invoice? ] | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ How to add a payment QR code to the invoice? ] | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ───────────┐  ┌──────────────────────────────────────────────────────────────┐
@@ -3413,7 +3413,7 @@ swipe | MARUF DRESSES | [ How to add a payment QR code to the invoice? ] | ⚡ �
 │ ├─ Debit Notes                 │  ├──────────────────────────────────────────────────────────────┤
 │ Quotations+                    │  │ [All] [Pending] [Paid] [Cancelled] [Drafts]                 │
 │ Expenses+                      │  ├──────────────────────────────────────────────────────────────┤
-│ SwipeAI                        │  │ [ Search by transaction, customers, invoice etc.. ]         │
+│   CoreXAI                        │  │ [ Search by transaction, customers, invoice etc.. ]         │
 │ Products & Services            │  │ [ This Year ▼ ] [ Actions ▼ ] [ Filter ]                    │
 │ Inventory                      │  ├──────────────────────────────────────────────────────────────┤
 │ Payments                       │  │ Amount | Status | Mode | Bill # | Vendor | Date             │
@@ -3426,7 +3426,7 @@ swipe | MARUF DRESSES | [ How to add a payment QR code to the invoice? ] | ⚡ �
                                     │ [Talk to Specialist] [Talk to Specialist] [Talk...]        │
                                     └──────────────────────────────────────────────────────────────┘
 
-Footer: swipe | ©2026 NextSpeed Technologies Private Limited | Data is secured via 'bank-grade' security
+Footer:   CoreX | ©2026   CoreX Technologies | Data is secured via 'bank-grade' security
 
                                                         ● WhatsApp Floating Action Button
 ```
@@ -3484,7 +3484,7 @@ Application navigation panel.
 ### Visible Navigation Items
 
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Invite Users
@@ -3631,11 +3631,11 @@ Both appear disabled due to only one page.
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -3707,7 +3707,7 @@ WhatsApp Floating Button
 Visible Items
 
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Invite Users
@@ -3861,9 +3861,9 @@ Amount │ Status │ Mode │ Bill # │ Vendor │ Date
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-swipe
+  CoreX
 
-©2026 NextSpeed Technologies Private Limited. All rights reserved.
+©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                      ● WhatsApp
@@ -3936,9 +3936,9 @@ Application-wide navigation bar.
 
 | Column | Label         | Field Type         |
 | ------ | ------------- | ------------------ |
-| 1      | swipe         | Logo               |
+| 1      |   CoreX         | Logo               |
 | 2      | MARUF DRESSES | Company Selector   |
-| 3      | Ask SwipeAI   | Global Search      |
+| 3      | Ask   CoreXAI   | Global Search      |
 | 4      | ctrl+k        | Shortcut Indicator |
 | 5      | Utility Icons | Icon Buttons       |
 
@@ -3971,7 +3971,7 @@ Submenu
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Invite Users
@@ -4164,11 +4164,11 @@ Both appear disabled.
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -4252,7 +4252,7 @@ WhatsApp Floating Button
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Invite Users
@@ -4345,7 +4345,7 @@ Sidebar │ Main Content
 | Section       | Row    | Column | Label                                           | Field Type                   |
 | ------------- | ------ | ------ | ----------------------------------------------- | ---------------------------- |
 | Global Header | 1      | 2      | MARUF DRESSES                                   | Company Selector             |
-| Global Header | 1      | 3      | Ask SwipeAI                                     | Global Search                |
+| Global Header | 1      | 3      | Ask   CoreXAI                                     | Global Search                |
 | Page Header   | 1      | 2      | Document Settings                               | Button                       |
 | Page Header   | 1      | 3      | + Create Sales Return/Credit Note               | Primary Button               |
 | Status Tabs   | 1      | 1      | All                                             | Tab                          |
@@ -4390,7 +4390,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ─────────────┐  ┌─────────────────────────────────────────────────────────────────┐
@@ -4402,7 +4402,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
 │ Purchases                       │  │ [All] [Pending] [Paid] [Cancelled] [Drafts]                    │
 │ Quotations+                     │  ├─────────────────────────────────────────────────────────────────┤
 │ Expenses+                       │  │ [ Search by transaction, customers, invoice etc.. ]            │
-│ SwipeAI                         │  │ [ This Year ▼ ] [ Actions ▼ ] [⚙ Filter]                       │
+│   CoreXAI                         │  │ [ This Year ▼ ] [ Actions ▼ ] [⚙ Filter]                       │
 │ Products & Services             │  ├─────────────────────────────────────────────────────────────────┤
 │ Inventory                       │  │ Amount | Status | Mode | Bill # | Customer | Date              │
 │ Invite Users                    │  │─────────────────────────────────────────────────────────────────│
@@ -4417,7 +4417,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
                                      └─────────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+  CoreX | ©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                           ● WhatsApp Floating Button
@@ -4500,9 +4500,9 @@ Application-wide navigation bar.
 
 | Column | Label         | Field Type       |
 | ------ | ------------- | ---------------- |
-| 1      | swipe         | Logo             |
+| 1      |   CoreX         | Logo             |
 | 2      | MARUF DRESSES | Company Selector |
-| 3      | Ask SwipeAI   | Global Search    |
+| 3      | Ask   CoreXAI   | Global Search    |
 | 4      | ctrl+k        | Shortcut Hint    |
 | 5      | Utility Icons | Icon Buttons     |
 
@@ -4534,7 +4534,7 @@ Submenu
 * Sales
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments *(partially visible)*
@@ -4734,11 +4734,11 @@ Both controls appear disabled.
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -4822,7 +4822,7 @@ WhatsApp Floating Button
 * Sales
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments *(partially visible)*
@@ -4918,7 +4918,7 @@ Sidebar │ Main Content
 | Section       | Row    | Column | Label                                           | Field Type                   |
 | ------------- | ------ | ------ | ----------------------------------------------- | ---------------------------- |
 | Global Header | 1      | 2      | MARUF DRESSES                                   | Company Selector             |
-| Global Header | 1      | 3      | Ask SwipeAI                                     | Global Search                |
+| Global Header | 1      | 3      | Ask   CoreXAI                                     | Global Search                |
 | Page Header   | 1      | 2      | Document Settings                               | Button                       |
 | Page Header   | 1      | 3      | + Create Purchase Return/Debit Note             | Primary Button               |
 | Status Tabs   | 1      | 1      | All                                             | Tab                          |
@@ -4963,7 +4963,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ─────────────┐  ┌──────────────────────────────────────────────────────────────┐
@@ -4974,7 +4974,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
 │ Sales                            │  │        [+ Create Purchase Return/Debit Note]                │
 │ Quotations+                      │  ├──────────────────────────────────────────────────────────────┤
 │ Expenses+                        │  │ [All] [Pending] [Paid] [Cancelled] [Drafts]                 │
-│ SwipeAI                          │  ├──────────────────────────────────────────────────────────────┤
+│   CoreXAI                          │  ├──────────────────────────────────────────────────────────────┤
 │ Products & Services              │  │ [ Search by transaction, customers, invoice etc.. ]         │
 │ Inventory                        │  │ [ This Year ▼ ] [ Actions ▼ ] [⚙ Filter]                    │
 │ Payments                         │  ├──────────────────────────────────────────────────────────────┤
@@ -4991,7 +4991,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
                                       └──────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+  CoreX | ©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                        ● WhatsApp Floating Action Button
@@ -5016,7 +5016,7 @@ The **Purchase Returns / Debit Notes** page mirrors the **Sales Returns / Credit
 
 # UI Layout Analysis – Expenses Listing Page
 
-> **Context:** This is the **Expenses** module of Swipe. It is the central page used to manage expense transactions, categorize expenses, upload expenses in bulk, and create new expense entries. Unlike the invoice pages, this module introduces **expense categories**, **bulk upload**, and a wider transaction table.
+> **Context:** This is the **Expenses** module of   CoreX. It is the central page used to manage expense transactions, categorize expenses, upload expenses in bulk, and create new expense entries. Unlike the invoice pages, this module introduces **expense categories**, **bulk upload**, and a wider transaction table.
 
 ---
 
@@ -5075,9 +5075,9 @@ Application-wide navigation.
 
 | Column | Label         | Field Type       |
 | ------ | ------------- | ---------------- |
-| 1      | swipe         | Logo             |
+| 1      |   CoreX         | Logo             |
 | 2      | MARUF DRESSES | Company Selector |
-| 3      | Ask SwipeAI   | Global Search    |
+| 3      | Ask   CoreXAI   | Global Search    |
 | 4      | ctrl+k        | Shortcut Hint    |
 | 5      | Utility Icons | Icon Buttons     |
 
@@ -5108,7 +5108,7 @@ Application-wide navigation.
 * Sales
 * Purchases
 * Quotations+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -5379,11 +5379,11 @@ Buttons
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -5472,7 +5472,7 @@ WhatsApp Floating Button
 * Sales
 * Purchases
 * Quotations+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -5566,7 +5566,7 @@ Sidebar │ Main Content
 | Section       | Row    | Column | Label                                   | Field Type        |
 | ------------- | ------ | ------ | --------------------------------------- | ----------------- |
 | Global Header | 1      | 2      | MARUF DRESSES                           | Company Selector  |
-| Global Header | 1      | 3      | Ask SwipeAI                             | Global Search     |
+| Global Header | 1      | 3      | Ask   CoreXAI                             | Global Search     |
 | Header        | 1      | 2      | Expense Categories                      | Button            |
 | Header        | 1      | 3      | + Create Expense                        | Primary Button    |
 | Tabs          | 1      | 1      | All Transactions                        | Tab               |
@@ -5615,7 +5615,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ─────────────┐  ┌────────────────────────────────────────────────────────────────────┐
@@ -5625,7 +5625,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
 │ Sales                            │  │                                  [+ Create Expense]               │
 │ Purchases                        │  ├────────────────────────────────────────────────────────────────────┤
 │ Quotations+                      │  │ [All Transactions] [Pending] [Paid] [Cancelled]                  │
-│ SwipeAI                          │  ├────────────────────────────────────────────────────────────────────┤
+│   CoreXAI                          │  ├────────────────────────────────────────────────────────────────────┤
 │ Products & Services              │  │ [Search with Category, Description, Mode]                        │
 │ Inventory                        │  │ [Select Category ▼] [This Year ▼] [Bulk Upload BETA] [⚙]         │
 │ Payments                         │  ├────────────────────────────────────────────────────────────────────┤
@@ -5637,7 +5637,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
 └──────────────────────────────────┘  └────────────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+  CoreX | ©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                           ● WhatsApp Floating Action Button
@@ -5721,9 +5721,9 @@ Global application navigation.
 
 | Column | Label         | Field Type         |
 | ------ | ------------- | ------------------ |
-| 1      | swipe         | Logo               |
+| 1      |   CoreX         | Logo               |
 | 2      | MARUF DRESSES | Company Selector   |
-| 3      | Ask SwipeAI   | Global Search      |
+| 3      | Ask   CoreXAI   | Global Search      |
 | 4      | ctrl+k        | Shortcut Indicator |
 | 5      | Utility Icons | Icon Buttons       |
 
@@ -5750,7 +5750,7 @@ Global application navigation.
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Inventory
 * Payments
 * Customers
@@ -6098,11 +6098,11 @@ Buttons
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -6263,7 +6263,7 @@ Sidebar │ Main Content
 | Section       | Row    | Column | Label                                              | Field Type                 |
 | ------------- | ------ | ------ | -------------------------------------------------- | -------------------------- |
 | Global Header | 1      | 2      | MARUF DRESSES                                      | Company Selector           |
-| Global Header | 1      | 3      | Ask SwipeAI                                        | Global Search              |
+| Global Header | 1      | 3      | Ask   CoreXAI                                        | Global Search              |
 | Tabs          | 1      | 1      | Items                                              | Tab                        |
 | Tabs          | 1      | 2      | Categories                                         | Tab                        |
 | Tabs          | 1      | 3      | Groups                                             | Tab                        |
@@ -6305,7 +6305,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ─────────────┐  ┌────────────────────────────────────────────────────────────────────┐
@@ -6335,7 +6335,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
                                       └────────────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+  CoreX | ©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                          ● WhatsApp Floating Action Button
@@ -7155,9 +7155,9 @@ Application-wide navigation header.
 
 | Column | Label         | Field Type       |
 | ------ | ------------- | ---------------- |
-| 1      | swipe         | Logo             |
+| 1      |   CoreX         | Logo             |
 | 2      | MARUF DRESSES | Company Selector |
-| 3      | Ask SwipeAI   | Global Search    |
+| 3      | Ask   CoreXAI   | Global Search    |
 | 4      | ctrl+k        | Shortcut Hint    |
 | 5      | Utility Icons | Icon Buttons     |
 
@@ -7187,7 +7187,7 @@ Application-wide navigation header.
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Payments
 * Customers
@@ -7608,11 +7608,11 @@ Buttons
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Footer Text
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Link
 
@@ -7701,7 +7701,7 @@ WhatsApp Floating Button
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Payments
 * Customers
@@ -7840,7 +7840,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ─────────────┐  ┌────────────────────────────────────────────────────────────────────┐
@@ -7866,7 +7866,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
                                       └────────────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+  CoreX | ©2026   CoreX Technologies. All rights reserved.
 🔒 Data is secured via 'bank-grade' security
 
                                                         ● WhatsApp Floating Action Button
@@ -7956,9 +7956,9 @@ Application-level navigation header.
 
 | Column | Label         | Field Type       |
 | ------ | ------------- | ---------------- |
-| 1      | swipe         | Logo             |
+| 1      |   CoreX         | Logo             |
 | 2      | MARUF DRESSES | Company Selector |
-| 3      | Ask SwipeAI   | Global Search    |
+| 3      | Ask   CoreXAI   | Global Search    |
 | 4      | ctrl+k        | Shortcut Hint    |
 | 5      | Utility Icons | Icon Buttons     |
 
@@ -7989,7 +7989,7 @@ Other menus
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -8337,7 +8337,7 @@ Tally Integration
 
 Description
 
-Automatically sync Swipe data with Tally.
+Automatically sync   CoreX data with Tally.
 
 Button
 
@@ -8363,11 +8363,11 @@ Talk to Specialist →
 
 Logo
 
-swipe
+  CoreX
 
 Footer
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 
 Security
 
@@ -8458,7 +8458,7 @@ Other modules
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -8604,7 +8604,7 @@ Sidebar │ Main Content
 
 ```text
 ────────────────────────────────────────────────────────────────────────────────────────────────────
-swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
+  CoreX | MARUF DRESSES | [ Ask   CoreXAI ] | ctrl+k | ⚡ 🔔 📣 👤
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ┌──────────── Sidebar ────────────┐   ┌──────────────────────────────────────────────────────────────┐
@@ -8632,7 +8632,7 @@ swipe | MARUF DRESSES | [ Ask SwipeAI ] | ctrl+k | ⚡ 🔔 📣 👤
                                        └──────────────────────────────────────────────────────────────┘
 
 Footer:
-swipe | ©2026 NextSpeed Technologies Private Limited.
+  CoreX | ©2026   CoreX Technologies.
 🔒 Data is secured via 'bank-grade' security
 
                                                         ● WhatsApp Floating Action Button
@@ -9613,7 +9613,7 @@ Other navigation
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Customers
@@ -10231,7 +10231,7 @@ Visible menu items
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -10251,7 +10251,7 @@ Visible menu items
 
 Visible items
 
-* Swipe Logo
+*   CoreX Logo
 * Company Name
 * Change Company
 * Global Search
@@ -11319,7 +11319,7 @@ Text Input
 
 Placeholder
 
-NEXTSPEED TECHNOLOGIES PRIVATE LIMITED
+  CoreX Technologies
 
 ---
 
@@ -11937,7 +11937,7 @@ Contains
 
 Contains
 
-* Swipe Logo
+*   CoreX Logo
 * Copyright
 * Security notice
 
@@ -12042,7 +12042,7 @@ Displayed using color-coded values
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -12246,7 +12246,7 @@ The **Insights** page acts as a business analytics dashboard, providing an overv
 | Payment Analysis Cards    |     4 |
 | Customer Analysis Cards   |     4 |
 | Product Analysis Cards    |     6 |
-| Swipe Usage Heatmap       |     1 |
+|   CoreX Usage Heatmap       |     1 |
 | Footer                    |     1 |
 
 **Approximate Total Major Components:** **25+**
@@ -12611,17 +12611,17 @@ More menu (...)
 
 ---
 
-# Section 7 – Swipe Usage
+# Section 7 –   CoreX Usage
 
 Heading
 
-Swipe Usage
+  CoreX Usage
 
 ---
 
 Contains
 
-Swipe Invoices Graph
+  CoreX Invoices Graph
 
 Heatmap Calendar
 
@@ -12683,7 +12683,7 @@ No
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -12768,7 +12768,7 @@ Top Banner
 │      ├── 2-column Grid
 │      └── Multiple Cards
 │
-├── Swipe Usage Heatmap
+├──   CoreX Usage Heatmap
 │
 └── Footer
 ```
@@ -12803,7 +12803,7 @@ No other user-editable fields are visible.
 * KPI cards provide an immediate snapshot of key business metrics.
 * Related analytics are grouped into dedicated sections (Reports Overview, Payment Analysis, Customer Analysis, Product Analysis).
 * Consistent use of cards, spacing, and typography creates a uniform dashboard experience.
-* The **Swipe Usage** heatmap offers a compact visualization of activity over time.
+* The **  CoreX Usage** heatmap offers a compact visualization of activity over time.
 
 ### Observations
 
@@ -12880,10 +12880,10 @@ PRODUCT ANALYSIS
 │ No Regular Customers         │ No Expense Recorded         │
 └──────────────────────────────┴──────────────────────────────┘
 
-SWIPE USAGE
+  CoreX USAGE
 
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ Swipe Invoices Graph (Calendar Heatmap)                                   │
+│   CoreX Invoices Graph (Calendar Heatmap)                                   │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -13252,9 +13252,9 @@ Purpose
 
 # Usage Analytics
 
-## Swipe Usage
+##   CoreX Usage
 
-### Swipe Invoices Graph
+###   CoreX Invoices Graph
 
 Visualization
 
@@ -13294,8 +13294,8 @@ Purpose
 | 20 | Top Products by Revenue  |
 | 21 | Top Expenses by Category |
 | 22 | Slow-moving Products     |
-| 23 | Swipe Usage              |
-| 24 | Swipe Invoices Graph     |
+| 23 |   CoreX Usage              |
+| 24 |   CoreX Invoices Graph     |
 
 These widgets together form a comprehensive business intelligence dashboard covering **Sales Analytics, Purchase Analytics, Customer Analytics, Inventory Analytics, Product Analytics, Expense Analytics, Payment Analytics, Revenue Analytics, Operational Analytics, and Usage Analytics**.
 
@@ -13414,16 +13414,16 @@ Columns: **2**
 
 ### Heading
 
-**File your GSTR-1 Directly from Swipe**
+**File your GSTR-1 Directly from   CoreX**
 
 Description
 
-**Complete your GSTR1 filings from Swipe in 5 minutes**
+**Complete your GSTR1 filings from   CoreX in 5 minutes**
 
 Social Proof
 
 * Four profile avatars
-* **Abhishek Dutta and thousands of businesses file GSTR1 via Swipe**
+* **Abhishek Dutta and thousands of businesses file GSTR1 via   CoreX**
 
 ---
 
@@ -13607,7 +13607,7 @@ Heading
 
 Text
 
-> This data is based on records in Swipe and is indicative only. Actual GSTR2A/2B calculations happen on the GST portal based on vendor filings.
+> This data is based on records in   CoreX and is indicative only. Actual GSTR2A/2B calculations happen on the GST portal based on vendor filings.
 
 Icon
 
@@ -13999,10 +13999,10 @@ Grid Summary
 
 ```text
 ──────────────────────────────────────────────────────────────────────────────
-                     File your GSTR-1 Directly from Swipe
- Complete your GSTR1 filings from Swipe in 5 minutes
+                     File your GSTR-1 Directly from   CoreX
+ Complete your GSTR1 filings from   CoreX in 5 minutes
 
- [Avatars] Abhishek Dutta and thousands of businesses file GSTR1 via Swipe
+ [Avatars] Abhishek Dutta and thousands of businesses file GSTR1 via   CoreX
 
                                                    [ File Now ]
 ──────────────────────────────────────────────────────────────────────────────
@@ -14144,13 +14144,13 @@ Menu Items
 ## Group: Banks and Payments
 
 1. Banks
-2. Swipe Wallet
+2.   CoreX Wallet
 
 ---
 
 ## Group: Integrations & Apps
 
-1. Swipe AI
+1.   CoreX AI
 2. Payment Gateway 🔒
 3. Tally Integration 🔒
 4. API & Webhooks
@@ -14587,13 +14587,13 @@ Primary Button
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -14900,13 +14900,13 @@ This page is used to manage organization users, staff members, and their assigne
 ## Group: Banks and Payments
 
 1. Banks
-2. Swipe Wallet
+2.   CoreX Wallet
 
 ---
 
 ## Group: Integrations & Apps
 
-1. Swipe AI
+1.   CoreX AI
 2. Payment Gateway 🔒
 3. Tally Integration 🔒
 4. API & Webhooks
@@ -15108,8 +15108,8 @@ Promotional CTA Button
 
 Contents
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -15222,13 +15222,13 @@ No badges displayed.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -15244,10 +15244,10 @@ No badges displayed.
 
 ### Top Header
 
-* Swipe Logo
+*   CoreX Logo
 * Company Name (**MARUF DRESSES**)
 * Change Company
-* Ask SwipeAI
+* Ask   CoreXAI
 * Notification Icons
 * User Avatar
 
@@ -15394,7 +15394,7 @@ Looking to add more users?
 
 ──────────────────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 Data is secured via 'bank-grade' security.
 ```
 
@@ -15480,13 +15480,13 @@ This page is used to configure thermal receipt printing preferences for invoices
 ### Banks and Payments
 
 1. Banks
-2. Swipe Wallet
+2.   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-1. Swipe AI
+1.   CoreX AI
 2. Payment Gateway 🔒
 3. Tally Integration 🔒
 4. API & Webhooks
@@ -15968,8 +15968,8 @@ Left
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -16023,13 +16023,13 @@ No tables are present on this page.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -16045,10 +16045,10 @@ No tables are present on this page.
 
 ### Top Header
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI
+* Ask   CoreXAI
 * Notification Icons
 * User Profile
 
@@ -16251,7 +16251,7 @@ Notes
 
 ──────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 
 Data is secured via 'bank-grade' security.
 ```
@@ -16338,13 +16338,13 @@ This page allows administrators to configure barcode label generation and printi
 ## Group: Banks and Payments
 
 1. Banks
-2. Swipe Wallet
+2.   CoreX Wallet
 
 ---
 
 ## Group: Integrations & Apps
 
-1. Swipe AI
+1.   CoreX AI
 2. Payment Gateway 🔒
 3. Tally Integration 🔒
 4. API & Webhooks
@@ -16658,8 +16658,8 @@ Left
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -16714,13 +16714,13 @@ There are **no tables** present on this page.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -16738,10 +16738,10 @@ There are **no tables** present on this page.
 
 Contains
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI Search
+* Ask   CoreXAI Search
 * Notification Icons
 * User Profile
 
@@ -16944,7 +16944,7 @@ Set the length of the barcode text (between 4 and 10).
 
 ────────────────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 
 Data is secured via 'bank-grade' security.
 ```
@@ -17023,13 +17023,13 @@ This page allows administrators to configure global business preferences that af
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -17447,8 +17447,8 @@ Primary Button
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -17492,11 +17492,11 @@ There are **no data tables** on this page.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -17532,10 +17532,10 @@ There are **no data tables** on this page.
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI
+* Ask   CoreXAI
 * Notification Icons
 * User Profile
 
@@ -17746,7 +17746,7 @@ Customer_Ledger_Raj_Traders.pdf
 
 ────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 Data is secured via 'bank-grade' security.
 ```
 
@@ -17826,13 +17826,13 @@ This page configures **Sales-specific Document Preferences**. It controls invoic
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -18093,7 +18093,7 @@ Label
 
 Description
 
-**Invoices will be automatically shared with customers via Swipe's WhatsApp number, including those uploaded in bulk.**
+**Invoices will be automatically shared with customers via   CoreX's WhatsApp number, including those uploaded in bulk.**
 
 Additional Text
 
@@ -18123,7 +18123,7 @@ Label
 
 Description
 
-**Invoices will be automatically shared with customers via Swipe's Email.**
+**Invoices will be automatically shared with customers via   CoreX's Email.**
 
 Additional Text
 
@@ -18151,8 +18151,8 @@ Primary Button
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -18195,11 +18195,11 @@ No data tables are present.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -18235,10 +18235,10 @@ No data tables are present.
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI
+* Ask   CoreXAI
 * Notification Icons
 * User Profile
 
@@ -18405,7 +18405,7 @@ Default Invoice Types
 
 Send Invoices Automatically Via WhatsApp
 
-Invoices will be automatically shared with customers via Swipe's
+Invoices will be automatically shared with customers via   CoreX's
 WhatsApp number, including those uploaded in bulk.
 
 Each message deducts 0.2 credits.
@@ -18417,7 +18417,7 @@ Credits vary for international numbers.
 
 Send Invoices Automatically Via Email
 
-Invoices will be automatically shared with customers via Swipe's Email.
+Invoices will be automatically shared with customers via   CoreX's Email.
 
 Each message deducts 0.2 credits.
 
@@ -18429,7 +18429,7 @@ Each message deducts 0.2 credits.
 
 ────────────────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 Data is secured via 'bank-grade' security.
 ```
 
@@ -18510,13 +18510,13 @@ This page manages **Purchase-specific Document Preferences**. It controls purcha
 ## Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ## Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -18720,8 +18720,8 @@ Primary Button
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -18768,13 +18768,13 @@ Contains
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -18812,7 +18812,7 @@ Contains
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
 * Search Bar (**How to add a payment QR code to the invoice?**)
@@ -18997,7 +18997,7 @@ creating a purchase, purchase order, or stock update.
 
 ────────────────────────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 Data is secured via 'bank-grade' security.
 ```
 
@@ -19061,8 +19061,8 @@ Data is secured via 'bank-grade' security.
 
 ### Footer
 
-* Swipe
-* ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+*   CoreX
+* ©2026   CoreX Technologies. All rights reserved.
 * Data is secured via 'bank-grade' security
 
 This analysis preserves every visible heading, label, helper description, tab, navigation item, placeholder, button, promotional text, footer text, and UI control shown in the screenshot, without inferring or omitting any visible content.
@@ -19139,13 +19139,13 @@ This page configures **Document Conversion Preferences**. It controls automatic 
 ## Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ## Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -19163,7 +19163,7 @@ This page configures **Document Conversion Preferences**. It controls automatic 
 
 ### Left
 
-* Swipe Logo
+*   CoreX Logo
 * **MARUF DRESSES**
 * **Change Company**
 
@@ -19175,7 +19175,7 @@ Search Box
 
 Placeholder
 
-**How to remove Swipe branding from my invoice?**
+**How to remove   CoreX branding from my invoice?**
 
 Keyboard Shortcut
 
@@ -19362,8 +19362,8 @@ Primary Button
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -19433,13 +19433,13 @@ No tables are visible.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -19660,7 +19660,7 @@ Enable tracking of quantities converted from purchase order to purchase.
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-©2026 NextSpeed Technologies Private Limited.
+©2026   CoreX Technologies.
 Data is secured via 'bank-grade' security.
 ```
 
@@ -19675,10 +19675,10 @@ Data is secured via 'bank-grade' security.
 
 ## Header
 
-* Swipe
+*   CoreX
 * MARUF DRESSES
 * Change Company
-* How to remove Swipe branding from my invoice?
+* How to remove   CoreX branding from my invoice?
 * ctrl+k
 
 ---
@@ -19707,11 +19707,11 @@ Data is secured via 'bank-grade' security.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -19785,8 +19785,8 @@ Data is secured via 'bank-grade' security.
 
 ## Footer
 
-* Swipe
-* ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+*   CoreX
+* ©2026   CoreX Technologies. All rights reserved.
 * Data is secured via 'bank-grade' security.
 
 This breakdown includes every visible heading, tab, navigation item, section title, label, helper description, button, promotional text, footer text, and control shown in the screenshot, without omitting any visible UI text or inferring hidden elements.
@@ -19864,13 +19864,13 @@ This page configures **Product Settings** under the **Products & Inventory** pre
 ## Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ## Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -19888,7 +19888,7 @@ This page configures **Product Settings** under the **Products & Inventory** pre
 
 ### Left
 
-* Swipe Logo
+*   CoreX Logo
 * MARUF DRESSES
 * Change Company
 
@@ -19900,7 +19900,7 @@ Search Field
 
 Placeholder
 
-**How to remove Swipe branding from my invoice?**
+**How to remove   CoreX branding from my invoice?**
 
 Shortcut
 
@@ -20154,8 +20154,8 @@ Primary Button
 
 Contains
 
-* Swipe Logo
-* **©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+*   CoreX Logo
+* **©2026   CoreX Technologies. All rights reserved.**
 * **Data is secured via 'bank-grade' security**
 
 ---
@@ -20223,11 +20223,11 @@ No tables are visible.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -20479,9 +20479,9 @@ The selected tax rate will be set by default when creating a new product.
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-Swipe
+  CoreX
 
-©2026 NextSpeed Technologies Private Limited. All rights reserved.
+©2026   CoreX Technologies. All rights reserved.
 
 Data is secured via 'bank-grade' security.
 ```
@@ -20497,10 +20497,10 @@ Data is secured via 'bank-grade' security.
 
 ## Header
 
-* Swipe
+*   CoreX
 * MARUF DRESSES
 * Change Company
-* How to remove Swipe branding from my invoice?
+* How to remove   CoreX branding from my invoice?
 * ctrl+k
 
 ---
@@ -20529,11 +20529,11 @@ Data is secured via 'bank-grade' security.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -20618,8 +20618,8 @@ Data is secured via 'bank-grade' security.
 
 ## Footer
 
-* Swipe
-* ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+*   CoreX
+* ©2026   CoreX Technologies. All rights reserved.
 * Data is secured via 'bank-grade' security.
 
 This analysis preserves every visible heading, tab, label, helper description, field, default value, button, navigation item, promotional message, footer text, and UI control shown in the screenshot without inferring any hidden or non-visible elements.
@@ -21291,8 +21291,8 @@ Footer
 
 ## Footer
 
-* Swipe
-* ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+*   CoreX
+* ©2026   CoreX Technologies. All rights reserved.
 * Data is secured via 'bank-grade' security.
 
 These analyses preserve all visible headings, labels, helper text, tab names, field values, buttons, navigation items, banner text, and footer text shown in the uploaded screenshots without inferring any hidden elements.
@@ -21648,11 +21648,11 @@ No tables are present.
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (**MD**)
 * **MARUF DRESSES**
 * Change Company
-* Ask SwipeAI Search Bar
+* Ask   CoreXAI Search Bar
 * Keyboard Shortcut **ctrl+k**
 * Lightning Icon
 * Notification Bell
@@ -21695,11 +21695,11 @@ Button
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -22028,8 +22028,8 @@ Footer
 
 ### Footer
 
-* Swipe
-* ©2026 NextSpeed Technologies Private Limited. All rights reserved.
+*   CoreX
+* ©2026   CoreX Technologies. All rights reserved.
 * Data is secured via 'bank-grade' security.
 
 This breakdown includes every visible heading, label, helper text, navigation item, button, field, default value, and UI component visible in the provided screenshot, without inventing hidden or obscured elements.
@@ -22301,11 +22301,11 @@ No tables are present.
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (**MD**)
 * **MARUF DRESSES**
 * Change Company
-* Ask SwipeAI Search Box
+* Ask   CoreXAI Search Box
 * ctrl+k
 * Lightning Icon
 * Notification Bell
@@ -22350,11 +22350,11 @@ CTA
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -22632,11 +22632,11 @@ Logo Shape
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -22663,7 +22663,7 @@ This analysis preserves all visible headings, labels, helper text, navigation it
 
 ### Purpose of the Page
 
-This page allows users to configure **Notification Preferences** for the Swipe application. Users can enable or disable different categories of notifications including promotional updates, operational alerts, and transactional notifications.
+This page allows users to configure **Notification Preferences** for the   CoreX application. Users can enable or disable different categories of notifications including promotional updates, operational alerts, and transactional notifications.
 
 ### Total Number of Sections / Cards / Forms
 
@@ -22729,7 +22729,7 @@ No section description.
 
 Description
 
-> Get notified about new features, updates and offers from Swipe.
+> Get notified about new features, updates and offers from   CoreX.
 
 ### Column 2
 
@@ -22866,11 +22866,11 @@ No tables are present.
 
 Visible items:
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (**MD**)
 * **MARUF DRESSES**
 * Change Company
-* Ask SwipeAI Search Box
+* Ask   CoreXAI Search Box
 * Keyboard Shortcut (**ctrl+k**)
 * Lightning Icon
 * Notification Bell
@@ -22915,11 +22915,11 @@ CTA
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -23094,7 +23094,7 @@ Customise Links | Notifications | Email | AI
 SECTION: Notification Preferences
 
 Promotional
-Get notified about new features, updates and offers from Swipe.
+Get notified about new features, updates and offers from   CoreX.
                                                [ ON ]
 
 ────────────────────────────────────────────────────────────────────────────
@@ -23152,7 +23152,7 @@ created documents, new user logins, and other app activities.
 
 ## Helper Text
 
-* Get notified about new features, updates and offers from Swipe.
+* Get notified about new features, updates and offers from   CoreX.
 * Receive notifications for products with low stock levels, pending invoices, and batches nearing expiration, etc.
 * in-app notifications to alert users about received payments, created documents, new user logins, and other app activities.
 
@@ -23182,11 +23182,11 @@ created documents, new user logins, and other app activities.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -23366,7 +23366,7 @@ Read-only Textbox
 
 Default Value
 
-**[noreply@swipebilling.com](mailto:noreply@swipebilling.com)**
+**[noreply@  CoreXbilling.com](mailto:noreply@  CoreXbilling.com)**
 
 State
 
@@ -23491,11 +23491,11 @@ No tables are present.
 
 Visible items
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (**MD**)
 * **MARUF DRESSES**
 * Change Company
-* Ask SwipeAI Search Box
+* Ask   CoreXAI Search Box
 * ctrl+k shortcut
 * Lightning Icon
 * Notification Bell
@@ -23536,11 +23536,11 @@ CTA
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -23620,7 +23620,7 @@ Sender Name --------------------- [ Company Name ▼ ]
 
 Sender Name Preview ------------- [ MARUF DRESSES ]
 
-Custom Sender Email ------------- [ noreply@swipebilling.com ]
+Custom Sender Email ------------- [ noreply@  CoreXbilling.com ]
 
 CC Emails ----------------------- [ CC Emails ▼ ]
 
@@ -23685,7 +23685,7 @@ None visible.
 | ------------------- | ----------------------------------------------------------- |
 | Sender Name         | Company Name                                                |
 | Sender Name Preview | MARUF DRESSES                                               |
-| Custom Sender Email | [noreply@swipebilling.com](mailto:noreply@swipebilling.com) |
+| Custom Sender Email | [noreply@  CoreXbilling.com](mailto:noreply@  CoreXbilling.com) |
 
 ---
 
@@ -23756,7 +23756,7 @@ Sender Name Preview
 
 Custom Sender Email
 
-                          [ noreply@swipebilling.com ]
+                          [ noreply@  CoreXbilling.com ]
 
 ────────────────────────────────────────────────────────────────────────────
 
@@ -23831,7 +23831,7 @@ Emails that will be BCC'd in all outgoing emails.
 
 * Company Name
 * MARUF DRESSES
-* [noreply@swipebilling.com](mailto:noreply@swipebilling.com)
+* [noreply@  CoreXbilling.com](mailto:noreply@  CoreXbilling.com)
 
 ## Sidebar Items
 
@@ -23853,11 +23853,11 @@ Emails that will be BCC'd in all outgoing emails.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -24070,11 +24070,11 @@ No tables are present.
 
 Visible Header Components
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (**MD**)
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI Search Bar
+* Ask   CoreXAI Search Bar
 * ctrl+k shortcut
 * Lightning Icon
 * Notification Bell
@@ -24125,13 +24125,13 @@ CTA
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -24436,11 +24436,11 @@ Notes | Terms
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -24816,11 +24816,11 @@ Not available.
 
 Visible Components
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar (MD)
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI Search Box
+* Ask   CoreXAI Search Box
 * ctrl+k shortcut
 * Lightning Icon
 * Notification Bell
@@ -24871,13 +24871,13 @@ CTA
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway 🔒
 * Tally Integration 🔒
 * API & Webhooks
@@ -25207,11 +25207,11 @@ Footer
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -25480,7 +25480,7 @@ Columns
 
 ### Row 1
 
-**UPI ID like swipe9@icici can be added while adding the bank to show QR code on invoices along with the bank details. Learn more**
+**UPI ID like   CoreX9@icici can be added while adding the bank to show QR code on invoices along with the bank details. Learn more**
 
 ---
 
@@ -25863,13 +25863,13 @@ Default
 ### Banks and Payments
 
 * **Banks** (Selected)
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -26136,7 +26136,7 @@ Only one badge is displayed:
 
 ## Page Title
 
-**Accept Online Payments with Swipe**
+**Accept Online Payments with   CoreX**
 
 (Page navigation entry: **Payment Gateway**)
 
@@ -26144,7 +26144,7 @@ Only one badge is displayed:
 
 ## Purpose of the Page
 
-This page promotes Swipe's online payment gateway integration. It explains the benefits of accepting online payments through Swipe and encourages users to upgrade their subscription to enable payment gateway integrations such as Razorpay and Cashfree.
+This page promotes   CoreX's online payment gateway integration. It explains the benefits of accepting online payments through   CoreX and encourages users to upgrade their subscription to enable payment gateway integrations such as Razorpay and Cashfree.
 
 Unlike a configuration page, this is a **feature promotion / upgrade landing page** with a call-to-action rather than a settings form.
 
@@ -26182,11 +26182,11 @@ Located at the top.
 
 | Column | Component           | Type              |
 | ------ | ------------------- | ----------------- |
-| 1      | Swipe Logo          | Brand Logo        |
+| 1      |   CoreX Logo          | Brand Logo        |
 | 2      | Company Avatar (MD) | Avatar            |
 | 3      | MARUF DRESSES       | Company Name      |
 | 4      | Change Company      | Action Link       |
-| 5      | Ask SwipeAI         | Search/Input      |
+| 5      | Ask   CoreXAI         | Search/Input      |
 | 6      | ctrl+k              | Keyboard Shortcut |
 | 7      | Lightning Icon      | Header Icon       |
 | 8      | Notification Icon   | Header Icon       |
@@ -26260,7 +26260,7 @@ Illustration / SVG
 
 Heading
 
-**Accept Online Payments with Swipe**
+**Accept Online Payments with   CoreX**
 
 Type
 
@@ -26286,7 +26286,7 @@ Three bullet points.
 
 ✔
 
-**Connect Razorpay or Cashfree with Swipe**
+**Connect Razorpay or Cashfree with   CoreX**
 
 ---
 
@@ -26391,13 +26391,13 @@ No tables are present.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * **Payment Gateway** (Current Page)
 * Tally Integration
 * API & Webhooks
@@ -26413,7 +26413,7 @@ No tables are present.
 
 ## Header Actions
 
-* Ask SwipeAI
+* Ask   CoreXAI
 * ctrl+k shortcut
 * Lightning icon
 * Notification icon
@@ -26501,7 +26501,7 @@ No tables are present.
 │               │ ┌───────────────────────────────────────────┐ │
 │               │ │                                           │ │
 │               │ │ Illustration      Accept Online Payments  │ │
-│               │ │                  with Swipe               │ │
+│               │ │                  with   CoreX               │ │
 │               │ │                                           │ │
 │               │ │                  ✔ UPI                    │ │
 │               │ │                  ✔ Razorpay              │ │
@@ -26558,7 +26558,7 @@ This page contains **no editable fields**.
 
 | Label       | Field Type   | Section | Row | Column |
 | ----------- | ------------ | ------- | --- | ------ |
-| Ask SwipeAI | Search Input | Header  | 1   | 5      |
+| Ask   CoreXAI | Search Input | Header  | 1   | 5      |
 
 No other input controls are visible.
 
@@ -26602,7 +26602,7 @@ None.
 
 ## Read-only Fields
 
-Only the **Ask SwipeAI** search field is visible but not interacted with in the screenshot.
+Only the **Ask   CoreXAI** search field is visible but not interacted with in the screenshot.
 
 ---
 
@@ -26676,11 +26676,11 @@ Located at the very top.
 
 | Column | Component           | Type          |
 | ------ | ------------------- | ------------- |
-| 1      | Swipe Logo          | Logo          |
+| 1      |   CoreX Logo          | Logo          |
 | 2      | Company Avatar (MD) | Avatar        |
 | 3      | MARUF DRESSES       | Company Name  |
 | 4      | Change Company      | Text Link     |
-| 5      | Ask SwipeAI         | Search Input  |
+| 5      | Ask   CoreXAI         | Search Input  |
 | 6      | ctrl+k              | Shortcut Hint |
 | 7      | Lightning Icon      | Icon Button   |
 | 8      | Notification Icon   | Icon Button   |
@@ -26987,11 +26987,11 @@ Contains
 
 Logo
 
-**swipe**
+**  CoreX**
 
 Copyright
 
-**©2026 NextSpeed Technologies Private Limited. All rights reserved.**
+**©2026   CoreX Technologies. All rights reserved.**
 
 Security Notice
 
@@ -27061,13 +27061,13 @@ No tables are present.
 ### Banks and Payments
 
 * Banks
-* Swipe Wallet
+*   CoreX Wallet
 
 ---
 
 ### Integrations & Apps
 
-* Swipe AI
+*   CoreX AI
 * Payment Gateway
 * Tally Integration
 * API & Webhooks
@@ -27083,11 +27083,11 @@ No tables are present.
 
 ## Header Navigation
 
-* Swipe Logo
+*   CoreX Logo
 * Company Avatar
 * MARUF DRESSES
 * Change Company
-* Ask SwipeAI
+* Ask   CoreXAI
 * ctrl+k
 * Lightning
 * Notification
@@ -27194,7 +27194,7 @@ Profile Image Upload
 | *Name         | Text Input       | User Profile | 2   | 2      |
 | Phone Number  | Disabled Textbox | User Profile | 3   | 2      |
 | Email         | Text Input       | User Profile | 4   | 2      |
-| Ask SwipeAI   | Search Input     | Header       | 1   | 5      |
+| Ask   CoreXAI   | Search Input     | Header       | 1   | 5      |
 
 ---
 
@@ -27263,7 +27263,7 @@ None.
 
 
 
-# UI Analysis — POS (Swipe)
+# UI Analysis — POS (  CoreX)
 
 ---
 
@@ -27271,7 +27271,7 @@ None.
 
 ## Page Title
 
-**POS - Swipe**
+**POS -   CoreX**
 
 **Application/Page Name (Visible):** **EInvoices**
 
@@ -27331,7 +27331,7 @@ Located at the top.
 
 | Column | Component          | Type                 |
 | ------ | ------------------ | -------------------- |
-| 1      | Swipe Logo         | Logo                 |
+| 1      |   CoreX Logo         | Logo                 |
 | 2      | Company Avatar     | Avatar               |
 | 3      | EInvoices          | Company Name         |
 | 4      | Change Company     | Text Link            |
@@ -27841,7 +27841,7 @@ None
 
 ## Header
 
-* Swipe Logo
+*   CoreX Logo
 * Company
 * Change Company
 * Create an expense.
@@ -29399,11 +29399,11 @@ All content within the receipt preview is read-only, including:
 
 
 
-The five screenshots are variations of the **same document-list module** in Swipe ERP. They share an identical layout, components, filters, table structure, navigation, and actions. The only differences are the **page title**, **CTA button text**, **sidebar selection**, **top promotional banner text**, **empty-state message**, and **status tabs**. Below is a comprehensive breakdown covering all five pages.
+The five screenshots are variations of the **same document-list module** in   CoreX ERP. They share an identical layout, components, filters, table structure, navigation, and actions. The only differences are the **page title**, **CTA button text**, **sidebar selection**, **top promotional banner text**, **empty-state message**, and **status tabs**. Below is a comprehensive breakdown covering all five pages.
 
 ---
 
-# UI Analysis — Swipe Document List Module
+# UI Analysis —   CoreX Document List Module
 
 **Pages Covered**
 
@@ -29978,7 +29978,7 @@ Main Items
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -30023,7 +30023,7 @@ Change Company
 
 Search
 
-Ask SwipeAI
+Ask   CoreXAI
 
 Top Icons
 
@@ -30174,11 +30174,11 @@ This indicates a highly reusable, component-based list-view architecture suitabl
 
 
 
-The five screenshots are variations of the **same document-list module** in Swipe ERP. They share an identical layout, components, filters, table structure, navigation, and actions. The only differences are the **page title**, **CTA button text**, **sidebar selection**, **top promotional banner text**, **empty-state message**, and **status tabs**. Below is a comprehensive breakdown covering all five pages.
+The five screenshots are variations of the **same document-list module** in   CoreX ERP. They share an identical layout, components, filters, table structure, navigation, and actions. The only differences are the **page title**, **CTA button text**, **sidebar selection**, **top promotional banner text**, **empty-state message**, and **status tabs**. Below is a comprehensive breakdown covering all five pages.
 
 ---
 
-# UI Analysis — Swipe Document List Module
+# UI Analysis —   CoreX Document List Module
 
 **Pages Covered**
 
@@ -30753,7 +30753,7 @@ Main Items
 * Purchases
 * Quotations+
 * Expenses+
-* SwipeAI
+*   CoreXAI
 * Products & Services
 * Inventory
 * Payments
@@ -30798,7 +30798,7 @@ Change Company
 
 Search
 
-Ask SwipeAI
+Ask   CoreXAI
 
 Top Icons
 
