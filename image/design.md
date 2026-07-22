@@ -29396,3 +29396,778 @@ All content within the receipt preview is read-only, including:
 * The **Print** action is visually emphasized with a primary blue button, while **Cancel** is styled as a secondary action.
 * Print settings are intentionally minimal, with advanced options hidden under the **More settings** accordion to reduce cognitive load.
 * Vertical and horizontal scrollbars within the preview indicate that the entire receipt can be inspected before printing.
+
+
+
+The five screenshots are variations of the **same document-list module** in Swipe ERP. They share an identical layout, components, filters, table structure, navigation, and actions. The only differences are the **page title**, **CTA button text**, **sidebar selection**, **top promotional banner text**, **empty-state message**, and **status tabs**. Below is a comprehensive breakdown covering all five pages.
+
+---
+
+# UI Analysis — Swipe Document List Module
+
+**Pages Covered**
+
+1. Quotations
+2. Sales Orders
+3. Pro Forma Invoices
+4. Delivery Challans
+5. Purchase Orders
+
+---
+
+# 1. Page Overview
+
+## Purpose
+
+This module allows users to manage business transaction documents. Users can:
+
+* View all documents
+* Search documents
+* Filter by status
+* Filter by date range
+* Sort records
+* Configure document settings
+* Perform bulk actions
+* Create new documents
+
+The screenshots currently show the **empty state** because no records exist.
+
+---
+
+## Pages
+
+| Page               | Purpose                       |
+| ------------------ | ----------------------------- |
+| Quotations         | Manage customer quotations    |
+| Sales Orders       | Manage confirmed sales orders |
+| Pro Forma Invoices | Manage pro forma invoices     |
+| Delivery Challans  | Manage delivery challans      |
+| Purchase Orders    | Manage vendor purchase orders |
+
+---
+
+## Total Sections
+
+| Component          | Count |
+| ------------------ | ----: |
+| Promotional Banner |     1 |
+| Page Header        |     1 |
+| Status Tabs        |     1 |
+| Search Toolbar     |     1 |
+| Data Table         |     1 |
+| Empty State Panel  |     1 |
+| Footer Summary     |     1 |
+| Pagination         |     1 |
+
+---
+
+# 2. Section-wise Analysis
+
+---
+
+# Section 1 — Promotional Banner
+
+Located below global header.
+
+Different text depending on module.
+
+Examples visible
+
+### Quotations
+
+Enjoy 15+ Templates, Remove Watermark & more
+
+Button
+
+Subscribe Now 🚀
+
+---
+
+### Sales Orders
+
+One Click to Convert Quotes → Invoices → E-Way Bills
+
+Button
+
+Convert Now ⚡
+
+---
+
+### Purchase Orders
+
+Create unlimited E-way bills and E-invoices on mobile & web
+
+Button
+
+Go Premium 🚀
+
+---
+
+### Pro Forma Invoices
+
+Bulk Edit, Download, Merge & Convert Your Docs
+
+Button
+
+Upgrade Now 🚀
+
+---
+
+### Delivery Challans
+
+Bulk Edit, Download, Merge & Convert Your Docs
+
+Button
+
+Upgrade Now 🚀
+
+---
+
+# Section 2 — Page Header
+
+Two-column layout.
+
+---
+
+## Row 1 (2 Columns)
+
+### Left
+
+Large page title.
+
+Examples
+
+* Quotations
+* Sales Orders
+* Pro Forma Invoices
+* Delivery Challans
+* Purchase Orders
+
+Pink play/help icon beside title.
+
+---
+
+### Right
+
+Column contains
+
+* Document Settings (Gear Icon)
+* Create Button
+
+Buttons
+
+* Create Quotation
+* Create Sales Order (3/3 left)
+* Create Pro Forma Invoice
+* Create Delivery Challan
+* Create Purchase Order
+
+Primary Blue Button.
+
+---
+
+# Section 3 — Status Tabs
+
+Horizontal navigation.
+
+---
+
+## Quotations
+
+Tabs
+
+* All
+* Open
+* Closed
+* Partial
+* Cancelled
+* Drafts
+
+---
+
+## Sales Orders
+
+Tabs
+
+* All
+* Open
+* Closed
+* Partial
+* Cancelled
+* Drafts
+
+---
+
+## Purchase Orders
+
+Tabs
+
+* All
+* Open
+* Closed
+* Partial
+* Cancelled
+* Drafts
+
+---
+
+## Delivery Challans
+
+Tabs
+
+* All
+* Cancelled
+* Drafts
+
+---
+
+## Pro Forma Invoices
+
+Tabs
+
+* All
+* Open
+* Closed
+* Partial
+* Cancelled
+* Drafts
+
+---
+
+Current Selected
+
+All
+
+Blue underline.
+
+---
+
+# Section 4 — Search Toolbar
+
+Single toolbar.
+
+---
+
+## Row 1 (4 Columns)
+
+### Column 1
+
+Search Field
+
+Textbox
+
+Placeholder
+
+Search by transaction, customers, invoice etc..
+
+Leading Search Icon.
+
+---
+
+### Column 2
+
+Date Filter
+
+Dropdown
+
+Default
+
+This Year
+
+---
+
+### Column 3
+
+Actions
+
+Dropdown Button
+
+Text
+
+Actions
+
+---
+
+### Column 4
+
+Filter Button
+
+Icon Button
+
+Sliders icon.
+
+---
+
+# Section 5 — Data Table
+
+Large responsive table.
+
+---
+
+## Column Headers
+
+### Quotations
+
+* Amount
+* Status
+* Bill #
+* Customer
+* Date
+
+---
+
+### Sales Orders
+
+* Amount
+* Status
+* Bill #
+* Customer
+* Date
+
+---
+
+### Purchase Orders
+
+* Amount
+* Status
+* Bill #
+* Vendor
+* Date
+
+---
+
+### Delivery Challans
+
+* Amount
+* Bill #
+* Customer
+* Date
+
+---
+
+### Pro Forma Invoice
+
+* Amount
+* Status
+* Bill #
+* Customer
+* Date
+
+---
+
+Each sortable column contains
+
+Ascending/Descending arrows.
+
+Columns also have filter funnel icons where applicable.
+
+---
+
+## Table Features
+
+Visible
+
+✔ Sorting
+
+✔ Filters
+
+✔ Empty state
+
+✔ Horizontal Scrollbar
+
+Not visible
+
+✘ Row selection
+
+✘ Bulk selection
+
+✘ Pagination rows
+
+---
+
+# Section 6 — Empty State
+
+Centered illustration/text block.
+
+---
+
+## Quotations
+
+Oops 😳 ! No quotations found.
+
+Please select different dates or create a new Quotation
+
+---
+
+## Sales Orders
+
+Oops 😳 ! No sales orders found.
+
+Please select different dates or create a new Sales Order
+
+---
+
+## Purchase Orders
+
+Oops 😳 ! No purchase orders found.
+
+Please select different dates or create a new Purchase Order
+
+---
+
+## Delivery Challans
+
+Oops 😳 ! No delivery challans found.
+
+Please select different dates or create a new Delivery Challan
+
+---
+
+## Pro Forma Invoice
+
+Oops 😳 ! No pro forma invoices found.
+
+Please select different dates or create a new Pro Forma Invoice
+
+---
+
+# Section 7 — Footer Summary
+
+Bottom left.
+
+Summary badges.
+
+Purchase Orders
+
+* Total ₹0.00
+* Closed ₹0.00
+
+Sales Orders
+
+* Total ₹0.00
+* Closed ₹0.00
+
+Pro Forma Invoice
+
+* Total ₹0.00
+* Closed ₹0.00
+
+Quotations
+
+* Total ₹0.00
+* Closed ₹0.00
+
+Delivery Challans
+
+No summary badges visible in the screenshot.
+
+---
+
+# Section 8 — Pagination
+
+Bottom Right.
+
+Components
+
+Current Page
+
+1/1
+
+Previous
+
+Left Arrow
+
+Next
+
+Right Arrow
+
+---
+
+# 3. Buttons & Actions
+
+| Button                        | Type                  | Position      | Alignment |
+| ----------------------------- | --------------------- | ------------- | --------- |
+| Document Settings             | Secondary Icon Button | Top Right     | Right     |
+| Create Quotation              | Primary               | Top Right     | Right     |
+| Create Sales Order (3/3 left) | Primary               | Top Right     | Right     |
+| Create Pro Forma Invoice      | Primary               | Top Right     | Right     |
+| Create Delivery Challan       | Primary               | Top Right     | Right     |
+| Create Purchase Order         | Primary               | Top Right     | Right     |
+| Actions                       | Dropdown              | Toolbar Right | Right     |
+| Filter Icon                   | Icon Button           | Toolbar Right | Right     |
+| Search Box                    | Search Input          | Toolbar Left  | Left      |
+| This Year                     | Dropdown              | Toolbar Left  | Left      |
+
+---
+
+# 4. Tables
+
+## Table Title
+
+Not explicitly shown.
+
+Main document list.
+
+---
+
+## Headers
+
+Depending on module.
+
+Common headers
+
+* Amount
+* Status
+* Bill #
+* Customer/Vendor
+* Date
+
+---
+
+## Search
+
+Available.
+
+---
+
+## Filters
+
+Available.
+
+---
+
+## Sorting
+
+Available.
+
+---
+
+## Pagination
+
+Available.
+
+---
+
+## Bulk Actions
+
+Actions dropdown.
+
+---
+
+## Row Selection
+
+Not visible.
+
+---
+
+## Status Badges
+
+None because table is empty.
+
+---
+
+# 5. Navigation Elements
+
+## Sidebar
+
+Visible.
+
+Main Items
+
+* Sales
+* Purchases
+* Quotations+
+* Expenses+
+* SwipeAI
+* Products & Services
+* Inventory
+* Payments
+* Customers
+* Vendors
+* Projects
+* Insights
+* Invite Users
+* Settings
+
+---
+
+Expanded Quotations+
+
+Contains
+
+* Quotations
+* Sales Orders
+* Pro Forma Invoices
+* Delivery Challans
+* Packing Lists
+
+---
+
+Expanded Purchases
+
+Contains
+
+* Purchases
+* Purchase Orders
+* Debit Notes
+
+---
+
+# Header
+
+Company
+
+MARUF DRESSES
+
+Change Company
+
+Search
+
+Ask SwipeAI
+
+Top Icons
+
+Lightning
+
+Bell
+
+Megaphone
+
+Profile
+
+---
+
+# 6. Cards, Panels & Components
+
+Cards
+
+* Main Content Card
+* Summary Badge Card
+* Promotional Banner
+
+Panels
+
+* Table Panel
+* Toolbar Panel
+
+Buttons
+
+* Primary CTA
+* Secondary
+* Dropdown
+
+Badges
+
+Summary amount badges.
+
+Accordions
+
+Sidebar groups.
+
+Tooltips
+
+Not visible.
+
+Progress Bars
+
+None.
+
+Rich Editors
+
+None.
+
+Upload Areas
+
+None.
+
+---
+
+# 7. Layout Structure
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Global Header                                                              │
+├──────────────┬─────────────────────────────────────────────────────────────┤
+│ Sidebar      │ Promotional Banner                                          │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │ Page Title              Document Settings   Create Button    │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │ Status Tabs                                             │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │ Search | This Year | Actions | Filter                    │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │ Table Header                                             │
+│              │ Amount | Status | Bill# | Customer/Vendor | Date         │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │                                                         │
+│              │                 Empty State Message                     │
+│              │                                                         │
+│              ├─────────────────────────────────────────────────────────────┤
+│              │ Footer Summary                    Pagination             │
+└──────────────┴─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+# 8. Complete Field Inventory
+
+| Label                                           | Type            | Section | Row | Column |
+| ----------------------------------------------- | --------------- | ------- | --- | ------ |
+| Search by transaction, customers, invoice etc.. | Search Textbox  | Toolbar | 1   | 1      |
+| This Year                                       | Dropdown        | Toolbar | 1   | 2      |
+| Actions                                         | Dropdown Button | Toolbar | 1   | 3      |
+| Filter                                          | Icon Button     | Toolbar | 1   | 4      |
+
+---
+
+# 9. UI Observations
+
+## Consistency
+
+The five pages share a unified document-list template, differing primarily in title, status tabs, CTA text, and empty-state messaging.
+
+## Missing Labels
+
+* The table itself has no explicit title.
+* The filter icon lacks a visible text label.
+* The pink circular play/help icon beside the page title has no visible label.
+
+## Alignment
+
+* The toolbar is consistently aligned with the search controls on the left and action controls on the right.
+* Page titles, tabs, and table headers align vertically across all modules.
+
+## Empty State
+
+* Each page provides a contextual empty-state message with a direct link to create the corresponding document type.
+
+## Table Features
+
+* Sorting arrows are visible on sortable columns.
+* Funnel icons indicate filter availability on selected columns.
+* Horizontal scrolling supports wide tables.
+
+## Responsive Patterns
+
+* The layout uses a fixed left sidebar with a flexible content panel.
+* The table container supports horizontal scrolling.
+* Footer summary badges and pagination remain anchored at the bottom.
+
+## Reusable Components
+
+The following components are reused across all five modules:
+
+* Promotional banner
+* Header with page title and gear icon
+* Primary "Create" button
+* Status tabs
+* Search toolbar
+* Date filter dropdown
+* Actions dropdown
+* Filter icon button
+* Data table
+* Empty-state message
+* Footer summary badges (where applicable)
+* Pagination controls
+
+This indicates a highly reusable, component-based list-view architecture suitable for all transaction document modules within the application.
