@@ -62,7 +62,8 @@
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: #fbdedb;
+  background: var(--red-soft);
+  filter: brightness(0.95);
 }
 
 .btn--sm {

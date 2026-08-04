@@ -11,6 +11,8 @@
   --bg: #f4f6fb;
   --surface: #ffffff;
   --surface-2: #fafbfe;
+  --surface-rgb: 255, 255, 255;
+  --overlay: rgba(15, 31, 61, 0.5);
   --border: #e6e9f2;
   --border-strong: #d4d9e8;
 

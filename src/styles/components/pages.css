@@ -294,7 +294,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: radial-gradient(1200px 600px at 50% -10%, #eaf0fd 0%, var(--bg) 60%);
+  background: radial-gradient(1200px 600px at 50% -10%, var(--brand-soft) 0%, var(--bg) 60%);
 }
 
 .auth-card {

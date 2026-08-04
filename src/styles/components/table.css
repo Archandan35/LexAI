@@ -8,11 +8,11 @@
 .table th {
   text-align: left;
   font-size: 13px;
-  color: #3556a8;
+  color: var(--navy-700);
   font-weight: 700;
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
-  background: var(--navy-50, #eef2fb);
+  background: var(--navy-100);
 }
 
 .table td {

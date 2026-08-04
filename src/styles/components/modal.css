@@ -4,7 +4,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 31, 61, 0.5);
+  background: var(--overlay);
   backdrop-filter: blur(3px);
   display: grid;
   place-items: center;
