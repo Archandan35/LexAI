@@ -453,7 +453,7 @@ function CalendarView({ events, loading, onView, cases, onDateClick, expandedDay
                           </button>
                         ))}
                         {dayEvents.length > 3 && !isExpanded && (
-                          <span className="cal-event-more" onClick={(e) => { e.stopPropagation(); setExpandedDays((prev) => { const n = new Set(prev); n.add(k); return n; }); }}>{dayEvents.length - 3} more</span>
+                          <span className="cal-event-more" onClick={(e) => { e.stopPropagation(); setExpandedDays((prev) => { const n = new Set(prev); n.add(k); return n; }); }}>+{dayEvents.length - 3} more</span>
                         )}
                         {dayEvents.length === 0 ? (
                           <div
