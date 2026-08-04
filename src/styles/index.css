@@ -3481,7 +3481,7 @@
 .manage-cases.table thead th {
   background: var(--navy-50, #eef2fb);
   border-bottom: 1px solid var(--border);
-  font-weight: 400;
+  font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
   color: var(--text);
