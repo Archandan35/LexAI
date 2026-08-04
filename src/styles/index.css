@@ -4348,13 +4348,13 @@
 
 .dash-cases-table th {
   text-align: left;
-  padding: 10px 18px;
+  padding: 11px 14px;
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-faint);
+  color: #3556a8;
   font-weight: 700;
   border-bottom: 1px solid var(--border);
+  background: var(--navy-50, #eef2fb);
+  min-height: 42px;
 }
 
 .dash-cases-table td {
