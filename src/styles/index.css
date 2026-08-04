@@ -3476,6 +3476,17 @@
   white-space: nowrap;
 }
 
+.manage-cases.table thead th {
+  background: var(--navy-50, #eef2fb);
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+}
+
 /* ---- OrderSheet additions ---- */
 .order-sheet__cell-date {
   font-weight: 650;

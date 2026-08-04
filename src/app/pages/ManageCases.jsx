@@ -267,7 +267,7 @@ export default function ManageCases() {
               <EmptyState icon="vault" title="No cases found." hint="Create your first case." action={<PermissionGate module="manageCase" action="create"><Button icon="plus" onClick={() => setOpen(true)}>New Case</Button></PermissionGate>} />
             ) : (
               <div className="table-scroll">
-                <table className="table">
+                <table className="table manage-cases">
                   <thead><tr>
                     <th className="manage-cases__th-check">{can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
                     <th className="manage-cases__th-check"><Icon name="star" size={13} /></th>
