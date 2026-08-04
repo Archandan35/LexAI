@@ -72,6 +72,9 @@ export default function Calendar() {
   const { formatDate, formatDateTime } = useFormat();
   const [tab, setTab] = useState('calendar');
 
+  /* expand state for calendar columns */
+  const [expandedDays, setExpandedDays] = useState(new Set());
+
   /* shared event data */
   const [loading, setLoading] = useState(true);
   const [hearings, setHearings] = useState([]);
@@ -259,6 +262,18 @@ function CalendarView({ events, loading, onView, cases }) {
   const [showJump, setShowJump] = useState(false);
   const [jump, setJump] = useState('');
 
+  /* ---- expand all days functionality ---- */
+  const expandAllDays = useCallback(() => {
+    const allDaysWithEvents = new Set(
+      events.map((e) => dayKey(e.date))
+    );
+    setExpandedDays(allDaysWithEvents);
+  }, [events]);
+
+  const resetExpandedDays = useCallback(() => {
+    setExpandedDays(new Set());
+  }, []);
+
   const today = useMemo(() => startOfDay(new Date()), []);
   const goToday = useCallback(() => setCursor(startOfDay(new Date())), []);
   const goPrev = useCallback(() => {
@@ -324,6 +339,22 @@ function CalendarView({ events, loading, onView, cases }) {
                 {v === 'month' ? 'Month' : v === 'week' ? 'Week' : 'Day'}
               </button>
             ))}
+          </div>
+          <div className="cal-expand-all">
+            <button
+              className="cal-expand-btn"
+              onClick={expandAllDays}
+              title="Expand all days with events"
+            >
+              <Icon name="expand" size={14} /> Expand All
+            </button>
+            <button
+              className="cal-collapse-btn"
+              onClick={resetExpandedDays}
+              title="Collapse all days"
+            >
+              <Icon name="compress" size={14} /> Collapse
+            </button>
           </div>
           <div className="cal-jump">
             {showJump ? (
