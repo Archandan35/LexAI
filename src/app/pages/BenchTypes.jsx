@@ -12,6 +12,7 @@ import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 const ENTITY_PREFIX = 'BENT';
 
@@ -757,17 +758,15 @@ export default function BenchTypes() {
 
       <div className="bench-types__table-card">
         <table className="bench-types__table">
-          <thead>
-            <tr>
-              {bulkMode && <th className="bench-types__th--w32"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
-              <th className="bench-types__th--w32"></th>
-              <th className="bench-types__th--w32">#</th>
-              <th><span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th><span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th><span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th className="bench-types__th--w136">ACTIONS</th>
-            </tr>
-          </thead>
+          <TableHeader columns={[
+            bulkMode && { key: 'bulk', render: () => <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />, className: 'bench-types__th--w32' },
+            { key: 'expand', className: 'bench-types__th--w32' },
+            { key: 'num', label: '#', className: 'bench-types__th--w32' },
+            { key: 'name', label: 'NAME', render: () => <span className="bench-types__sort">NAME <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'code', label: 'CODE', render: () => <span className="bench-types__sort">CODE <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'status', label: 'STATUS', render: () => <span className="bench-types__sort">STATUS <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'actions', label: 'ACTIONS', className: 'bench-types__th--w136' },
+          ].filter(Boolean)} />
           <tbody>
             {paged.length === 0 ? (
               <tr><td className="bench-types__empty" colSpan={bulkMode ? 7 : 6}>No bench types found.</td></tr>

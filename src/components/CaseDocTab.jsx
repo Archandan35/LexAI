@@ -9,6 +9,7 @@ import { fileLogic } from '@/logic/fileLogic.js';
 import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { bytes, useFormat } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import TableHeader from './TableHeader.jsx';
 
 function fileExt(name = '') {
   return (name.split('.').pop() || '').toUpperCase();
@@ -624,16 +625,14 @@ export default function CaseDocTab({ caseId, caseNumber, onChanged, caseObj }) {
           ) : viewMode === 'list' ? (
             <div className="cdoc__table-wrap">
               <table className="cdoc__table">
-                <thead>
-                  <tr>
-                    <th className="cdoc__th-checkbox"><input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} /></th>
-                    <th className="cdoc__th cdoc__th--name">Name</th>
-                    <th className="cdoc__th">Type</th>
-                    <th className="cdoc__th">Size</th>
-                    <th className="cdoc__th">Uploaded On</th>
-                    <th className="cdoc__th cdoc__th--right">Actions</th>
-                  </tr>
-                </thead>
+                <TableHeader columns={[
+                  { key: 'check', render: () => <input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} />, className: 'cdoc__th-checkbox' },
+                  { key: 'name', label: 'Name', className: 'cdoc__th cdoc__th--name' },
+                  { key: 'type', label: 'Type', className: 'cdoc__th' },
+                  { key: 'size', label: 'Size', className: 'cdoc__th' },
+                  { key: 'uploadedOn', label: 'Uploaded On', className: 'cdoc__th' },
+                  { key: 'actions', label: 'Actions', className: 'cdoc__th cdoc__th--right' },
+                ]} />
                 <tbody>
                   {paginated.map((d) => {
                     const name = d.name || d.title || 'Untitled';

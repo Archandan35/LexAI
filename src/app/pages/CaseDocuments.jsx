@@ -10,6 +10,7 @@ import { useAuth } from '@/data-layer/AuthContext.jsx';
 import { bytes, useFormat } from '@/utils/format.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 /* ── helpers ── */
 function fileExt(name = '') {
@@ -613,19 +614,15 @@ export default function CaseDocuments() {
               ) : viewMode === 'list' ? (
                 <div className="cdoc__table-wrap">
                   <table className="cdoc__table">
-                    <thead>
-                      <tr>
-                        <th className="cdoc__th cdoc__th--check">
-                          <input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} />
-                        </th>
-                        <th className="cdoc__th cdoc__th--name">Name</th>
-                        <th className="cdoc__th">Type</th>
-                        <th className="cdoc__th">Size</th>
-                        <th className="cdoc__th">Uploaded On</th>
-                        <th className="cdoc__th">Uploaded By</th>
-                        <th className="cdoc__th cdoc__th--actions">Actions</th>
-                      </tr>
-                    </thead>
+                    <TableHeader columns={[
+                      { key: 'check', render: () => <input type="checkbox" checked={allChecked} ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }} onChange={toggleAll} />, className: 'cdoc__th cdoc__th--check' },
+                      { key: 'name', label: 'Name', className: 'cdoc__th cdoc__th--name' },
+                      { key: 'type', label: 'Type', className: 'cdoc__th' },
+                      { key: 'size', label: 'Size', className: 'cdoc__th' },
+                      { key: 'uploadedOn', label: 'Uploaded On', className: 'cdoc__th' },
+                      { key: 'uploadedBy', label: 'Uploaded By', className: 'cdoc__th' },
+                      { key: 'actions', label: 'Actions', className: 'cdoc__th cdoc__th--actions' },
+                    ]} />
                     <tbody>
                       {paginated.map((d) => {
                         const name = d.name || d.title || 'Untitled';

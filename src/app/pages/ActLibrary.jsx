@@ -11,6 +11,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 const ENTITY_PREFIX = 'ACTY';
 
@@ -731,21 +732,19 @@ export default function ActLibrary() {
         <>
           <div className="bench-types__table-card">
             <table className="bench-types__table">
-              <thead>
-                <tr>
-                  {bulkMode && <th className="bench-types__th--w32"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
-                  <th className="bench-types__th--w32"></th>
-                  <th>#</th>
-                  <th>TITLE</th>
-                  <th>SHORT CODE</th>
-                  <th>TYPE</th>
-                  <th>JURISDICTION</th>
-                  <th>YEAR</th>
-                  <th>SECTIONS</th>
-                  <th>AMENDMENTS</th>
-                  <th className="bench-types__th--w136">ACTIONS</th>
-                </tr>
-              </thead>
+              <TableHeader columns={[
+                bulkMode && { key: 'bulk', render: () => <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />, className: 'bench-types__th--w32' },
+                { key: 'expand', className: 'bench-types__th--w32' },
+                { key: 'num', label: '#' },
+                { key: 'title', label: 'TITLE' },
+                { key: 'shortCode', label: 'SHORT CODE' },
+                { key: 'type', label: 'TYPE' },
+                { key: 'jurisdiction', label: 'JURISDICTION' },
+                { key: 'year', label: 'YEAR' },
+                { key: 'sections', label: 'SECTIONS' },
+                { key: 'amendments', label: 'AMENDMENTS' },
+                { key: 'actions', label: 'ACTIONS', className: 'bench-types__th--w136' },
+              ].filter(Boolean)} />
               <tbody>
                 {paged.length === 0 ? (
                   <tr><td className="bench-types__empty" colSpan={bulkMode ? 11 : 10}>No acts found.</td></tr>

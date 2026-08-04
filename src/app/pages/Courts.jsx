@@ -11,6 +11,7 @@ import Modal from '@/components/Modal.jsx';
 import ColorPicker from '@/components/ColorPicker.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 const ENTITY_PREFIX = 'COUT';
 
@@ -867,18 +868,16 @@ export default function Courts() {
       {/* Table Card */}
       <div className="cmp-table-card">
         <table className="cmp-table">
-          <thead>
-            <tr>
-              {bulkMode && <th className="cmp-th--w40"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
-              <th className="cmp-th--w32"></th>
-              <th className="cmp-th--w40">#</th>
-              <th>Court Name</th>
-              <th>Shortcode</th>
-              <th>Parent</th>
-              <th>Status</th>
-              <th className="courts__th-actions">Actions</th>
-            </tr>
-          </thead>
+          <TableHeader columns={[
+            bulkMode && { key: 'bulk', render: () => <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />, className: 'cmp-th--w40' },
+            { key: 'expand', className: 'cmp-th--w32' },
+            { key: 'num', label: '#', className: 'cmp-th--w40' },
+            { key: 'name', label: 'Court Name' },
+            { key: 'shortcode', label: 'Shortcode' },
+            { key: 'parent', label: 'Parent' },
+            { key: 'status', label: 'Status' },
+            { key: 'actions', label: 'Actions', className: 'courts__th-actions' },
+          ].filter(Boolean)} />
           <tbody>
             {rootItems.length === 0 ? (
               <tr><td className="cmp-empty" colSpan={bulkMode ? 8 : 7}>No courts defined.</td></tr>
