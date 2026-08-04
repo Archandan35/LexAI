@@ -22944,6 +22944,28 @@
   margin-top: 8px;
 }
 
+.jl-checkbox-cell {
+  width: 40px;
+  text-align: center;
+}
+
+.jl-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  margin: 0 0 12px;
+  background: var(--navy-50, #eef2fb);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.jl-bulk-bar__count {
+  font-size: 13px;
+  color: var(--text);
+  margin-right: auto;
+}
+
 .jd-summary-empty {
   font-size: 13px;
   color: var(--text-faint);

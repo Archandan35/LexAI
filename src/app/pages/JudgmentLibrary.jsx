@@ -48,6 +48,7 @@ const FILTER_VALUE_MAP = {
 };
 
 const TABLE_HEADERS = [
+  { key: 'checkbox', label: '' },
   { key: 'caseNumber', label: 'Case Number' },
   { key: 'title', label: 'Case Title' },
   { key: 'citation', label: 'Citation', sortable: true },
@@ -85,6 +86,7 @@ export default function JudgmentLibrary() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState({ ...FILTER_DEFAULTS });
@@ -146,6 +148,19 @@ export default function JudgmentLibrary() {
       .catch((e) => {
         console.error('[JudgmentLibrary] delete failed:', e);
       });
+  };
+
+  const confirmBulkDelete = async () => {
+    if (!selected.length) return;
+    const ids = [...selected];
+    setBulkDeleteTarget(false);
+    try {
+      await Promise.all(ids.map((id) => judgmentLogic.remove(id)));
+      setSelected([]);
+      loadJudgments();
+    } catch (e) {
+      console.error('[JudgmentLibrary] bulk delete failed:', e);
+    }
   };
 
   const handleDuplicate = (j) => {
@@ -594,10 +609,20 @@ export default function JudgmentLibrary() {
         <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="jl-file-input" onChange={handleImportFile} />
       </div>
 
+      {selected.length > 0 && (
+        <div className="jl-bulk-bar">
+          <span className="jl-bulk-bar__count">{selected.length} selected</span>
+          <PermissionGate module="judgmentLibrary" action="delete">
+            <Button variant="danger" size="sm" icon="trash" onClick={() => setBulkDeleteTarget(true)}>Delete</Button>
+          </PermissionGate>
+          <Button variant="ghost" size="sm" onClick={() => setSelected([])}>Clear</Button>
+        </div>
+      )}
+
       <Card bodyClass="card__body--flush jl-library-card">
         <div className="table-scroll">
           <table className="table jl-table">
-            <TableHeader className="jl-thead" columns={TABLE_HEADERS.map((h) => ({ key: h.key, label: h.label, sortable: h.sortable }))} />
+            <TableHeader className="jl-thead" selectable allSelected={allSelected} onToggleAll={toggleAll} columns={TABLE_HEADERS.filter((h) => h.key !== 'checkbox').map((h) => ({ key: h.key, label: h.label, sortable: h.sortable }))} />
             <tbody>
                 {paged.length === 0 ? (
                   <tr>
@@ -611,6 +636,7 @@ export default function JudgmentLibrary() {
                     const isFav = favourites[j.id] ?? j.favourite ?? j.favorited ?? false;
                     return (
                       <tr key={j.id}>
+                        <td className="jl-checkbox-cell"><input type="checkbox" checked={selected.includes(j.id)} onChange={() => toggleOne(j.id)} /></td>
                         <td data-label="Case Number" className="jl-case-num">
                           {(() => {
                             const num = j.caseNumber;
@@ -788,6 +814,16 @@ export default function JudgmentLibrary() {
         confirmLabel="Delete"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteTarget}
+        title="Delete Selected Judgments"
+        message={`Are you sure you want to delete ${selected.length} judgment(s)? This action cannot be undone.`}
+        variant="danger"
+        confirmLabel="Delete All"
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setBulkDeleteTarget(false)}
       />
     </div>
   );
