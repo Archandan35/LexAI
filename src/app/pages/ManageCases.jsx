@@ -10,6 +10,7 @@ import Icon from '@/components/Icon.jsx';
 import EmptyState from '@/components/EmptyState.jsx';
 import CaseForm from '@/components/CaseForm.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
 import { useCases } from '@/hooks/useCases.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
@@ -268,11 +269,16 @@ export default function ManageCases() {
             ) : (
               <div className="table-scroll">
                 <table className="table manage-cases">
-                  <thead><tr>
-                    <th className="manage-cases__th-check">{can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />}</th>
-                    <th className="manage-cases__th-check"><Icon name="star" size={13} /></th>
-                    <th>Case Number</th><th>Court</th><th>Stage</th><th>Next Hearing</th><th>Status</th><th className="manage-cases__th-actions">Actions</th>
-                  </tr></thead>
+                  <TableHeader columns={[
+                    { key: 'check', render: () => can('manageCase.bulkDelete') && <input type="checkbox" checked={allSelected} onChange={toggleAll} />, className: 'manage-cases__th-check' },
+                    { key: 'star', render: () => <Icon name="star" size={13} />, className: 'manage-cases__th-check' },
+                    { key: 'caseNumber', label: 'Case Number' },
+                    { key: 'court', label: 'Court' },
+                    { key: 'stage', label: 'Stage' },
+                    { key: 'nextHearing', label: 'Next Hearing' },
+                    { key: 'status', label: 'Status' },
+                    { key: 'actions', label: 'Actions', className: 'manage-cases__th-actions' },
+                  ]} />
                   <tbody>
                     {filtered.map((c) => (
                       <tr key={c.id} className={selected.includes(c.id) ? 'row--selected' : ''}>

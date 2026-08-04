@@ -4,6 +4,7 @@ import Button from '@/components/Button.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input } from '@/components/Field.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 export default function CrudListPage({ title, icon, logic, searchFields, statsConfig, emptyText, addLabel, renderForm, columns, renderRowActions, module, actionCreate = 'create', actionDelete = 'delete' }) {
   const [items, setItems] = useState([]);
@@ -104,7 +105,7 @@ export default function CrudListPage({ title, icon, logic, searchFields, statsCo
         ) : (
           <div className="table-scroll">
             <table className="table">
-              <thead><tr>{columns.map((col) => <th key={col.header}>{col.header}</th>)}</tr></thead>
+              <TableHeader columns={columns.map((col) => ({ key: col.header, label: col.header }))} />
               <tbody>{filtered.map((item) => (
                 <tr key={item.id}>{columns.map((col) => <td key={col.header}>{col.render ? col.render(item) : item[col.accessor] ?? '—'}</td>)}
                   {renderRowActions && <td><PermissionGate module={module} action={actionDelete}>{renderRowActions(item, load)}</PermissionGate></td>}

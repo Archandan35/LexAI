@@ -3,6 +3,7 @@ import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import Icon from './Icon.jsx';
 import { Input, Textarea } from './Field.jsx';
+import TableHeader from './TableHeader.jsx';
 import { caseStageLogic } from '@/logic/caseStageLogic.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 
@@ -108,12 +109,12 @@ export default function StageManager({ open, onClose, stages, onChanged }) {
 
       <div className="table-scroll sm-table-scroll">
         <table className="table">
-          <thead><tr>
-            <th className="sm-th-sm"><input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} /></th>
-            <th className="sm-th-sm" />
-            <th>Stage Name</th>
-            <th className="sm-th-action" />
-          </tr></thead>
+          <TableHeader columns={[
+            { key: 'check', render: () => <input type="checkbox" onChange={toggleAll} checked={selected.size === visible.length && visible.length > 0} />, className: 'sm-th-sm' },
+            { key: 'drag', className: 'sm-th-sm' },
+            { key: 'name', label: 'Stage Name' },
+            { key: 'actions', className: 'sm-th-action' },
+          ]} />
           <tbody>
             {visible.map((s) => (
               <tr

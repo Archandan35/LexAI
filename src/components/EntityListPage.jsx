@@ -4,6 +4,7 @@ import Card from '@/components/Card.jsx';
 import { Input } from '@/components/Field.jsx';
 import Icon from '@/components/Icon.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLength = 6, entityLabel = 'item' }) {
   const toast = useToast();
@@ -81,9 +82,14 @@ export default function EntityListPage({ title, icon, subtitle, logic, codeMaxLe
 
       <Card bodyClass="card__body--flush">
         <table className="table">
-          <thead>
-            <tr><th>Name</th><th>Code</th><th>Description</th><th>Order</th><th>Status</th><th className="entity-list__th-actions">Actions</th></tr>
-          </thead>
+          <TableHeader columns={[
+            { key: 'name', label: 'Name' },
+            { key: 'code', label: 'Code' },
+            { key: 'description', label: 'Description' },
+            { key: 'order', label: 'Order' },
+            { key: 'status', label: 'Status' },
+            { key: 'actions', label: 'Actions', className: 'entity-list__th-actions' },
+          ]} />
           <tbody>
             {filtered.length === 0 ? (
               <tr><td className="court-types__empty" colSpan={6}>No {entityLabel}s found.</td></tr>

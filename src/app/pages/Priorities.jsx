@@ -11,6 +11,7 @@ import ColorPicker from '@/components/ColorPicker.jsx';
 import { orderComparator } from '@/utils/displayOrder.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 const ENTITY_PREFIX = 'PRIT';
 
@@ -763,17 +764,15 @@ export default function Priorities() {
 
       <div className="cmp-table-card">
         <table className="cmp-table">
-          <thead>
-            <tr>
-              {bulkMode && <th className="cmp-th--w40"><input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>}
-              <th className="cmp-th--w32"></th>
-              <th className="cmp-th--w40">#</th>
-              <th><span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th><span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th><span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span></th>
-              <th className="cmp-th--w180">ACTIONS</th>
-            </tr>
-          </thead>
+          <TableHeader columns={[
+            bulkMode && { key: 'bulk', render: () => <input type="checkbox" checked={bulkDelSelected.size === filtered.length && filtered.length > 0} onChange={toggleAll} />, className: 'cmp-th--w40' },
+            { key: 'expand', className: 'cmp-th--w32' },
+            { key: 'num', label: '#', className: 'cmp-th--w40' },
+            { key: 'name', label: 'NAME', render: () => <span className="cmp-sort">NAME <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'code', label: 'CODE', render: () => <span className="cmp-sort">CODE <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'status', label: 'STATUS', render: () => <span className="cmp-sort">STATUS <Icon name="chevrons-up-down" size={12} /></span> },
+            { key: 'actions', label: 'ACTIONS', className: 'cmp-th--w180' },
+          ].filter(Boolean)} />
           <tbody>
             {paged.length === 0 ? (
               <tr><td className="cmp-empty" colSpan={bulkMode ? 7 : 6}>No priorities found.</td></tr>

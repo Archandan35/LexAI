@@ -19,6 +19,7 @@ import { useFormat } from '@/utils/format.js';
 import AddJudgmentModal from './AddJudgmentModal.jsx';
 import ConfirmDialog from '@/components/setup/wizard/ConfirmDialog.jsx';
 import FilterPopup from '@/components/FilterPopup.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 const FILTER_CATEGORIES = [
   { key: 'court', label: 'All Courts' },
@@ -596,19 +597,10 @@ export default function JudgmentLibrary() {
       <Card bodyClass="card__body--flush jl-library-card">
         <div className="table-scroll">
           <table className="table jl-table">
-            <thead className="jl-thead">
-              <tr>
-                {TABLE_HEADERS.map((h) => (
-                  <th key={h.key} className={h.sortable ? 'th--sortable' : ''}>
-                    {h.key === 'checkbox' ? (
-                      <input type="checkbox" checked={allSelected && paged.length > 0} onChange={toggleAll} disabled={paged.length === 0} />
-                    ) : (
-                      h.label
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+            <TableHeader className="jl-thead" columns={[
+              { key: 'checkbox', render: () => <input type="checkbox" checked={allSelected && paged.length > 0} onChange={toggleAll} disabled={paged.length === 0} /> },
+              ...TABLE_HEADERS.map((h) => ({ key: h.key, label: h.label, sortable: h.sortable })),
+            ]} />
             <tbody>
                 {paged.length === 0 ? (
                   <tr>

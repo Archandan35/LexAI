@@ -10,6 +10,7 @@ import { Field, Input, Select } from '@/components/Field.jsx';
 import DocEditor from '@/components/DocEditor.jsx';
 import CrudManager from '@/components/CrudManager';
 import DataTable from '@/components/DataTable.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 import OrderSheetPreviewModal from '@/components/OrderSheetPreviewModal.jsx';
 import { useCaseStatuses } from '@/hooks/useCaseStatuses.js';
 import { usePartyTypes } from '@/hooks/usePartyTypes.js';
@@ -1247,20 +1248,18 @@ export default function OrderSheet() {
                   </div>
                 ) : (
                   <table className="table">
-                    <thead>
-                      <tr>
-                        <th className="order-sheet__checkbox-cell"><input type="checkbox" /></th>
-                        {visibleColumns.date && <th className="pointer" onClick={handleSortToggle}>Date <Icon name={sortDir === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} /></th>}
-                        {visibleColumns.case && <th>Case Number & Title</th>}
-                        {visibleColumns.court && <th>Court</th>}
-                        {visibleColumns.purpose && <th>Purpose</th>}
-                        {visibleColumns.nextHearingDate && <th>Next Hearing</th>}
-                        {visibleColumns.postedFor && <th>Posted For</th>}
-                        {visibleColumns.judge && <th>Judge</th>}
-                        {visibleColumns.status && <th>Status</th>}
-                        {visibleColumns.actions && <th className="text-right">Actions</th>}
-                      </tr>
-                    </thead>
+                    <TableHeader columns={[
+                      { key: 'checkbox', render: () => <input type="checkbox" />, className: 'order-sheet__checkbox-cell' },
+                      visibleColumns.date && { key: 'date', label: 'Date', render: () => <>Date <Icon name={sortDir === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} /></>, className: 'pointer' },
+                      visibleColumns.case && { key: 'case', label: 'Case Number & Title' },
+                      visibleColumns.court && { key: 'court', label: 'Court' },
+                      visibleColumns.purpose && { key: 'purpose', label: 'Purpose' },
+                      visibleColumns.nextHearingDate && { key: 'nextHearing', label: 'Next Hearing' },
+                      visibleColumns.postedFor && { key: 'postedFor', label: 'Posted For' },
+                      visibleColumns.judge && { key: 'judge', label: 'Judge' },
+                      visibleColumns.status && { key: 'status', label: 'Status' },
+                      visibleColumns.actions && { key: 'actions', label: 'Actions', className: 'text-right' },
+                    ].filter(Boolean)} />
                     <tbody>
                       {paginatedRows.map((h) => {
                         return (
@@ -1677,14 +1676,12 @@ export default function OrderSheet() {
                       <EmptyState icon="clock" title="No events to display." />
                     ) : (
                       <table className="table">
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Event</th>
-                            <th>Details</th>
-                            <th className="text-right">Document</th>
-                          </tr>
-                        </thead>
+                        <TableHeader columns={[
+                          { key: 'date', label: 'Date' },
+                          { key: 'event', label: 'Event' },
+                          { key: 'details', label: 'Details' },
+                          { key: 'document', label: 'Document', className: 'text-right' },
+                        ]} />
                         <tbody>
                           {historyHearings.map((h, i) => {
                             return (

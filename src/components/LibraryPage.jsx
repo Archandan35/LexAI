@@ -3,6 +3,7 @@ import PageHeader from '@/components/PageHeader.jsx';
 import Card from '@/components/Card.jsx';
 import Icon from '@/components/Icon.jsx';
 import { Input } from '@/components/Field.jsx';
+import TableHeader from '@/components/TableHeader.jsx';
 
 function defaultRender(item, col) {
   const v = col.accessor ? item[col.accessor] : null;
@@ -48,7 +49,7 @@ export default function LibraryPage({ title, icon, logic, searchFields, columns,
           <div className="empty-state"><Icon name={emptyIcon || icon || 'grid'} /><p>{emptyText}</p></div>
         ) : (
           <table className="data-table">
-            <thead><tr>{columns.map((col) => <th key={col.header}>{col.header}</th>)}</tr></thead>
+            <TableHeader columns={columns.map((col) => ({ key: col.header, label: col.header }))} />
             <tbody>{filtered.map((item) => (
               <tr key={item.id}>{columns.map((col) => <td key={col.header}>{defaultRender(item, col)}</td>)}</tr>
             ))}</tbody>

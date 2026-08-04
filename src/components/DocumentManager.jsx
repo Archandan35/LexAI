@@ -9,6 +9,7 @@ import FileDrop from './FileDrop.jsx';
 import FolderPicker from './FolderPicker.jsx';
 import PermissionGate from './PermissionGate.jsx';
 import SyncStatus from './SyncStatus.jsx';
+import TableHeader from './TableHeader.jsx';
 import { fileLogic } from '@/logic/fileLogic.js';
 import { preferencesService } from '@/services/preferencesService.js';
 import { useToast } from '@/data-layer/ToastContext.jsx';
@@ -141,7 +142,15 @@ export default function DocumentManager({ caseId, documents, folders, onChanged 
           <Card bodyClass="card__body--flush">
             <div className="table-scroll">
               <table className="table">
-                <thead><tr><th className="docmgr__table-head-check" /><th>Name</th><th>Folder</th><th>Sync</th><th>Size</th><th>Uploaded</th><th className="docmgr__table-head-actions">Actions</th></tr></thead>
+                <TableHeader columns={[
+                  { key: 'check', className: 'docmgr__table-head-check' },
+                  { key: 'name', label: 'Name' },
+                  { key: 'folder', label: 'Folder' },
+                  { key: 'sync', label: 'Sync' },
+                  { key: 'size', label: 'Size' },
+                  { key: 'uploaded', label: 'Uploaded' },
+                  { key: 'actions', label: 'Actions', className: 'docmgr__table-head-actions' },
+                ]} />
                 <tbody>
                   {visible.map((d) => (
                     <tr key={d.id} className={selected.includes(d.id) ? 'row--selected' : ''}>
