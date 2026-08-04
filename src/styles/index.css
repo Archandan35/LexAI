@@ -18768,7 +18768,7 @@
 .tasks-arch-toggle.active { background: var(--navy-700); color: #fff; border-color: var(--navy-700); }
 .tasks-bulkbar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: var(--navy-50, #eef2fb); border-radius: 10px; font-weight: 600; }
 .tasks-table-card { overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
-.tasks-table-card .table th { border-bottom: none; padding: 11px 14px; border: none; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-faint); font-size: 13px; text-align: left; }
+.tasks-table-card .table th { border-bottom: 1px solid var(--border); padding: 11px 14px; border: none; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text); font-size: 13px; text-align: left; background: var(--navy-50, #eef2fb); }
 .tasks-table-card .table th.th--sortable .th__sort-btn {
   display: inline-flex;
   align-items: center;
