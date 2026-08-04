@@ -79,6 +79,9 @@ export default function Calendar() {
   const [taskAddModal, setTaskAddModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  /* CRUD modal for task categories/statuses/priorities */
+  const [crud, setCrud] = useState(null);
+
   /* shared event data */
   const [loading, setLoading] = useState(true);
   const [hearings, setHearings] = useState([]);
@@ -120,7 +123,13 @@ export default function Calendar() {
     }).catch(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+   useEffect(() => { loadAll(); }, [loadAll]);
+
+  const openCrudFor = useCallback((type) => {
+    if (type === 'category') setCrud('category');
+    else if (type === 'status') setCrud('status');
+    else if (type === 'priority') setCrud('priority');
+  }, []);
 
   /* ---------- build calendar events ---------- */
   const caseStatusColor = useMemo(() => {
@@ -264,6 +273,29 @@ export default function Calendar() {
           categories={categories} statuses={statuses} priorities={priorities} cases={cases}
           toast={toast} user={user} onManageCrud={openCrudFor}
           selectedDate={selectedDate ? selectedDate.toISOString() : null}
+        />
+      )}
+
+      {crud && (
+        <CrudManager
+          open={!!crud} onClose={() => { setCrud(null); loadAll(true); }}
+          entity={crud === 'category' ? 'Task Category' : crud === 'status' ? 'Task Status' : 'Priority'}
+          config={{
+            logic: crud === 'category' ? taskCategoryLogic : crud === 'status' ? taskStatusLogic : priorityLogic,
+            fields: crud === 'priority'
+              ? [
+                  { key: 'name', label: 'Name', placeholder: 'e.g., Urgent' },
+                  { key: 'short_code', label: 'Short Code', placeholder: 'PRIT-HIGH' },
+                  { key: 'color', label: 'Color', type: 'color' },
+                ]
+              : [
+                  { key: 'name', label: 'Name', placeholder: 'e.g., Hearing' },
+                  { key: 'short_code', label: 'Short Code', placeholder: 'HEAR' },
+                  { key: 'color', label: 'Color', type: 'color' },
+                ],
+            defaults: {},
+            refresh: loadAll,
+          }}
         />
       )}
 

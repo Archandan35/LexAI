@@ -18768,7 +18768,34 @@
 .tasks-arch-toggle.active { background: var(--navy-700); color: #fff; border-color: var(--navy-700); }
 .tasks-bulkbar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: var(--navy-50, #eef2fb); border-radius: 10px; font-weight: 600; }
 .tasks-table-card { overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
-.tasks-table-card .table th { border-bottom: none; }
+.tasks-table-card .table th { border-bottom: none; padding: 0; border: none; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text); font-size: 13px; }
+.tasks-table-card .table th.th--sortable .th__sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  border-radius: 0;
+}
+.tasks-table-card .table th.th--sortable .th__sort-btn:hover {
+  color: var(--navy-700);
+}
+.tasks-table-card .table th.th--sortable .th__sort-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+.tasks-table-card .table th.th--sortable .th__sort-btn:hover .th__sort-icon {
+  color: var(--navy-700);
+}
 .tasks-table { margin: 0; }
 .w40 { width: 40px; }
 .task-title-cell { display: flex; align-items: center; gap: 7px; }
