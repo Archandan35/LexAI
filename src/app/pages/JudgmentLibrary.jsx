@@ -597,10 +597,7 @@ export default function JudgmentLibrary() {
       <Card bodyClass="card__body--flush jl-library-card">
         <div className="table-scroll">
           <table className="table jl-table">
-            <TableHeader className="jl-thead" columns={[
-              { key: 'checkbox', render: () => <input type="checkbox" checked={allSelected && paged.length > 0} onChange={toggleAll} disabled={paged.length === 0} /> },
-              ...TABLE_HEADERS.map((h) => ({ key: h.key, label: h.label, sortable: h.sortable })),
-            ]} />
+            <TableHeader className="jl-thead" columns={TABLE_HEADERS.map((h) => ({ key: h.key, label: h.label, sortable: h.sortable }))} />
             <tbody>
                 {paged.length === 0 ? (
                   <tr>
