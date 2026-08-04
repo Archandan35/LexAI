@@ -3476,6 +3476,8 @@
   white-space: nowrap;
 }
 
+.card__body--flush { padding: 0; }
+
 .manage-cases.table thead th {
   background: var(--navy-50, #eef2fb);
   border-bottom: 1px solid var(--border);
@@ -3485,6 +3487,8 @@
   color: var(--text);
   font-size: 13px;
   text-align: left;
+  padding: 11px 14px;
+  margin: 0;
 }
 
 /* ---- OrderSheet additions ---- */
