@@ -55,36 +55,75 @@
   border-color: var(--border-2, #d1d5db);
 }
 
+/* empty column - centered plus icon that fades in on hover */
 .cal-cell-events {
-  position: relative;
+  min-height: 60px;
 }
 
-.cal-cell-date-btn {
-  position: absolute;
-  top: 2px;
-  right: 2px;
+.cal-cell-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  background: transparent;
+  height: 100%;
+  min-height: 60px;
+  width: 100%;
+  border-radius: 8px;
   color: var(--text-muted, #9ca3af);
   cursor: pointer;
-  border-radius: 4px;
-  opacity: 0;
-  transition: opacity 0.2s, color 0.2s;
-  z-index: 1;
+  opacity: 0.3;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.cal-cell:hover .cal-cell-date-btn,
-.cal-cell--expanded .cal-cell-date-btn {
+.cal-cell:hover .cal-cell-empty {
   opacity: 1;
+  color: var(--navy-600, #2563eb);
+  background: var(--surface-2, #f3f4f6);
+  box-shadow: 0 2px 8px var(--shadow, rgba(0, 0, 0, 0.1));
+  transform: scale(1.1);
 }
 
-.cal-cell-date-btn:hover {
-  background: var(--surface-2, #f3f4f6);
-  color: var(--text, #1a1a2e);
+.cal-cell:hover .cal-cell-empty:hover {
+  box-shadow: 0 4px 12px var(--shadow, rgba(0, 0, 0, 0.15));
+  transform: scale(1.15);
+}
+
+/* add more button below existing events */
+.cal-cell-add-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 10px;
+  margin-top: 4px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #ffffff);
+  color: var(--navy-600, #2563eb);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cal-cell-add-more:hover {
+  background: var(--navy-50, #eef2fb);
+  border-color: var(--navy-300, #93c5fd);
+  box-shadow: 0 2px 8px var(--shadow, rgba(37, 99, 235, 0.2));
+  transform: translateY(-1px);
+}
+
+.cal-cell-add-more .icon {
+  flex-shrink: 0;
+}
+
+/* week view empty column */
+.cal-week-col {
+  position: relative;
+}
+
+.cal-week-col .cal-cell-empty {
+  height: 100%;
+  min-height: 80px;
+  width: 100%;
 }

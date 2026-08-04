@@ -405,7 +405,7 @@ function CalendarView({ events, loading, onView, cases, onDateClick, expandedDay
                   const isToday = sameDay(d, today);
                   const otherMonth = d.getMonth() !== cursor.getMonth();
                   const isExpanded = expandedDays.has(k);
-                  return (
+                    return (
                     <div key={i} className={`cal-cell${otherMonth ? ' cal-cell--muted' : ''}${isToday ? ' cal-cell--today' : ''}${isExpanded ? ' cal-cell--expanded' : ''}`}>
                       <div className="cal-cell-head">
                         <span className="cal-cell-num">{d.getDate()}</span>
@@ -416,20 +416,30 @@ function CalendarView({ events, loading, onView, cases, onDateClick, expandedDay
                         {dayEvents.slice(0, isExpanded ? dayEvents.length : 3).map((e) => (
                           <button key={e.id} className="cal-event" onClick={() => onView(e)} title={e.title}
                             style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
-                          <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
-                          <span className="cal-event-title">{e.title}</span>
-                        </button>
+                            <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
+                            <span className="cal-event-title">{e.title}</span>
+                          </button>
                         ))}
                         {dayEvents.length > 3 && !isExpanded && (
                           <span className="cal-event-more" onClick={(e) => { e.stopPropagation(); setExpandedDays((prev) => { const n = new Set(prev); n.add(k); return n; }); }}>{dayEvents.length - 3} more</span>
                         )}
-                        <button 
-                          className="cal-cell-date-btn" 
-                          onClick={(e) => { e.stopPropagation(); onDateClick(d); }}
-                          title="Add task or event"
-                        >
-                          <Icon name="plus" size={12} />
-                        </button>
+                        {dayEvents.length === 0 ? (
+                          <div
+                            className="cal-cell-empty"
+                            onClick={(e) => { e.stopPropagation(); onDateClick(d); }}
+                          >
+                            <Icon name="plus" size={20} />
+                          </div>
+                        ) : (
+                          <button
+                            className="cal-cell-add-more"
+                            onClick={(e) => { e.stopPropagation(); onDateClick(d); }}
+                            title="Add task or event"
+                          >
+                            <Icon name="plus" size={14} />
+                            <span>Add more</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -452,10 +462,13 @@ function CalendarView({ events, loading, onView, cases, onDateClick, expandedDay
                 {weekCells.map((d) => {
                   const k = dayKey(d);
                   const dayEvents = (eventsByDay[k] || []).slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-                  return (
-                    <div key={dayKey(d)} className={`cal-week-col${sameDay(d, today) ? ' cal-week-col--today' : ''}`}>
+                    return (
+                    <div key={dayKey(d)} className={`cal-week-col${sameDay(d, today) ? ' cal-week-col--today' : ''}`}
+                      onClick={dayEvents.length === 0 ? (e) => { e.stopPropagation(); onDateClick(d); } : undefined}>
                       {dayEvents.length === 0 ? (
-                        <div className="cal-week-empty">—</div>
+                        <div className="cal-cell-empty">
+                          <Icon name="plus" size={20} />
+                        </div>
                       ) : dayEvents.map((e) => (
                       <button key={e.id} className="cal-event cal-event--block" onClick={() => onView(e)}
                         style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
@@ -464,9 +477,19 @@ function CalendarView({ events, loading, onView, cases, onDateClick, expandedDay
                         {e.time && <span className="cal-event-time">{fmtTime(e.time)}</span>}
                       </button>
                       ))}
-                    </div>
-                  );
-                })}
+                      {dayEvents.length > 0 && (
+                        <button
+                          className="cal-cell-add-more"
+                          onClick={(e) => { e.stopPropagation(); onDateClick(d); }}
+                          title="Add task or event"
+                        >
+                          <Icon name="plus" size={14} />
+                          <span>Add more</span>
+                        </button>
+                      )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
