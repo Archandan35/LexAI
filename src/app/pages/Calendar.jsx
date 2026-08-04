@@ -75,6 +75,10 @@ export default function Calendar() {
   /* expand state for calendar columns */
   const [expandedDays, setExpandedDays] = useState(new Set());
 
+  /* task/case creation modal */
+  const [taskAddModal, setTaskAddModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+
   /* shared event data */
   const [loading, setLoading] = useState(true);
   const [hearings, setHearings] = useState([]);
@@ -237,6 +241,9 @@ export default function Calendar() {
         <CalendarView
           events={events} loading={loading} onView={setViewEvent}
           cases={cases}
+          onDateClick={(date) => { setSelectedDate(date); setTaskAddModal(true); }}
+          expandedDays={expandedDays}
+          setExpandedDays={setExpandedDays}
         />
       ) : (
         <TasksView
@@ -244,7 +251,19 @@ export default function Calendar() {
           priorities={priorities} categories={categories} statuses={statuses}
           cases={cases} onReloadMaster={() => loadAll(true)}
           toast={toast} user={user} formatDate={formatDate} formatDateTime={formatDateTime}
-          taskAddOpen={taskAddOpen} setTaskAddOpen={setTaskAddOpen}
+          taskAddOpen={taskAddModal} setTaskAddOpen={setTaskAddModal}
+        />
+      )}
+
+      {taskAddModal && (
+        <TaskFormModal
+          mode="create"
+          task={null}
+          onClose={() => { setTaskAddModal(false); setSelectedDate(null); }}
+          onSaved={() => { setTaskAddModal(false); setSelectedDate(null); refreshTasks(); }}
+          categories={categories} statuses={statuses} priorities={priorities} cases={cases}
+          toast={toast} user={user} onManageCrud={openCrudFor}
+          selectedDate={selectedDate ? selectedDate.toISOString() : null}
         />
       )}
 
@@ -256,7 +275,7 @@ export default function Calendar() {
 /* ================================================================== */
 /*  CALENDAR VIEW                                                      */
 /* ================================================================== */
-function CalendarView({ events, loading, onView, cases }) {
+function CalendarView({ events, loading, onView, cases, onDateClick, expandedDays, setExpandedDays }) {
   const [view, setView] = useState('month');
   const [cursor, setCursor] = useState(startOfDay(new Date()));
   const [showJump, setShowJump] = useState(false);
@@ -268,11 +287,11 @@ function CalendarView({ events, loading, onView, cases }) {
       events.map((e) => dayKey(e.date))
     );
     setExpandedDays(allDaysWithEvents);
-  }, [events]);
+  }, [events, setExpandedDays]);
 
   const resetExpandedDays = useCallback(() => {
     setExpandedDays(new Set());
-  }, []);
+  }, [setExpandedDays]);
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const goToday = useCallback(() => setCursor(startOfDay(new Date())), []);
@@ -385,24 +404,32 @@ function CalendarView({ events, loading, onView, cases }) {
                   const dayEvents = eventsByDay[k] || [];
                   const isToday = sameDay(d, today);
                   const otherMonth = d.getMonth() !== cursor.getMonth();
+                  const isExpanded = expandedDays.has(k);
                   return (
-                    <div key={i} className={`cal-cell${otherMonth ? ' cal-cell--muted' : ''}${isToday ? ' cal-cell--today' : ''}`}>
+                    <div key={i} className={`cal-cell${otherMonth ? ' cal-cell--muted' : ''}${isToday ? ' cal-cell--today' : ''}${isExpanded ? ' cal-cell--expanded' : ''}`}>
                       <div className="cal-cell-head">
                         <span className="cal-cell-num">{d.getDate()}</span>
                         <span className="cal-cell-dow">{WEEKDAYS[(d.getDay() + 6) % 7]}</span>
                         {dayEvents.length > 0 && <span className="cal-cell-count">{dayEvents.length}</span>}
                       </div>
                       <div className="cal-cell-events">
-                        {dayEvents.slice(0, 3).map((e) => (
+                        {dayEvents.slice(0, isExpanded ? dayEvents.length : 3).map((e) => (
                           <button key={e.id} className="cal-event" onClick={() => onView(e)} title={e.title}
                             style={{ '--dot': e.color, '--dot-bg': tint(e.color) }}>
-                            <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
-                            <span className="cal-event-title">{e.title}</span>
-                          </button>
+                          <span className={`cal-event-dot${e.blink ? ' cal-event-dot--blink' : ''}`} style={{ '--dot': e.color }} />
+                          <span className="cal-event-title">{e.title}</span>
+                        </button>
                         ))}
-                        {dayEvents.length > 3 && (
-                          <span className="cal-event-more">+{dayEvents.length - 3} more</span>
+                        {dayEvents.length > 3 && !isExpanded && (
+                          <span className="cal-event-more" onClick={(e) => { e.stopPropagation(); setExpandedDays((prev) => { const n = new Set(prev); n.add(k); return n; }); }}>{dayEvents.length - 3} more</span>
                         )}
+                        <button 
+                          className="cal-cell-date-btn" 
+                          onClick={(e) => { e.stopPropagation(); onDateClick(d); }}
+                          title="Add task or event"
+                        >
+                          <Icon name="plus" size={12} />
+                        </button>
                       </div>
                     </div>
                   );
@@ -965,7 +992,7 @@ function statusTone(s) { return { Completed: 'green', 'In Progress': 'blue', Pen
 /* ================================================================== */
 /*  TASK FORM MODAL                                                    */
 /* ================================================================== */
-function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, priorities, cases, toast, user, onManageCrud }) {
+function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, priorities, cases, toast, user, onManageCrud, selectedDate }) {
   const caseLabelFor = (c) => {
     const num = c.case_display_number || c.caseNumber || '';
     const title = c.title || '';
@@ -974,13 +1001,13 @@ function TaskFormModal({ mode, task, onClose, onSaved, categories, statuses, pri
   };
   const blank = {
     title: '', description: '', notes: '', category: '', priority: 'Medium', status: 'Pending',
-    active: true, due_date: '', due_time: '', has_date_range: false, start_date: '', end_date: '', reminder: false,
+    active: true, due_date: selectedDate ? selectedDate.slice(0, 10) : '', due_time: '', has_date_range: false, start_date: '', end_date: '', reminder: false,
     reminder_time: '', color: '#6b7280', case_id: '', hearing_id: '', tags: '', attachments: '',
   };
   const [form, setForm] = useState(() => task ? {
     title: task.title || '', description: task.description || '', notes: task.notes || '', category: task.category || '',
     priority: task.priority || 'Medium', status: task.status || 'Pending', active: task.active !== false,
-    due_date: task.due_date ? task.due_date.slice(0, 10) : '', due_time: task.due_time || '',
+    due_date: task.due_date ? task.due_date.slice(0, 10) : (selectedDate ? selectedDate.slice(0, 10) : ''), due_time: task.due_time || '',
     has_date_range: !!(task.start_date || task.end_date),
     start_date: task.start_date ? task.start_date.slice(0, 10) : '', end_date: task.end_date ? task.end_date.slice(0, 10) : '',
     reminder: !!task.reminder, reminder_time: task.reminder_time || '', color: task.color || '#6b7280',

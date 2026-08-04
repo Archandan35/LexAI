@@ -1,0 +1,51 @@
+.cal-cell--expanded .cal-cell-events {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.cal-cell--expanded .cal-event {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cal-cell--expanded .cal-event-more {
+  display: none;
+}
+
+.cal-toolbar-right .cal-expand-all {
+  display: flex;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.cal-expand-all button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  color: var(--text, #1a2236);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cal-expand-all button:hover {
+  background: var(--hover-bg, #f3f4f6);
+  border-color: var(--hover-border, #d1d5db);
+}
+
+.cal-expand-all button .icon {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.cal-cell--expanded .cal-event-title {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
