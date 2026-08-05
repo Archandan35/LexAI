@@ -1410,6 +1410,7 @@ export default function OrderSheet() {
 
                    {/* History Timeline */}
                    <Card
+                     className="order-sheet__history-timeline-card"
                      title="History Timeline"
                      actions={<PermissionGate module="orderSheet" action="create"><Button size="sm" icon="plus" onClick={openNew}>Add Hearing</Button></PermissionGate>}
                    >

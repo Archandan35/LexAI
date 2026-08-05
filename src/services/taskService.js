@@ -5,8 +5,8 @@ import { DateEngine } from '@/core/index.js';
 export const taskService = {
   list: (query = {}) => tasksRepository.getAll(query),
   get: (id) => tasksRepository.getById(id),
-  create: (data) => tasksRepository.create({ createdAt: DateEngine.now(), updatedAt: DateEngine.now(), ...data }),
-  update: (id, patch) => tasksRepository.update(id, { ...patch, updatedAt: DateEngine.now() }),
+  create: (data) => tasksRepository.create({ created_at: DateEngine.now(), updated_at: DateEngine.now(), ...data }),
+  update: (id, patch) => tasksRepository.update(id, { ...patch, updated_at: DateEngine.now() }),
   remove: (id) => tasksRepository.delete(id),
 };
 

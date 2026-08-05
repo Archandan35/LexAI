@@ -112,11 +112,11 @@ export const envService = {
     const existing = (await getOverrides()).find((o) => o.name === name);
     const patch = {
       name, value: value ?? existing?.value ?? '', status: status || existing?.status || 'enabled',
-      category: meta.category, secret: meta.secret, updatedAt: DateEngine.now(), updatedBy: user?.name || 'system',
+      category: meta.category, secret: meta.secret, updated_at: DateEngine.now(), updatedBy: user?.name || 'system',
     };
     let row;
     if (existing) row = await envVarsRepository.update(existing.id, patch);
-    else row = await envVarsRepository.create({ id: uid('env'), createdAt: DateEngine.now(), ...patch });
+    else row = await envVarsRepository.create({ id: uid('env'), created_at: DateEngine.now(), ...patch });
 
     invalidateCache();
     await this.recordHistory(name, existing?.value, patch.value, meta.secret, user);
@@ -133,7 +133,7 @@ export const envService = {
 
   async setStatus(name, status, user) {
     const existing = (await getOverrides()).find((o) => o.name === name);
-    if (existing) { await envVarsRepository.update(existing.id, { status, updatedAt: DateEngine.now(), updatedBy: user?.name || 'system' }); invalidateCache(); }
+    if (existing) { await envVarsRepository.update(existing.id, { status, updated_at: DateEngine.now(), updatedBy: user?.name || 'system' }); invalidateCache(); }
     else await this.upsert({ name, status }, user);
     await auditService.record({ action: status === 'enabled' ? 'env.enable' : 'env.disable', module: 'env', user, details: name });
   },

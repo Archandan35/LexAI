@@ -316,7 +316,7 @@ export function createRepository(collection) {
       delete cleanPatch.idempotencyKey;
       delete cleanPatch._idempotencyKey;
       const provider = p();
-      const stamped = { ...cleanPatch, updatedAt: DateEngine.now() };
+      const stamped = { ...cleanPatch, updated_at: DateEngine.now() };
       const denormalized = denormalizeArrays(entityName, stamped);
       const stripped = stripUnknownFields(entityName, denormalized);
       const coerced = coerceNumericFields(entityName, stripped);
