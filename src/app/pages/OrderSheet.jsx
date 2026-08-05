@@ -1417,7 +1417,6 @@ export default function OrderSheet() {
                      <HearingHistoryView
                        hearings={history.hearings}
                        onEdit={openEdit}
-                       onAdd={openNew}
                        getStatusStyle={getStatusStyle}
                      />
                    </Card>
