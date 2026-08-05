@@ -78,8 +78,8 @@ export default function HearingHistoryView({
         </div>
 
         <div
-          className="hh-wire__text"
-          style={isExpanded ? {} : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}
+          className={`hh-wire__text${isExpanded ? ' is-expanded' : ''}`}
+          style={isExpanded ? { display: 'block', WebkitLineClamp: 'unset', lineClamp: 'unset', overflow: 'visible', maxHeight: 'none' } : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}
         >{fullText}</div>
 
         {isLong && (
