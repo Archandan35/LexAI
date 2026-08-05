@@ -276,6 +276,7 @@ export default function ManageCases() {
                     { key: 'court', label: 'Court' },
                     { key: 'stage', label: 'Stage' },
                     { key: 'nextHearing', label: 'Next Hearing' },
+                    { key: 'lastHearing', label: 'Last Hearing' },
                     { key: 'status', label: 'Status' },
                     { key: 'actions', label: 'Actions', className: 'manage-cases__th-actions' },
                   ]} />
@@ -295,6 +296,7 @@ export default function ManageCases() {
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone={stageColor[c.stage] || 'navy'}>{c.stage}</Badge> : '—'}</td>
                         <td className="manage-cases__cell-date">{formatDate(c.nextHearing)}</td>
+                        <td className="manage-cases__cell-date">{formatDate(c.updatedAt || c.registration_date)}</td>
                         <td>{c.status ? <Badge dot blink tone={statusColor[c.status] || 'grey'}>{c.status}</Badge> : '—'}</td>
                         <td>
                           <div className="row-actions">
