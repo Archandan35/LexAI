@@ -12,7 +12,9 @@ import CaseForm from '@/components/CaseForm.jsx';
 import PermissionGate from '@/components/PermissionGate.jsx';
 import TableHeader from '@/components/TableHeader.jsx';
 import { caseLogic } from '@/logic/caseLogic.js';
+import { caseService } from '@/services/caseService.js';
 import { useCases } from '@/hooks/useCases.js';
+import { useQuery } from '@/data-layer/queryCache.js';
 import { useAppData } from '@/data-layer/AppDataContext.jsx';
 import { useToast } from '@/data-layer/ToastContext.jsx';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -40,11 +42,26 @@ export default function ManageCases() {
   const toast = useToast();
   const { cases, loading, refresh } = useCases();
   const { refreshCases } = useAppData();
+  const { data: allHearings, refresh: refreshHearings } = useQuery('allHearings', () => caseService.listHearings());
   const { can } = usePermissions();
   const { user } = useAuth();
   const { names: stageNames, stages } = useCaseStages();
   const { statuses, items: statusItems } = useCaseStatuses();
   const { caseTypes } = useCaseTypes();
+
+  const lastHearingByCase = useMemo(() => {
+    const map = {};
+    if (!allHearings) return map;
+    for (const h of allHearings) {
+      const cid = h.caseId || h.case_id;
+      if (!cid) continue;
+      const d = h.date ? new Date(h.date) : null;
+      if (!d || Number.isNaN(d.getTime())) continue;
+      if (d > new Date()) continue;
+      if (!map[cid] || d > new Date(map[cid])) map[cid] = h.date;
+    }
+    return map;
+  }, [allHearings]);
 
   const stageColor = useMemo(
     () => Object.fromEntries((stages || []).map((s) => [s.name, s.color || 'navy'])),
@@ -92,7 +109,7 @@ export default function ManageCases() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  const reload = useCallback(async () => { await refresh(); await refreshCases(); }, [refresh, refreshCases]);
+  const reload = useCallback(async () => { await refresh(); await refreshCases(); refreshHearings(); }, [refresh, refreshCases, refreshHearings]);
 
   const save = useCallback(async (data) => {
     if (!data.caseNumber || !data.title) { toast.push('Case number and title are required.', 'error'); return; }
@@ -296,7 +313,7 @@ export default function ManageCases() {
                         <td>{c.courtName || combinedCourt(c)}</td>
                         <td>{c.stage ? <Badge tone={stageColor[c.stage] || 'navy'}>{c.stage}</Badge> : '—'}</td>
                         <td className="manage-cases__cell-date">{formatDate(c.nextHearing)}</td>
-                        <td className="manage-cases__cell-date">{formatDate(c.updatedAt || c.registration_date)}</td>
+                        <td className="manage-cases__cell-date">{formatDate(lastHearingByCase[c.id]) || '—'}</td>
                         <td>{c.status ? <Badge dot blink tone={statusColor[c.status] || 'grey'}>{c.status}</Badge> : '—'}</td>
                         <td>
                           <div className="row-actions">
@@ -445,7 +462,7 @@ export default function ManageCases() {
                   <div className="cv-case-card__dates-divider" />
                   <div className="cv-case-card__dates-item cv-case-card__dates-item--last">
                     <span className="cv-case-card__dates-label">Last Hearing</span>
-                    <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(c.updatedAt || c.registration_date) || '—'}</span>
+                     <span className="cv-case-card__dates-value"><Icon name="calendar" size={12} /> {formatDate(lastHearingByCase[c.id]) || '—'}</span>
                   </div>
                 </div>
 
