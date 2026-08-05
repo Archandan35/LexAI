@@ -6680,6 +6680,15 @@
   }
 }
 
+@media (min-width: 992px) {
+  .hh-wire__text {
+    font-size: 14.5px;
+  }
+  .hh-wire__date {
+    font-size: 15px;
+  }
+}
+
 /* Tablet: 2 columns for cards */
 @media (max-width: 991px) {
   .hh-view__cards {
