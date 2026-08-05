@@ -18495,7 +18495,7 @@
 .order-sheet__history-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .order-sheet__history-case-info { flex-shrink: 0; }
 .order-sheet__history-panel { flex: 1; min-height: 0; overflow-y: auto; }
-.order-sheet__history-timeline-card { flex: 1; min-height: 0; }
+.order-sheet__history-timeline-card { flex: 1; min-height: 400px; }
 .order-sheet__history-timeline-card .card__body { height: 100%; overflow-y: auto; }
 
 /* Status dot active state */
