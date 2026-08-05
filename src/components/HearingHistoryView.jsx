@@ -53,7 +53,10 @@ export default function HearingHistoryView({
     return list;
   }, [hearings, sortDir]);
 
-  const lastUpdated = (h) => (h.updated_at || h.created_at ? formatDateTime(h.updated_at || h.created_at) : '—');
+  const lastUpdated = (h) => {
+    const ts = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
+    return ts ? formatDateTime(ts) : '—';
+  };
 
   const renderCard = (h) => {
     const st = styleFor(h.status);

@@ -77,7 +77,7 @@ export default function OrderSheet() {
   const { partyTypes, refresh: refreshPartyTypes } = usePartyTypes();
 
   // Sorting & Pagination for Order Sheet Tab
-  const [sortDir, setSortDir] = useState('asc'); // asc | desc
+  const [sortDir, setSortDir] = useState('desc'); // asc | desc (desc = Recent first)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
@@ -770,10 +770,14 @@ export default function OrderSheet() {
                 <div className="cl-hearings__bar">
                   <PermissionGate module="orderSheet" action="export"><button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button></PermissionGate>
                   <PermissionGate module="orderSheet" action="print"><button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button></PermissionGate>
-                  <PermissionGate module="orderSheet" action="bulkDelete"><button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
-                    <Icon name="trash" size={13} /> Bulk Delete
-                  </button></PermissionGate>
-                </div>
+                   <PermissionGate module="orderSheet" action="bulkDelete"><button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
+                     <Icon name="trash" size={13} /> Bulk Delete
+                   </button></PermissionGate>
+                   <select className="cl-hearings__sort" value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
+                     <option value="desc">Recent</option>
+                     <option value="asc">Older</option>
+                   </select>
+                 </div>
 
                 {paginatedRows.length === 0 ? (
                   <Card bodyClass="card__body--flush">
