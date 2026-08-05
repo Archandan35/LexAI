@@ -36,14 +36,14 @@ export default function HearingHistoryView({
   const sorted = useMemo(() => {
     const list = [...(hearings || [])];
     list.sort((a, b) => {
-      const ta = new Date(a.updated_at || a.date).getTime();
-      const tb = new Date(b.updated_at || b.date).getTime();
+      const ta = new Date(a.date).getTime();
+      const tb = new Date(b.date).getTime();
       return sortDir === 'desc' ? tb - ta : ta - tb;
     });
     return list;
   }, [hearings, sortDir]);
 
-  const lastUpdated = (h) => (h.updated_at ? formatDateTime(h.updated_at) : formatDate(h.date));
+  const lastUpdated = (h) => (h.updated_at ? formatDateTime(h.updated_at) : '—');
 
   const renderCard = (h) => {
     const st = styleFor(h.status);

@@ -697,7 +697,7 @@ export default function JudgmentLibrary() {
                           })()}
                         </td>
                         <td data-label="Judgment Date" className="jl-cell-muted">{j.date ? formatDate(j.date) : '—'}</td>
-                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt || j.date ? formatDate(j.updatedAt || j.createdAt || j.date) : '—'}</td>
+                        <td data-label="Last Updated" className="jl-cell-muted">{j.updatedAt || j.createdAt ? formatDate(j.updatedAt || j.createdAt) : '—'}</td>
                         <td data-label="Actions">
                           <div className="jl-actions">
                             <button title="View" onClick={() => navigate(`/judgment-library/${j.id}`)}><Icon name="eye" size={15} /></button>
