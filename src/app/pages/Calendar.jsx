@@ -951,10 +951,10 @@ function TasksView({ tasks, loading, onChanged, priorities, categories, statuses
                       </div>
                     )}
 
-                    {t.updatedAt && (
+                    {(t.updatedAt || t.createdAt) && (
                       <div className="task-card__updated">
                         <span className="task-card__field-icon"><Icon name="clock" size={13} /></span>
-                        Last Updated: {formatDateTime(t.updatedAt)}
+                        Last Updated: {formatDateTime(t.updatedAt || t.createdAt)}
                       </div>
                     )}
 
