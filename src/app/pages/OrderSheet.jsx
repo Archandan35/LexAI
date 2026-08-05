@@ -1350,23 +1350,10 @@ export default function OrderSheet() {
                    </div>
                  </div>
                )}
-
-               {/* History Timeline */}
-               <Card
-                 title="History Timeline"
-                 actions={<PermissionGate module="orderSheet" action="create"><Button size="sm" icon="plus" onClick={openNew}>Add Hearing</Button></PermissionGate>}
-               >
-                 <HearingHistoryView
-                   hearings={rows}
-                   onEdit={openEdit}
-                   onAdd={openNew}
-                   getStatusStyle={getStatusStyle}
-                 />
-               </Card>
              </>
            )}
 
-          {/* 2. CASE HISTORY TAB */}
+           {/* 2. CASE HISTORY TAB */}
           {tab === 'history' && (
             <div className="flex-col order-sheet__history-outer">
               {/* Case Select bar inline */}
@@ -1421,83 +1408,18 @@ export default function OrderSheet() {
                     </div>
                   </div>
 
-                  {/* History Timeline panel */}
-                  <div className="hpm-historical-panel order-sheet__history-panel">
-                    <div className="hpm-historical-toolbar">
-                      <span className="hpm-historical-count">{history.hearings.length} hearing{history.hearings.length !== 1 ? 's' : ''}</span>
-                      <select className="hpm-historical-sort" value={histSort} onChange={(e) => setHistSort(e.target.value)}>
-                        <option value="desc">Recent</option>
-                        <option value="asc">Oldest</option>
-                      </select>
-                    </div>
-                    {history.hearings.length === 0 ? (
-                      <div className="hpm-empty">
-                        <Icon name="history" size={40} />
-                        <p>No history logs recorded.</p>
-                      </div>
-                    ) : (
-                      <div className="hpm-historical-list">
-                        {historyHearings.map((h) => {
-                          const tone = statusColour(h.status);
-                          const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
-                          return (
-                            <div
-                              key={h.id}
-                              className={`hpm-historical-card hpm-tone--${tone || 'grey'}`}
-                              onClick={() => setPreviewHearing(h)}
-                            >
-                              <div className={`hpm-historical-card__accent hpm-pill--${tone || 'grey'}`} />
-                              <div className="hpm-timeline-rail">
-                                <div className="hpm-timeline-rail__dot">
-                                  <Icon name="calendar" size={18} strokeWidth={1.9} />
-                                </div>
-                                <div className="hpm-timeline-rail__line" />
-                              </div>
-                              <div className="hpm-historical-card__body">
-                                <div className="hpm-historical-card__header">
-                                  <span className="hpm-historical-card__date">
-                                    <Icon name="calendar" size={14} strokeWidth={2} /> {formatDate(h.date)}
-                                  </span>
-                                  <span className={`hpm-pill hpm-pill--${tone}`}>
-                                    <span className="dot" />
-                                    {h.status}
-                                  </span>
-                                </div>
-                                {h.notes ? (
-                                  <div className="hpm-historical-card__notes-wrap">
-                                    <div
-                                      ref={(el) => { notesRefs.current[h.id] = el; }}
-                                      className={`hpm-historical-card__notes${expandedNotes[h.id] ? ' is-expanded' : ''}`}
-                                      dangerouslySetInnerHTML={safeHtml(h.notes)}
-                                    />
-                                    <button
-                                      type="button"
-                                      className="hpm-readmore"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setExpandedNotes((prev) => ({ ...prev, [h.id]: !prev[h.id] }));
-                                      }}
-                                    >
-                                      {expandedNotes[h.id] ? 'Read less' : 'Read more ...'}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="hpm-historical-card__notes hpm-historical-card__notes--empty">
-                                    <span className="muted">No proceedings recorded</span>
-                                  </div>
-                                )}
-                                <div className="hpm-historical-card__footer">
-                                  <span className="hpm-historical-card__updated">
-                                    <Icon className="hpm-hc-clock" name="clock" size={13} strokeWidth={1.8} /> Last Updated : {formatDateTime(updatedAt)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                   {/* History Timeline */}
+                   <Card
+                     title="History Timeline"
+                     actions={<PermissionGate module="orderSheet" action="create"><Button size="sm" icon="plus" onClick={openNew}>Add Hearing</Button></PermissionGate>}
+                   >
+                     <HearingHistoryView
+                       hearings={history.hearings}
+                       onEdit={openEdit}
+                       onAdd={openNew}
+                       getStatusStyle={getStatusStyle}
+                     />
+                   </Card>
                 </div>
               )}
             </div>
