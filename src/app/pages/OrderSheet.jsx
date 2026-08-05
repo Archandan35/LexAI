@@ -32,6 +32,7 @@ import { FieldMapper } from '@/core/FieldMapper.js';
 import { extractJurisdiction } from '@/utils/caseFormat.js';
 import FilterPopup from '@/components/FilterPopup.jsx';
 import DateInput from '@/components/DateInput.jsx';
+import HearingHistoryView from '@/components/HearingHistoryView.jsx';
 
 const EMPTY_HEARING = { caseId: '', date: '', status: '', purpose: '', nextHearingDate: '', postedFor: '', notes: '', judge: '', docRef: null, docName: '', summary: '' };
 const EMPTY_TPL = { name: '', category: 'Hearing', description: '', content: '' };
@@ -1324,33 +1325,46 @@ export default function OrderSheet() {
                 )}
               </Card>
 
-              {/* Pagination Footer */}
-              {totalPages > 1 && (
-                <div className="order-sheet__footer-pagination">
-                  <div className="order-sheet__pagination-info">
-                    Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
-                  </div>
-                  <div className="order-sheet__pagination-controls">
-                    <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
-                      <option value={5}>5 per page</option>
-                      <option value={10}>10 per page</option>
-                      <option value={20}>20 per page</option>
-                      <option value={50}>50 per page</option>
-                    </select>
-                    <div className="order-sheet__page-buttons">
-                      <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
-                      {Array.from({ length: totalPages }).map((_, i) => (
-                        <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
-                          {i + 1}
-                        </button>
-                      ))}
-                      <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+               {/* Pagination Footer */}
+               {totalPages > 1 && (
+                 <div className="order-sheet__footer-pagination">
+                   <div className="order-sheet__pagination-info">
+                     Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, sortedRows.length)} of {sortedRows.length} hearings
+                   </div>
+                   <div className="order-sheet__pagination-controls">
+                     <select className="order-sheet__per-page-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                       <option value={5}>5 per page</option>
+                       <option value={10}>10 per page</option>
+                       <option value={20}>20 per page</option>
+                       <option value={50}>50 per page</option>
+                     </select>
+                     <div className="order-sheet__page-buttons">
+                       <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>«</button>
+                       {Array.from({ length: totalPages }).map((_, i) => (
+                         <button key={i} className={`order-sheet__page-btn ${page === i + 1 ? 'order-sheet__page-btn--active' : ''}`} onClick={() => setPage(i + 1)}>
+                           {i + 1}
+                         </button>
+                       ))}
+                       <button className="order-sheet__page-btn" onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>»</button>
+                     </div>
+                   </div>
+                 </div>
+               )}
+
+               {/* History Timeline */}
+               <Card
+                 title="History Timeline"
+                 actions={<PermissionGate module="orderSheet" action="create"><Button size="sm" icon="plus" onClick={openNew}>Add Hearing</Button></PermissionGate>}
+               >
+                 <HearingHistoryView
+                   hearings={rows}
+                   onEdit={openEdit}
+                   onAdd={openNew}
+                   getStatusStyle={getStatusStyle}
+                 />
+               </Card>
+             </>
+           )}
 
           {/* 2. CASE HISTORY TAB */}
           {tab === 'history' && (

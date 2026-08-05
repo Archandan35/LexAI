@@ -12,7 +12,7 @@
 // Nothing above the repository layer knows about the active provider.
 
 import { getDatabaseProvider } from '@/providers/database/index.js';
-import { applyDefaults, validateRecord, getSchema } from '@/data-provider/schema/index.js';
+import { applyDefaults, validateRecord, getSchema, schemas } from '@/data-provider/schema/index.js';
 import { EntityRegistry, FieldMapper, IDEngine, DateEngine } from '@/core/index.js';
 
 const ARRAY_TYPES = new Set(['array', 'json', 'jsonb']);
@@ -271,6 +271,13 @@ export function createRepository(collection) {
       delete cleanRecord._idempotencyKey;
       const provider = p();
       const enriched = applyDefaults(entityName, cleanRecord);
+      // Auto-stamp timestamp fields if schema defines them but caller didn't provide them
+      const s = schemas[entityName];
+      if (s?.fields) {
+        const now = new Date().toISOString();
+        if ('created_at' in s.fields && enriched.created_at == null) enriched.created_at = now;
+        if ('updated_at' in s.fields && enriched.updated_at == null) enriched.updated_at = now;
+      }
       // Generate LexAI business ID if not provided
       if (!enriched.id) {
         enriched.id = await IDEngine.generate(entityName);

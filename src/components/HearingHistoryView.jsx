@@ -27,6 +27,17 @@ export default function HearingHistoryView({
   const [sortDir, setSortDir] = useState('desc'); // desc = Recent
   const [view, setView] = useState('timeline'); // timeline | cards
   const [preview, setPreview] = useState(null);
+  const [expanded, setExpanded] = useState(new Set());
+
+  const toggleExpand = (id) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const TRUNCATE_LEN = 150;
 
   const styleFor = (status) => {
     if (getStatusStyle) return getStatusStyle(status);
@@ -47,6 +58,10 @@ export default function HearingHistoryView({
 
   const renderCard = (h) => {
     const st = styleFor(h.status);
+    const fullText = stripHtml(h.notes) || 'No proceedings recorded.';
+    const isExpanded = expanded.has(h.id);
+    const isLong = fullText.length > TRUNCATE_LEN;
+    const displayText = isLong && !isExpanded ? `${fullText.slice(0, TRUNCATE_LEN)}...` : fullText;
     return (
       <>
         <div className="hh-wire__card-head">
@@ -65,11 +80,13 @@ export default function HearingHistoryView({
           )}
         </div>
 
-        <div className="hh-wire__text">{stripHtml(h.notes) || 'No proceedings recorded.'}</div>
+        <div className="hh-wire__text">{displayText}</div>
 
-        <button className="hh-wire__readmore" onClick={() => setPreview(h)}>
-          Read More...
-        </button>
+        {isLong && (
+          <button className="hh-wire__readmore" onClick={() => toggleExpand(h.id)}>
+            {isExpanded ? 'Read Less' : 'Read More...'}
+          </button>
+        )}
 
         <div className="hh-wire__foot">
           <div className="hh-wire__updated">
