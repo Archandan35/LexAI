@@ -4,6 +4,7 @@ import EmptyState from './EmptyState.jsx';
 import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
+import { safeHtml } from '@/utils/sanitize.js';
 
 // HearingHistoryView — reusable hearing history view. Desktop shows the
 // timeline/cards on the left beside an "Add Hearing" action (layout handled by
@@ -56,9 +57,10 @@ export default function HearingHistoryView({
 
   const renderCard = (h) => {
     const st = styleFor(h.status);
-    const fullText = stripHtml(h.notes) || 'No proceedings recorded.';
+    const plainText = stripHtml(h.notes) || 'No proceedings recorded.';
+    const htmlContent = h.notes || '<p>No proceedings recorded.</p>';
     const isExpanded = expanded.has(h.id);
-    const isLong = fullText.trim().length > 80;
+    const isLong = plainText.trim().length > 80;
     return (
       <>
         <div className="hh-wire__card-head">
@@ -80,7 +82,8 @@ export default function HearingHistoryView({
         <div
           className={`hh-wire__text${isExpanded ? ' is-expanded' : ''}`}
           style={isExpanded ? { display: 'block', WebkitLineClamp: 'unset', lineClamp: 'unset', overflow: 'visible', maxHeight: 'none' } : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}
-        >{fullText}</div>
+          dangerouslySetInnerHTML={safeHtml(htmlContent)}
+        />
 
         {isLong && (
           <button className="hh-wire__readmore" onClick={() => toggleExpand(h.id)}>

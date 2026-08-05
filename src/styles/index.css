@@ -6597,7 +6597,6 @@
   line-height: 1.6;
   color: var(--text-soft);
   text-align: justify;
-  display: block;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -6607,6 +6606,20 @@
   white-space: normal;
   word-break: break-word;
   max-height: calc(1.6em * 3);
+}
+.hh-wire__text p {
+  margin: 0 0 8px 0;
+  text-align: justify;
+}
+.hh-wire__text p:last-child {
+  margin-bottom: 0;
+}
+.hh-wire__text.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+  max-height: none;
 }
 
 .hh-wire__readmore {
