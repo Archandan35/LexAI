@@ -80,7 +80,7 @@ export default function HearingHistoryView({
           )}
         </div>
 
-        <div className="hh-wire__text">{displayText}</div>
+        <div className="hh-wire__text" style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}>{displayText}</div>
 
         {isLong && (
           <button className="hh-wire__readmore" onClick={() => toggleExpand(h.id)}>
