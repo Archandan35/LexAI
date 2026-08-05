@@ -768,8 +768,7 @@ export default function OrderSheet() {
               <div className="cl-hearings">
                 <div className="cl-hearings__title">Cases ({sortedRows.length})</div>
                 <div className="cl-hearings__bar">
-                  <PermissionGate module="orderSheet" action="export"><button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button></PermissionGate>
-                  <PermissionGate module="orderSheet" action="print"><button className="cl-hearings__btn" type="button" onClick={handlePrint}><Icon name="print" size={13} /> Print</button></PermissionGate>
+                   <PermissionGate module="orderSheet" action="export"><button className="cl-hearings__btn" type="button" onClick={exportToCsv}><Icon name="download" size={13} /> Export</button></PermissionGate>
                    <PermissionGate module="orderSheet" action="bulkDelete"><button className={`cl-hearings__btn ${bulkMode ? 'cl-hearings__btn--active' : ''}`} type="button" onClick={() => { setBulkMode(!bulkMode); if (bulkMode) setSelectedIds(new Set()); }}>
                      <Icon name="trash" size={13} /> Bulk Delete
                    </button></PermissionGate>

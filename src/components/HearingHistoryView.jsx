@@ -5,6 +5,7 @@ import Modal from './Modal.jsx';
 import Button from './Button.jsx';
 import { stripHtml, useFormat } from '@/utils/format.js';
 import { safeHtml } from '@/utils/sanitize.js';
+import { DateEngine } from '@/core/index.js';
 
 // HearingHistoryView — reusable hearing history view. Desktop shows the
 // timeline/cards on the left beside an "Add Hearing" action (layout handled by
@@ -55,7 +56,10 @@ export default function HearingHistoryView({
 
   const lastUpdated = (h) => {
     const ts = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
-    return ts ? formatDateTime(ts) : '—';
+    if (!ts) return '—';
+    const date = DateEngine.formatDate(ts, 'june23');
+    const time = DateEngine.formatTime(ts, '12h');
+    return `${date} ${time}`;
   };
 
   const renderCard = (h) => {
