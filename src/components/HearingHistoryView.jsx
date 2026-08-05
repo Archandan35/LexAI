@@ -37,8 +37,6 @@ export default function HearingHistoryView({
     });
   };
 
-  const TRUNCATE_LEN = 150;
-
   const styleFor = (status) => {
     if (getStatusStyle) return getStatusStyle(status);
     return { bg: '#f1f3f5', text: '#495057', border: '#dee2e6', dot: '#868e96' };
@@ -60,8 +58,7 @@ export default function HearingHistoryView({
     const st = styleFor(h.status);
     const fullText = stripHtml(h.notes) || 'No proceedings recorded.';
     const isExpanded = expanded.has(h.id);
-    const isLong = fullText.length > TRUNCATE_LEN;
-    const displayText = isLong && !isExpanded ? `${fullText.slice(0, TRUNCATE_LEN)}...` : fullText;
+    const isLong = fullText.trim().length > 80;
     return (
       <>
         <div className="hh-wire__card-head">
@@ -80,7 +77,10 @@ export default function HearingHistoryView({
           )}
         </div>
 
-        <div className="hh-wire__text" style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}>{displayText}</div>
+        <div
+          className="hh-wire__text"
+          style={isExpanded ? {} : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, lineClamp: 3, overflow: 'hidden', maxHeight: '4.8em' }}
+        >{fullText}</div>
 
         {isLong && (
           <button className="hh-wire__readmore" onClick={() => toggleExpand(h.id)}>
