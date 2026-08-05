@@ -6597,12 +6597,16 @@
   line-height: 1.6;
   color: var(--text-soft);
   text-align: justify;
+  display: block;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  max-height: calc(13.5px * 1.6 * 3);
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  max-height: calc(1.6em * 3);
 }
 
 .hh-wire__readmore {

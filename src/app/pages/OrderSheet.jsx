@@ -946,7 +946,7 @@ export default function OrderSheet() {
                           <div className="hpm-historical-list">
                             {historyHearings.map((h) => {
                               const tone = statusColour(h.status);
-                              const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at || h.date;
+                              const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
                               return (
                                 <div
                                   key={h.id}
@@ -1416,6 +1416,7 @@ export default function OrderSheet() {
                      <HearingHistoryView
                        hearings={history.hearings}
                        onEdit={openEdit}
+                       onAdd={openNew}
                        getStatusStyle={getStatusStyle}
                      />
                    </Card>

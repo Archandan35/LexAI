@@ -471,7 +471,7 @@ export default function OrderSheetPreviewModal({ hearing, doc, onClose, onViewDo
                 <div className="hpm-historical-list">
                 {sortedHistorical.map((h) => {
                   const tone = statusColour(h.status);
-                  const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at || h.date;
+                  const updatedAt = h.updatedAt || h.updated_at || h.createdAt || h.created_at;
                   return (
                     <div
                       key={h.id}
