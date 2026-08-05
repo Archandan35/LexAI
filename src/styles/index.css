@@ -6599,13 +6599,13 @@
   text-align: justify;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
   word-break: break-word;
-  max-height: calc(1.6em * 3);
+  max-height: calc(1.6em * 5);
 }
 .hh-wire__text p {
   margin: 0 0 8px 0;
@@ -18495,7 +18495,7 @@
 .order-sheet__history-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .order-sheet__history-case-info { flex-shrink: 0; }
 .order-sheet__history-panel { flex: 1; min-height: 0; overflow-y: auto; }
-.order-sheet__history-timeline-card { flex: 1; min-height: 400px; }
+.order-sheet__history-timeline-card { flex: 1; min-height: auto; }
 .order-sheet__history-timeline-card .card__body { height: 100%; overflow-y: auto; }
 
 /* Status dot active state */

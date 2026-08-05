@@ -242,11 +242,21 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
     if (schema && schema.fields) {
       const PG_TYPE_MAP = { string: 'text', number: 'numeric', boolean: 'boolean', datetime: 'timestamptz', array: 'jsonb', object: 'jsonb' };
       const columns = Object.entries(schema.fields)
-        .map(([field, type]) => `"${field}" ${PG_TYPE_MAP[type] || 'text'}`)
+        .map(([field, type]) => {
+          const pgType = PG_TYPE_MAP[type] || 'text';
+          const def = type === 'datetime' && (field === 'created_at' || field === 'updated_at') ? ' default now()' : '';
+          return `"${field}" ${pgType}${def}`;
+        })
         .join(', ');
       const sql = `CREATE TABLE IF NOT EXISTS "${name}" (${columns});`;
       const res = await this.execSql(sql);
-      if (res.ok) return { created: true, ok: true };
+      if (res.ok) {
+        // Also create a trigger to auto-set updated_at on every UPDATE
+        await this.execSql(`DROP TRIGGER IF EXISTS trg_${name}_updated_at ON ${name};`).catch(() => {});
+        await this.execSql(`CREATE OR REPLACE FUNCTION set_${name}_updated_at() RETURNS trigger AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;`).catch(() => {});
+        await this.execSql(`CREATE TRIGGER trg_${name}_updated_at BEFORE UPDATE ON ${name} FOR EACH ROW EXECUTE FUNCTION set_${name}_updated_at();`).catch(() => {});
+        return { created: true, ok: true };
+      }
       return { created: false, ok: false, needsManual: res.needsManual !== false, sql };
     }
 
@@ -255,7 +265,8 @@ export default class SupabaseDatabaseProvider extends DatabaseProvider {
 
   // Best-effort column creation via exec_sql (bootstraps if needed).
   async ensureColumn(collection, column, type) {
-    const sql = `ALTER TABLE "${collection}" ADD COLUMN IF NOT EXISTS "${column}" ${type};`;
+    const def = type === 'timestamptz' && (column === 'created_at' || column === 'updated_at') ? ' DEFAULT now()' : '';
+    const sql = `ALTER TABLE "${collection}" ADD COLUMN IF NOT EXISTS "${column}" ${type}${def};`;
     const res = await this.execSql(sql);
     if (res.ok) return { created: true, ok: true, sql };
     return { created: false, ok: false, sql, needsManual: res.needsManual !== false };
