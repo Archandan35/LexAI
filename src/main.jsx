@@ -5,6 +5,7 @@ import App from './app/App.jsx';
 import { recoverFromChunkError } from './utils/lazyWithRetry.js';
 import { reportWebVitals } from './utils/webVitals.js';
 import { monitoringService } from './services/monitoringService.js';
+import { keepAliveService } from './services/keepAliveService.js';
 import MonitoringDashboard from './components/MonitoringDashboard.jsx';
 import './styles/index.css';
 
@@ -72,6 +73,13 @@ try {
   monitoringService.init();
 } catch (e) {
   console.error('[Monitoring] init failed', e);
+}
+
+// Initialize Supabase keep-alive to prevent Free-tier project from sleeping (7-day inactivity pause)
+try {
+  keepAliveService.start();
+} catch (e) {
+  console.error('[KeepAlive] init failed', e);
 }
 
 // Signal a successful boot so the index.html watchdog stands down, and strip the
